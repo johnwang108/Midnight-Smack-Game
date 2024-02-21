@@ -51,7 +51,7 @@ int main(int argc, char * argv[]) {
     app.setHighDPI(true);
 
     //app.setFullscreen(true);
-    app.setDisplaySize(1024, 576);
+    app.setDisplaySize(1280, 800);
     app.setFPS(60.0f);
 
     /// DO NOT MODIFY ANYTHING BELOW THIS LINE
