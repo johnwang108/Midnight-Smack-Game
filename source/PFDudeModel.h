@@ -107,6 +107,9 @@ protected:
 	/** The scale between the physics world and the screen (MUST BE UNIFORM) */
 	float _drawScale;
 
+    bool _dash;
+    float _dashCooldown;
+
 	/**
 	* Redraws the outline of the physics fixtures to the debug node
 	*
@@ -344,20 +347,25 @@ public:
      * @param value left/right movement of this character.
      */
     void setMovement(float value);
-    
+
     /**
      * Returns true if the dude is actively firing.
      *
      * @return true if the dude is actively firing.
      */
     bool isShooting() const { return _isShooting && _shootCooldown <= 0; }
-    
+
     /**
      * Sets whether the dude is actively firing.
      *
      * @param value whether the dude is actively firing.
      */
     void setShooting(bool value) { _isShooting = value; }
+
+
+    bool canDash() const { return _dash && _dashCooldown <= 0; }
+
+    void setDash(bool value) { _dash = value; }
     
     /**
      * Returns true if the dude is actively jumping.

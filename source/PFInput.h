@@ -57,6 +57,8 @@ private:
     bool  _keyLeft;
     /** Whether the right arrow key is down */
     bool  _keyRight;
+    bool _dashKey;
+
   
 protected:
     // INPUT RESULTS
@@ -72,6 +74,8 @@ protected:
     bool _jumpPressed;
     /** How much did we move horizontally? */
     float _horizontal;
+    bool _dashPressed;
+
 
 #pragma mark Internal Touch Management   
 	// The screen is divided into four zones: Left, Bottom, Right and Main/
@@ -299,6 +303,8 @@ public:
 	 * @return true if the exit button was pressed.
 	 */
 	bool didExit() const { return _exitPressed; }
+
+    bool didDash() const { return _dashPressed;  }
     
     /**
      * Returns true if the virtual joystick is in use (touch only)

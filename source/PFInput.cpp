@@ -28,6 +28,7 @@ using namespace cugl;
 #define FIRE_KEY KeyCode::SPACE
 /** The key for jumping up */
 #define JUMP_KEY KeyCode::ARROW_UP
+#define DASH_KEY KeyCode::F
 
 /** How close we need to be for a multi touch */
 #define NEAR_TOUCH      100
@@ -85,6 +86,7 @@ _keyLeft(false),
 _keyRight(false),
 _horizontal(0.0f),
 _joystick(false),
+_dashKey(false),
 _hasJumped(false) {
 }
 
@@ -170,6 +172,8 @@ void PlatformInput::update(float dt) {
     _keyFire   = keys->keyPressed(FIRE_KEY);
     _keyJump   = keys->keyPressed(JUMP_KEY);
 
+    _dashKey = keys->keyPressed(DASH_KEY);
+
     _keyLeft = keys->keyDown(KeyCode::ARROW_LEFT);
     _keyRight = keys->keyDown(KeyCode::ARROW_RIGHT);
 #endif
@@ -178,7 +182,8 @@ void PlatformInput::update(float dt) {
     _debugPressed = _keyDebug;
     _exitPressed  = _keyExit;
 	_firePressed  = _keyFire;
-	_jumpPressed  = _keyJump;
+    _jumpPressed = _keyJump;
+    _dashPressed  = _dashKey;
 
 	// Directional controls
 	_horizontal = 0.0f;
@@ -208,7 +213,7 @@ void PlatformInput::clear() {
     _exitPressed  = false;
     _jumpPressed = false;
     _firePressed = false;
-    
+    _dashPressed = false;
 }
 
 #pragma mark -
