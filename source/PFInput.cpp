@@ -29,6 +29,9 @@ using namespace cugl;
 /** The key for jumping up */
 #define JUMP_KEY KeyCode::ARROW_UP
 
+/** Slow key */
+#define SLOW_KEY KeyCode::TAB
+
 /** How close we need to be for a multi touch */
 #define NEAR_TOUCH      100
 /** The key for the event handlers */
@@ -76,6 +79,7 @@ _debugPressed(false),
 _exitPressed(false),
 _firePressed(false),
 _jumpPressed(false),
+_slowPressed(false),
 _keyJump(false),
 _keyFire(false),
 _keyReset(false),
@@ -83,6 +87,7 @@ _keyDebug(false),
 _keyExit(false),
 _keyLeft(false),
 _keyRight(false),
+_keySlow(false),
 _horizontal(0.0f),
 _joystick(false),
 _hasJumped(false) {
@@ -169,6 +174,7 @@ void PlatformInput::update(float dt) {
     _keyExit   = keys->keyPressed(EXIT_KEY);
     _keyFire   = keys->keyPressed(FIRE_KEY);
     _keyJump   = keys->keyPressed(JUMP_KEY);
+    _keySlow   = keys->keyDown(SLOW_KEY);
 
     _keyLeft = keys->keyDown(KeyCode::ARROW_LEFT);
     _keyRight = keys->keyDown(KeyCode::ARROW_RIGHT);
@@ -179,6 +185,7 @@ void PlatformInput::update(float dt) {
     _exitPressed  = _keyExit;
 	_firePressed  = _keyFire;
 	_jumpPressed  = _keyJump;
+    _slowPressed  = _keySlow;
 
 	// Directional controls
 	_horizontal = 0.0f;
@@ -208,7 +215,7 @@ void PlatformInput::clear() {
     _exitPressed  = false;
     _jumpPressed = false;
     _firePressed = false;
-    
+    _slowPressed = false;
 }
 
 #pragma mark -

@@ -579,6 +579,8 @@ void GameScene::preUpdate(float dt) {
 		Application::get()->quit();
 	}
 
+    _slowed = _input.didSlow();
+
 	// Process the movement
     if (_input.withJoystick()) {
         if (_input.getHorizontal() < 0) {
@@ -637,6 +639,9 @@ void GameScene::preUpdate(float dt) {
  */
 void GameScene::fixedUpdate(float step) {
     // Turn the physics engine crank.
+    if (_slowed) { 
+        step = step / 5;
+    }
     _world->update(step);
 }
     
@@ -876,3 +881,4 @@ Size GameScene::computeActiveSize() const {
     }
     return dimen;
 }
+
