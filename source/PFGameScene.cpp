@@ -580,7 +580,7 @@ void GameScene::preUpdate(float dt) {
 	}
 
 	// Process the movement
-    if (_input.withJoystick()) {
+  /*  if (_input.withJoystick()) {
         if (_input.getHorizontal() < 0) {
             _leftnode->setVisible(true);
             _rightnode->setVisible(false);
@@ -596,7 +596,7 @@ void GameScene::preUpdate(float dt) {
     } else {
         _leftnode->setVisible(false);
         _rightnode->setVisible(false);
-    }
+    }*/
     
 	_avatar->setMovement(_input.getHorizontal()*_avatar->getForce());
 	_avatar->setJumping( _input.didJump());
