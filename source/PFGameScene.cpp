@@ -51,6 +51,8 @@ using namespace cugl;
 /** Height of the game world in Box2d units */
 #define DEFAULT_HEIGHT  18.0f
 
+#define INCLUDE_ROPE_BRIDGE false
+
 // Since these appear only once, we do not care about the magic numbers.
 // In an actual game, this information would go in a data file.
 // IMPORTANT: Note that Box2D units do not equal drawing units
@@ -458,6 +460,34 @@ void GameScene::populate() {
 		addObstacle(platobj,sprite,1);
 	}
 
+    //hack for rope bridge removal
+    if (!INCLUDE_ROPE_BRIDGE) {
+        std::shared_ptr<physics2::PolygonObstacle> platobj;
+        float plat[PLATFORM_VERTS] = { 9.0f, 3.0f, 9.0f, 2.5f, 23.0f, 2.5f, 23.0f, 3.0f };
+        Poly2 platform(reinterpret_cast<Vec2*>(plat), 4);
+
+        EarclipTriangulator triangulator;
+        triangulator.set(platform.vertices);
+        triangulator.calculate();
+        platform.setIndices(triangulator.getTriangulation());
+        triangulator.clear();
+
+        platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_CENTER);
+        // You cannot add constant "".  Must stringify
+        platobj->setName(std::string(PLATFORM_NAME) + cugl::strtool::to_string(PLATFORM_COUNT));
+
+        // Set the physics attributes
+        platobj->setBodyType(b2_staticBody);
+        platobj->setDensity(BASIC_DENSITY);
+        platobj->setFriction(BASIC_FRICTION);
+        platobj->setRestitution(BASIC_RESTITUTION);
+        platobj->setDebugColor(DEBUG_COLOR);
+
+        platform *= _scale;
+        sprite = scene2::PolygonNode::allocWithTexture(image, platform);
+        addObstacle(platobj, sprite, 1);
+    }
+
 #pragma mark : Spinner
 	Vec2 spinPos = SPIN_POS;
     image = _assets->get<Texture>(SPINNER_TEXTURE);
@@ -480,20 +510,24 @@ void GameScene::populate() {
 	Vec2 bridgeEnd   = bridgeStart;
 	bridgeEnd.x += BRIDGE_WIDTH;
     image = _assets->get<Texture>(BRIDGE_TEXTURE);
-    
-	_ropebridge = RopeBridge::alloc(bridgeStart,bridgeEnd,image->getSize()/_scale,_scale);
-    _ropebridge->setTexture(image);
-	node = scene2::SceneNode::alloc();
 
-    // With refactor, must be added manually
-    // Add the node to the world before calling setSceneNode,
-    _worldnode->addChild(node);
-    _ropebridge->setSceneNode(node);
+    if (INCLUDE_ROPE_BRIDGE) {
+        _ropebridge = RopeBridge::alloc(bridgeStart,bridgeEnd,image->getSize()/_scale,_scale);
+        _ropebridge->setTexture(image);
+        node = scene2::SceneNode::alloc();
+
+        // With refactor, must be added manually
+        // Add the node to the world before calling setSceneNode,
+        _worldnode->addChild(node);
+        _ropebridge->setSceneNode(node);
+   
+        _ropebridge->setDrawScale(_scale);
+        _ropebridge->setDebugColor(DEBUG_COLOR);
+        _ropebridge->setDebugScene(_debugnode);
+        _ropebridge->activate(_world);
+    }
     
-    _ropebridge->setDrawScale(_scale);
-    _ropebridge->setDebugColor(DEBUG_COLOR);
-    _ropebridge->setDebugScene(_debugnode);
-    _ropebridge->activate(_world);
+
 
 #pragma mark : Dude
 	Vec2 dudePos = DUDE_POS;
@@ -674,7 +708,10 @@ void GameScene::postUpdate(float remain) {
     // TODO: Update this demo to support interpolation
     // We can interpolate the rope bridge and spinner as we have the data structures
     _spinner->update(remain);
-    _ropebridge->update(remain);
+    if (INCLUDE_ROPE_BRIDGE) {
+        _ropebridge->update(remain);
+    }
+
 
     // Add a bullet AFTER physics allows it to hang in front
     // Otherwise, it looks like bullet appears far away
