@@ -597,10 +597,14 @@ void GameScene::preUpdate(float dt) {
         _leftnode->setVisible(false);
         _rightnode->setVisible(false);
     }
+    //CULog("Horizontal: %f", _input.getHorizontal());
+    //CULog("Vertical: %f", _input.getVertical());
+
     
-	_avatar->setMovement(_input.getHorizontal()*_avatar->getForce());
-	_avatar->setJumping( _input.didJump());
-	_avatar->applyForce();
+	_avatar->setMovement(_input.getHorizontal() * _avatar->getForce());
+    _avatar->setJumping(_input.didJump());
+    _avatar->setDash( _input.didDash());
+	_avatar->applyForce(_input.getHorizontal() * _avatar->getForce(), _input.getVertical() * _avatar->getForce());
 
 	if (_avatar->isJumping() && _avatar->isGrounded()) {
 		std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
