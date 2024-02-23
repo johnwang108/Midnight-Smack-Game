@@ -60,6 +60,11 @@ private:
     /** Whether the slow key is down */
     bool _keySlow;
   
+    bool  _keyDown;
+    bool  _keyUp;
+    bool _dashKey;
+
+  
 protected:
     // INPUT RESULTS
     /** Whether the reset action was chosen. */
@@ -76,6 +81,9 @@ protected:
     bool _slowPressed;
     /** How much did we move horizontally? */
     float _horizontal;
+    float _vertical;
+    bool _dashPressed;
+
 
 #pragma mark Internal Touch Management   
 	// The screen is divided into four zones: Left, Bottom, Right and Main/
@@ -267,7 +275,15 @@ public:
      *
      * @return the amount of sideways movement.
      */
-	float getHorizontal() const { return _horizontal; }
+    float getHorizontal() const { return _horizontal; }
+    /**
+     * Returns the amount of sideways movement.
+     *
+     * -1 = left, 1 = right, 0 = still
+     *
+     * @return the amount of sideways movement.
+     */
+    float getVertical() const { return _vertical; }
 
     /**
      * Returns if the jump button was pressed.
@@ -305,6 +321,9 @@ public:
 	bool didExit() const { return _exitPressed; }
 
     bool didSlow() const { return _slowPressed; }
+    
+
+    bool didDash() const { return _dashPressed;  }
     
     /**
      * Returns true if the virtual joystick is in use (touch only)
