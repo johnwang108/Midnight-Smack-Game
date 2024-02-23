@@ -57,6 +57,8 @@ private:
     bool  _keyLeft;
     /** Whether the right arrow key is down */
     bool  _keyRight;
+    bool  _keyDown;
+    bool  _keyUp;
     bool _dashKey;
 
   
@@ -74,6 +76,7 @@ protected:
     bool _jumpPressed;
     /** How much did we move horizontally? */
     float _horizontal;
+    float _vertical;
     bool _dashPressed;
 
 
@@ -267,7 +270,15 @@ public:
      *
      * @return the amount of sideways movement.
      */
-	float getHorizontal() const { return _horizontal; }
+    float getHorizontal() const { return _horizontal; }
+    /**
+     * Returns the amount of sideways movement.
+     *
+     * -1 = left, 1 = right, 0 = still
+     *
+     * @return the amount of sideways movement.
+     */
+    float getVertical() const { return _vertical; }
 
     /**
      * Returns if the jump button was pressed.

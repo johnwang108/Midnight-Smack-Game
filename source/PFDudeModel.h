@@ -59,11 +59,11 @@
 #pragma mark -
 #pragma mark Physics Constants
 /** The factor to multiply by the input */
-#define DUDE_FORCE      20.0f
+#define DUDE_FORCE      3.0f
 /** The amount to slow the character down */
 #define DUDE_DAMPING    10.0f
 /** The maximum character speed */
-#define DUDE_MAXSPEED   5.0f
+#define DUDE_MAXSPEED   50.0f
 
 
 #pragma mark -
@@ -108,6 +108,7 @@ protected:
 	float _drawScale;
 
     bool _dash;
+    int _dashNum;
     float _dashCooldown;
 
 	/**
@@ -363,9 +364,13 @@ public:
     void setShooting(bool value) { _isShooting = value; }
 
 
-    bool canDash() const { return _dash && _dashCooldown <= 0; }
+    bool canDash() const { return _dash && _dashCooldown <= 0 ; }
 
     void setDash(bool value) { _dash = value; }
+
+    int getDashNum() { return _dashNum; }
+    void setDashNum(int val) { _dashNum = val; }
+    void deltaDashNum(int val) { _dashNum += val; }
     
     /**
      * Returns true if the dude is actively jumping.
@@ -471,7 +476,7 @@ public:
      *
      * This method should be called after the force attribute is set.
      */
-    void applyForce();
+    void applyForce(float h, float v);
 
 
 	

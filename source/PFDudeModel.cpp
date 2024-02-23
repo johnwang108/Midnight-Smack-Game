@@ -53,7 +53,7 @@
 /** Cooldown (in animation frames) for jumping */
 #define JUMP_COOLDOWN   5
 /** Cooldown (in animation frames) for shooting */
-#define DASH_COOLDOWN  200
+#define DASH_COOLDOWN  2
 /** Cooldown (in animation frames) for shooting */
 #define SHOOT_COOLDOWN  20
 /** The amount to shrink the body fixture (vertically) relative to the image */
@@ -114,6 +114,7 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         _dashCooldown = 0;
         _shootCooldown = 0;
         _jumpCooldown  = 0;
+        _dashNum = 1;
         return true;
     }
     return false;
@@ -130,8 +131,8 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
  *
  * @param value left/right movement of this character.
  */
-void DudeModel::setMovement(float value) {
-    _movement = value;
+void DudeModel::setMovement(float h) {
+    _movement = h;
     bool face = _movement > 0;
     if (_movement == 0 || _faceRight == face) {
         return;
@@ -216,7 +217,7 @@ void DudeModel::dispose() {
  *
  * This method should be called after the force attribute is set.
  */
-void DudeModel::applyForce() {
+void DudeModel::applyForce(float h, float v) {
     if (!isEnabled()) {
         return;
     }
@@ -248,10 +249,10 @@ void DudeModel::applyForce() {
         b2Vec2 force(0, DUDE_JUMP);
         _body->ApplyLinearImpulse(force,_body->GetPosition(),true);
     }
-    std::cout << getVX();
-    if (canDash() && isGrounded()) {
-        b2Vec2 force(0, DUDE_JUMP*1.5);
+    if (canDash() && getDashNum()>0) {
+        b2Vec2 force(DUDE_JUMP*h*.5, DUDE_JUMP*v*.5);
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
+        deltaDashNum(-1);
     }
 }
 
@@ -276,12 +277,16 @@ void DudeModel::update(float dt) {
     } else {
         _shootCooldown = (_shootCooldown > 0 ? _shootCooldown-1 : 0);
     }
-
+    CULog("Dash Val: %i", getDashNum());
     if (canDash()) {
         _dashCooldown = DASH_COOLDOWN;
     }
     else {
         _dashCooldown = (_dashCooldown > 0 ? _dashCooldown - 1 : 0);
+        if (getDashNum() == 0 && _dashCooldown <= 0 && isGrounded()) {
+            setDashNum(1);
+            //TODO: remove hardcode limit on one dash
+        }
     }
     
     CapsuleObstacle::update(dt);
