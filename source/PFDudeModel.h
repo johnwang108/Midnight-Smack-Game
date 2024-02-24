@@ -110,6 +110,7 @@ protected:
     bool _dash;
     int _dashNum;
     float _dashCooldown;
+    bool _contactingWall;
 
 	/**
 	* Redraws the outline of the physics fixtures to the debug node
@@ -371,6 +372,9 @@ public:
     int getDashNum() { return _dashNum; }
     void setDashNum(int val) { _dashNum = val; }
     void deltaDashNum(int val) { _dashNum += val; }
+
+    bool contactingWall() { return _contactingWall; }
+    void setContactingWall(bool val) { _contactingWall = val;  }
     
     /**
      * Returns true if the dude is actively jumping.

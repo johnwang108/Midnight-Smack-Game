@@ -823,9 +823,36 @@ void GameScene::beginContact(b2Contact* contact) {
 	if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
 		(_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
 		_avatar->setGrounded(true);
+        CULog("grounded");
 		// Could have more than one ground
 		_sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
 	}
+
+    // Check if the player hits a wall NOT PLATFORM (not implemented for that atm)
+    if ((bd1 == _avatar.get() && bd2->getName() == WALL_NAME) ||
+        (bd2 == _avatar.get() && bd1->getName() == WALL_NAME)) {
+        Vec2 playerPos = _avatar->getPosition();
+        float playerPosX = _avatar->getX();
+        float wallPos;
+        if (bd1->getName() == WALL_NAME) {
+            wallPos = bd1->getX();
+        }
+        else {
+            wallPos = bd2->getX();
+        }
+
+        float d1 = bd1->getX();
+        float d2 = bd2->getX();
+        // Calculate the direction vector from the wall to the player
+        Vec2 direction = playerPos - bd2->getPosition();/*
+        CULog("bd 1 %f", d1);
+        CULog("bd 2 %f", d2);
+        CULog("playerPos %f", playerPosX);
+        CULog("direc %f", direction);*/
+        CULog("contact wALL");
+        _avatar->setContactingWall(true);
+        _avatar->setVX(0);
+    }
 
 	// If we hit the "win" door, we are done
 	if((bd1 == _avatar.get()   && bd2 == _goalDoor.get()) ||
@@ -861,6 +888,32 @@ void GameScene::endContact(b2Contact* contact) {
 			_avatar->setGrounded(false);
 		}
 	}
+    // Check if the player is no longer in contact with any walls
+    bool p1 = (_avatar->getSensorName() == fd2);
+    CULog("1 %d", p1);
+    bool p2 = (bd1->getName() != WALL_NAME);
+    CULog("2 %d", p2);
+    bool p3 = (_avatar->getSensorName() == fd1);
+    CULog("3 %d", p3);
+    bool p4 = (bd2->getName() != WALL_NAME);
+    CULog("4 %d", p4);
+    bool p5 = _avatar->contactingWall();
+    CULog("5 %d", p5);
+    if (!(p1 || p2 || p3) && p4 && p5) {
+        _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
+        bool p1 = _avatar->getSensorName() == fd2;
+        bool p2 = bd1->getName() != WALL_NAME;
+        bool p3 = _avatar->getSensorName();
+        bool p4 = bd2->getName() != WALL_NAME;
+        CULog("p1: %d", p1);
+        CULog("p2: %d", p2);
+        CULog("p3: %d", p3);
+        CULog("p4: %d", p4);
+        CULog("walln't");
+        _avatar->setContactingWall(false);
+        if (_sensorFixtures.empty()) {
+        }
+    }
 }
 
 /**

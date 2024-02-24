@@ -110,7 +110,8 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         _isJumping  = false;
         _faceRight  = true;
         _dash = true;
-        
+        _contactingWall = false;
+
         _dashCooldown = 0;
         _shootCooldown = 0;
         _jumpCooldown  = 0;
@@ -145,7 +146,6 @@ void DudeModel::setMovement(float h) {
     }
     _faceRight = face;
 }
-
 
 #pragma mark -
 #pragma mark Physics Methods
@@ -249,6 +249,10 @@ void DudeModel::applyForce(float h, float v) {
         b2Vec2 force(0, DUDE_JUMP);
         _body->ApplyLinearImpulse(force,_body->GetPosition(),true);
     }
+    else if (isJumping() && contactingWall()) {
+        b2Vec2 force(DUDE_JUMP*2* (isFacingRight() ? -1: 1), DUDE_JUMP * 1.2);
+        _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
+    }
     if (canDash() && getDashNum()>0) {
         b2Vec2 force(DUDE_JUMP*h*.5, DUDE_JUMP*v*.5);
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
@@ -277,7 +281,6 @@ void DudeModel::update(float dt) {
     } else {
         _shootCooldown = (_shootCooldown > 0 ? _shootCooldown-1 : 0);
     }
-    CULog("Dash Val: %i", getDashNum());
     if (canDash()) {
         _dashCooldown = DASH_COOLDOWN;
     }
