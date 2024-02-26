@@ -849,7 +849,7 @@ void GameScene::beginContact(b2Contact* contact) {
     if ((bd1 == _avatar.get() && bd2->getName() == WALL_NAME) ||
         (bd2 == _avatar.get() && bd1->getName() == WALL_NAME)) {
         _avatar->setContactingWall(true);
-        _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
+        _avatar->setVX(0);
     }
 
     // If we hit the "win" door, we are done
@@ -862,7 +862,6 @@ void GameScene::beginContact(b2Contact* contact) {
         (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
         _enemy->setGrounded(true);
         // Could have more than one ground
-        _sensorFixtures.emplace(_enemy.get() == bd1 ? fix2 : fix1);
     }
 }
 

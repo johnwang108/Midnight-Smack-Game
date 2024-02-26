@@ -243,7 +243,7 @@ void DudeModel::applyForce(float h, float v) {
         b2Vec2 force(getMovement(),0);
         _body->ApplyForce(force,_body->GetPosition(),true);
     }
-    
+
     // Jump!
     if (isJumping() && isGrounded()) {
         b2Vec2 force(0, DUDE_JUMP);
