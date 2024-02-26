@@ -249,8 +249,8 @@ void DudeModel::applyForce(float h, float v) {
         b2Vec2 force(0, DUDE_JUMP);
         _body->ApplyLinearImpulse(force,_body->GetPosition(),true);
     }
-    else if (isJumping() && contactingWall()) {
-        b2Vec2 force(DUDE_JUMP*2* (isFacingRight() ? -1: 1), DUDE_JUMP * 1.2);
+    else if (isJumping() && contactingWall() && !isGrounded()) {
+        b2Vec2 force(DUDE_JUMP*5* (isFacingRight() ? 1: -1), DUDE_JUMP * 1.2);
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
     }
     if (canDash() && getDashNum()>0) {

@@ -513,12 +513,15 @@ void GameScene::populate() {
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
     AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
+
+#pragma mark : Enemies
     Vec2 shrimp_pos = shrimp_POS;
     node = scene2::SceneNode::alloc();
     image = _assets->get<Texture>(SHRIMP_TEXTURE);
     _enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
     sprite = scene2::PolygonNode::allocWithTexture(image);
     _enemy->setSceneNode(sprite);
+    _enemy->setDebugColor(DEBUG_COLOR);
     addObstacle(_enemy, sprite);
 }
 
@@ -814,6 +817,7 @@ void GameScene::removeBullet(Bullet* bullet) {
  *
  * @param  contact  The two bodies that collided
  */
+
 void GameScene::beginContact(b2Contact* contact) {
 	b2Fixture* fix1 = contact->GetFixtureA();
 	b2Fixture* fix2 = contact->GetFixtureB();
@@ -834,14 +838,25 @@ void GameScene::beginContact(b2Contact* contact) {
 		removeBullet((Bullet*)bd2);
 	}
 
-	// See if we have landed on the ground.
-	if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
-		(_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
-		_avatar->setGrounded(true);
-        CULog("grounded");
-		// Could have more than one ground
-		_sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
-	}
+
+    // See if we have landed on the ground.
+    if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
+        (_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
+        _avatar->setGrounded(true);
+        // Could have more than one ground
+        _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
+    }
+    if ((bd1 == _avatar.get() && bd2->getName() == WALL_NAME) ||
+        (bd2 == _avatar.get() && bd1->getName() == WALL_NAME)) {
+        _avatar->setContactingWall(true);
+        _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
+    }
+
+    // If we hit the "win" door, we are done
+    if ((bd1 == _avatar.get() && bd2 == _goalDoor.get()) ||
+        (bd1 == _goalDoor.get() && bd2 == _avatar.get())) {
+        setComplete(true);
+    }
 
     if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
         (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
@@ -849,12 +864,6 @@ void GameScene::beginContact(b2Contact* contact) {
         // Could have more than one ground
         _sensorFixtures.emplace(_enemy.get() == bd1 ? fix2 : fix1);
     }
-
-	// If we hit the "win" door, we are done
-	if((bd1 == _avatar.get()   && bd2 == _goalDoor.get()) ||
-		(bd1 == _goalDoor.get() && bd2 == _avatar.get())) {
-		setComplete(true);
-	}
 }
 
 /**
@@ -886,29 +895,13 @@ void GameScene::endContact(b2Contact* contact) {
 	}
     // Check if the player is no longer in contact with any walls
     bool p1 = (_avatar->getSensorName() == fd2);
-    CULog("1 %d", p1);
     bool p2 = (bd1->getName() != WALL_NAME);
-    CULog("2 %d", p2);
     bool p3 = (_avatar->getSensorName() == fd1);
-    CULog("3 %d", p3);
-    bool p4 = (bd2->getName() != WALL_NAME);
-    CULog("4 %d", p4);
+    bool p4 = (bd2->getName() != WALL_NAME );
     bool p5 = _avatar->contactingWall();
-    CULog("5 %d", p5);
     if (!(p1 || p2 || p3) && p4 && p5) {
         _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
-        bool p1 = _avatar->getSensorName() == fd2;
-        bool p2 = bd1->getName() != WALL_NAME;
-        bool p3 = _avatar->getSensorName();
-        bool p4 = bd2->getName() != WALL_NAME;
-        CULog("p1: %d", p1);
-        CULog("p2: %d", p2);
-        CULog("p3: %d", p3);
-        CULog("p4: %d", p4);
-        CULog("walln't");
         _avatar->setContactingWall(false);
-        if (_sensorFixtures.empty()) {
-        }
     }
 }
 

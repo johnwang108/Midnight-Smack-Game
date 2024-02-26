@@ -28,7 +28,7 @@ using namespace cugl;
 #define FIRE_KEY KeyCode::O
 /** The key for jumping up */
 #define JUMP_KEY KeyCode::SPACE
-#define DASH_KEY KeyCode::F
+#define DASH_KEY KeyCode::LEFT_SHIFT
 
 /** How close we need to be for a multi touch */
 #define NEAR_TOUCH      100
