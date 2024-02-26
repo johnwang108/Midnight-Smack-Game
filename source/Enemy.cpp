@@ -11,6 +11,8 @@
 #define ENEMY_HSHRINK    0.7f
 #define ENEMY_DENSITY    1.0f
 
+#define SENSOR_HEIGHT 0.1f
+
 using namespace cugl;
 
 #pragma mark -
@@ -28,13 +30,16 @@ bool EnemyModel::init(const Vec2& pos, const Size& size, float scale, EnemyType 
     _drawScale = scale;
     _type = type;
 
-    if (BoxObstacle::init(pos, scaledSize)) {
+    if (CapsuleObstacle::init(pos, scaledSize)) {
         setDensity(ENEMY_DENSITY);
         setFriction(0.0f); // Prevent sticking to walls
         setFixedRotation(true); // Avoid tumbling
 
         _isGrounded = false;
-        _direction = 1; // Start moving right by default
+        _direction = -1; // Start moving right by default
+        _lastDirection = _direction;
+        _changeDirectionInterval = 3.0f;
+        _nextChangeTime = _changeDirectionInterval + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * _changeDirectionInterval;
 
         return true;
     }
@@ -58,14 +63,40 @@ void EnemyModel::createFixtures() {
         return;
     }
 
-    BoxObstacle::createFixtures();
-    // Additional fixture setup for different enemy types can be added here
+    CapsuleObstacle::createFixtures();
+
+
+    b2FixtureDef sensorDef;
+    sensorDef.density = 0;  
+    sensorDef.isSensor = true;  
+
+    b2PolygonShape sensorShape;
+    b2Vec2 sensorVertices[4];
+    sensorVertices[0].Set(-getWidth() * ENEMY_HSHRINK / 2.0f, -getHeight() / 2.0f);
+    sensorVertices[1].Set(getWidth() * ENEMY_HSHRINK / 2.0f, -getHeight() / 2.0f);
+    sensorVertices[2].Set(getWidth() * ENEMY_HSHRINK / 2.0f, -getHeight() / 2.0f - SENSOR_HEIGHT);
+    sensorVertices[3].Set(-getWidth() * ENEMY_HSHRINK / 2.0f, -getHeight() / 2.0f - SENSOR_HEIGHT);
+    sensorShape.Set(sensorVertices, 4);
+
+    sensorDef.shape = &sensorShape;
+
+    sensorDef.userData.pointer = reinterpret_cast<uintptr_t>(getSensorName());
+
+
+    _sensorFixture = _body->CreateFixture(&sensorDef);
+
+
 }
 
 void EnemyModel::releaseFixtures() {
     if (_body != nullptr) {
-        BoxObstacle::releaseFixtures();
-        // Additional cleanup for custom fixtures can be added here
+        return;
+    }
+
+    CapsuleObstacle::releaseFixtures();
+    if (_sensorFixture != nullptr) {
+        _body->DestroyFixture(_sensorFixture);
+        _sensorFixture = nullptr;
     }
 }
 
@@ -73,7 +104,7 @@ void EnemyModel::releaseFixtures() {
 #pragma mark Gameplay Methods
 
 void EnemyModel::update(float dt) {
-    BoxObstacle::update(dt);
+    CapsuleObstacle::update(dt);
 
     // Example movement logic for enemy
     if (_isGrounded) {
@@ -93,12 +124,30 @@ void EnemyModel::update(float dt) {
         _body->SetLinearVelocity(velocity);
     }
 
+    _nextChangeTime -= dt;
+    if (_nextChangeTime <= 0) {
+        _direction = (rand() % 2) * 2 - 1;
+        _nextChangeTime = _changeDirectionInterval + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * _changeDirectionInterval;
+    }
+
+    if (_direction != _lastDirection) {
+        // If direction changed, flip the image
+        scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
+        if (image != nullptr) {
+            image->flipHorizontal(!image->isFlipHorizontal());
+        }
+        _lastDirection = _direction; // Update last direction
+    }
+
+
     // Update scene node position and rotation to match physics body
     if (_node != nullptr) {
         _node->setPosition(getPosition() * _drawScale);
         _node->setAngle(getAngle());
     }
+
 }
+
 
 void EnemyModel::setSceneNode(const std::shared_ptr<scene2::SceneNode>& node) {
     _node = node;

@@ -92,6 +92,8 @@ float DUDE_POS[] = { 2.5f, 5.0f};
 /** The position of the rope bridge */
 float BRIDGE_POS[] = {9.0f, 3.8f};
 
+float shrimp_POS[] = { 21.0f, 16.0f };
+
 #pragma mark -
 #pragma mark Physics Constants
 /** The new heavier gravity for this world (so it is not so floaty) */
@@ -511,10 +513,10 @@ void GameScene::populate() {
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
     AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
-
+    Vec2 shrimp_pos = shrimp_POS;
     node = scene2::SceneNode::alloc();
     image = _assets->get<Texture>(SHRIMP_TEXTURE);
-    _enemy = EnemyModel::alloc(dudePos, image->getSize() / _scale, _scale, EnemyType::shrimp);
+    _enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
     sprite = scene2::PolygonNode::allocWithTexture(image);
     _enemy->setSceneNode(sprite);
     addObstacle(_enemy, sprite);
@@ -621,6 +623,9 @@ void GameScene::preUpdate(float dt) {
 		AudioEngine::get()->play(JUMP_EFFECT,source,false,EFFECT_VOLUME);
 	}
 
+    _enemy->update(dt);
+ 
+    
 }
 
 /**
@@ -836,6 +841,13 @@ void GameScene::beginContact(b2Contact* contact) {
 		// Could have more than one ground
 		_sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
 	}
+
+    if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
+        (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
+        _enemy->setGrounded(true);
+        // Could have more than one ground
+        _sensorFixtures.emplace(_enemy.get() == bd1 ? fix2 : fix1);
+    }
 
 	// If we hit the "win" door, we are done
 	if((bd1 == _avatar.get()   && bd2 == _goalDoor.get()) ||

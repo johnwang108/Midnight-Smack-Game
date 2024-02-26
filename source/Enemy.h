@@ -2,8 +2,9 @@
 #define __ENEMY_MODEL_H__
 #include <cugl/cugl.h>
 #include <cugl/physics2/CUBoxObstacle.h>
+#include <cugl/physics2/CUCapsuleObstacle.h>
 
-
+#define ENEMY_SENSOR_NAME     "enemysensor"
 #define SHRIMP_TEXTURE    "shrimp"
 /**
  * Enum for enemy types.
@@ -15,7 +16,7 @@ enum class EnemyType {
     CHARGER 
 };
 
-class EnemyModel : public cugl::physics2::BoxObstacle {
+class EnemyModel : public cugl::physics2::CapsuleObstacle {
 private:
     /** This macro disables the copy constructor (not allowed on physics objects) */
     CU_DISALLOW_COPY_AND_ASSIGN(EnemyModel);
@@ -32,10 +33,18 @@ protected:
     /** The scale between the physics world and the screen (MUST BE UNIFORM) */
     float _drawScale;
 
-public:
-    EnemyModel() : _direction(1), _isGrounded(false), _type(EnemyType::shrimp) {
+    std::string _sensorName;
 
-    }
+    b2Fixture* _sensorFixture;
+
+    int _lastDirection;
+
+    float _changeDirectionInterval; 
+    float _nextChangeTime;
+
+
+public:
+    EnemyModel() : CapsuleObstacle(), _sensorName(ENEMY_SENSOR_NAME) { }
     /**
      * Initializes a new enemy at the given position with the specified size and type.
      *
@@ -66,6 +75,14 @@ public:
      * @param node The scene graph node representing this enemy.
      */
     void setSceneNode(const std::shared_ptr<cugl::scene2::SceneNode>& node);
+
+    void setGrounded(bool value) { _isGrounded = value; };
+
+    std::string* getSensorName() { return &_sensorName; };
+
+    bool isGrounded() const { return _isGrounded; }
+
+    int getDirection() const { return _direction; }
 
 
 #pragma mark -
