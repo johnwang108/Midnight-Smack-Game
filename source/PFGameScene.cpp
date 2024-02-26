@@ -92,6 +92,8 @@ float DUDE_POS[] = { 2.5f, 5.0f};
 /** The position of the rope bridge */
 float BRIDGE_POS[] = {9.0f, 3.8f};
 
+float shrimp_POS[] = { 21.0f, 16.0f };
+
 #pragma mark -
 #pragma mark Physics Constants
 /** The new heavier gravity for this world (so it is not so floaty) */
@@ -179,7 +181,8 @@ GameScene::GameScene() : Scene2(),
 	_world(nullptr),
 	_avatar(nullptr),
 	_complete(false),
-	_debug(false)
+	_debug(false),
+    _enemy(nullptr)
 {    
 }
 
@@ -356,6 +359,7 @@ void GameScene::reset() {
     _goalDoor = nullptr;
     _spinner = nullptr;
     _ropebridge = nullptr;
+    _enemy = nullptr;
       
     setFailure(false);
     setComplete(false);
@@ -508,6 +512,14 @@ void GameScene::populate() {
 	// Play the background music on a loop.
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
     AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
+
+    Vec2 shrimp_pos = shrimp_POS;
+    node = scene2::SceneNode::alloc();
+    image = _assets->get<Texture>(SHRIMP_TEXTURE);
+    _enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
+    sprite = scene2::PolygonNode::allocWithTexture(image);
+    _enemy->setSceneNode(sprite);
+    addObstacle(_enemy, sprite);
 }
 
 /**
@@ -611,6 +623,9 @@ void GameScene::preUpdate(float dt) {
 		AudioEngine::get()->play(JUMP_EFFECT,source,false,EFFECT_VOLUME);
 	}
 
+    _enemy->update(dt);
+ 
+    
 }
 
 /**
@@ -828,30 +843,11 @@ void GameScene::beginContact(b2Contact* contact) {
 		_sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
 	}
 
-    // Check if the player hits a wall NOT PLATFORM (not implemented for that atm)
-    if ((bd1 == _avatar.get() && bd2->getName() == WALL_NAME) ||
-        (bd2 == _avatar.get() && bd1->getName() == WALL_NAME)) {
-        Vec2 playerPos = _avatar->getPosition();
-        float playerPosX = _avatar->getX();
-        float wallPos;
-        if (bd1->getName() == WALL_NAME) {
-            wallPos = bd1->getX();
-        }
-        else {
-            wallPos = bd2->getX();
-        }
-
-        float d1 = bd1->getX();
-        float d2 = bd2->getX();
-        // Calculate the direction vector from the wall to the player
-        Vec2 direction = playerPos - bd2->getPosition();/*
-        CULog("bd 1 %f", d1);
-        CULog("bd 2 %f", d2);
-        CULog("playerPos %f", playerPosX);
-        CULog("direc %f", direction);*/
-        CULog("contact wALL");
-        _avatar->setContactingWall(true);
-        _avatar->setVX(0);
+    if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
+        (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
+        _enemy->setGrounded(true);
+        // Could have more than one ground
+        _sensorFixtures.emplace(_enemy.get() == bd1 ? fix2 : fix1);
     }
 
 	// If we hit the "win" door, we are done
