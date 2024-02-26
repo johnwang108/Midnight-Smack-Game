@@ -179,7 +179,8 @@ GameScene::GameScene() : Scene2(),
 	_world(nullptr),
 	_avatar(nullptr),
 	_complete(false),
-	_debug(false)
+	_debug(false),
+    _enemy(nullptr)
 {    
 }
 
@@ -356,6 +357,7 @@ void GameScene::reset() {
     _goalDoor = nullptr;
     _spinner = nullptr;
     _ropebridge = nullptr;
+    _enemy = nullptr;
       
     setFailure(false);
     setComplete(false);
@@ -508,6 +510,14 @@ void GameScene::populate() {
 	// Play the background music on a loop.
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
     AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
+
+
+    node = scene2::SceneNode::alloc();
+    image = _assets->get<Texture>(SHRIMP_TEXTURE);
+    _enemy = EnemyModel::alloc(dudePos, image->getSize() / _scale, _scale, EnemyType::shrimp);
+    sprite = scene2::PolygonNode::allocWithTexture(image);
+    _enemy->setSceneNode(sprite);
+    addObstacle(_enemy, sprite);
 }
 
 /**
