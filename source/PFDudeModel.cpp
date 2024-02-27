@@ -277,7 +277,7 @@ void DudeModel::update(float dt) {
     } else {
         _shootCooldown = (_shootCooldown > 0 ? _shootCooldown-1 : 0);
     }
-    CULog("Dash Val: %i", getDashNum());
+   // CULog("Dash Val: %i", getDashNum());
     if (canDash()) {
         _dashCooldown = DASH_COOLDOWN;
     }

@@ -387,6 +387,8 @@ public:
     */
     void removeBullet(Bullet* bullet);
 
+    void removeEnemy(EnemyModel* Enemy);
+
   };
 
 #endif /* __PF_GAME_SCENE_H__ */

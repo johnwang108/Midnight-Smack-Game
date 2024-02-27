@@ -519,6 +519,7 @@ void GameScene::populate() {
     _enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
     sprite = scene2::PolygonNode::allocWithTexture(image);
     _enemy->setSceneNode(sprite);
+    _enemy->setDebugColor(DEBUG_COLOR);
     addObstacle(_enemy, sprite);
 }
 
@@ -623,9 +624,11 @@ void GameScene::preUpdate(float dt) {
 		AudioEngine::get()->play(JUMP_EFFECT,source,false,EFFECT_VOLUME);
 	}
 
-    _enemy->update(dt);
- 
+    if (_enemy != nullptr && !_enemy->isRemoved()) {
+        _enemy->update(dt);
+    }
     
+
 }
 
 /**
@@ -845,8 +848,16 @@ void GameScene::beginContact(b2Contact* contact) {
     if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
         (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
         _enemy->setGrounded(true);
-        // Could have more than one ground
-        _sensorFixtures.emplace(_enemy.get() == bd1 ? fix2 : fix1);
+    }
+
+        if (!_enemy->isRemoved()) {
+            if (bd1 == _avatar.get() && bd2 == _enemy.get()
+            ||(bd2 == _avatar.get() && bd1 == _enemy.get())) {
+            _enemy->setDebugScene(nullptr);
+            _worldnode->removeChild(_enemy->getSceneNode());
+            _enemy->markRemoved(true);
+            _enemy->removeFromGame();
+        }
     }
 
 	// If we hit the "win" door, we are done
@@ -883,6 +894,7 @@ void GameScene::endContact(b2Contact* contact) {
 			_avatar->setGrounded(false);
 		}
 	}
+
 }
 
 /**

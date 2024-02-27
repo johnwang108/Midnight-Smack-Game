@@ -30,6 +30,8 @@ protected:
     bool _isGrounded;
     /** The node for visual representation of the enemy */
     std::shared_ptr<cugl::scene2::SceneNode> _node;
+    /** The node for debugging the sensor */
+    std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
     /** The scale between the physics world and the screen (MUST BE UNIFORM) */
     float _drawScale;
 
@@ -41,6 +43,8 @@ protected:
 
     float _changeDirectionInterval; 
     float _nextChangeTime;
+
+    bool _remove;
 
 
 public:
@@ -84,6 +88,12 @@ public:
 
     int getDirection() const { return _direction; }
 
+    const std::shared_ptr<cugl::scene2::SceneNode>& getSceneNode() const { return _node; }
+
+    void markRemoved(bool value) { _remove = value; }
+
+    bool isRemoved() const { return _remove; }
+
 
 #pragma mark -
 #pragma mark Physics Methods
@@ -120,6 +130,22 @@ public:
      * This method should be called after the force attribute is set.
      */
     void applyForce(float h, float v);
+
+    /**
+  * Destroys this DudeModel, releasing all resources.
+  */
+    virtual ~EnemyModel(void) { dispose(); }
+
+    /**
+     * Disposes all resources and assets of this DudeModel
+     *
+     * Any assets owned by this object will be immediately released.  Once
+     * disposed, a DudeModel may not be used until it is initialized again.
+     */
+    void dispose();
+
+    void removeFromGame();
+
 };
 
 #endif /* __ENEMY_MODEL_H__ */

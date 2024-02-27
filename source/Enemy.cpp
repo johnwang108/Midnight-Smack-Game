@@ -40,6 +40,7 @@ bool EnemyModel::init(const Vec2& pos, const Size& size, float scale, EnemyType 
         _lastDirection = _direction;
         _changeDirectionInterval = 3.0f;
         _nextChangeTime = _changeDirectionInterval + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * _changeDirectionInterval;
+        _remove = false;
 
         return true;
     }
@@ -98,6 +99,7 @@ void EnemyModel::releaseFixtures() {
         _body->DestroyFixture(_sensorFixture);
         _sensorFixture = nullptr;
     }
+
 }
 
 #pragma mark -
@@ -105,6 +107,9 @@ void EnemyModel::releaseFixtures() {
 
 void EnemyModel::update(float dt) {
     CapsuleObstacle::update(dt);
+    if (_body == nullptr) {
+        return;
+    }
 
     // Example movement logic for enemy
     if (_isGrounded) {
@@ -153,3 +158,22 @@ void EnemyModel::setSceneNode(const std::shared_ptr<scene2::SceneNode>& node) {
     _node = node;
     _node->setPosition(getPosition() * _drawScale);
 }
+
+void EnemyModel::dispose() {
+    _core = nullptr;
+    _node = nullptr;
+}
+
+void EnemyModel::removeFromGame() {
+    _remove = true;
+    if (_body != nullptr) {
+        _body = nullptr; 
+    }
+
+    if (_node != nullptr) {
+        _node->removeFromParent();
+        _node = nullptr; 
+    }
+    
+}
+
