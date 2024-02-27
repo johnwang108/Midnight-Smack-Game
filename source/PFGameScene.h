@@ -66,6 +66,10 @@ protected:
     /** Reference to the right joystick image */
     std::shared_ptr<cugl::scene2::PolygonNode> _rightnode;
 
+
+    std::shared_ptr<cugl::scene2::Label> _gesturehud;
+
+
     /** The Box2D world */
     std::shared_ptr<cugl::physics2::ObstacleWorld> _world;
     /** The scale between the physics world and the screen (MUST BE UNIFORM) */
@@ -130,6 +134,8 @@ protected:
      * ratios
      */
     cugl::Size computeActiveSize() const;
+
+    std::string getGestureText(std::string gest, float sim);
     
 public:
 #pragma mark -
@@ -383,6 +389,8 @@ public:
     * @param  bullet   the bullet to remove
     */
     void removeBullet(Bullet* bullet);
+
+
 
   };
 

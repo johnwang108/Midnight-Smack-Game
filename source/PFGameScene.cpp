@@ -130,6 +130,8 @@ float BRIDGE_POS[] = {9.0f, 3.8f};
 #define PLATFORM_NAME   "platform"
 /** The font for victory/failure messages */
 #define MESSAGE_FONT    "retro"
+
+#define SMALL_MSG "retrosmall"  
 /** The message for winning the game */
 #define WIN_MESSAGE     "VICTORY!"
 /** The color of the win message */
@@ -303,12 +305,24 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _rightnode->setScale(0.35f);
     _rightnode->setVisible(false);
 
+    _gesturehud = scene2::Label::allocWithText("Gestures, Similarity: t tosdgodfho figjgoj ghkohko ", _assets->get<Font>(SMALL_MSG));
+    _gesturehud->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
+    _gesturehud->setScale(0.7f);
+    CULog("%f", _gesturehud->getContentWidth());
+    CULog("%f", _gesturehud->getWidth());
+    _gesturehud->setPosition(0,15);
+    _gesturehud->setForeground(LOSE_COLOR);
+    _gesturehud->setVisible(true);
+
+
+
     addChild(_worldnode);
     addChild(_debugnode);
     addChild(_winnode);
     addChild(_losenode);
     addChild(_leftnode);
     addChild(_rightnode);
+    addChild(_gesturehud);
 
     populate();
     _active = true;
@@ -678,6 +692,9 @@ void GameScene::postUpdate(float remain) {
         createBullet();
     }
 
+    _gesturehud->setText(getGestureText(_input.getGestureString(), _input.getGestureSim()));
+
+
     // Record failure if necessary.
     if (!_failed && _avatar->getY() < 0) {
         setFailure(true);
@@ -875,4 +892,11 @@ Size GameScene::computeActiveSize() const {
         dimen *= SCENE_HEIGHT/dimen.height;
     }
     return dimen;
+}
+
+
+std::string GameScene::getGestureText(std::string gest, float sim) {
+    std::stringstream ss;
+    ss << "Gesture: " << gest << ", " << "Similarity: " << sim;
+    return ss.str();
 }

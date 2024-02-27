@@ -57,6 +57,9 @@ private:
     bool  _keyLeft;
     /** Whether the right arrow key is down */
     bool  _keyRight;
+
+    std::string _lastGestureString;
+    float _lastGestureSimilarity;
   
 protected:
     // INPUT RESULTS
@@ -307,6 +310,9 @@ public:
      */
     void touchesMovedCB(const cugl::TouchEvent& event, const cugl::Vec2& previous, bool focus);
   
+
+    std::string getGestureString();
+    float getGestureSim();
 };
 
 #endif /* __PF_INPUT_H__ */

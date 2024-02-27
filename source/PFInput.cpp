@@ -102,6 +102,7 @@ void PlatformInput::dispose() {
         Touchscreen* touch = Input::get<Touchscreen>();
         touch->removeBeginListener(LISTENER_KEY);
         touch->removeEndListener(LISTENER_KEY);
+        touch->removeMotionListener(LISTENER_KEY);
 #endif
         _active = false;
     }
@@ -124,10 +125,14 @@ bool PlatformInput::init(const Rect bounds) {
     _tbounds = Application::get()->getDisplayBounds();
 
 
+
+
     
     
 #ifndef CU_TOUCH_SCREEN
     success = Input::activate<Keyboard>();
+    _lastGestureSimilarity = -1;
+    _lastGestureString = "No Touchscreen";
 #else
     Touchscreen* touch = Input::get<Touchscreen>();
     touch->addBeginListener(LISTENER_KEY,[=](const TouchEvent& event, bool focus) {
@@ -156,7 +161,8 @@ bool PlatformInput::init(const Rect bounds) {
     if (!_dollarRecog->addGesture("v", vGesturePath, true)) CULog("failed to initialize v");
 
     CULog("initialized all recognizer stuff");
-
+    _lastGestureSimilarity = 0;
+    _lastGestureString = "";
 #endif
     _active = success;
     return success;
@@ -401,6 +407,9 @@ void PlatformInput::touchEndedCB(const TouchEvent& event, bool focus) {
 
     float similarity = -1.0f;
     std::string result = _dollarRecog->match(_touchPath, similarity);
+
+    _lastGestureString = result;
+    _lastGestureSimilarity = similarity;
     CULog("Gesture Guess: %s, Similarity: %f", result, similarity);
     /*Zone zone = getZone(pos);
     if (_ltouch.touchids.find(event.touch) != _ltouch.touchids.end()) {
@@ -450,6 +459,14 @@ void PlatformInput::touchesMovedCB(const TouchEvent& event, const Vec2& previous
     //        _keyExit = true;
     //    }
     //}
+}
+
+std::string  PlatformInput::getGestureString() {
+    return _lastGestureString;
+}
+
+float PlatformInput::getGestureSim() {
+    return _lastGestureSimilarity;
 }
 
 
