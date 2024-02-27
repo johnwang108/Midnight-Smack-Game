@@ -305,6 +305,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _rightnode->setScale(0.35f);
     _rightnode->setVisible(false);
 
+    /*_dollarnode = std::make_shared<DollarScene>();
+    _dollarnode->init(_assets, _input);*/
+
     addChild(_worldnode);
     addChild(_debugnode);
     addChild(_winnode);

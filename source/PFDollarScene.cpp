@@ -19,14 +19,12 @@
 //  Author: Walker White and Anthony Perello
 //  Version:  2/9/24
 //
-#include "PFGameScene.h"
+
+#include "PFDollarScene.h"
 #include <box2d/b2_world.h>
 #include <box2d/b2_contact.h>
 #include <box2d/b2_collision.h>
-#include "PFDudeModel.h"
-#include "PFSpinner.h"
-#include "PFRopeBridge.h"
-#include "PFBullet.h"
+
 
 #include <ctime>
 #include <string>
@@ -34,6 +32,56 @@
 #include <sstream>
 #include <random>
 
+#define WIDTH 5
+
 using namespace cugl;
 
+float STAR[] = { 0,    50,  10.75,    17,   47,     17,
+				 17.88, -4.88,   29.5, -40.5,    0, -18.33,
+				 -29.5, -40.5, -17.88, -4.88,  -47,     17,
+				-10.75,    17 };
 
+
+DollarScene::DollarScene() : scene2::SceneNode() {
+	_assets = nullptr;
+	cugl::Vec2* verts = reinterpret_cast<Vec2*>(STAR);
+	_spline.set(verts, sizeof(STAR) / sizeof(float) / 2);
+	sp = cugl::SplinePather();
+	sp.set(&_spline);
+	sp.calculate();
+	_path = sp.getPath();
+}
+
+void DollarScene::dispose() {
+	//input will be disposed by root node dispose call
+	//_input.dispose();
+	_assets = nullptr;
+}
+
+
+//main init
+bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
+	_input = input;
+	_assets = assets;
+	_se = cugl::SimpleExtruder();
+	_poly = cugl::scene2::PolygonNode::alloc();
+
+	return true;
+}
+
+//updates the rendered polygon
+void DollarScene::update() {
+	_se.set(_path);
+	_se.calculate(WIDTH);
+	_poly->setPolygon(_se.getPolygon());
+};
+
+//is gesture inputting still in progress?
+bool DollarScene::isPending() {
+	return true;
+};
+
+//is gesture inputting a success?
+bool DollarScene::isSuccess() {
+	return true;
+};

@@ -23,8 +23,8 @@
 //  Author: Walker White and Anthony Perello
 //  Version:  2/9/24
 //
-#ifndef __PF_GAME_SCENE_H__
-#define __PF_GAME_SCENE_H__
+#ifndef __PF_DOLLAR_SCENE_H__
+#define __PF_DOLLAR_SCENE_H__
 #include <cugl/cugl.h>
 #include <box2d/b2_world_callbacks.h>
 #include <box2d/b2_fixture.h>
@@ -40,28 +40,43 @@
 a child node of GameScene and has a basic rectangle that waits for input from a 
 Input Controller and renders something in response to anything received.
  */
-class DollarScene : public cugl::Scene2 {
+class DollarScene : public cugl::scene2::SceneNode {
 protected:
-    PlatformInput _input;
+    std::shared_ptr<PlatformInput> _input;
 
     std::shared_ptr<cugl::AssetManager> _assets;
-+
+
+    //Todo: turn these into nodes
+    cugl::Path2 _path;
+
+    std::shared_ptr<cugl::scene2::PolygonNode> _poly;
+
+    cugl::SimpleExtruder _se;
+
+    //temp
+    cugl::Spline2 _spline;
+    cugl::SplinePather sp;
+
+    //Todo: need library of existing predetermined inputs to check against
 
 public:
 
     DollarScene();
 
+    DollarScene(const DollarScene&) {};
+
     ~DollarScene() { dispose(); }
 
     void dispose();
 
-    bool init(const std::shared_ptr<cugl::AssetManager>& assets);
+    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input);
 
-    void update(float timestep);
+    void update();
 
     bool isPending();
     
     bool isSuccess();
+
 };
 
-#endif /* __PF_GAME_SCENE_H__ */
+#endif /* __PF_DOLLAR_SCENE_H__ */
