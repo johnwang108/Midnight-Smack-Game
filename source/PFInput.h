@@ -68,6 +68,7 @@ private:
     bool  _keyUp;
     bool _dashKey;
    
+    std::shared_ptr<cugl::GameController> _gameCont;
     
   
 protected:
@@ -299,7 +300,7 @@ public:
      *
      * @return true if the virtual joystick is in use (touch only)
      */
-    bool withJoystick() const { return _joystick; }
+    //bool withJoystick() const { return _joystick; }
 
     ///**
     // * Returns the scene graph position of the virtual joystick
