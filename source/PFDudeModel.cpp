@@ -55,7 +55,7 @@ float jmpHeight = 1;
 /**Modif dash, as a multiple of DASH_JUMP*/
 float dashModif = 1.3;
 /**The aount of frames following a dash that SUe floats for*/
-float floatyFrames = 1;
+float floatyFrames = 10;
 
 #pragma mark -
 #pragma mark Physics Constants
