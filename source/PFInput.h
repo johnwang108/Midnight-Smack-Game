@@ -57,6 +57,9 @@ private:
     bool  _keyLeft;
     /** Whether the right arrow key is down */
     bool  _keyRight;
+    /** Whether the slow key is down */
+    bool _keySlow;
+  
     bool  _keyDown;
     bool  _keyUp;
     bool _dashKey;
@@ -74,6 +77,8 @@ protected:
     bool _firePressed;
     /** Whether the jump action was chosen. */
     bool _jumpPressed;
+    /** Whether the slow action was chosen. */
+    bool _slowPressed;
     /** How much did we move horizontally? */
     float _horizontal;
     float _vertical;
@@ -314,6 +319,9 @@ public:
 	 * @return true if the exit button was pressed.
 	 */
 	bool didExit() const { return _exitPressed; }
+
+    bool didSlow() const { return _slowPressed; }
+    
 
     bool didDash() const { return _dashPressed;  }
     

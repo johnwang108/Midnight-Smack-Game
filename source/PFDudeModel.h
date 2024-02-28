@@ -59,11 +59,11 @@
 #pragma mark -
 #pragma mark Physics Constants
 /** The factor to multiply by the input */
-#define DUDE_FORCE      3.0f
+#define DUDE_FORCE      sqrt(2 * (9.8) * getHeight() * 1 ) * getMass()
 /** The amount to slow the character down */
-#define DUDE_DAMPING    10.0f
+#define DUDE_DAMPING    5.0f
 /** The maximum character speed */
-#define DUDE_MAXSPEED   50.0f
+#define DUDE_MANUEL_MAXSPEED   10.0f
 
 
 #pragma mark -
@@ -428,7 +428,7 @@ public:
      *
      * @return the upper limit on dude left-right movement.
      */
-    float getMaxSpeed() const { return DUDE_MAXSPEED; }
+    float getMaxSpeed() const { return DUDE_MANUEL_MAXSPEED; }
     
     /**
      * Returns the name of the ground sensor

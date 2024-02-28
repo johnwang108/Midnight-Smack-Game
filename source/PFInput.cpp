@@ -30,6 +30,9 @@ using namespace cugl;
 #define JUMP_KEY KeyCode::SPACE
 #define DASH_KEY KeyCode::LEFT_SHIFT
 
+/** Slow key */
+#define SLOW_KEY KeyCode::TAB
+
 /** How close we need to be for a multi touch */
 #define NEAR_TOUCH      100
 /** The key for the event handlers */
@@ -77,6 +80,7 @@ _debugPressed(false),
 _exitPressed(false),
 _firePressed(false),
 _jumpPressed(false),
+_slowPressed(false),
 _keyJump(false),
 _keyFire(false),
 _keyReset(false),
@@ -84,6 +88,7 @@ _keyDebug(false),
 _keyExit(false),
 _keyLeft(false),
 _keyRight(false),
+_keySlow(false),
 _horizontal(0.0f),
 _vertical(0.0f),
 _joystick(false),
@@ -172,6 +177,7 @@ void PlatformInput::update(float dt) {
     _keyExit   = keys->keyPressed(EXIT_KEY);
     _keyFire   = keys->keyPressed(FIRE_KEY);
     _keyJump   = keys->keyPressed(JUMP_KEY);
+    _keySlow   = keys->keyDown(SLOW_KEY);
 
     _dashKey = keys->keyPressed(DASH_KEY);
 
@@ -186,6 +192,8 @@ void PlatformInput::update(float dt) {
     _debugPressed = _keyDebug;
     _exitPressed  = _keyExit;
 	_firePressed  = _keyFire;
+	_jumpPressed  = _keyJump;
+    _slowPressed  = _keySlow;
     _jumpPressed = _keyJump;
     _dashPressed  = _dashKey;
 
@@ -225,6 +233,7 @@ void PlatformInput::clear() {
     _jumpPressed = false;
     _firePressed = false;
     _dashPressed = false;
+    _slowPressed = false;
 }
 
 #pragma mark -

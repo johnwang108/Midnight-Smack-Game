@@ -72,6 +72,9 @@ protected:
     /** The scale between the physics world and the screen (MUST BE UNIFORM) */
     float _scale;
 
+    /** Whether or not time is being slowed */
+    bool _slowed;
+
     // Physics objects for the game
     /** Reference to the goalDoor (for collision detection) */
     std::shared_ptr<cugl::physics2::BoxObstacle>    _goalDoor;
