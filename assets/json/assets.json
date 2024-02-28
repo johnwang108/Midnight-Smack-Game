@@ -1,12 +1,12 @@
 {
 	"textures": {
 		"earth": {
-			"file":     "textures/earthtile.png",
+			"file":     "textures/placeholder_block.png",
             "wrapS":    "repeat",
             "wrapT":    "repeat"
 		},
         "dude": {
-            "file":     "textures/dude.png"
+            "file":     "textures/sue-tiny.png"
         },
         "spinner": {
             "file":     "textures/barrier.png"

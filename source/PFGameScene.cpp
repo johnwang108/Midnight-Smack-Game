@@ -70,17 +70,40 @@ float WALL[WALL_COUNT][WALL_VERTS] = {
 #define PLATFORM_COUNT  10
 
 /** The outlines of all of the platforms */
+
+//float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
+//	{ 1.0f, 3.0f, 1.0f, 2.5f, 6.0f, 2.5f, 6.0f, 3.0f},
+//	{ 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
+//	{23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
+//	{26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
+//	{29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
+//	{24.0f, 8.5f,24.0f, 8.0f,27.0f, 8.0f,27.0f, 8.5f},
+//	{29.0f,10.0f,29.0f, 9.5f,31.0f, 9.5f,31.0f,10.0f},
+//	{23.0f,11.5f,23.0f,11.0f,27.0f,11.0f,27.0f,11.5f},
+//	{19.0f,12.5f,19.0f,12.0f,23.0f,12.0f,23.0f,12.5f},
+//	{ 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
+//};
+
 float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
-	{ 1.0f, 3.0f, 1.0f, 2.5f, 6.0f, 2.5f, 6.0f, 3.0f},
-	{ 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
-	{23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
-	{26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
-	{29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
-	{24.0f, 8.5f,24.0f, 8.0f,27.0f, 8.0f,27.0f, 8.5f},
-	{29.0f,10.0f,29.0f, 9.5f,31.0f, 9.5f,31.0f,10.0f},
-	{23.0f,11.5f,23.0f,11.0f,27.0f,11.0f,27.0f,11.5f},
-	{19.0f,12.5f,19.0f,12.0f,23.0f,12.0f,23.0f,12.5f},
-	{ 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
+
+    {1.0f, 4.0f, 1.0f, 2.0f, 4.0f, 2.0f, 4.0f, 4.0f},
+    { 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
+    {10.0f, 6.0f, 10.0f, 5.0f, 12.5f, 5.0f, 12.5f, 6.0f},
+    {15.0f, 8.5f, 15.0f, 7.0f, 20.0f, 4.5f, 20.0f, 6.0f},
+    {23.0f, 4.0f, 23.0f, 3.0f, 27.0f, 3.0f, 27.0f, 4.0f},
+    {28.0f, 6.0f, 28.0f, 5.0f, 30.0f, 8.0f, 30.0f, 9.0f},
+    {23.0f, 10.0f, 23.0f, 9.f, 27.0f, 9.f, 27.0f, 10.f},
+    {16.0f, 12.f, 16.0f, 10.0f, 22.0f, 12.0f, 22.0f, 10.f},
+    {6.0f, 15.0f, 6.0f, 14.5f, 14.0f, 12.5f, 14.0f, 13.0f},
+    { 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
+    // {23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
+    // {26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
+    // {29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
+    // {24.0f, 8.5f,24.0f, 8.0f,27.0f, 8.0f,27.0f, 8.5f},
+    // {29.0f,10.0f,29.0f, 9.5f,31.0f, 9.5f,31.0f,10.0f},
+    // {23.0f,11.5f,23.0f,11.0f,27.0f,11.0f,27.0f,11.5f},
+    // {19.0f,12.5f,19.0f,12.0f,23.0f,12.0f,23.0f,12.5f},
+    // { 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
 };
 
 /** The goal door position */
@@ -458,46 +481,46 @@ void GameScene::populate() {
 		addObstacle(platobj,sprite,1);
 	}
 
-#pragma mark : Spinner
-	Vec2 spinPos = SPIN_POS;
-    image = _assets->get<Texture>(SPINNER_TEXTURE);
-	_spinner = Spinner::alloc(spinPos,image->getSize()/_scale,_scale);
-    _spinner->setTexture(image);
-	std::shared_ptr<scene2::SceneNode> node = scene2::SceneNode::alloc();
-    
-    // With refactor, must be added manually
-    // Add the node to the world before calling setSceneNode,
-    _worldnode->addChild(node);
-    _spinner->setSceneNode(node);
+//#pragma mark : Spinner
+//	Vec2 spinPos = SPIN_POS;
+//    image = _assets->get<Texture>(SPINNER_TEXTURE);
+//	_spinner = Spinner::alloc(spinPos,image->getSize()/_scale,_scale);
+//    _spinner->setTexture(image);
+//	std::shared_ptr<scene2::SceneNode> node = scene2::SceneNode::alloc();
+//    
+//    // With refactor, must be added manually
+//    // Add the node to the world before calling setSceneNode,
+//    _worldnode->addChild(node);
+//    _spinner->setSceneNode(node);
+//
+//    _spinner->setDrawScale(_scale);
+//    _spinner->setDebugColor(DEBUG_COLOR);
+//    _spinner->setDebugScene(_debugnode);
+//    _spinner->activate(_world);
 
-    _spinner->setDrawScale(_scale);
-    _spinner->setDebugColor(DEBUG_COLOR);
-    _spinner->setDebugScene(_debugnode);
-    _spinner->activate(_world);
-
-#pragma mark : Rope Bridge
-	Vec2 bridgeStart = BRIDGE_POS;
-	Vec2 bridgeEnd   = bridgeStart;
-	bridgeEnd.x += BRIDGE_WIDTH;
-    image = _assets->get<Texture>(BRIDGE_TEXTURE);
-    
-	_ropebridge = RopeBridge::alloc(bridgeStart,bridgeEnd,image->getSize()/_scale,_scale);
-    _ropebridge->setTexture(image);
-	node = scene2::SceneNode::alloc();
-
-    // With refactor, must be added manually
-    // Add the node to the world before calling setSceneNode,
-    _worldnode->addChild(node);
-    _ropebridge->setSceneNode(node);
-    
-    _ropebridge->setDrawScale(_scale);
-    _ropebridge->setDebugColor(DEBUG_COLOR);
-    _ropebridge->setDebugScene(_debugnode);
-    _ropebridge->activate(_world);
+//#pragma mark : Rope Bridge
+//	Vec2 bridgeStart = BRIDGE_POS;
+//	Vec2 bridgeEnd   = bridgeStart;
+//	bridgeEnd.x += BRIDGE_WIDTH;
+//    image = _assets->get<Texture>(BRIDGE_TEXTURE);
+//    
+//	_ropebridge = RopeBridge::alloc(bridgeStart,bridgeEnd,image->getSize()/_scale,_scale);
+//    _ropebridge->setTexture(image);
+//	node = scene2::SceneNode::alloc();
+//
+//    // With refactor, must be added manually
+//    // Add the node to the world before calling setSceneNode,
+//    _worldnode->addChild(node);
+//    _ropebridge->setSceneNode(node);
+//    
+//    _ropebridge->setDrawScale(_scale);
+//    _ropebridge->setDebugColor(DEBUG_COLOR);
+//    _ropebridge->setDebugScene(_debugnode);
+//    _ropebridge->activate(_world);
 
 #pragma mark : Dude
 	Vec2 dudePos = DUDE_POS;
-	node = scene2::SceneNode::alloc();
+	// node = scene2::SceneNode::alloc();
     image = _assets->get<Texture>(DUDE_TEXTURE);
 	_avatar = DudeModel::alloc(dudePos,image->getSize()/_scale,_scale);
 	sprite = scene2::PolygonNode::allocWithTexture(image);
@@ -668,8 +691,10 @@ void GameScene::postUpdate(float remain) {
     
     // TODO: Update this demo to support interpolation
     // We can interpolate the rope bridge and spinner as we have the data structures
-    _spinner->update(remain);
-    _ropebridge->update(remain);
+    
+    // _spinner->update(remain);
+    
+    // _ropebridge->update(remain);
 
     // Add a bullet AFTER physics allows it to hang in front
     // Otherwise, it looks like bullet appears far away
