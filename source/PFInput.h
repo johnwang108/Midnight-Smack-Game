@@ -68,6 +68,7 @@ private:
     bool  _keyUp;
     bool _dashKey;
    
+    std::shared_ptr<cugl::GameController> _gameCont;
     
   
 protected:

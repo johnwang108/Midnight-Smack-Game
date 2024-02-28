@@ -132,6 +132,26 @@ bool PlatformInput::init(const Rect bounds) {
     _sbounds = bounds;
     _tbounds = Application::get()->getDisplayBounds();
 
+
+    bool contSuccess = Input::activate<GameControllerInput>();
+
+    if (contSuccess) {
+        GameControllerInput* controller = Input::get<GameControllerInput>();
+        std::vector<std::string> deviceUUIDs = controller->devices();
+        if (!deviceUUIDs.empty()) {
+            _gameCont = controller->open(deviceUUIDs.front());
+            CULog("Controller obtained");
+        }
+        else {
+            CULog("no uuids");
+        }
+    }
+    else {
+        CULog("cont failed");
+    }
+   
+ 
+
 #ifndef CU_TOUCH_SCREEN
     success = Input::activate<Keyboard>();
     _lastGestureSimilarity = -1;
@@ -168,6 +188,8 @@ bool PlatformInput::init(const Rect bounds) {
     CULog("initialized all recognizer stuff");
     _lastGestureSimilarity = 0;
     _lastGestureString = "";
+
+
 #endif
     _active = success;
     return success;
@@ -204,6 +226,9 @@ void PlatformInput::update(float dt) {
 
     _keyUp = keys->keyDown(KeyCode::W);
     _keyDown = keys->keyDown(KeyCode::S);
+
+    //_gameCont->isButtonPressed();
+
 #endif
 
     _resetPressed = _keyReset;
