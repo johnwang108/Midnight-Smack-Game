@@ -142,14 +142,19 @@ bool PlatformInput::init(const Rect bounds) {
     if (contSuccess) {
         GameControllerInput* controller = Input::get<GameControllerInput>();
         std::vector<std::string> deviceUUIDs = controller->devices();
+
+        for (const std::string& str : deviceUUIDs) {
+            CULog("%s", str.c_str());
+        }
+
         if (!deviceUUIDs.empty()) {
             _gameCont = controller->open(deviceUUIDs.front());
             CULog("Controller obtained");
 
-            //using axis controllers for joystick
-            _gameCont->addAxisListener(CONTROLLER_LISTENER_KEY, [=](const GameControllerAxisEvent& event, bool focus) {
-                this->getAxisAngle(event, focus);
-                });
+            ////using axis controllers for joystick
+            //_gameCont->addAxisListener(CONTROLLER_LISTENER_KEY, [=](const GameControllerAxisEvent& event, bool focus) {
+            //    this->getAxisAngle(event, focus);
+            //    });
 
             _xAxis = 0;
             _yAxis = 0;
@@ -248,6 +253,9 @@ void PlatformInput::update(float dt) {
         _dashKey = _gameCont->isButtonPressed(3);
         _keyReset = _gameCont->isButtonPressed(4);
         _keyExit = _gameCont->isButtonPressed(5);
+
+        _xAxis = _gameCont->getAxisPosition(0);
+        _yAxis = _gameCont->getAxisPosition(1);
     }
 
 
@@ -287,7 +295,7 @@ void PlatformInput::update(float dt) {
         }
         if (std::abs(_yAxis) >= 0.2) {
             _vertical -= _yAxis;
-            CULog("%f", _vertical);
+            //CULog("%f", _vertical);
         }
     }
 #ifndef CU_TOUCH_SCREEN
@@ -523,7 +531,7 @@ void PlatformInput::touchEndedCB(const TouchEvent& event, bool focus) {
 
     _lastGestureString = result;
     _lastGestureSimilarity = similarity;
-    CULog("Gesture Guess: %s, Similarity: %f", result, similarity);
+    CULog("Gesture Guess: %s, Similarity: %f", result.c_str(), similarity);
     /*Zone zone = getZone(pos);
     if (_ltouch.touchids.find(event.touch) != _ltouch.touchids.end()) {
         _ltouch.touchids.clear();
@@ -574,11 +582,17 @@ void PlatformInput::touchesMovedCB(const TouchEvent& event, const Vec2& previous
     //}
 }
 
-void PlatformInput::getAxisAngle(const cugl::GameControllerAxisEvent& event, bool focus) {
-    //TODO: WHAT ARE AXIS INDICES?? HOW MANY??? 2 or 4
-    _xAxis = _gameCont->getAxisPosition(0);
-    _yAxis = _gameCont->getAxisPosition(1);
-}
+//void PlatformInput::getAxisAngle(const cugl::GameControllerAxisEvent& event, bool focus) {
+//    //TODO: WHAT ARE AXIS INDICES?? HOW MANY??? 2 or 4
+//    _xAxis = _gameCont->getAxisPosition(0);
+//    _yAxis = _gameCont->getAxisPosition(1);
+//
+//    CULog("xAxis (0) %f", _xAxis);
+//    CULog("yAxis (1) %f", _yAxis);
+//    CULog("axis (2) %f", _gameCont->getAxisPosition(2));
+//    CULog("axis (3) %f", _gameCont->getAxisPosition(3));
+//    CULog("getAxisAngle is running");
+//}
 
 std::string  PlatformInput::getGestureString() {
     return _lastGestureString;
