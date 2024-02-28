@@ -256,7 +256,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     // Start up the input handler
     _assets = assets;
-    _input.init(getBounds());
+    _input = std::make_shared<PlatformInput>();
+    _input->init(getBounds());
     
     // Create the world and attach the listeners.
     _world = physics2::ObstacleWorld::alloc(rect,gravity);
@@ -308,12 +309,21 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _rightnode->setScale(0.35f);
     _rightnode->setVisible(false);
 
+    _dollarnode = std::make_shared<DollarScene>();
+    
     addChild(_worldnode);
     addChild(_debugnode);
     addChild(_winnode);
     addChild(_losenode);
     addChild(_leftnode);
     addChild(_rightnode);
+    addChild(_dollarnode);
+    _dollarnode->init(_assets, _input);
+    //_dollarnode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
+    _dollarnode->setPosition(getSize().getIWidth() / 2.0f, getSize().getIHeight() / 2.0f);
+    //_dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
+    _dollarnode->setVisible(false);
+
 
     populate();
     _active = true;
@@ -330,7 +340,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
  */
 void GameScene::dispose() {
     if (_active) {
-        _input.dispose();
+        _input->dispose();
         _world = nullptr;
         _worldnode = nullptr;
         _debugnode = nullptr;
@@ -338,6 +348,8 @@ void GameScene::dispose() {
         _losenode = nullptr;
         _leftnode = nullptr;
         _rightnode = nullptr;
+        _dollarnode->dispose();
+        _dollarnode = nullptr;
         _complete = false;
         _debug = false;
         Scene2::dispose();
@@ -618,38 +630,43 @@ void GameScene::addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj
  * @param dt    The amount of time (in seconds) since the last frame
  */
 void GameScene::preUpdate(float dt) {
-	_input.update(dt);
+	_input->update(dt);
 
 	// Process the toggled key commands
-	if (_input.didDebug()) { setDebug(!isDebug()); }
-	if (_input.didReset()) { reset(); }
-	if (_input.didExit())  {
+	if (_input->didDebug()) { setDebug(!isDebug()); }
+	if (_input->didReset()) { reset(); }
+	if (_input->didExit())  {
 		CULog("Shutting down");
 		Application::get()->quit();
 	}
 
-    _slowed = _input.didSlow();
+    _slowed = _input->didSlow();
 
 	// Process the movement
-    if (_input.withJoystick()) {
-        if (_input.getHorizontal() < 0) {
-            _leftnode->setVisible(true);
-            _rightnode->setVisible(false);
-        } else if (_input.getHorizontal() > 0) {
-            _leftnode->setVisible(false);
-            _rightnode->setVisible(true);
-        } else {
+    if (!_slowed) {
+        _dollarnode->setVisible(false);
+        if (_input->withJoystick()) {
+            if (_input->getHorizontal() < 0) {
+                _leftnode->setVisible(true);
+                _rightnode->setVisible(false);
+            }
+            else if (_input->getHorizontal() > 0) {
+                _leftnode->setVisible(false);
+                _rightnode->setVisible(true);
+            }
+            else {
+                _leftnode->setVisible(false);
+                _rightnode->setVisible(false);
+            }
+            _leftnode->setPosition(_input->getJoystick());
+            _rightnode->setPosition(_input->getJoystick());
+        }
+        else {
             _leftnode->setVisible(false);
             _rightnode->setVisible(false);
         }
-        _leftnode->setPosition(_input.getJoystick());
-        _rightnode->setPosition(_input.getJoystick());
-    } else {
-        _leftnode->setVisible(false);
-        _rightnode->setVisible(false);
-    }
-    //CULog("Horizontal: %f", _input.getHorizontal());
-    //CULog("Vertical: %f", _input.getVertical());
+        //CULog("Horizontal: %f", _input->getHorizontal());
+        //CULog("Vertical: %f", _input->getVertical());
 
     
 	_avatar->setMovement(_input.getHorizontal() * _avatar->getForce());
@@ -657,10 +674,13 @@ void GameScene::preUpdate(float dt) {
     _avatar->setDash( _input.didDash());
 	_avatar->applyForce(_input.getHorizontal(), _input.getVertical());
 
-	if (_avatar->isJumping() && _avatar->isGrounded()) {
-		std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
-		AudioEngine::get()->play(JUMP_EFFECT,source,false,EFFECT_VOLUME);
-	}
+        if (_avatar->isJumping() && _avatar->isGrounded()) {
+            std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
+            AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
+        }
+    }
+    else {
+        _dollarnode->setVisible(true);
 
     _enemy->update(dt);
  
@@ -737,7 +757,7 @@ void GameScene::postUpdate(float remain) {
 
     // Add a bullet AFTER physics allows it to hang in front
     // Otherwise, it looks like bullet appears far away
-    _avatar->setShooting(_input.didFire());
+    _avatar->setShooting(_input->didFire());
     if (_avatar->isShooting()) {
         createBullet();
     }

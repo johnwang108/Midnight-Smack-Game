@@ -35,6 +35,7 @@
 #include "PFDudeModel.h"
 #include "PFRopeBridge.h"
 #include "PFSpinner.h"
+#include "PFDollarScene.h"
 #include "Enemy.h"
 
 /**
@@ -51,7 +52,7 @@ protected:
     
     // CONTROLLERS
     /** Controller for abstracting out input across multiple platforms */
-    PlatformInput _input;
+    std::shared_ptr<PlatformInput> _input;
     
     // VIEW
     /** Reference to the physics root of the scene graph */
@@ -66,6 +67,9 @@ protected:
     std::shared_ptr<cugl::scene2::PolygonNode> _leftnode;
     /** Reference to the right joystick image */
     std::shared_ptr<cugl::scene2::PolygonNode> _rightnode;
+
+    /** Reference to the quick-time event scene node */
+    std::shared_ptr<DollarScene> _dollarnode;
 
     /** The Box2D world */
     std::shared_ptr<cugl::physics2::ObstacleWorld> _world;
