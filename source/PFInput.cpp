@@ -38,6 +38,9 @@ using namespace cugl;
 /** The key for the event handlers */
 #define LISTENER_KEY      1
 
+/** The key for the controller event handlers */
+#define CONTROLLER_LISTENER_KEY 2
+
 /** This defines the joystick "deadzone" (how far we must move) */
 #define JSTICK_DEADZONE  15
 /** This defines the joystick radial size (for reseting the anchor) */
@@ -111,6 +114,7 @@ void PlatformInput::dispose() {
         touch->removeBeginListener(LISTENER_KEY);
         touch->removeEndListener(LISTENER_KEY);
         touch->removeMotionListener(LISTENER_KEY);
+        _gameCont->removeAxisListener(CONTROLLER_LISTENER_KEY);
 #endif
         _active = false;
     }
@@ -141,6 +145,12 @@ bool PlatformInput::init(const Rect bounds) {
         if (!deviceUUIDs.empty()) {
             _gameCont = controller->open(deviceUUIDs.front());
             CULog("Controller obtained");
+
+            //using axis controllers for joystick
+            _gameCont->addAxisListener(CONTROLLER_LISTENER_KEY, [=](const GameControllerAxisEvent& event, bool focus) {
+                this->getAxisAngle(event, focus);
+                });
+
         }
         else {
             CULog("no uuids");
@@ -242,6 +252,7 @@ void PlatformInput::update(float dt) {
 
 	// Directional controls
     _horizontal = 0.0f;
+#ifndef CU_TOUCH_SCREEN
     if (_keyRight) {
         _horizontal += 1.0f;
     }
@@ -255,6 +266,10 @@ void PlatformInput::update(float dt) {
     if (_keyDown) {
         _vertical -= 1.0f;
     }
+#else 
+    _horizontal += _xAxis;
+    _vertical += _yAxis;
+#endif
 
 // If it does not support keyboard, we must reset "virtual" keyboard
 #ifdef CU_TOUCH_SCREEN
@@ -263,6 +278,7 @@ void PlatformInput::update(float dt) {
     _keyDebug = false;
     _keyJump  = false;
     _keyFire  = false;
+
 #endif
 }
 
@@ -511,6 +527,11 @@ void PlatformInput::touchesMovedCB(const TouchEvent& event, const Vec2& previous
     //        _keyExit = true;
     //    }
     //}
+}
+
+void PlatformInput::getAxisAngle(const cugl::GameControllerAxisEvent& event, bool focus) {
+    _xAxis = _gameCont->getAxisPosition(0);
+    _yAxis = _gameCont->getAxisPosition(1);
 }
 
 std::string  PlatformInput::getGestureString() {

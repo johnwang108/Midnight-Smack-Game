@@ -34,6 +34,8 @@
 
 #define WIDTH 25
 
+#define SMALL_MSG "retrosmall"  
+
 using namespace cugl;
 
 float SHAPE[] = { 0,300,300,300,300,0,0,0} ;
@@ -72,9 +74,17 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_combined = Affine2::IDENTITY;
 	_poly = cugl::scene2::PolygonNode::alloc();
 	_box = cugl::scene2::PolygonNode::alloc();
-	//_poly->setPosition(getSize()/2);
+	_header = scene2::Label::allocWithText("NICE GESTURE!", _assets->get<Font>(SMALL_MSG));
+	_header->setAnchor(Vec2::ANCHOR_TOP_CENTER);
+	_header->setScale(1.1f);
+	_header->setPosition(cugl::Vec2(0, 200));
+	_header->setForeground(cugl::Color4::RED);
+	_header->setVisible(false);
+
 	addChild(_box);
 	addChild(_poly);
+	addChild(_header);
+
 	update();
 
 	return true;
@@ -83,7 +93,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 //re-extrudes the path and updates the polygon node
 void DollarScene::update() {
 	//get new path
-	_path = _input->getTouchPath();
+	//_path = _input->getTouchPath();
 
 	//re-extrude path
 	_se.set(_path);
@@ -100,16 +110,19 @@ void DollarScene::update() {
 
 	_poly->setPosition(cugl::Vec2(0,0));
 	_box->setPosition(cugl::Vec2(0, 0));
+
+	_header->setVisible(!isPending() && isSuccess());
 };
 
 //is gesture inputting still in progress?
 bool DollarScene::isPending() {
-	return true;
+	//TODO
+	return false;
 };
 
 //is gesture inputting a success?
 bool DollarScene::isSuccess() {
-	return true;
+	return _input->getGestureSim() > 0.5;
 };
 
 //draws a boundary rectangle

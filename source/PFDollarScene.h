@@ -53,6 +53,8 @@ protected:
 
     std::shared_ptr<cugl::scene2::PolygonNode> _box;
 
+    std::shared_ptr<cugl::scene2::Label> _header;
+
     cugl::SimpleExtruder _se;
 
     //temp

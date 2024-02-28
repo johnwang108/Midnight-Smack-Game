@@ -90,6 +90,10 @@ protected:
     float _vertical;
     bool _dashPressed;
 
+    //axes positions for joystick
+    float _xAxis;
+    float _yAxis;
+
 
 #pragma mark Internal Touch Management   
 	// The screen is divided into four zones: Left, Bottom, Right and Main/
@@ -336,6 +340,9 @@ public:
      * @param focus	Whether the listener currently has focus
      */
     void touchesMovedCB(const cugl::TouchEvent& event, const cugl::Vec2& previous, bool focus);
+
+    void PlatformInput::getAxisAngle(const cugl::GameControllerAxisEvent& eventm, bool focus);
+
   
 
     std::string getGestureString();
