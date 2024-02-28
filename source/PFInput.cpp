@@ -258,8 +258,16 @@ void PlatformInput::update(float dt) {
         _yAxis = _gameCont->getAxisPosition(1);
     }
 
+#else
+    _keyJump = _gameCont->isButtonPressed(0);
+    //_keyFire = _gameCont->isButtonPressed(1);
+    _keySlow = _gameCont->isButtonPressed(2);
+    _dashKey = _gameCont->isButtonPressed(3);
+    _keyReset = _gameCont->isButtonPressed(4);
+    _keyExit = _gameCont->isButtonPressed(5);
 
-
+    _xAxis = _gameCont->getAxisPosition(0);
+    _yAxis = _gameCont->getAxisPosition(1);
 
 #endif
 
@@ -325,14 +333,14 @@ void PlatformInput::update(float dt) {
 #endif
 
 // If it does not support keyboard, we must reset "virtual" keyboard
-#ifdef CU_TOUCH_SCREEN
-    _keyExit = false;
-    _keyReset = false;
-    _keyDebug = false;
-    _keyJump  = false;
-    _keyFire  = false;
-
-#endif
+//#ifdef CU_TOUCH_SCREEN
+//    _keyExit = false;
+//    _keyReset = false;
+//    _keyDebug = false;
+//    _keyJump  = false;
+//    _keyFire  = false;
+//
+//#endif
 }
 
 /**
