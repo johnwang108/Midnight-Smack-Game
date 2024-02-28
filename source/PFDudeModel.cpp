@@ -45,15 +45,24 @@
 #include <cugl/scene2/graph/CUPolygonNode.h>
 #include <cugl/scene2/graph/CUTexturedNode.h>
 #include <cugl/assets/CUAssetManager.h>
+#include <cmath>
 
 #define SIGNUM(x)  ((x > 0) - (x < 0))
+
+
+/**Modif for the max height jump in ~(Sues +1)*/
+float jmpHeight = 1;
+/**Modif dash, as a multiple of DASH_JUMP*/
+float dashModif = 1.3;
+/**The aount of frames following a dash that SUe floats for*/
+float floatyFrames = 10;
 
 #pragma mark -
 #pragma mark Physics Constants
 /** Cooldown (in animation frames) for jumping */
 #define JUMP_COOLDOWN   5
 /** Cooldown (in animation frames) for shooting */
-#define DASH_COOLDOWN  2
+#define DASH_COOLDOWN  20
 /** Cooldown (in animation frames) for shooting */
 #define SHOOT_COOLDOWN  20
 /** The amount to shrink the body fixture (vertically) relative to the image */
@@ -67,7 +76,9 @@
 /** The density of the character */
 #define DUDE_DENSITY    1.0f
 /** The impulse for the character jump */
-#define DUDE_JUMP       5.5f
+#define DUDE_JUMP       sqrt( 3 * 2 * (9.8) * getHeight() * jmpHeight ) * getMass()
+/** The impulse for the character dash */
+#define DUDE_DASH       DUDE_JUMP * dashModif
 /** Debug color for the sensor */
 #define DEBUG_COLOR     Color4::RED
 
@@ -110,7 +121,8 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         _isJumping  = false;
         _faceRight  = true;
         _dash = true;
-        
+        _contactingWall = false;
+
         _dashCooldown = 0;
         _shootCooldown = 0;
         _jumpCooldown  = 0;
@@ -145,7 +157,6 @@ void DudeModel::setMovement(float h) {
     }
     _faceRight = face;
 }
-
 
 #pragma mark -
 #pragma mark Physics Methods
@@ -221,13 +232,18 @@ void DudeModel::applyForce(float h, float v) {
     if (!isEnabled()) {
         return;
     }
-    
+
     // Don't want to be moving. Damp out player motion
-    if (getMovement() == 0.0f) {
-        if (isGrounded()) {
+    if (getMovement() == 0.0f || h*getVX()<=0 || fabs(getVX()) >= getMaxSpeed()) {
+        if (isGrounded() && (_dashCooldown <= DASH_COOLDOWN * .1)) {
             // Instant friction on the ground
             b2Vec2 vel = _body->GetLinearVelocity();
-            vel.x = 0; // If you set y, you will stop a jump in place
+            float LogVal = std::log(abs(vel.x) + 1);
+            float whyDoesntSTDMinWorkpls = LogVal < .8 ? LogVal : .8;
+            if (abs(getVX()) > 0) {
+                int negativeAccounter = SIGNUM(vel.x);
+                vel.x = negativeAccounter * vel.x * whyDoesntSTDMinWorkpls < negativeAccounter * .01 ? 0 : whyDoesntSTDMinWorkpls * vel.x; // If you set y, you will stop a jump in place
+            }
             _body->SetLinearVelocity(vel);
         } else {
             // Damping factor in the air
@@ -237,22 +253,27 @@ void DudeModel::applyForce(float h, float v) {
     }
     
     // Velocity too high, clamp it
-    if (fabs(getVX()) >= getMaxSpeed()) {
-        setVX(SIGNUM(getVX())*getMaxSpeed());
-    } else {
-        b2Vec2 force(getMovement(),0);
-        _body->ApplyForce(force,_body->GetPosition(),true);
-    }
-    
+    b2Vec2 force(getMovement(),0);
+    _body->ApplyForce(force,_body->GetPosition(),true);
+
+
     // Jump!
     if (isJumping() && isGrounded()) {
+        setVY(0);
         b2Vec2 force(0, DUDE_JUMP);
         _body->ApplyLinearImpulse(force,_body->GetPosition(),true);
     }
-    if (canDash() && getDashNum()>0) {
-        b2Vec2 force(DUDE_JUMP*h*.5, DUDE_JUMP*v*.5);
+    else if (isJumping() && contactingWall() && !isGrounded()) {
+        setVY(0);
+        b2Vec2 force(DUDE_JUMP*5* (isFacingRight() ? 1: -1), DUDE_JUMP * 1.2);
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
-        deltaDashNum(-1);
+    }
+    if (canDash() && getDashNum()>0) {
+        b2Vec2 force(DUDE_DASH*SIGNUM(h), DUDE_DASH * SIGNUM(v) * .8);
+        setVY(0);
+        setVX(0);
+        _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
+        //deltaDashNum(-1);
     }
 }
 
@@ -264,6 +285,13 @@ void DudeModel::applyForce(float h, float v) {
  * @param delta Number of seconds since last animation frame
  */
 void DudeModel::update(float dt) {
+    if (_dashCooldown > DASH_COOLDOWN - floatyFrames) {
+        setGravityScale(0);
+    }
+    else {
+        setGravityScale(1);
+    }
+
     // Apply cooldowns
     if (isJumping()) {
         _jumpCooldown = JUMP_COOLDOWN;
@@ -277,9 +305,9 @@ void DudeModel::update(float dt) {
     } else {
         _shootCooldown = (_shootCooldown > 0 ? _shootCooldown-1 : 0);
     }
-    CULog("Dash Val: %i", getDashNum());
-    if (canDash()) {
+    if (canDash() && _dashCooldown == 0) {
         _dashCooldown = DASH_COOLDOWN;
+        deltaDashNum(-1);
     }
     else {
         _dashCooldown = (_dashCooldown > 0 ? _dashCooldown - 1 : 0);

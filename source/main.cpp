@@ -30,6 +30,7 @@
 // Include your application class
 #include "PFApp.h"
 
+
 using namespace cugl;
 
 /**
@@ -46,13 +47,16 @@ int main(int argc, char * argv[]) {
     PlatformApp app;
     
     // Set the properties of your application
-    app.setName("Platform Demo");
-    app.setOrganization("GDIAC");
+    app.setName("Midnight Smack");
+    app.setOrganization("Gobble Guild");
     app.setHighDPI(true);
+
+    
 
     //app.setFullscreen(true);
     app.setDisplaySize(1280, 800);
     app.setFPS(60.0f);
+
 
     /// DO NOT MODIFY ANYTHING BELOW THIS LINE
     if (!app.init()) {

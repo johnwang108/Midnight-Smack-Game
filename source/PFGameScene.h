@@ -35,6 +35,8 @@
 #include "PFDudeModel.h"
 #include "PFRopeBridge.h"
 #include "PFSpinner.h"
+#include "PFDollarScene.h"
+#include "Enemy.h"
 
 /**
  * This class is the primary gameplay constroller for the demo.
@@ -50,7 +52,7 @@ protected:
     
     // CONTROLLERS
     /** Controller for abstracting out input across multiple platforms */
-    PlatformInput _input;
+    std::shared_ptr<PlatformInput> _input;
     
     // VIEW
     /** Reference to the physics root of the scene graph */
@@ -66,16 +68,28 @@ protected:
     /** Reference to the right joystick image */
     std::shared_ptr<cugl::scene2::PolygonNode> _rightnode;
 
+
+    std::shared_ptr<cugl::scene2::Label> _gesturehud;
+
+
+    /** Reference to the quick-time event scene node */
+    std::shared_ptr<DollarScene> _dollarnode;
+
     /** The Box2D world */
     std::shared_ptr<cugl::physics2::ObstacleWorld> _world;
     /** The scale between the physics world and the screen (MUST BE UNIFORM) */
     float _scale;
+
+    /** Whether or not time is being slowed */
+    bool _slowed;
 
     // Physics objects for the game
     /** Reference to the goalDoor (for collision detection) */
     std::shared_ptr<cugl::physics2::BoxObstacle>    _goalDoor;
     /** Reference to the player avatar */
     std::shared_ptr<DudeModel>			  _avatar;
+    /** Reference to the enemy avatar */
+    std::shared_ptr<EnemyModel>			  _enemy;
     /** Reference to the spinning barrier */
     std::shared_ptr<Spinner>			  _spinner;
     /** Reference to the rope bridge */
@@ -130,6 +144,8 @@ protected:
      * ratios
      */
     cugl::Size computeActiveSize() const;
+
+    std::string getGestureText(std::string gest, float sim);
     
 public:
 #pragma mark -
@@ -383,6 +399,8 @@ public:
     * @param  bullet   the bullet to remove
     */
     void removeBullet(Bullet* bullet);
+
+
 
   };
 
