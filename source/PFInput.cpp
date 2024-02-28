@@ -151,6 +151,9 @@ bool PlatformInput::init(const Rect bounds) {
                 this->getAxisAngle(event, focus);
                 });
 
+            _xAxis = 0;
+            _yAxis = 0;
+
         }
         else {
             CULog("no uuids");
@@ -221,54 +224,96 @@ void PlatformInput::update(float dt) {
     // DESKTOP CONTROLS
     Keyboard* keys = Input::get<Keyboard>();
 
-    // Map "keyboard" events to the current frame boundary
-    _keyReset  = keys->keyPressed(RESET_KEY);
-    _keyDebug  = keys->keyPressed(DEBUG_KEY);
-    _keyExit   = keys->keyPressed(EXIT_KEY);
-    _keyFire   = keys->keyPressed(FIRE_KEY);
-    _keyJump   = keys->keyPressed(JUMP_KEY);
-    _keySlow   = keys->keyDown(SLOW_KEY);
+    if (!_gameCont) {
+        // Map "keyboard" events to the current frame boundary
+        _keyReset = keys->keyPressed(RESET_KEY);
+        _keyDebug = keys->keyPressed(DEBUG_KEY);
+        _keyExit = keys->keyPressed(EXIT_KEY);
+        _keyFire = keys->keyPressed(FIRE_KEY);
+        _keyJump = keys->keyPressed(JUMP_KEY);
+        _keySlow = keys->keyDown(SLOW_KEY);
 
-    _dashKey = keys->keyPressed(DASH_KEY);
+        _dashKey = keys->keyPressed(DASH_KEY);
 
-    _keyLeft = keys->keyDown(KeyCode::A);
-    _keyRight = keys->keyDown(KeyCode::D);
+        _keyLeft = keys->keyDown(KeyCode::A);
+        _keyRight = keys->keyDown(KeyCode::D);
 
-    _keyUp = keys->keyDown(KeyCode::W);
-    _keyDown = keys->keyDown(KeyCode::S);
+        _keyUp = keys->keyDown(KeyCode::W);
+        _keyDown = keys->keyDown(KeyCode::S);
+    }
+    else {
+        _keyJump = _gameCont->isButtonPressed(0);
+        //_keyFire = _gameCont->isButtonPressed(1);
+        _keySlow = _gameCont->isButtonPressed(2);
+        _dashKey = _gameCont->isButtonPressed(3);
+        _keyReset = _gameCont->isButtonPressed(4);
+        _keyExit = _gameCont->isButtonPressed(5);
+    }
 
-    //_gameCont->isButtonPressed();
+
+
 
 #endif
 
     _resetPressed = _keyReset;
     _debugPressed = _keyDebug;
-    _exitPressed  = _keyExit;
-	_firePressed  = _keyFire;
-	_jumpPressed  = _keyJump;
-    _slowPressed  = _keySlow;
+    _exitPressed = _keyExit;
+    _firePressed = _keyFire;
     _jumpPressed = _keyJump;
-    _dashPressed  = _dashKey;
+    _slowPressed = _keySlow;
+    _dashPressed = _dashKey;
 
-	// Directional controls
+    // Directional controls
     _horizontal = 0.0f;
-#ifndef CU_TOUCH_SCREEN
-    if (_keyRight) {
-        _horizontal += 1.0f;
-    }
-    if (_keyLeft) {
-        _horizontal -= 1.0f;
-    }
     _vertical = 0.0f;
-    if (_keyUp) {
-        _vertical += 1.0f;
+    if (!_gameCont) {
+        if (_keyRight) {
+            _horizontal += 1.0f;
+        }
+        if (_keyLeft) {
+            _horizontal -= 1.0f;
+        }
+        _vertical = 0.0f;
+        if (_keyUp) {
+            _vertical += 1.0f;
+        }
+        if (_keyDown) {
+            _vertical -= 1.0f;
+        }
     }
-    if (_keyDown) {
-        _vertical -= 1.0f;
+    else {
+        if (std::abs(_xAxis) >= 0.2) {
+            _horizontal += _xAxis;
+        }
+        if (std::abs(_yAxis) >= 0.2) {
+            _vertical -= _yAxis;
+            CULog("%f", _vertical);
+        }
     }
-#else 
-    _horizontal += _xAxis;
-    _vertical += _yAxis;
+#ifndef CU_TOUCH_SCREEN
+
+
+
+
+    //_keyJump = _gameCont->isButtonPressed(0);
+    ////_keyFire = _gameCont->isButtonPressed(1);
+    //_keySlow = _gameCont->isButtonPressed(2);
+    //_dashKey = _gameCont->isButtonPressed(3);
+    //_keyReset = _gameCont->isButtonPressed(4);
+    //_keyExit = _gameCont->isButtonPressed(5);
+
+
+    //if (_gameCont->isButtonPressed(0)) CULog("This button is 0");
+    //if (_gameCont->isButtonPressed(1)) CULog("This button is 1");
+    //if (_gameCont->isButtonPressed(2)) CULog("This button is 2");
+    //if (_gameCont->isButtonPressed(3)) CULog("This button is 3");
+    //if (_gameCont->isButtonPressed(4)) CULog("This button is 4");
+    //if (_gameCont->isButtonPressed(5)) CULog("This button is 5");
+    //if (_gameCont->isButtonPressed(6)) CULog("This button is 6");
+    //if (_gameCont->isButtonPressed(7)) CULog("This button is 7");
+    //if (_gameCont->isButtonPressed(8)) CULog("This button is 8");
+    //if (_gameCont->isButtonPressed(9)) CULog("This button is 9");
+    //if (_gameCont->isButtonPressed(10)) CULog("This button is 10");
 #endif
 
 // If it does not support keyboard, we must reset "virtual" keyboard
@@ -530,6 +575,7 @@ void PlatformInput::touchesMovedCB(const TouchEvent& event, const Vec2& previous
 }
 
 void PlatformInput::getAxisAngle(const cugl::GameControllerAxisEvent& event, bool focus) {
+    //TODO: WHAT ARE AXIS INDICES?? HOW MANY??? 2 or 4
     _xAxis = _gameCont->getAxisPosition(0);
     _yAxis = _gameCont->getAxisPosition(1);
 }
