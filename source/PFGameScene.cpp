@@ -33,6 +33,8 @@
 #include <iostream>
 #include <sstream>
 #include <random>
+#include <SDL.h>
+
 
 using namespace cugl;
 
@@ -244,6 +246,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
                      const Rect& rect, const Vec2& gravity) {
     // Initialize the scene to a locked height (iPhone X is narrow, but wide)
     Size dimen = computeActiveSize();
+    SDL_ShowCursor(SDL_DISABLE);
 
     if (assets == nullptr) {
         return false;
@@ -310,7 +313,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _gesturehud->setScale(0.7f);
     CULog("%f", _gesturehud->getContentWidth());
     CULog("%f", _gesturehud->getWidth());
-    _gesturehud->setPosition(0,15);
+    _gesturehud->setPosition(0,50);
     _gesturehud->setForeground(LOSE_COLOR);
     _gesturehud->setVisible(true);
 

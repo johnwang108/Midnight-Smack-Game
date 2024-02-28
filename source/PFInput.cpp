@@ -124,16 +124,13 @@ bool PlatformInput::init(const Rect bounds) {
     _sbounds = bounds;
     _tbounds = Application::get()->getDisplayBounds();
 
-
-
-
-    
-    
 #ifndef CU_TOUCH_SCREEN
     success = Input::activate<Keyboard>();
     _lastGestureSimilarity = -1;
     _lastGestureString = "No Touchscreen";
+    CULog("no touch screen sad");
 #else
+    CULog("%d", CU_TOUCH_SCREEN);
     Touchscreen* touch = Input::get<Touchscreen>();
     touch->addBeginListener(LISTENER_KEY,[=](const TouchEvent& event, bool focus) {
         this->touchBeganCB(event,focus);
