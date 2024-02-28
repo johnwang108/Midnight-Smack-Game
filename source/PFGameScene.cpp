@@ -33,6 +33,8 @@
 #include <iostream>
 #include <sstream>
 #include <random>
+#include <SDL.h>
+
 
 using namespace cugl;
 
@@ -134,6 +136,8 @@ float shrimp_POS[] = { 21.0f, 16.0f };
 #define PLATFORM_NAME   "platform"
 /** The font for victory/failure messages */
 #define MESSAGE_FONT    "retro"
+
+#define SMALL_MSG "retrosmall"  
 /** The message for winning the game */
 #define WIN_MESSAGE     "VICTORY!"
 /** The color of the win message */
@@ -247,6 +251,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
                      const Rect& rect, const Vec2& gravity) {
     // Initialize the scene to a locked height (iPhone X is narrow, but wide)
     Size dimen = computeActiveSize();
+    SDL_ShowCursor(SDL_DISABLE);
 
     if (assets == nullptr) {
         return false;
@@ -309,6 +314,17 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _rightnode->setScale(0.35f);
     _rightnode->setVisible(false);
 
+    _gesturehud = scene2::Label::allocWithText("Gestures, Similarity: t tosdgodfho figjgoj ghkohko ", _assets->get<Font>(SMALL_MSG));
+    _gesturehud->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
+    _gesturehud->setScale(0.7f);
+    CULog("%f", _gesturehud->getContentWidth());
+    CULog("%f", _gesturehud->getWidth());
+    _gesturehud->setPosition(0,50);
+    _gesturehud->setForeground(LOSE_COLOR);
+    _gesturehud->setVisible(true);
+
+
+
     _dollarnode = std::make_shared<DollarScene>();
     
     addChild(_worldnode);
@@ -317,6 +333,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_losenode);
     addChild(_leftnode);
     addChild(_rightnode);
+    addChild(_gesturehud);
     addChild(_dollarnode);
     _dollarnode->init(_assets, _input);
     //_dollarnode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
@@ -640,34 +657,8 @@ void GameScene::preUpdate(float dt) {
 		Application::get()->quit();
 	}
 
-    _slowed = _input->didSlow();
-
-	// Process the movement
-    if (!_slowed) {
-        _dollarnode->setVisible(false);
-        if (_input->withJoystick()) {
-            if (_input->getHorizontal() < 0) {
-                _leftnode->setVisible(true);
-                _rightnode->setVisible(false);
-            }
-            else if (_input->getHorizontal() > 0) {
-                _leftnode->setVisible(false);
-                _rightnode->setVisible(true);
-            }
-            else {
-                _leftnode->setVisible(false);
-                _rightnode->setVisible(false);
-            }
-            _leftnode->setPosition(_input->getJoystick());
-            _rightnode->setPosition(_input->getJoystick());
-        }
-        else {
-            _leftnode->setVisible(false);
-            _rightnode->setVisible(false);
-        }
-        //CULog("Horizontal: %f", _input->getHorizontal());
-        //CULog("Vertical: %f", _input->getVertical());
-
+    _slowed = _input.didSlow();
+ 
     
 	_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
     _avatar->setJumping(_input->didJump());
@@ -761,6 +752,9 @@ void GameScene::postUpdate(float remain) {
     if (_avatar->isShooting()) {
         createBullet();
     }
+
+    _gesturehud->setText(getGestureText(_input.getGestureString(), _input.getGestureSim()));
+
 
     // Record failure if necessary.
     if (!_failed && _avatar->getY() < 0) {
@@ -984,3 +978,9 @@ Size GameScene::computeActiveSize() const {
     return dimen;
 }
 
+
+std::string GameScene::getGestureText(std::string gest, float sim) {
+    std::stringstream ss;
+    ss << "Gesture: " << gest << ", " << "Similarity: " << sim;
+    return ss.str();
+}

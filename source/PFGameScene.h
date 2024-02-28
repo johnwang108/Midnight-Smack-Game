@@ -68,6 +68,10 @@ protected:
     /** Reference to the right joystick image */
     std::shared_ptr<cugl::scene2::PolygonNode> _rightnode;
 
+
+    std::shared_ptr<cugl::scene2::Label> _gesturehud;
+
+
     /** Reference to the quick-time event scene node */
     std::shared_ptr<DollarScene> _dollarnode;
 
@@ -140,6 +144,8 @@ protected:
      * ratios
      */
     cugl::Size computeActiveSize() const;
+
+    std::string getGestureText(std::string gest, float sim);
     
 public:
 #pragma mark -
@@ -393,6 +399,8 @@ public:
     * @param  bullet   the bullet to remove
     */
     void removeBullet(Bullet* bullet);
+
+
 
   };
 

@@ -106,10 +106,12 @@ void PlatformInput::dispose() {
     if (_active) {
 #ifndef CU_TOUCH_SCREEN
         Input::deactivate<Keyboard>();
+        Input::deactivate<Mouse>();
 #else
         Touchscreen* touch = Input::get<Touchscreen>();
         touch->removeBeginListener(LISTENER_KEY);
         touch->removeEndListener(LISTENER_KEY);
+        touch->removeMotionListener(LISTENER_KEY);
 #endif
         _active = false;
     }
@@ -130,15 +132,14 @@ bool PlatformInput::init(const Rect bounds) {
     bool success = true;
     _sbounds = bounds;
     _tbounds = Application::get()->getDisplayBounds();
-    
-    createZones();
-    clearTouchInstance(_ltouch);
-    clearTouchInstance(_rtouch);
-    clearTouchInstance(_mtouch);
-    
+
 #ifndef CU_TOUCH_SCREEN
     success = Input::activate<Keyboard>();
+    _lastGestureSimilarity = -1;
+    _lastGestureString = "No Touchscreen";
+    CULog("no touch screen sad");
 #else
+    CULog("%d", CU_TOUCH_SCREEN);
     Touchscreen* touch = Input::get<Touchscreen>();
     touch->addBeginListener(LISTENER_KEY,[=](const TouchEvent& event, bool focus) {
         this->touchBeganCB(event,focus);
@@ -149,7 +150,25 @@ bool PlatformInput::init(const Rect bounds) {
     touch->addMotionListener(LISTENER_KEY,[=](const TouchEvent& event, const Vec2& previous, bool focus) {
         this->touchesMovedCB(event, previous, focus);
     });
-	
+    _dollarRecog = cugl::GestureRecognizer::alloc();
+
+    if (!_dollarRecog->init()) CULog("Recognizer Init Failed");
+    _dollarRecog->setAlgorithm(cugl::GestureRecognizer::Algorithm::ONEDOLLAR);
+
+
+    std::vector<Vec2> swipeVertices = { Vec2(1,1), Vec2(1,249) };
+    cugl::Path2 swipeGesturePath = cugl::Path2(swipeVertices);
+
+    if (!_dollarRecog->addGesture("swipe", swipeGesturePath, true)) CULog("failed to initialize swipe");
+
+    std::vector<Vec2> vVertices = { Vec2(0,0), Vec2(124,124), Vec2(249,0) };
+    cugl::Path2 vGesturePath = cugl::Path2(vVertices);
+
+    if (!_dollarRecog->addGesture("v", vGesturePath, true)) CULog("failed to initialize v");
+
+    CULog("initialized all recognizer stuff");
+    _lastGestureSimilarity = 0;
+    _lastGestureString = "";
 #endif
     _active = success;
     return success;
@@ -239,16 +258,7 @@ void PlatformInput::clear() {
 #pragma mark -
 #pragma mark Touch Controls
 
-/**
- * Defines the zone boundaries, so we can quickly categorize touches.
- */
-void PlatformInput::createZones() {
-	_lzone = _tbounds;
-	_lzone.size.width *= LEFT_ZONE;
-	_rzone = _tbounds;
-	_rzone.size.width *= RIGHT_ZONE;
-	_rzone.origin.x = _tbounds.origin.x+_tbounds.size.width-_rzone.size.width;
-}
+
 
 /**
  * Populates the initial values of the input TouchInstance
@@ -259,25 +269,7 @@ void PlatformInput::clearTouchInstance(TouchInstance& touchInstance) {
 }
 
 
-/**
- * Returns the correct zone for the given position.
- *
- * See the comments above for a description of how zones work.
- *
- * @param  pos  a position in screen coordinates
- *
- * @return the correct zone for the given position.
- */
-PlatformInput::Zone PlatformInput::getZone(const Vec2 pos) const {
-	if (_lzone.contains(pos)) {
-		return Zone::LEFT;
-	} else if (_rzone.contains(pos)) {
-		return Zone::RIGHT;
-	} else if (_tbounds.contains(pos)) {
-		return Zone::MAIN;
-	}
-	return Zone::UNDEFINED;
-}
+
 
 /**
  * Returns the scene location of a touch
@@ -307,33 +299,32 @@ Vec2 PlatformInput::touch2Screen(const Vec2 pos) const {
  * @param  pos  the current joystick position
  */
 void PlatformInput::processJoystick(const cugl::Vec2 pos) {
-    Vec2 diff =  _ltouch.position-pos;
+    //Vec2 diff =  _ltouch.position-pos;
 
-    // Reset the anchor if we drifted too far
-    if (diff.lengthSquared() > JSTICK_RADIUS*JSTICK_RADIUS) {
-        diff.normalize();
-        diff *= (JSTICK_RADIUS+JSTICK_DEADZONE)/2;
-        _ltouch.position = pos+diff;
-    }
-    _ltouch.position.y = pos.y;
-    _joycenter = touch2Screen(_ltouch.position);
-    _joycenter.y += JSTICK_OFFSET;
-    
-    if (std::fabsf(diff.x) > JSTICK_DEADZONE) {
-        _joystick = true;
-        if (diff.x > 0) {
-            _keyLeft = true;
-            _keyRight = false;
-        } else {
-            _keyLeft = false;
-            _keyRight = true;
-        }
-    } else {
-        _joystick = false;
-        _keyLeft = false;
-        _keyRight = false;
-    }
-    //TODO: add joystick vertical support
+    //// Reset the anchor if we drifted too far
+    //if (diff.lengthSquared() > JSTICK_RADIUS*JSTICK_RADIUS) {
+    //    diff.normalize();
+    //    diff *= (JSTICK_RADIUS+JSTICK_DEADZONE)/2;
+    //    _ltouch.position = pos+diff;
+    //}
+    //_ltouch.position.y = pos.y;
+    //_joycenter = touch2Screen(_ltouch.position);
+    //_joycenter.y += JSTICK_OFFSET;
+    //
+    //if (std::fabsf(diff.x) > JSTICK_DEADZONE) {
+    //    _joystick = true;
+    //    if (diff.x > 0) {
+    //        _keyLeft = true;
+    //        _keyRight = false;
+    //    } else {
+    //        _keyLeft = false;
+    //        _keyRight = true;
+    //    }
+    //} else {
+    //    _joystick = false;
+    //    _keyLeft = false;
+    //    _keyRight = false;
+    //}
 }
 
 /**
@@ -370,55 +361,59 @@ int PlatformInput::processSwipe(const Vec2 start, const Vec2 stop, Timestamp cur
  * @param focus	Whether the listener currently has focus
  */
 void PlatformInput::touchBeganCB(const TouchEvent& event, bool focus) {
-    //CULog("Touch began %lld", event.touch);
+    CULog("Touch began %lld", event.touch);
     Vec2 pos = event.position;
-    Zone zone = getZone(pos);
-    switch (zone) {
-        case Zone::LEFT:
-            // Only process if no touch in zone
-            if (_ltouch.touchids.empty()) {
-                // Left is the floating joystick
-                _ltouch.position = event.position;
-                _ltouch.timestamp.mark();
-                _ltouch.touchids.insert(event.touch);
 
-                _joystick = true;
-                _joycenter = touch2Screen(event.position);
-                _joycenter.y += JSTICK_OFFSET;
-            }
-            break;
-        case Zone::RIGHT:
-            // Only process if no touch in zone
-            if (_rtouch.touchids.empty()) {
-                // Right is jump AND fire controls
-                _keyFire = (event.timestamp.ellapsedMillis(_rtime) <= DOUBLE_CLICK);
-                _rtouch.position = event.position;
-                _rtouch.timestamp.mark();
-                _rtouch.touchids.insert(event.touch);
-                _hasJumped = false;
-            }
-            break;
-        case Zone::MAIN:
-            // Only check for double tap in Main if nothing else down
-            if (_ltouch.touchids.empty() && _rtouch.touchids.empty() && _mtouch.touchids.empty()) {
-                _keyDebug = (event.timestamp.ellapsedMillis(_mtime) <= DOUBLE_CLICK);
-            }
-            
-            // Keep count of touches in Main zone if next to each other.
-            if (_mtouch.touchids.empty()) {
-                _mtouch.position = event.position;
-                _mtouch.touchids.insert(event.touch);
-            } else {
-                Vec2 offset = event.position-_mtouch.position;
-                if (offset.lengthSquared() < NEAR_TOUCH*NEAR_TOUCH) {
-                    _mtouch.touchids.insert(event.touch);
-                }
-            }
-            break;
-        default:
-            CUAssertLog(false, "Touch is out of bounds");
-            break;
-    }
+    _touchPath = cugl::Path2();
+    _touchPath.push(pos);
+
+
+    //switch (zone) {
+    //    case Zone::LEFT:
+    //        // Only process if no touch in zone
+    //        if (_ltouch.touchids.empty()) {
+    //            // Left is the floating joystick
+    //            _ltouch.position = event.position;
+    //            _ltouch.timestamp.mark();
+    //            _ltouch.touchids.insert(event.touch);
+
+    //            _joystick = true;
+    //            _joycenter = touch2Screen(event.position);
+    //            _joycenter.y += JSTICK_OFFSET;
+    //        }
+    //        break;
+    //    case Zone::RIGHT:
+    //        // Only process if no touch in zone
+    //        if (_rtouch.touchids.empty()) {
+    //            // Right is jump AND fire controls
+    //            _keyFire = (event.timestamp.ellapsedMillis(_rtime) <= DOUBLE_CLICK);
+    //            _rtouch.position = event.position;
+    //            _rtouch.timestamp.mark();
+    //            _rtouch.touchids.insert(event.touch);
+    //            _hasJumped = false;
+    //        }
+    //        break;
+    //    case Zone::MAIN:
+    //        // Only check for double tap in Main if nothing else down
+    //        if (_ltouch.touchids.empty() && _rtouch.touchids.empty() && _mtouch.touchids.empty()) {
+    //            _keyDebug = (event.timestamp.ellapsedMillis(_mtime) <= DOUBLE_CLICK);
+    //        }
+    //        
+    //        // Keep count of touches in Main zone if next to each other.
+    //        if (_mtouch.touchids.empty()) {
+    //            _mtouch.position = event.position;
+    //            _mtouch.touchids.insert(event.touch);
+    //        } else {
+    //            Vec2 offset = event.position-_mtouch.position;
+    //            if (offset.lengthSquared() < NEAR_TOUCH*NEAR_TOUCH) {
+    //                _mtouch.touchids.insert(event.touch);
+    //            }
+    //        }
+    //        break;
+    //    default:
+    //        CUAssertLog(false, "Touch is out of bounds");
+    //        break;
+    //}
 }
 
  
@@ -431,7 +426,20 @@ void PlatformInput::touchBeganCB(const TouchEvent& event, bool focus) {
 void PlatformInput::touchEndedCB(const TouchEvent& event, bool focus) {
     // Reset all keys that might have been set
     Vec2 pos = event.position;
-    Zone zone = getZone(pos);
+    _touchPath.push(pos);
+
+    float similarity = -1.0f;
+
+    PathSmoother smoother = PathSmoother();
+    smoother.set(_touchPath);
+    smoother.calculate();
+    _touchPath = smoother.getPath();
+    std::string result = _dollarRecog->match(_touchPath, similarity);
+
+    _lastGestureString = result;
+    _lastGestureSimilarity = similarity;
+    CULog("Gesture Guess: %s, Similarity: %f", result, similarity);
+    /*Zone zone = getZone(pos);
     if (_ltouch.touchids.find(event.touch) != _ltouch.touchids.end()) {
         _ltouch.touchids.clear();
         _keyLeft = false;
@@ -446,7 +454,7 @@ void PlatformInput::touchEndedCB(const TouchEvent& event, bool focus) {
             _mtouch.touchids.erase(event.touch);
         }
         _mtime = event.timestamp;
-    }
+    }*/
 }
 
 
@@ -459,25 +467,34 @@ void PlatformInput::touchEndedCB(const TouchEvent& event, bool focus) {
  */
 void PlatformInput::touchesMovedCB(const TouchEvent& event, const Vec2& previous, bool focus) {
     Vec2 pos = event.position;
+    _touchPath.push(pos);
     // Only check for swipes in the main zone if there is more than one finger.
-    if (_ltouch.touchids.find(event.touch) != _ltouch.touchids.end()) {
-        processJoystick(pos);
-    } else if (_rtouch.touchids.find(event.touch) != _rtouch.touchids.end()) {
-        if (!_hasJumped) {
-            if ((_rtouch.position.y-pos.y) > SWIPE_LENGTH) {
-                _keyJump = true;
-                _hasJumped = true;
-            }
-        }
-    } else if (_mtouch.touchids.size() > 1) {
-        // We only process multifinger swipes in main
-        int swipe = processSwipe(_mtouch.position, event.position, event.timestamp);
-        if (swipe == 1) {
-            _keyReset = true;
-        } else if (swipe == -1) {
-            _keyExit = true;
-        }
-    }
+    //if (_ltouch.touchids.find(event.touch) != _ltouch.touchids.end()) {
+    //    processJoystick(pos);
+    //} else if (_rtouch.touchids.find(event.touch) != _rtouch.touchids.end()) {
+    //    if (!_hasJumped) {
+    //        if ((_rtouch.position.y-pos.y) > SWIPE_LENGTH) {
+    //            _keyJump = true;
+    //            _hasJumped = true;
+    //        }
+    //    }
+    //} else if (_mtouch.touchids.size() > 1) {
+    //    // We only process multifinger swipes in main
+    //    int swipe = processSwipe(_mtouch.position, event.position, event.timestamp);
+    //    if (swipe == 1) {
+    //        _keyReset = true;
+    //    } else if (swipe == -1) {
+    //        _keyExit = true;
+    //    }
+    //}
+}
+
+std::string  PlatformInput::getGestureString() {
+    return _lastGestureString;
+}
+
+float PlatformInput::getGestureSim() {
+    return _lastGestureSimilarity;
 }
 
 
