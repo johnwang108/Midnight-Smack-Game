@@ -59,11 +59,11 @@
 #pragma mark -
 #pragma mark Physics Constants
 /** The factor to multiply by the input */
-#define DUDE_FORCE      20.0f
+#define DUDE_FORCE      sqrt(2 * (9.8) * getHeight() * 1 ) * getMass()
 /** The amount to slow the character down */
-#define DUDE_DAMPING    10.0f
+#define DUDE_DAMPING    5.0f
 /** The maximum character speed */
-#define DUDE_MAXSPEED   5.0f
+#define DUDE_MANUEL_MAXSPEED   7.0f
 
 
 #pragma mark -
@@ -106,6 +106,11 @@ protected:
 	std::shared_ptr<cugl::scene2::SceneNode> _node;
 	/** The scale between the physics world and the screen (MUST BE UNIFORM) */
 	float _drawScale;
+
+    bool _dash;
+    int _dashNum;
+    float _dashCooldown;
+    bool _contactingWall;
 
 	/**
 	* Redraws the outline of the physics fixtures to the debug node
@@ -206,6 +211,7 @@ public:
      * @return  true if the obstacle is initialized properly, false otherwise.
      */
     virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale);
+
 
     
 #pragma mark -
@@ -344,20 +350,32 @@ public:
      * @param value left/right movement of this character.
      */
     void setMovement(float value);
-    
+
     /**
      * Returns true if the dude is actively firing.
      *
      * @return true if the dude is actively firing.
      */
     bool isShooting() const { return _isShooting && _shootCooldown <= 0; }
-    
+
     /**
      * Sets whether the dude is actively firing.
      *
      * @param value whether the dude is actively firing.
      */
     void setShooting(bool value) { _isShooting = value; }
+
+
+    bool canDash() const { return _dash && _dashCooldown <= 0 && _dashNum>0; }
+
+    void setDash(bool value) { _dash = value; }
+
+    int getDashNum() { return _dashNum; }
+    void setDashNum(int val) { _dashNum = val; }
+    void deltaDashNum(int val) { _dashNum += val; }
+
+    bool contactingWall() { return _contactingWall; }
+    void setContactingWall(bool val) { _contactingWall = val;  }
     
     /**
      * Returns true if the dude is actively jumping.
@@ -410,7 +428,7 @@ public:
      *
      * @return the upper limit on dude left-right movement.
      */
-    float getMaxSpeed() const { return DUDE_MAXSPEED; }
+    float getMaxSpeed() const { return DUDE_MANUEL_MAXSPEED; }
     
     /**
      * Returns the name of the ground sensor
@@ -463,7 +481,7 @@ public:
      *
      * This method should be called after the force attribute is set.
      */
-    void applyForce();
+    void applyForce(float h, float v);
 
 
 	

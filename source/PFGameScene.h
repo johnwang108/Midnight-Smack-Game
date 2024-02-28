@@ -35,6 +35,7 @@
 #include "PFDudeModel.h"
 #include "PFRopeBridge.h"
 #include "PFSpinner.h"
+#include "Enemy.h"
 
 /**
  * This class is the primary gameplay constroller for the demo.
@@ -75,11 +76,16 @@ protected:
     /** The scale between the physics world and the screen (MUST BE UNIFORM) */
     float _scale;
 
+    /** Whether or not time is being slowed */
+    bool _slowed;
+
     // Physics objects for the game
     /** Reference to the goalDoor (for collision detection) */
     std::shared_ptr<cugl::physics2::BoxObstacle>    _goalDoor;
     /** Reference to the player avatar */
     std::shared_ptr<DudeModel>			  _avatar;
+    /** Reference to the enemy avatar */
+    std::shared_ptr<EnemyModel>			  _enemy;
     /** Reference to the spinning barrier */
     std::shared_ptr<Spinner>			  _spinner;
     /** Reference to the rope bridge */

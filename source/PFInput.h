@@ -57,9 +57,18 @@ private:
     bool  _keyLeft;
     /** Whether the right arrow key is down */
     bool  _keyRight;
+    /** Whether the slow key is down */
+    bool _keySlow;
+  
 
     std::string _lastGestureString;
     float _lastGestureSimilarity;
+  
+    bool  _keyDown;
+    bool  _keyUp;
+    bool _dashKey;
+   
+    
   
 protected:
     // INPUT RESULTS
@@ -73,8 +82,13 @@ protected:
     bool _firePressed;
     /** Whether the jump action was chosen. */
     bool _jumpPressed;
+    /** Whether the slow action was chosen. */
+    bool _slowPressed;
     /** How much did we move horizontally? */
     float _horizontal;
+    float _vertical;
+    bool _dashPressed;
+
 
 #pragma mark Internal Touch Management   
 	// The screen is divided into four zones: Left, Bottom, Right and Main/
@@ -231,7 +245,15 @@ public:
      *
      * @return the amount of sideways movement.
      */
-	float getHorizontal() const { return _horizontal; }
+    float getHorizontal() const { return _horizontal; }
+    /**
+     * Returns the amount of sideways movement.
+     *
+     * -1 = left, 1 = right, 0 = still
+     *
+     * @return the amount of sideways movement.
+     */
+    float getVertical() const { return _vertical; }
 
     /**
      * Returns if the jump button was pressed.
@@ -267,13 +289,17 @@ public:
 	 * @return true if the exit button was pressed.
 	 */
 	bool didExit() const { return _exitPressed; }
-    
-    ///**
-    // * Returns true if the virtual joystick is in use (touch only)
-    // *
-    // * @return true if the virtual joystick is in use (touch only)
-    // */
-    //bool withJoystick() const { return _joystick; }
+    bool didSlow() const { return _slowPressed; }
+
+
+    bool didDash() const { return _dashPressed; }
+
+    /**
+     * Returns true if the virtual joystick is in use (touch only)
+     *
+     * @return true if the virtual joystick is in use (touch only)
+     */
+    bool withJoystick() const { return _joystick; }
 
     ///**
     // * Returns the scene graph position of the virtual joystick

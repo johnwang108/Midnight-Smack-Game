@@ -21,13 +21,17 @@ using namespace cugl;
 /** The key to use for reseting the game */
 #define RESET_KEY KeyCode::R
 /** The key for toggling the debug display */
-#define DEBUG_KEY KeyCode::D
+#define DEBUG_KEY KeyCode::Q
 /** The key for exitting the game */
 #define EXIT_KEY  KeyCode::ESCAPE
 /** The key for firing a bullet */
-#define FIRE_KEY KeyCode::SPACE
+#define FIRE_KEY KeyCode::O
 /** The key for jumping up */
-#define JUMP_KEY KeyCode::ARROW_UP
+#define JUMP_KEY KeyCode::SPACE
+#define DASH_KEY KeyCode::LEFT_SHIFT
+
+/** Slow key */
+#define SLOW_KEY KeyCode::TAB
 
 /** How close we need to be for a multi touch */
 #define NEAR_TOUCH      100
@@ -76,6 +80,7 @@ _debugPressed(false),
 _exitPressed(false),
 _firePressed(false),
 _jumpPressed(false),
+_slowPressed(false),
 _keyJump(false),
 _keyFire(false),
 _keyReset(false),
@@ -83,7 +88,11 @@ _keyDebug(false),
 _keyExit(false),
 _keyLeft(false),
 _keyRight(false),
+_keySlow(false),
 _horizontal(0.0f),
+_vertical(0.0f),
+_joystick(false),
+_dashKey(false),
 _hasJumped(false) {
 }
 
@@ -187,9 +196,15 @@ void PlatformInput::update(float dt) {
     _keyExit   = keys->keyPressed(EXIT_KEY);
     _keyFire   = keys->keyPressed(FIRE_KEY);
     _keyJump   = keys->keyPressed(JUMP_KEY);
+    _keySlow   = keys->keyDown(SLOW_KEY);
 
-    _keyLeft = keys->keyDown(KeyCode::ARROW_LEFT);
-    _keyRight = keys->keyDown(KeyCode::ARROW_RIGHT);
+    _dashKey = keys->keyPressed(DASH_KEY);
+
+    _keyLeft = keys->keyDown(KeyCode::A);
+    _keyRight = keys->keyDown(KeyCode::D);
+
+    _keyUp = keys->keyDown(KeyCode::W);
+    _keyDown = keys->keyDown(KeyCode::S);
 #endif
 
     _resetPressed = _keyReset;
@@ -197,15 +212,25 @@ void PlatformInput::update(float dt) {
     _exitPressed  = _keyExit;
 	_firePressed  = _keyFire;
 	_jumpPressed  = _keyJump;
+    _slowPressed  = _keySlow;
+    _jumpPressed = _keyJump;
+    _dashPressed  = _dashKey;
 
 	// Directional controls
-	_horizontal = 0.0f;
-	if (_keyRight) {
-		_horizontal += 1.0f;
-	}
-	if (_keyLeft) {
-		_horizontal -= 1.0f;
-	}
+    _horizontal = 0.0f;
+    if (_keyRight) {
+        _horizontal += 1.0f;
+    }
+    if (_keyLeft) {
+        _horizontal -= 1.0f;
+    }
+    _vertical = 0.0f;
+    if (_keyUp) {
+        _vertical += 1.0f;
+    }
+    if (_keyDown) {
+        _vertical -= 1.0f;
+    }
 
 // If it does not support keyboard, we must reset "virtual" keyboard
 #ifdef CU_TOUCH_SCREEN
@@ -226,7 +251,8 @@ void PlatformInput::clear() {
     _exitPressed  = false;
     _jumpPressed = false;
     _firePressed = false;
-    
+    _dashPressed = false;
+    _slowPressed = false;
 }
 
 #pragma mark -

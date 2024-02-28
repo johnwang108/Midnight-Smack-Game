@@ -42,16 +42,18 @@ using namespace cugl;
 #pragma mark Level Geography
 
 /** This is adjusted by screen aspect ratio to get the height */
-#define SCENE_WIDTH 1024
-#define SCENE_HEIGHT 576
+#define SCENE_WIDTH 1280
+#define SCENE_HEIGHT 800
 
 /** This is the aspect ratio for physics */
-#define SCENE_ASPECT 9.0/16.0
+#define SCENE_ASPECT 10.0/16.0
 
 /** Width of the game world in Box2d units */
 #define DEFAULT_WIDTH   32.0f
 /** Height of the game world in Box2d units */
 #define DEFAULT_HEIGHT  18.0f
+
+#define INCLUDE_ROPE_BRIDGE false
 
 // Since these appear only once, we do not care about the magic numbers.
 // In an actual game, this information would go in a data file.
@@ -93,6 +95,8 @@ float SPIN_POS[] = {13.0f,12.5f};
 float DUDE_POS[] = { 2.5f, 5.0f};
 /** The position of the rope bridge */
 float BRIDGE_POS[] = {9.0f, 3.8f};
+
+float shrimp_POS[] = { 21.0f, 16.0f };
 
 #pragma mark -
 #pragma mark Physics Constants
@@ -183,7 +187,8 @@ GameScene::GameScene() : Scene2(),
 	_world(nullptr),
 	_avatar(nullptr),
 	_complete(false),
-	_debug(false)
+	_debug(false),
+    _enemy(nullptr)
 {    
 }
 
@@ -373,6 +378,7 @@ void GameScene::reset() {
     _goalDoor = nullptr;
     _spinner = nullptr;
     _ropebridge = nullptr;
+    _enemy = nullptr;
       
     setFailure(false);
     setComplete(false);
@@ -475,6 +481,34 @@ void GameScene::populate() {
 		addObstacle(platobj,sprite,1);
 	}
 
+    //hack for rope bridge removal
+    if (!INCLUDE_ROPE_BRIDGE) {
+        std::shared_ptr<physics2::PolygonObstacle> platobj;
+        float plat[PLATFORM_VERTS] = { 9.0f, 3.0f, 9.0f, 2.5f, 23.0f, 2.5f, 23.0f, 3.0f };
+        Poly2 platform(reinterpret_cast<Vec2*>(plat), 4);
+
+        EarclipTriangulator triangulator;
+        triangulator.set(platform.vertices);
+        triangulator.calculate();
+        platform.setIndices(triangulator.getTriangulation());
+        triangulator.clear();
+
+        platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_CENTER);
+        // You cannot add constant "".  Must stringify
+        platobj->setName(std::string(PLATFORM_NAME) + cugl::strtool::to_string(PLATFORM_COUNT));
+
+        // Set the physics attributes
+        platobj->setBodyType(b2_staticBody);
+        platobj->setDensity(BASIC_DENSITY);
+        platobj->setFriction(BASIC_FRICTION);
+        platobj->setRestitution(BASIC_RESTITUTION);
+        platobj->setDebugColor(DEBUG_COLOR);
+
+        platform *= _scale;
+        sprite = scene2::PolygonNode::allocWithTexture(image, platform);
+        addObstacle(platobj, sprite, 1);
+    }
+
 #pragma mark : Spinner
 	Vec2 spinPos = SPIN_POS;
     image = _assets->get<Texture>(SPINNER_TEXTURE);
@@ -497,20 +531,24 @@ void GameScene::populate() {
 	Vec2 bridgeEnd   = bridgeStart;
 	bridgeEnd.x += BRIDGE_WIDTH;
     image = _assets->get<Texture>(BRIDGE_TEXTURE);
-    
-	_ropebridge = RopeBridge::alloc(bridgeStart,bridgeEnd,image->getSize()/_scale,_scale);
-    _ropebridge->setTexture(image);
-	node = scene2::SceneNode::alloc();
 
-    // With refactor, must be added manually
-    // Add the node to the world before calling setSceneNode,
-    _worldnode->addChild(node);
-    _ropebridge->setSceneNode(node);
+    if (INCLUDE_ROPE_BRIDGE) {
+        _ropebridge = RopeBridge::alloc(bridgeStart,bridgeEnd,image->getSize()/_scale,_scale);
+        _ropebridge->setTexture(image);
+        node = scene2::SceneNode::alloc();
+
+        // With refactor, must be added manually
+        // Add the node to the world before calling setSceneNode,
+        _worldnode->addChild(node);
+        _ropebridge->setSceneNode(node);
+   
+        _ropebridge->setDrawScale(_scale);
+        _ropebridge->setDebugColor(DEBUG_COLOR);
+        _ropebridge->setDebugScene(_debugnode);
+        _ropebridge->activate(_world);
+    }
     
-    _ropebridge->setDrawScale(_scale);
-    _ropebridge->setDebugColor(DEBUG_COLOR);
-    _ropebridge->setDebugScene(_debugnode);
-    _ropebridge->activate(_world);
+
 
 #pragma mark : Dude
 	Vec2 dudePos = DUDE_POS;
@@ -525,6 +563,17 @@ void GameScene::populate() {
 	// Play the background music on a loop.
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
     AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
+
+
+#pragma mark : Enemies
+    Vec2 shrimp_pos = shrimp_POS;
+    node = scene2::SceneNode::alloc();
+    image = _assets->get<Texture>(SHRIMP_TEXTURE);
+    _enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
+    sprite = scene2::PolygonNode::allocWithTexture(image);
+    _enemy->setSceneNode(sprite);
+    _enemy->setDebugColor(DEBUG_COLOR);
+    //addObstacle(_enemy, sprite);
 }
 
 /**
@@ -596,34 +645,22 @@ void GameScene::preUpdate(float dt) {
 		Application::get()->quit();
 	}
 
-	// Process the movement
-  /*  if (_input.withJoystick()) {
-        if (_input.getHorizontal() < 0) {
-            _leftnode->setVisible(true);
-            _rightnode->setVisible(false);
-        } else if (_input.getHorizontal() > 0) {
-            _leftnode->setVisible(false);
-            _rightnode->setVisible(true);
-        } else {
-            _leftnode->setVisible(false);
-            _rightnode->setVisible(false);
-        }
-        _leftnode->setPosition(_input.getJoystick());
-        _rightnode->setPosition(_input.getJoystick());
-    } else {
-        _leftnode->setVisible(false);
-        _rightnode->setVisible(false);
-    }*/
+    _slowed = _input.didSlow();
+ 
     
-	_avatar->setMovement(_input.getHorizontal()*_avatar->getForce());
-	_avatar->setJumping( _input.didJump());
-	_avatar->applyForce();
+	_avatar->setMovement(_input.getHorizontal() * _avatar->getForce());
+    _avatar->setJumping(_input.didJump());
+    _avatar->setDash( _input.didDash());
+	_avatar->applyForce(_input.getHorizontal(), _input.getVertical());
 
 	if (_avatar->isJumping() && _avatar->isGrounded()) {
 		std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
 		AudioEngine::get()->play(JUMP_EFFECT,source,false,EFFECT_VOLUME);
 	}
 
+    _enemy->update(dt);
+ 
+    
 }
 
 /**
@@ -654,6 +691,9 @@ void GameScene::preUpdate(float dt) {
  */
 void GameScene::fixedUpdate(float step) {
     // Turn the physics engine crank.
+    if (_slowed) { 
+        step = step / 5;
+    }
     _world->update(step);
 }
     
@@ -686,7 +726,10 @@ void GameScene::postUpdate(float remain) {
     // TODO: Update this demo to support interpolation
     // We can interpolate the rope bridge and spinner as we have the data structures
     _spinner->update(remain);
-    _ropebridge->update(remain);
+    if (INCLUDE_ROPE_BRIDGE) {
+        _ropebridge->update(remain);
+    }
+
 
     // Add a bullet AFTER physics allows it to hang in front
     // Otherwise, it looks like bullet appears far away
@@ -815,6 +858,7 @@ void GameScene::removeBullet(Bullet* bullet) {
  *
  * @param  contact  The two bodies that collided
  */
+
 void GameScene::beginContact(b2Contact* contact) {
 	b2Fixture* fix1 = contact->GetFixtureA();
 	b2Fixture* fix2 = contact->GetFixtureB();
@@ -835,19 +879,31 @@ void GameScene::beginContact(b2Contact* contact) {
 		removeBullet((Bullet*)bd2);
 	}
 
-	// See if we have landed on the ground.
-	if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
-		(_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
-		_avatar->setGrounded(true);
-		// Could have more than one ground
-		_sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
-	}
 
-	// If we hit the "win" door, we are done
-	if((bd1 == _avatar.get()   && bd2 == _goalDoor.get()) ||
-		(bd1 == _goalDoor.get() && bd2 == _avatar.get())) {
-		setComplete(true);
-	}
+    // See if we have landed on the ground.
+    if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
+        (_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
+        _avatar->setGrounded(true);
+        // Could have more than one ground
+        _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
+    }
+    if ((bd1 == _avatar.get() && bd2->getName() == WALL_NAME) ||
+        (bd2 == _avatar.get() && bd1->getName() == WALL_NAME)) {
+        _avatar->setContactingWall(true);
+        _avatar->setVX(0);
+    }
+
+    // If we hit the "win" door, we are done
+    if ((bd1 == _avatar.get() && bd2 == _goalDoor.get()) ||
+        (bd1 == _goalDoor.get() && bd2 == _avatar.get())) {
+        setComplete(true);
+    }
+
+    if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
+        (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
+        _enemy->setGrounded(true);
+        // Could have more than one ground
+    }
 }
 
 /**
@@ -877,6 +933,16 @@ void GameScene::endContact(b2Contact* contact) {
 			_avatar->setGrounded(false);
 		}
 	}
+    // Check if the player is no longer in contact with any walls
+    bool p1 = (_avatar->getSensorName() == fd2);
+    bool p2 = (bd1->getName() != WALL_NAME);
+    bool p3 = (_avatar->getSensorName() == fd1);
+    bool p4 = (bd2->getName() != WALL_NAME );
+    bool p5 = _avatar->contactingWall();
+    if (!(p1 || p2 || p3) && p4 && p5) {
+        _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
+        _avatar->setContactingWall(false);
+    }
 }
 
 /**
