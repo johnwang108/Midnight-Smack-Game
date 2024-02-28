@@ -63,27 +63,24 @@ using namespace cugl;
 #define WALL_COUNT  2
 
 float WALL[WALL_COUNT][WALL_VERTS] = {
-	{16.0f, 18.0f,  0.0f, 18.0f,  0.0f,  0.0f,
-      1.0f,  0.0f,  1.0f, 17.0f, 16.0f, 17.0f },
-	{32.0f, 18.0f, 16.0f, 18.0f, 16.0f, 17.0f,
-     31.0f, 17.0f, 31.0f,  0.0f, 32.0f,  0.0f }
+	{16.0f, 20.0f,  0.0f, 20.0f,  0.0f,  0.0f,
+      1.0f,  0.0f,  1.0f, 19.5f, 16.0f, 19.5f },
+	{32.0f, 20.0f, 16.0f, 20.0f, 16.0f, 19.5f,
+     31.0f, 19.5f, 31.0f,  0.0f, 32.0f,  0.0f }
 };
 
 /** The number of platforms */
 #define PLATFORM_VERTS  8
-#define PLATFORM_COUNT  10
+#define PLATFORM_COUNT  7
 
 /** The outlines of all of the platforms */
 float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
-	{ 1.0f, 3.0f, 1.0f, 2.5f, 6.0f, 2.5f, 6.0f, 3.0f},
-	{ 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
+	{ 1.0f, .5f, 1.0f, .0f, 6.0f, .0f, 6.0f, .50f},
+	{ 6.0f, 1.0f, 6.0f, .0f, 9.0f, .0f, 9.0f, 1.0f},
 	{23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
 	{26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
 	{29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
-	{24.0f, 8.5f,24.0f, 8.0f,27.0f, 8.0f,27.0f, 8.5f},
-	{29.0f,10.0f,29.0f, 9.5f,31.0f, 9.5f,31.0f,10.0f},
-	{23.0f,11.5f,23.0f,11.0f,27.0f,11.0f,27.0f,11.5f},
-	{19.0f,12.5f,19.0f,12.0f,23.0f,12.0f,23.0f,12.5f},
+	{19.0f,12.0f,19.0f,11.5f,23.0f,11.5f,23.0f,12.0f},
 	{ 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
 };
 
@@ -510,16 +507,17 @@ void GameScene::populate() {
     }
 
 #pragma mark : Spinner
+    std::shared_ptr<scene2::SceneNode> node = scene2::SceneNode::alloc();
+
 	Vec2 spinPos = SPIN_POS;
     image = _assets->get<Texture>(SPINNER_TEXTURE);
 	_spinner = Spinner::alloc(spinPos,image->getSize()/_scale,_scale);
     _spinner->setTexture(image);
-	std::shared_ptr<scene2::SceneNode> node = scene2::SceneNode::alloc();
     
     // With refactor, must be added manually
     // Add the node to the world before calling setSceneNode,
     _worldnode->addChild(node);
-    _spinner->setSceneNode(node);
+    //_spinner->setSceneNode(node);
 
     _spinner->setDrawScale(_scale);
     _spinner->setDebugColor(DEBUG_COLOR);
