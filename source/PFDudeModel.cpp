@@ -55,7 +55,7 @@ float jmpHeight = 1;
 /**Modif dash, as a multiple of DASH_JUMP*/
 float dashModif = 1.3;
 /**The aount of frames following a dash that SUe floats for*/
-float floatyFrames = 10;
+float floatyFrames = 19;
 
 #pragma mark -
 #pragma mark Physics Constants
@@ -235,7 +235,7 @@ void DudeModel::applyForce(float h, float v) {
 
     // Don't want to be moving. Damp out player motion
     if (getMovement() == 0.0f || h*getVX()<=0 || fabs(getVX()) >= getMaxSpeed()) {
-        if (isGrounded()) {
+        if (isGrounded() && (_dashCooldown <= DASH_COOLDOWN * .1)) {
             // Instant friction on the ground
             b2Vec2 vel = _body->GetLinearVelocity();
             float LogVal = std::log(abs(vel.x) + 1);
@@ -273,7 +273,7 @@ void DudeModel::applyForce(float h, float v) {
         setVY(0);
         setVX(0);
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
-        deltaDashNum(-1);
+        //deltaDashNum(-1);
     }
 }
 
@@ -285,7 +285,6 @@ void DudeModel::applyForce(float h, float v) {
  * @param delta Number of seconds since last animation frame
  */
 void DudeModel::update(float dt) {
-
     if (_dashCooldown > floatyFrames) {
         setGravityScale(0);
     }
@@ -308,6 +307,7 @@ void DudeModel::update(float dt) {
     }
     if (canDash() && _dashCooldown == 0) {
         _dashCooldown = DASH_COOLDOWN;
+        deltaDashNum(-1);
     }
     else {
         _dashCooldown = (_dashCooldown > 0 ? _dashCooldown - 1 : 0);

@@ -63,7 +63,7 @@
 /** The amount to slow the character down */
 #define DUDE_DAMPING    5.0f
 /** The maximum character speed */
-#define DUDE_MANUEL_MAXSPEED   10.0f
+#define DUDE_MANUEL_MAXSPEED   7.0f
 
 
 #pragma mark -
@@ -366,7 +366,7 @@ public:
     void setShooting(bool value) { _isShooting = value; }
 
 
-    bool canDash() const { return _dash && _dashCooldown <= 0 ; }
+    bool canDash() const { return _dash && _dashCooldown <= 0 && _dashNum>0; }
 
     void setDash(bool value) { _dash = value; }
 
