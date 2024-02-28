@@ -227,7 +227,22 @@ void PlatformInput::update(float dt) {
     _keyUp = keys->keyDown(KeyCode::W);
     _keyDown = keys->keyDown(KeyCode::S);
 
-    //_gameCont->isButtonPressed();
+
+#else 
+    _keyJump = _gameCont->isButtonPressed(0);
+    _keyFire = _gameCont->isButtonPressed(1);
+    _keySlow = _gameCont->isButtonPressed(2);
+    _dashKey = _gameCont->isButtonPressed(3);
+    
+    if (_gameCont->isButtonPressed(4)) CULog("This button is 4");
+    if (_gameCont->isButtonPressed(5)) CULog("This button is 5");
+    if (_gameCont->isButtonPressed(6)) CULog("This button is 6");
+    if (_gameCont->isButtonPressed(7)) CULog("This button is 7");
+    if (_gameCont->isButtonPressed(8)) CULog("This button is 8");
+    if (_gameCont->isButtonPressed(9)) CULog("This button is 9");
+    if (_gameCont->isButtonPressed(10)) CULog("This button is 9");
+
+
 
 #endif
 
