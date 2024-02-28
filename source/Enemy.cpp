@@ -3,15 +3,7 @@
 #include <cugl/scene2/graph/CUTexturedNode.h>
 #include <cugl/assets/CUAssetManager.h>
 
-#define ENEMY_FORCE      1.0f
-#define ENEMY_DAMPING    5.0f
-#define ENEMY_MAXSPEED   10.0f
-#define ENEMY_JUMP       2.5f
-#define ENEMY_VSHRINK    0.8f
-#define ENEMY_HSHRINK    0.7f
-#define ENEMY_DENSITY    1.0f
 
-#define SENSOR_HEIGHT 0.1f
 
 using namespace cugl;
 
@@ -169,7 +161,7 @@ void EnemyModel::removeFromGame() {
     if (_body != nullptr) {
         _body = nullptr; 
     }
-
+    markRemoved(true);
     if (_node != nullptr) {
         _node->removeFromParent();
         _node = nullptr; 

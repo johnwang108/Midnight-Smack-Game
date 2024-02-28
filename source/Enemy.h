@@ -6,14 +6,26 @@
 
 #define ENEMY_SENSOR_NAME     "enemysensor"
 #define SHRIMP_TEXTURE    "shrimp"
+#define EGG_TEXTURE    "egg"
+#define RICE_TEXTURE    "rice"
+
+#define ENEMY_FORCE      1.0f
+#define ENEMY_DAMPING    5.0f
+#define ENEMY_MAXSPEED   10.0f
+#define ENEMY_JUMP       2.5f
+#define ENEMY_VSHRINK    0.8f
+#define ENEMY_HSHRINK    0.7f
+#define ENEMY_DENSITY    1.0f
+
+#define SENSOR_HEIGHT 0.1f
 /**
  * Enum for enemy types.
  * Add additional enemy types as needed.
  */
 enum class EnemyType {
     shrimp, 
-    FLYING, 
-    CHARGER 
+    rice, 
+    egg 
 };
 
 class EnemyModel : public cugl::physics2::CapsuleObstacle {
@@ -90,7 +102,7 @@ public:
 
     const std::shared_ptr<cugl::scene2::SceneNode>& getSceneNode() const { return _node; }
 
-    void markRemoved(bool value) { _remove = value; }
+  //  void markRemoved(bool value) { _remove = value; }
 
     bool isRemoved() const { return _remove; }
 

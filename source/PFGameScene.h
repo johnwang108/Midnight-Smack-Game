@@ -77,8 +77,8 @@ protected:
     std::shared_ptr<cugl::physics2::BoxObstacle>    _goalDoor;
     /** Reference to the player avatar */
     std::shared_ptr<DudeModel>			  _avatar;
-    /** Reference to the enemy avatar */
-    std::shared_ptr<EnemyModel>			  _enemy;
+
+    std::vector<std::shared_ptr<EnemyModel>> _enemies;
     /** Reference to the spinning barrier */
     std::shared_ptr<Spinner>			  _spinner;
     /** Reference to the rope bridge */
@@ -389,6 +389,8 @@ public:
 
     void removeEnemy(EnemyModel* Enemy);
 
+
+    std::shared_ptr<EnemyModel> createEnemy(EnemyType type, std::shared_ptr<Texture> image);
   };
 
 #endif /* __PF_GAME_SCENE_H__ */

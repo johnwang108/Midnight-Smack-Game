@@ -92,7 +92,9 @@ float DUDE_POS[] = { 2.5f, 5.0f};
 /** The position of the rope bridge */
 float BRIDGE_POS[] = {9.0f, 3.8f};
 
-float shrimp_POS[] = { 21.0f, 16.0f };
+float SHRIMP_POS[] = { 21.0f, 16.0f };
+
+float RICE_POS[] = { 25.0f, 14.0f };
 
 #pragma mark -
 #pragma mark Physics Constants
@@ -181,8 +183,7 @@ GameScene::GameScene() : Scene2(),
 	_world(nullptr),
 	_avatar(nullptr),
 	_complete(false),
-	_debug(false),
-    _enemy(nullptr)
+	_debug(false)
 {    
 }
 
@@ -359,8 +360,8 @@ void GameScene::reset() {
     _goalDoor = nullptr;
     _spinner = nullptr;
     _ropebridge = nullptr;
-    _enemy = nullptr;
-      
+    _enemies.clear();
+
     setFailure(false);
     setComplete(false);
     populate();
@@ -513,14 +514,25 @@ void GameScene::populate() {
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
     AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
-    Vec2 shrimp_pos = shrimp_POS;
-    node = scene2::SceneNode::alloc();
+
+    Vec2 shrimp_pos = SHRIMP_POS;
     image = _assets->get<Texture>(SHRIMP_TEXTURE);
-    _enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
+    std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
     sprite = scene2::PolygonNode::allocWithTexture(image);
     _enemy->setSceneNode(sprite);
     _enemy->setDebugColor(DEBUG_COLOR);
     addObstacle(_enemy, sprite);
+    _enemies.push_back(_enemy);
+
+    Vec2 rice_pos = RICE_POS;
+    image = _assets->get<Texture>(RICE_TEXTURE);
+    _enemy = EnemyModel::alloc(rice_pos, image->getSize() / _scale, _scale, EnemyType::rice);
+    sprite = scene2::PolygonNode::allocWithTexture(image);
+    _enemy->setSceneNode(sprite);
+    _enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(_enemy, sprite);
+    _enemies.push_back(_enemy);
+
 }
 
 /**
@@ -624,11 +636,11 @@ void GameScene::preUpdate(float dt) {
 		AudioEngine::get()->play(JUMP_EFFECT,source,false,EFFECT_VOLUME);
 	}
 
-    if (_enemy != nullptr && !_enemy->isRemoved()) {
-        _enemy->update(dt);
+    for (auto& enemy : _enemies) {
+        if (enemy != nullptr && !enemy->isRemoved()) {
+            enemy->update(dt);
+        }
     }
-    
-
 }
 
 /**
@@ -844,22 +856,23 @@ void GameScene::beginContact(b2Contact* contact) {
 		// Could have more than one ground
 		_sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
 	}
-
-    if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
-        (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
-        _enemy->setGrounded(true);
-    }
+    for (auto& _enemy : _enemies) {
+        if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
+            (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
+            _enemy->setGrounded(true);
+        }
 
         if (!_enemy->isRemoved()) {
             if (bd1 == _avatar.get() && bd2 == _enemy.get()
-            ||(bd2 == _avatar.get() && bd1 == _enemy.get())) {
-            _enemy->setDebugScene(nullptr);
-            _worldnode->removeChild(_enemy->getSceneNode());
-            _enemy->markRemoved(true);
-            _enemy->removeFromGame();
+                || (bd2 == _avatar.get() && bd1 == _enemy.get())) {
+                _enemy->setDebugScene(nullptr);
+                _worldnode->removeChild(_enemy->getSceneNode());
+                _enemy->removeFromGame();
+            }
         }
     }
 
+    
 	// If we hit the "win" door, we are done
 	if((bd1 == _avatar.get()   && bd2 == _goalDoor.get()) ||
 		(bd1 == _goalDoor.get() && bd2 == _avatar.get())) {
