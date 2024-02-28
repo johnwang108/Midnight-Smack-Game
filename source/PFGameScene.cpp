@@ -40,8 +40,8 @@ using namespace cugl;
 #pragma mark Level Geography
 
 /** This is adjusted by screen aspect ratio to get the height */
-#define SCENE_WIDTH 1024
-#define SCENE_HEIGHT 576
+#define SCENE_WIDTH 1280
+#define SCENE_HEIGHT 800
 
 /** This is the aspect ratio for physics */
 #define SCENE_ASPECT 9.0/16.0
