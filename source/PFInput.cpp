@@ -147,12 +147,12 @@ bool PlatformInput::init(const Rect bounds) {
     _dollarRecog->setAlgorithm(cugl::GestureRecognizer::Algorithm::ONEDOLLAR);
 
 
-    std::vector<Vec2> swipeVertices = { Vec2(1,1), Vec2(1,0) };
+    std::vector<Vec2> swipeVertices = { Vec2(1,1), Vec2(1,249) };
     cugl::Path2 swipeGesturePath = cugl::Path2(swipeVertices);
 
     if (!_dollarRecog->addGesture("swipe", swipeGesturePath, true)) CULog("failed to initialize swipe");
 
-    std::vector<Vec2> vVertices = { Vec2(0,1), Vec2(1,0), Vec2(2,1) };
+    std::vector<Vec2> vVertices = { Vec2(0,0), Vec2(124,124), Vec2(249,0) };
     cugl::Path2 vGesturePath = cugl::Path2(vVertices);
 
     if (!_dollarRecog->addGesture("v", vGesturePath, true)) CULog("failed to initialize v");
@@ -403,6 +403,11 @@ void PlatformInput::touchEndedCB(const TouchEvent& event, bool focus) {
     _touchPath.push(pos);
 
     float similarity = -1.0f;
+
+    PathSmoother smoother = PathSmoother();
+    smoother.set(_touchPath);
+    smoother.calculate();
+    _touchPath = smoother.getPath();
     std::string result = _dollarRecog->match(_touchPath, similarity);
 
     _lastGestureString = result;
