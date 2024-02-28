@@ -534,7 +534,7 @@ void GameScene::populate() {
     _spinner->setDrawScale(_scale);
     _spinner->setDebugColor(DEBUG_COLOR);
     _spinner->setDebugScene(_debugnode);
-    _spinner->activate(_world);
+    //_spinner->activate(_world);
 
 #pragma mark : Rope Bridge
 	Vec2 bridgeStart = BRIDGE_POS;
