@@ -32,7 +32,6 @@ bool EnemyModel::init(const Vec2& pos, const Size& size, float scale, EnemyType 
         _lastDirection = _direction;
         _changeDirectionInterval = 3.0f;
         _nextChangeTime = _changeDirectionInterval + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * _changeDirectionInterval;
-        _remove = false;
 
         return true;
     }
@@ -156,16 +155,4 @@ void EnemyModel::dispose() {
     _node = nullptr;
 }
 
-void EnemyModel::removeFromGame() {
-    _remove = true;
-    if (_body != nullptr) {
-        _body = nullptr; 
-    }
-    markRemoved(true);
-    if (_node != nullptr) {
-        _node->removeFromParent();
-        _node = nullptr; 
-    }
-    
-}
 

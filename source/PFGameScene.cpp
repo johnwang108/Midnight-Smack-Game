@@ -324,7 +324,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _slowed = false;
 
-    _dollarnode = std::make_shared<DollarScene>();
+   // _dollarnode = std::make_shared<DollarScene>();
     
     addChild(_worldnode);
     addChild(_debugnode);
@@ -333,12 +333,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_leftnode);
     addChild(_rightnode);
     addChild(_gesturehud);
-    addChild(_dollarnode);
-    _dollarnode->init(_assets, _input);
+//    addChild(_dollarnode);
+  //  _dollarnode->init(_assets, _input);
     //_dollarnode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
-    _dollarnode->setPosition(getSize().getIWidth() / 2.0f, getSize().getIHeight() / 2.0f);
+  //  _dollarnode->setPosition(getSize().getIWidth() / 2.0f, getSize().getIHeight() / 2.0f);
     //_dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
-    _dollarnode->setVisible(false);
+  //  _dollarnode->setVisible(false);
 
 
     populate();
@@ -364,8 +364,8 @@ void GameScene::dispose() {
         _losenode = nullptr;
         _leftnode = nullptr;
         _rightnode = nullptr;
-        _dollarnode->dispose();
-        _dollarnode = nullptr;
+    //    _dollarnode->dispose();
+    //    _dollarnode = nullptr;
         _complete = false;
         _debug = false;
         Scene2::dispose();
@@ -655,39 +655,40 @@ void GameScene::addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj
  * @param dt    The amount of time (in seconds) since the last frame
  */
 void GameScene::preUpdate(float dt) {
-	_input->update(dt);
+    _input->update(dt);
 
-	// Process the toggled key commands
-	if (_input->didDebug()) { setDebug(!isDebug()); }
-	if (_input->didReset()) { reset(); }
-	if (_input->didExit())  {
-		CULog("Shutting down");
-		Application::get()->quit();
-	}
+    // Process the toggled key commands
+    if (_input->didDebug()) { setDebug(!isDebug()); }
+    if (_input->didReset()) { reset(); }
+    if (_input->didExit()) {
+        CULog("Shutting down");
+        Application::get()->quit();
+    }
 
-	//_slowed = _input->didSlow();
+    //_slowed = _input->didSlow();
     if (_input->didSlow()) {
         _slowed = !_slowed;
     }
-	if (!_slowed) {
-		_dollarnode->setVisible(false);
+    if (!_slowed) {
+    //    _dollarnode->setVisible(false);
 
-		_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
-		_avatar->setJumping(_input->didJump());
-		_avatar->setDash(_input->didDash());
-		_avatar->applyForce(_input->getHorizontal(), _input->getVertical());
+        _avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
+        _avatar->setJumping(_input->didJump());
+        _avatar->setDash(_input->didDash());
+        _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
 
-		if (_avatar->isJumping() && _avatar->isGrounded()) {
-			std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
-			AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
-		}
-	}
+        if (_avatar->isJumping() && _avatar->isGrounded()) {
+            std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
+            AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
+        }
+    }
     else {
 
         _avatar->setMovement(0);
         _avatar->setJumping(_input->didJump());
         _avatar->setDash(_input->didDash());
         _avatar->applyForce(0, 0);
+    }
 
     for (auto& enemy : _enemies) {
         if (enemy != nullptr && !enemy->isRemoved()) {
@@ -920,17 +921,17 @@ void GameScene::beginContact(b2Contact* contact) {
 		_sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
 	}
     for (auto& _enemy : _enemies) {
-        if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
-            (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
-            _enemy->setGrounded(true);
-        }
-
         if (!_enemy->isRemoved()) {
+            if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
+                (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
+                _enemy->setGrounded(true);
+            }
             if (bd1 == _avatar.get() && bd2 == _enemy.get()
                 || (bd2 == _avatar.get() && bd1 == _enemy.get())) {
                 _enemy->setDebugScene(nullptr);
                 _worldnode->removeChild(_enemy->getSceneNode());
-                _enemy->removeFromGame();
+                _enemy->markRemoved(true);
+           //     _enemy->removeFromGame();
             }
         }
     }
