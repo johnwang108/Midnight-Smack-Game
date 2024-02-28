@@ -299,7 +299,7 @@ public:
      *
      * @return true if the virtual joystick is in use (touch only)
      */
-    bool withJoystick() const { return _joystick; }
+    //bool withJoystick() const { return _joystick; }
 
     ///**
     // * Returns the scene graph position of the virtual joystick
@@ -339,6 +339,8 @@ public:
 
     std::string getGestureString();
     float getGestureSim();
+
+    cugl::Path2 getTouchPath();
 };
 
 #endif /* __PF_INPUT_H__ */

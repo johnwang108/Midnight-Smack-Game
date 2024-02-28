@@ -657,21 +657,23 @@ void GameScene::preUpdate(float dt) {
 		Application::get()->quit();
 	}
 
-    _slowed = _input.didSlow();
- 
-    
-	_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
-    _avatar->setJumping(_input->didJump());
-    _avatar->setDash( _input->didDash());
-	_avatar->applyForce(_input->getHorizontal(), _input->getVertical());
+	_slowed = _input->didSlow();
+	if (!_slowed) {
+		_dollarnode->setVisible(false);
 
-        if (_avatar->isJumping() && _avatar->isGrounded()) {
-            std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
-            AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
-        }
-    }
+		_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
+		_avatar->setJumping(_input->didJump());
+		_avatar->setDash(_input->didDash());
+		_avatar->applyForce(_input->getHorizontal(), _input->getVertical());
+
+		if (_avatar->isJumping() && _avatar->isGrounded()) {
+			std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
+			AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
+		}
+	}
     else {
         _dollarnode->setVisible(true);
+        _dollarnode->update();
     }
     //_enemy->update(dt);
  
@@ -753,7 +755,7 @@ void GameScene::postUpdate(float remain) {
         createBullet();
     }
 
-    _gesturehud->setText(getGestureText(_input.getGestureString(), _input.getGestureSim()));
+    _gesturehud->setText(getGestureText(_input->getGestureString(), _input->getGestureSim()));
 
 
     // Record failure if necessary.

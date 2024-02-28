@@ -91,7 +91,6 @@ _keyRight(false),
 _keySlow(false),
 _horizontal(0.0f),
 _vertical(0.0f),
-_joystick(false),
 _dashKey(false),
 _hasJumped(false) {
 }
@@ -495,6 +494,10 @@ std::string  PlatformInput::getGestureString() {
 
 float PlatformInput::getGestureSim() {
     return _lastGestureSimilarity;
+}
+
+cugl::Path2 PlatformInput::getTouchPath() {
+    return _touchPath;
 }
 
 
