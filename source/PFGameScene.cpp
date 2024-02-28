@@ -564,10 +564,10 @@ void GameScene::populate() {
     Vec2 shrimp_pos = shrimp_POS;
     node = scene2::SceneNode::alloc();
     image = _assets->get<Texture>(SHRIMP_TEXTURE);
-    _enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
+    //_enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
     sprite = scene2::PolygonNode::allocWithTexture(image);
-    _enemy->setSceneNode(sprite);
-    _enemy->setDebugColor(DEBUG_COLOR);
+    //_enemy->setSceneNode(sprite);
+    //_enemy->setDebugColor(DEBUG_COLOR);
     //addObstacle(_enemy, sprite);
 }
 
@@ -669,10 +669,10 @@ void GameScene::preUpdate(float dt) {
         //CULog("Vertical: %f", _input->getVertical());
 
     
-	_avatar->setMovement(_input.getHorizontal() * _avatar->getForce());
-    _avatar->setJumping(_input.didJump());
-    _avatar->setDash( _input.didDash());
-	_avatar->applyForce(_input.getHorizontal(), _input.getVertical());
+	_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
+    _avatar->setJumping(_input->didJump());
+    _avatar->setDash( _input->didDash());
+	_avatar->applyForce(_input->getHorizontal(), _input->getVertical());
 
         if (_avatar->isJumping() && _avatar->isGrounded()) {
             std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
@@ -681,8 +681,8 @@ void GameScene::preUpdate(float dt) {
     }
     else {
         _dollarnode->setVisible(true);
-
-    _enemy->update(dt);
+    }
+    //_enemy->update(dt);
  
     
 }
@@ -920,11 +920,11 @@ void GameScene::beginContact(b2Contact* contact) {
         setComplete(true);
     }
 
-    if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
+    /*if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
         (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
-        _enemy->setGrounded(true);
+        _enemy->setGrounded(true);*/
         // Could have more than one ground
-    }
+    //}
 }
 
 /**
