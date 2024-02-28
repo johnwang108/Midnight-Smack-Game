@@ -51,7 +51,7 @@ protected:
     
     // CONTROLLERS
     /** Controller for abstracting out input across multiple platforms */
-    PlatformInput _input;
+    std::shared_ptr<PlatformInput> _input;
     
     // VIEW
     /** Reference to the physics root of the scene graph */

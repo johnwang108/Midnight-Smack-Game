@@ -32,24 +32,27 @@
 #include <sstream>
 #include <random>
 
-#define WIDTH 5
+#define WIDTH 25
 
 using namespace cugl;
 
-float STAR[] = { 0,    50,  10.75,    17,   47,     17,
-				 17.88, -4.88,   29.5, -40.5,    0, -18.33,
-				 -29.5, -40.5, -17.88, -4.88,  -47,     17,
-				-10.75,    17 };
+float SHAPE[] = { 0,300,300,300,300,0,0,0} ;
+
+//float SHAPE[] = { 0, 50, 10.75, 17, 47, 17,
+//17.88, -4.88, 29.5, -40.5, 0, -18.33,
+//-29.5, -40.5, -17.88, -4.88, -47, 17,
+//-10.75, 17 };
 
 
 DollarScene::DollarScene() : scene2::SceneNode() {
 	_assets = nullptr;
-	cugl::Vec2* verts = reinterpret_cast<Vec2*>(STAR);
-	_spline.set(verts, sizeof(STAR) / sizeof(float) / 2);
+	cugl::Vec2* verts = reinterpret_cast<Vec2*>(SHAPE);
+	_spline.set(verts, sizeof(SHAPE) / sizeof(float) / 2);
 	sp = cugl::SplinePather();
 	sp.set(&_spline);
 	sp.calculate();
 	_path = sp.getPath();
+	_childOffset = -1;
 }
 
 void DollarScene::dispose() {
@@ -64,16 +67,34 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_input = input;
 	_assets = assets;
 	_se = cugl::SimpleExtruder();
+	//_contentSize = size;
+	//_childOffset = -1;
+	_combined = Affine2::IDENTITY;
 	_poly = cugl::scene2::PolygonNode::alloc();
+	_box = cugl::scene2::PolygonNode::alloc();
+	//_poly->setPosition(getSize()/2);
+	addChild(_box);
+	addChild(_poly);
+	update();
 
 	return true;
 }
 
-//updates the rendered polygon
+//re-extrudes the path and updates the polygon node
 void DollarScene::update() {
 	_se.set(_path);
 	_se.calculate(WIDTH);
 	_poly->setPolygon(_se.getPolygon());
+	_poly->setColor(cugl::Color4::BLACK);
+	_poly->setAnchor(cugl::Vec2::ANCHOR_CENTER);
+	//update box
+	cugl::Rect bounding = _poly->getBoundingRect();
+	_box->setPolygon(cugl::Poly2(bounding));
+	_box->setColor(cugl::Color4::GREEN);
+	_box->setAnchor(cugl::Vec2::ANCHOR_CENTER);
+
+	_poly->setPosition(cugl::Vec2(0,0));
+	_box->setPosition(cugl::Vec2(0, 0));
 };
 
 //is gesture inputting still in progress?
@@ -85,3 +106,18 @@ bool DollarScene::isPending() {
 bool DollarScene::isSuccess() {
 	return true;
 };
+
+//draws a boundary rectangle
+//void DollarScene::draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint) {
+//
+//	batch->begin();
+//
+//	batch->setColor(tint);
+//
+//	cugl::Vec2* verts = reinterpret_cast<Vec2*>(SHAPE);
+//	cugl::Poly2 poly = cugl::Poly2(verts, sizeof(SHAPE) / sizeof(float) / 2);
+//
+//	batch->fill(poly, cugl::Vec2(0,0), transform);
+//
+//	//batch->end();
+//};

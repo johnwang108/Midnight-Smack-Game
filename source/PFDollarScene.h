@@ -51,6 +51,8 @@ protected:
 
     std::shared_ptr<cugl::scene2::PolygonNode> _poly;
 
+    std::shared_ptr<cugl::scene2::PolygonNode> _box;
+
     cugl::SimpleExtruder _se;
 
     //temp
@@ -76,6 +78,8 @@ public:
     bool isPending();
     
     bool isSuccess();
+
+    //virtual void draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint);
 
 };
 
