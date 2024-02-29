@@ -852,13 +852,13 @@ void GameScene::postUpdate(float remain) {
             PLATFORMS[8][6] = 31.0f;
             PLATFORMS[8][7] = 14.5f;
             PLATFORMS[9][0] = 0.0f;
-            PLATFORMS[9][1] = 0.0f;
+            PLATFORMS[9][1] = 1.0f;
             PLATFORMS[9][2] = 0.0f;
             PLATFORMS[9][3] = 0.0f;
-            PLATFORMS[9][4] = 0.0f;
+            PLATFORMS[9][4] = 1.0f;
             PLATFORMS[9][5] = 0.0f;
-            PLATFORMS[9][6] = 0.0f;
-            PLATFORMS[9][7] = 0.0f;
+            PLATFORMS[9][6] = 1.0f;
+            PLATFORMS[9][7] = 1.0f;
             GOAL_POS[0] = 29.0f;
             GOAL_POS[1] = 16.0f;
             SHRIMP_POS[0] = 14.0f,
