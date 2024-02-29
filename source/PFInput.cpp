@@ -52,6 +52,9 @@ using namespace cugl;
 /** How fast a double click must be in milliseconds */
 #define DOUBLE_CLICK    400
 
+
+#define TRIGGER_DEADZONE 0
+
 // The screen is divided into four zones: Left, Bottom, Right and Main/
 // These are all shown in the diagram below.
 //
@@ -114,7 +117,7 @@ void PlatformInput::dispose() {
         touch->removeBeginListener(LISTENER_KEY);
         touch->removeEndListener(LISTENER_KEY);
         touch->removeMotionListener(LISTENER_KEY);
-        _gameCont->removeAxisListener(CONTROLLER_LISTENER_KEY);
+        //_gameCont->removeAxisListener(CONTROLLER_LISTENER_KEY);
 #endif
         _active = false;
     }
@@ -148,9 +151,9 @@ bool PlatformInput::init(const Rect bounds) {
             CULog("Controller Obtained, Name: %s", _gameCont->getName().c_str());
 
             ////using axis controllers for joystick
-            _gameCont->addAxisListener(CONTROLLER_LISTENER_KEY, [=](const GameControllerAxisEvent& event, bool focus) {
+         /*   _gameCont->addAxisListener(CONTROLLER_LISTENER_KEY, [=](const GameControllerAxisEvent& event, bool focus) {
                 this->getAxisAngle(event, focus);
-                });
+                });*/
 
             _xAxis = 0;
             _yAxis = 0;
@@ -262,41 +265,50 @@ void PlatformInput::update(float dt) {
         _keyJump = _gameCont->isButtonPressed(0);
         //_keyFire = _gameCont->isButtonPressed(1);
         _keySlow = _gameCont->isButtonPressed(2);
-        _dashKey = _gameCont->isButtonPressed(3);
+        //_dashKey = _gameCont->isButtonPressed(3);
         _keyReset = _gameCont->isButtonPressed(4);
         _keyExit = _gameCont->isButtonPressed(5);
 
+
+        float lTriggerAmt = _gameCont->getAxisPosition(4);
+        _dashKey = (lTriggerAmt > TRIGGER_DEADZONE);
+
+        float rTriggerAmt = _gameCont->getAxisPosition(5);
+        _keyFire = (rTriggerAmt > TRIGGER_DEADZONE);
+
+
+        _keyReset = _gameCont->isButtonPressed(4);
+        _keyExit = _gameCont->isButtonPressed(5);
+
+        _xAxis = _gameCont->getAxisPosition(0);
+        _yAxis = _gameCont->getAxisPosition(1);
 
     }
 
 
 #else 
     _keyJump = _gameCont->isButtonPressed(0);
-    _keyFire = _gameCont->isButtonPressed(1);
-    _keySlow = _gameCont->isButtonPressed(2);
-    _dashKey = _gameCont->isButtonPressed(3);
+    //_keyFire = _gameCont->isButtonPressed(1); button 1 is B
+    _keySlow = _gameCont->isButtonPressed(2); //button 2 is X
+    //_dashKey = _gameCont->isButtonPressed(3); button 3 is Y
+
+    float lTriggerAmt = _gameCont->getAxisPosition(4);
+    _dashKey = (lTriggerAmt > TRIGGER_DEADZONE);
+
+    float rTriggerAmt = _gameCont->getAxisPosition(5);
+    _keyFire = (rTriggerAmt > TRIGGER_DEADZONE);
+
     _keyReset = _gameCont->isButtonPressed(4);
     _keyExit = _gameCont->isButtonPressed(5);
 
-
-    if (_gameCont->isButtonPressed(4)) CULog("This button is 4");
-    if (_gameCont->isButtonPressed(5)) CULog("This button is 5");
-    if (_gameCont->isButtonPressed(6)) CULog("This button is 6");
-    if (_gameCont->isButtonPressed(7)) CULog("This button is 7");
-    if (_gameCont->isButtonPressed(8)) CULog("This button is 8");
-    if (_gameCont->isButtonPressed(9)) CULog("This button is 9");
-    if (_gameCont->isButtonPressed(10)) CULog("This button is 9");
-
-    CULog("======= Polling Results =======");
-    for (int i = 0; i < _gameCont->numberAxes(); i++) {
-        float axisVal = _gameCont->getAxisPosition(i);
-        if (axisVal > .2 || axisVal < -.2) {
-            CULog("Polling %d: %f", i, axisVal);
-        }
-    }
+    _xAxis = _gameCont->getAxisPosition(0);
+    _yAxis = _gameCont->getAxisPosition(1);
 
 
 #endif
+   
+
+
     _resetPressed = _keyReset;
     _debugPressed = _keyDebug;
     _exitPressed = _keyExit;
@@ -329,7 +341,6 @@ void PlatformInput::update(float dt) {
         }
         if (std::abs(_yAxis) >= 0.2) {
             _vertical -= _yAxis;
-            CULog("%f", _vertical);
         }
     }
 
@@ -594,13 +605,7 @@ void PlatformInput::touchesMovedCB(const TouchEvent& event, const Vec2& previous
 void PlatformInput::getAxisAngle(const cugl::GameControllerAxisEvent& event, bool focus) {
     //TODO: WHAT ARE AXIS INDICES?? HOW MANY??? 2 or 4
     _xAxis = _gameCont->getAxisPosition(0);
-    _yAxis = _gameCont->getAxisPosition(1);
-    
-    for (int i = 0; i < _gameCont->numberAxes(); i++) {
-        CULog("Axis %d: %f", i, _gameCont->getAxisPosition(i));
-    }
-    CULog("End of Call\n\n\n");
-  
+    _yAxis = _gameCont->getAxisPosition(1); 
 }
 
 std::string  PlatformInput::getGestureString() {
