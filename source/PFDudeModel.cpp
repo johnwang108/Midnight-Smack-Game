@@ -55,7 +55,7 @@ float jmpHeight = 1;
 /**Modif dash, as a multiple of DASH_JUMP*/
 float dashModif = 1.3;
 /**The aount of frames following a dash that SUe floats for*/
-float floatyFrames = 19;
+float floatyFrames = 10;
 
 #pragma mark -
 #pragma mark Physics Constants
@@ -269,7 +269,7 @@ void DudeModel::applyForce(float h, float v) {
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
     }
     if (canDash() && getDashNum()>0) {
-        b2Vec2 force(DUDE_DASH*h, DUDE_DASH *v*.8);
+        b2Vec2 force(DUDE_DASH*SIGNUM(h), DUDE_DASH * SIGNUM(v) * .8);
         setVY(0);
         setVX(0);
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
@@ -285,7 +285,7 @@ void DudeModel::applyForce(float h, float v) {
  * @param delta Number of seconds since last animation frame
  */
 void DudeModel::update(float dt) {
-    if (_dashCooldown > floatyFrames) {
+    if (_dashCooldown > DASH_COOLDOWN - floatyFrames) {
         setGravityScale(0);
     }
     else {
