@@ -33,8 +33,6 @@
 #include <iostream>
 #include <sstream>
 #include <random>
-#include <SDL.h>
-
 
 using namespace cugl;
 
@@ -42,8 +40,8 @@ using namespace cugl;
 #pragma mark Level Geography
 
 /** This is adjusted by screen aspect ratio to get the height */
-#define SCENE_WIDTH 1280
-#define SCENE_HEIGHT 800
+#define SCENE_WIDTH 1024
+#define SCENE_HEIGHT 576
 
 /** This is the aspect ratio for physics */
 #define SCENE_ASPECT 10.0/16.0
@@ -71,21 +69,40 @@ float WALL[WALL_COUNT][WALL_VERTS] = {
 
 /** The number of platforms */
 #define PLATFORM_VERTS  8
-#define PLATFORM_COUNT  7
+#define PLATFORM_COUNT  10
 
 /** The outlines of all of the platforms */
+
+//float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
+//	{ 1.0f, 3.0f, 1.0f, 2.5f, 6.0f, 2.5f, 6.0f, 3.0f},
+//	{ 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
+//	{23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
+//	{26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
+//	{29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
+//	{24.0f, 8.5f,24.0f, 8.0f,27.0f, 8.0f,27.0f, 8.5f},
+//	{29.0f,10.0f,29.0f, 9.5f,31.0f, 9.5f,31.0f,10.0f},
+//	{23.0f,11.5f,23.0f,11.0f,27.0f,11.0f,27.0f,11.5f},
+//	{19.0f,12.5f,19.0f,12.0f,23.0f,12.0f,23.0f,12.5f},
+//	{ 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
+//};
+
 float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
-    { 1.0f, .5f, 1.0f, .0f, 6.0f, .0f, 6.0f, .50f},
-    { 6.0f, 1.0f, 6.0f, .0f, 9.0f, .0f, 9.0f, 1.0f},
-    {23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
-    {26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
-    {29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
-    {19.0f,12.0f,19.0f,11.5f,23.0f,11.5f,23.0f,12.0f},
+    {1.0f, 4.0f, 1.0f, 2.0f, 4.0f, 2.0f, 4.0f, 4.0f},
+    { 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
+    {9.5f, 6.0f, 9.5f, 5.0f, 12.5f, 5.0f, 12.5f, 6.0f},
+    {15.0f, 8.5f, 15.0f, 7.0f, 20.0f, 4.5f, 20.0f, 6.0f},
+    {23.0f, 4.0f, 23.0f, 3.0f, 27.0f, 3.0f, 27.0f, 4.0f},
+    {28.0f, 5.0f, 28.0f, 4.0f, 30.0f, 8.0f, 30.0f, 9.0f},
+    {23.0f, 10.0f, 23.0f, 9.f, 27.0f, 9.f, 27.0f, 10.f},
+    {16.0f, 12.f, 16.0f, 10.0f, 22.0f, 12.0f, 22.0f, 10.f},
+    {6.0f, 15.0f, 6.0f, 14.5f, 14.0f, 12.5f, 14.0f, 13.0f},
     { 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
 };
 
+
 /** The goal door position */
 float GOAL_POS[] = { 4.0f,14.0f};
+// float GOAL_POS[] = { 6.0f, 5.0f };
 /** The position of the spinning barrier */
 float SPIN_POS[] = {13.0f,12.5f};
 /** The initial position of the dude */
@@ -93,9 +110,13 @@ float DUDE_POS[] = { 2.5f, 5.0f};
 /** The position of the rope bridge */
 float BRIDGE_POS[] = {9.0f, 3.8f};
 
-float SHRIMP_POS[] = { 21.0f, 16.0f };
+float SHRIMP_POS[] = { 22.0f, 16.0f };
+
+float EGG_POS[] = { 14.0f, 18.0f };
 
 float RICE_POS[] = { 25.0f, 14.0f };
+
+boolean isLevel1 = true;
 
 #pragma mark -
 #pragma mark Physics Constants
@@ -399,8 +420,10 @@ void GameScene::reset() {
     _debugnode->removeAllChildren();
     _avatar = nullptr;
     _goalDoor = nullptr;
-    _spinner = nullptr;
-    _ropebridge = nullptr;
+    //I CHANGED THIS
+    // _spinner = nullptr;
+    // _ropebridge = nullptr;
+
     _enemies.clear();
 
     setFailure(false);
@@ -504,78 +527,48 @@ void GameScene::populate() {
 		addObstacle(platobj,sprite,1);
 	}
 
-    //hack for rope bridge removal
-    if (!INCLUDE_ROPE_BRIDGE) {
-        std::shared_ptr<physics2::PolygonObstacle> platobj;
-        float plat[PLATFORM_VERTS] = { 9.0f, 3.0f, 9.0f, 2.5f, 23.0f, 2.5f, 23.0f, 3.0f };
-        Poly2 platform(reinterpret_cast<Vec2*>(plat), 4);
+// I CHANGED THIS
 
-        EarclipTriangulator triangulator;
-        triangulator.set(platform.vertices);
-        triangulator.calculate();
-        platform.setIndices(triangulator.getTriangulation());
-        triangulator.clear();
+//#pragma mark : Spinner
+//	Vec2 spinPos = SPIN_POS;
+//    image = _assets->get<Texture>(SPINNER_TEXTURE);
+//	_spinner = Spinner::alloc(spinPos,image->getSize()/_scale,_scale);
+//    _spinner->setTexture(image);
+//	std::shared_ptr<scene2::SceneNode> node = scene2::SceneNode::alloc();
+//    
+//    // With refactor, must be added manually
+//    // Add the node to the world before calling setSceneNode,
+//    _worldnode->addChild(node);
+//    _spinner->setSceneNode(node);
+//
+//    _spinner->setDrawScale(_scale);
+//    _spinner->setDebugColor(DEBUG_COLOR);
+//    _spinner->setDebugScene(_debugnode);
+//    _spinner->activate(_world);
 
-        platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_CENTER);
-        // You cannot add constant "".  Must stringify
-        platobj->setName(std::string(PLATFORM_NAME) + cugl::strtool::to_string(PLATFORM_COUNT));
-
-        // Set the physics attributes
-        platobj->setBodyType(b2_staticBody);
-        platobj->setDensity(BASIC_DENSITY);
-        platobj->setFriction(BASIC_FRICTION);
-        platobj->setRestitution(BASIC_RESTITUTION);
-        platobj->setDebugColor(DEBUG_COLOR);
-
-        platform *= _scale;
-        sprite = scene2::PolygonNode::allocWithTexture(image, platform);
-        addObstacle(platobj, sprite, 1);
-    }
-
-#pragma mark : Spinner
-	Vec2 spinPos = SPIN_POS;
-    image = _assets->get<Texture>(SPINNER_TEXTURE);
-	_spinner = Spinner::alloc(spinPos,image->getSize()/_scale,_scale);
-    _spinner->setTexture(image);
-	std::shared_ptr<scene2::SceneNode> node = scene2::SceneNode::alloc();
-    
-    // With refactor, must be added manually
-    // Add the node to the world before calling setSceneNode,
-    _worldnode->addChild(node);
-    //_spinner->setSceneNode(node);
-
-    _spinner->setDrawScale(_scale);
-    _spinner->setDebugColor(DEBUG_COLOR);
-    _spinner->setDebugScene(_debugnode);
-    //_spinner->activate(_world);
-
-#pragma mark : Rope Bridge
-	Vec2 bridgeStart = BRIDGE_POS;
-	Vec2 bridgeEnd   = bridgeStart;
-	bridgeEnd.x += BRIDGE_WIDTH;
-    image = _assets->get<Texture>(BRIDGE_TEXTURE);
-
-    if (INCLUDE_ROPE_BRIDGE) {
-        _ropebridge = RopeBridge::alloc(bridgeStart,bridgeEnd,image->getSize()/_scale,_scale);
-        _ropebridge->setTexture(image);
-        node = scene2::SceneNode::alloc();
-
-        // With refactor, must be added manually
-        // Add the node to the world before calling setSceneNode,
-        _worldnode->addChild(node);
-        _ropebridge->setSceneNode(node);
-   
-        _ropebridge->setDrawScale(_scale);
-        _ropebridge->setDebugColor(DEBUG_COLOR);
-        _ropebridge->setDebugScene(_debugnode);
-        _ropebridge->activate(_world);
-    }
-    
-
+//#pragma mark : Rope Bridge
+//	Vec2 bridgeStart = BRIDGE_POS;
+//	Vec2 bridgeEnd   = bridgeStart;
+//	bridgeEnd.x += BRIDGE_WIDTH;
+//    image = _assets->get<Texture>(BRIDGE_TEXTURE);
+//    
+//	_ropebridge = RopeBridge::alloc(bridgeStart,bridgeEnd,image->getSize()/_scale,_scale);
+//    _ropebridge->setTexture(image);
+//	node = scene2::SceneNode::alloc();
+//
+//    // With refactor, must be added manually
+//    // Add the node to the world before calling setSceneNode,
+//    _worldnode->addChild(node);
+//    _ropebridge->setSceneNode(node);
+//    
+//    _ropebridge->setDrawScale(_scale);
+//    _ropebridge->setDebugColor(DEBUG_COLOR);
+//    _ropebridge->setDebugScene(_debugnode);
+//    _ropebridge->activate(_world);
 
 #pragma mark : Dude
 	Vec2 dudePos = DUDE_POS;
-	node = scene2::SceneNode::alloc();
+	// node = scene2::SceneNode::alloc();
     image = _assets->get<Texture>(DUDE_TEXTURE);
 	_avatar = DudeModel::alloc(dudePos,image->getSize()/_scale,_scale);
 	sprite = scene2::PolygonNode::allocWithTexture(image);
@@ -600,6 +593,15 @@ void GameScene::populate() {
     Vec2 rice_pos = RICE_POS;
     image = _assets->get<Texture>(RICE_TEXTURE);
     _enemy = EnemyModel::alloc(rice_pos, image->getSize() / _scale, _scale, EnemyType::rice);
+    sprite = scene2::PolygonNode::allocWithTexture(image);
+    _enemy->setSceneNode(sprite);
+    _enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(_enemy, sprite);
+    _enemies.push_back(_enemy);
+
+    Vec2 egg_pos = EGG_POS;
+    image = _assets->get<Texture>(EGG_TEXTURE);
+    _enemy = EnemyModel::alloc(egg_pos, image->getSize() / _scale, _scale, EnemyType::egg);
     sprite = scene2::PolygonNode::allocWithTexture(image);
     _enemy->setSceneNode(sprite);
     _enemy->setDebugColor(DEBUG_COLOR);
@@ -771,12 +773,10 @@ void GameScene::postUpdate(float remain) {
 
     // TODO: Update this demo to support interpolation
     // We can interpolate the rope bridge and spinner as we have the data structures
-    _spinner->update(remain);
-    if (INCLUDE_ROPE_BRIDGE) {
-        _ropebridge->update(remain);
-    }
-
-    //_world->
+    
+    // I CHANGED THIS
+    // _spinner->update(remain);
+    // _ropebridge->update(remain);
 
 
     // Add a bullet AFTER physics allows it to hang in front
@@ -810,6 +810,50 @@ void GameScene::postUpdate(float remain) {
     if (_countdown > 0) {
         _countdown--;
     } else if (_countdown == 0) {
+        if (_failed == false && isLevel1) {
+            isLevel1 = false;
+            float x = 0.0f;
+            float y = 0.0f;
+            for (int i = 0; i < 8; ++i) {
+                PLATFORMS[i][0] = 1.0f + x;
+                PLATFORMS[i][1] = 4.0f + y;
+                PLATFORMS[i][2] = 1.0f + x;
+                PLATFORMS[i][3] = 2.5f + y;
+                PLATFORMS[i][4] = 4.5f + x;
+                PLATFORMS[i][5] = 2.5f + y;
+                PLATFORMS[i][6] = 4.5f + x;
+                PLATFORMS[i][7] = 4.0f + y;
+                x = x + 3.5f;
+                y = y + 1.5f;
+            }
+            PLATFORMS[8][0] = 29.0f;
+            PLATFORMS[8][1] = 14.5f;
+            PLATFORMS[8][2] = 29.0f;
+            PLATFORMS[8][3] = 13.0f;
+            PLATFORMS[8][4] = 31.0f;
+            PLATFORMS[8][5] = 13.0f;
+            PLATFORMS[8][6] = 31.0f;
+            PLATFORMS[8][7] = 14.5f;
+            PLATFORMS[9][0] = 0.0f;
+            PLATFORMS[9][1] = 0.0f;
+            PLATFORMS[9][2] = 0.0f;
+            PLATFORMS[9][3] = 0.0f;
+            PLATFORMS[9][4] = 0.0f;
+            PLATFORMS[9][5] = 0.0f;
+            PLATFORMS[9][6] = 0.0f;
+            PLATFORMS[9][7] = 0.0f;
+            GOAL_POS[0] = 29.0f;
+            GOAL_POS[1] = 16.0f;
+            SHRIMP_POS[0] = 14.0f,
+            SHRIMP_POS[1] = 16.0f;
+            RICE_POS[0] = 21.0f;
+            RICE_POS[1] = 14.0f;
+            EGG_POS[0] = 10.0f;
+            EGG_POS[1] = 12.0f;
+        }
+        else if(_failed == false && !isLevel1) {
+            //close game somehow
+        }
         reset();
     }
 }
