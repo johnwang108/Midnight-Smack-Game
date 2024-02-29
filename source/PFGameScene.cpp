@@ -40,16 +40,18 @@ using namespace cugl;
 #pragma mark Level Geography
 
 /** This is adjusted by screen aspect ratio to get the height */
-#define SCENE_WIDTH 1024
-#define SCENE_HEIGHT 576
+#define SCENE_WIDTH 1280
+#define SCENE_HEIGHT 800
 
 /** This is the aspect ratio for physics */
-#define SCENE_ASPECT 9.0/16.0
+#define SCENE_ASPECT 10.0/16.0
 
 /** Width of the game world in Box2d units */
 #define DEFAULT_WIDTH   32.0f
 /** Height of the game world in Box2d units */
 #define DEFAULT_HEIGHT  18.0f
+
+#define INCLUDE_ROPE_BRIDGE false
 
 // Since these appear only once, we do not care about the magic numbers.
 // In an actual game, this information would go in a data file.
@@ -59,15 +61,15 @@ using namespace cugl;
 #define WALL_COUNT  2
 
 float WALL[WALL_COUNT][WALL_VERTS] = {
-	{16.0f, 18.0f,  0.0f, 18.0f,  0.0f,  0.0f,
-      1.0f,  0.0f,  1.0f, 17.0f, 16.0f, 17.0f },
-	{32.0f, 18.0f, 16.0f, 18.0f, 16.0f, 17.0f,
-     31.0f, 17.0f, 31.0f,  0.0f, 32.0f,  0.0f }
+    {16.0f, 20.0f,  0.0f, 20.0f,  0.0f,  0.0f,
+      1.0f,  0.0f,  1.0f, 19.5f, 16.0f, 19.5f },
+    {32.0f, 20.0f, 16.0f, 20.0f, 16.0f, 19.5f,
+     31.0f, 19.5f, 31.0f,  0.0f, 32.0f,  0.0f }
 };
 
 /** The number of platforms */
 #define PLATFORM_VERTS  8
-#define PLATFORM_COUNT  10
+#define PLATFORM_COUNT  7
 
 /** The outlines of all of the platforms */
 
@@ -85,25 +87,16 @@ float WALL[WALL_COUNT][WALL_VERTS] = {
 //};
 
 float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
-
-    {1.0f, 4.0f, 1.0f, 2.0f, 4.0f, 2.0f, 4.0f, 4.0f},
-    { 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
-    {10.0f, 6.0f, 10.0f, 5.0f, 12.5f, 5.0f, 12.5f, 6.0f},
-    {15.0f, 8.5f, 15.0f, 7.0f, 20.0f, 4.5f, 20.0f, 6.0f},
-    {23.0f, 4.0f, 23.0f, 3.0f, 27.0f, 3.0f, 27.0f, 4.0f},
-    {28.0f, 6.0f, 28.0f, 5.0f, 30.0f, 8.0f, 30.0f, 9.0f},
-    {23.0f, 10.0f, 23.0f, 9.f, 27.0f, 9.f, 27.0f, 10.f},
-    {16.0f, 12.f, 16.0f, 10.0f, 22.0f, 12.0f, 22.0f, 10.f},
-    {6.0f, 15.0f, 6.0f, 14.5f, 14.0f, 12.5f, 14.0f, 13.0f},
-    { 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
-    // {23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
-    // {26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
-    // {29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
-    // {24.0f, 8.5f,24.0f, 8.0f,27.0f, 8.0f,27.0f, 8.5f},
-    // {29.0f,10.0f,29.0f, 9.5f,31.0f, 9.5f,31.0f,10.0f},
-    // {23.0f,11.5f,23.0f,11.0f,27.0f,11.0f,27.0f,11.5f},
-    // {19.0f,12.5f,19.0f,12.0f,23.0f,12.0f,23.0f,12.5f},
-    // { 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
+	{ 1.0f, 3.0f, 1.0f, 2.5f, 6.0f, 2.5f, 6.0f, 3.0f},
+	{ 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
+	{23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
+	{26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
+	{29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
+	{24.0f, 8.5f,24.0f, 8.0f,27.0f, 8.0f,27.0f, 8.5f},
+	{29.0f,10.0f,29.0f, 9.5f,31.0f, 9.5f,31.0f,10.0f},
+	{23.0f,11.5f,23.0f,11.0f,27.0f,11.0f,27.0f,11.5f},
+	{19.0f,12.5f,19.0f,12.0f,23.0f,12.0f,23.0f,12.5f},
+	{ 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
 };
 
 /** The goal door position */
@@ -114,6 +107,10 @@ float SPIN_POS[] = {13.0f,12.5f};
 float DUDE_POS[] = { 2.5f, 5.0f};
 /** The position of the rope bridge */
 float BRIDGE_POS[] = {9.0f, 3.8f};
+
+float SHRIMP_POS[] = { 21.0f, 16.0f };
+
+float RICE_POS[] = { 25.0f, 14.0f };
 
 #pragma mark -
 #pragma mark Physics Constants
@@ -153,6 +150,8 @@ float BRIDGE_POS[] = {9.0f, 3.8f};
 #define PLATFORM_NAME   "platform"
 /** The font for victory/failure messages */
 #define MESSAGE_FONT    "retro"
+
+#define SMALL_MSG "retrosmall"  
 /** The message for winning the game */
 #define WIN_MESSAGE     "VICTORY!"
 /** The color of the win message */
@@ -265,6 +264,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
                      const Rect& rect, const Vec2& gravity) {
     // Initialize the scene to a locked height (iPhone X is narrow, but wide)
     Size dimen = computeActiveSize();
+    SDL_ShowCursor(SDL_DISABLE);
 
     if (assets == nullptr) {
         return false;
@@ -274,7 +274,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     // Start up the input handler
     _assets = assets;
-    _input.init(getBounds());
+    _input = std::make_shared<PlatformInput>();
+    _input->init(getBounds());
     
     // Create the world and attach the listeners.
     _world = physics2::ObstacleWorld::alloc(rect,gravity);
@@ -326,12 +327,34 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _rightnode->setScale(0.35f);
     _rightnode->setVisible(false);
 
+    _gesturehud = scene2::Label::allocWithText("Gestures, Similarity: t tosdgodfho figjgoj ghkohko ", _assets->get<Font>(SMALL_MSG));
+    _gesturehud->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
+    _gesturehud->setScale(0.7f);
+    CULog("%f", _gesturehud->getContentWidth());
+    CULog("%f", _gesturehud->getWidth());
+    _gesturehud->setPosition(0,50);
+    _gesturehud->setForeground(LOSE_COLOR);
+    _gesturehud->setVisible(true);
+
+
+    _slowed = false;
+
+   // _dollarnode = std::make_shared<DollarScene>();
+    
     addChild(_worldnode);
     addChild(_debugnode);
     addChild(_winnode);
     addChild(_losenode);
     addChild(_leftnode);
     addChild(_rightnode);
+    addChild(_gesturehud);
+//    addChild(_dollarnode);
+  //  _dollarnode->init(_assets, _input);
+    //_dollarnode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
+  //  _dollarnode->setPosition(getSize().getIWidth() / 2.0f, getSize().getIHeight() / 2.0f);
+    //_dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
+  //  _dollarnode->setVisible(false);
+
 
     populate();
     _active = true;
@@ -348,7 +371,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
  */
 void GameScene::dispose() {
     if (_active) {
-        _input.dispose();
+        _input->dispose();
         _world = nullptr;
         _worldnode = nullptr;
         _debugnode = nullptr;
@@ -356,6 +379,8 @@ void GameScene::dispose() {
         _losenode = nullptr;
         _leftnode = nullptr;
         _rightnode = nullptr;
+    //    _dollarnode->dispose();
+    //    _dollarnode = nullptr;
         _complete = false;
         _debug = false;
         Scene2::dispose();
@@ -379,7 +404,8 @@ void GameScene::reset() {
     _goalDoor = nullptr;
     _spinner = nullptr;
     _ropebridge = nullptr;
-      
+    _enemies.clear();
+
     setFailure(false);
     setComplete(false);
     populate();
@@ -481,42 +507,42 @@ void GameScene::populate() {
 		addObstacle(platobj,sprite,1);
 	}
 
-//#pragma mark : Spinner
-//	Vec2 spinPos = SPIN_POS;
-//    image = _assets->get<Texture>(SPINNER_TEXTURE);
-//	_spinner = Spinner::alloc(spinPos,image->getSize()/_scale,_scale);
-//    _spinner->setTexture(image);
-//	std::shared_ptr<scene2::SceneNode> node = scene2::SceneNode::alloc();
-//    
-//    // With refactor, must be added manually
-//    // Add the node to the world before calling setSceneNode,
-//    _worldnode->addChild(node);
-//    _spinner->setSceneNode(node);
-//
-//    _spinner->setDrawScale(_scale);
-//    _spinner->setDebugColor(DEBUG_COLOR);
-//    _spinner->setDebugScene(_debugnode);
-//    _spinner->activate(_world);
+#pragma mark : Spinner
+	Vec2 spinPos = SPIN_POS;
+    image = _assets->get<Texture>(SPINNER_TEXTURE);
+	_spinner = Spinner::alloc(spinPos,image->getSize()/_scale,_scale);
+    _spinner->setTexture(image);
+	std::shared_ptr<scene2::SceneNode> node = scene2::SceneNode::alloc();
+    
+    // With refactor, must be added manually
+    // Add the node to the world before calling setSceneNode,
+    _worldnode->addChild(node);
+    _spinner->setSceneNode(node);
 
-//#pragma mark : Rope Bridge
-//	Vec2 bridgeStart = BRIDGE_POS;
-//	Vec2 bridgeEnd   = bridgeStart;
-//	bridgeEnd.x += BRIDGE_WIDTH;
-//    image = _assets->get<Texture>(BRIDGE_TEXTURE);
-//    
-//	_ropebridge = RopeBridge::alloc(bridgeStart,bridgeEnd,image->getSize()/_scale,_scale);
-//    _ropebridge->setTexture(image);
-//	node = scene2::SceneNode::alloc();
-//
-//    // With refactor, must be added manually
-//    // Add the node to the world before calling setSceneNode,
-//    _worldnode->addChild(node);
-//    _ropebridge->setSceneNode(node);
-//    
-//    _ropebridge->setDrawScale(_scale);
-//    _ropebridge->setDebugColor(DEBUG_COLOR);
-//    _ropebridge->setDebugScene(_debugnode);
-//    _ropebridge->activate(_world);
+    _spinner->setDrawScale(_scale);
+    _spinner->setDebugColor(DEBUG_COLOR);
+    _spinner->setDebugScene(_debugnode);
+    _spinner->activate(_world);
+
+#pragma mark : Rope Bridge
+	Vec2 bridgeStart = BRIDGE_POS;
+	Vec2 bridgeEnd   = bridgeStart;
+	bridgeEnd.x += BRIDGE_WIDTH;
+    image = _assets->get<Texture>(BRIDGE_TEXTURE);
+    
+	_ropebridge = RopeBridge::alloc(bridgeStart,bridgeEnd,image->getSize()/_scale,_scale);
+    _ropebridge->setTexture(image);
+	node = scene2::SceneNode::alloc();
+
+    // With refactor, must be added manually
+    // Add the node to the world before calling setSceneNode,
+    _worldnode->addChild(node);
+    _ropebridge->setSceneNode(node);
+    
+    _ropebridge->setDrawScale(_scale);
+    _ropebridge->setDebugColor(DEBUG_COLOR);
+    _ropebridge->setDebugScene(_debugnode);
+    _ropebridge->activate(_world);
 
 #pragma mark : Dude
 	Vec2 dudePos = DUDE_POS;
@@ -531,6 +557,26 @@ void GameScene::populate() {
 	// Play the background music on a loop.
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
     AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
+
+
+    Vec2 shrimp_pos = SHRIMP_POS;
+    image = _assets->get<Texture>(SHRIMP_TEXTURE);
+    std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
+    sprite = scene2::PolygonNode::allocWithTexture(image);
+    _enemy->setSceneNode(sprite);
+    _enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(_enemy, sprite);
+    _enemies.push_back(_enemy);
+
+    Vec2 rice_pos = RICE_POS;
+    image = _assets->get<Texture>(RICE_TEXTURE);
+    _enemy = EnemyModel::alloc(rice_pos, image->getSize() / _scale, _scale, EnemyType::rice);
+    sprite = scene2::PolygonNode::allocWithTexture(image);
+    _enemy->setSceneNode(sprite);
+    _enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(_enemy, sprite);
+    _enemies.push_back(_enemy);
+
 }
 
 /**
@@ -592,44 +638,46 @@ void GameScene::addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj
  * @param dt    The amount of time (in seconds) since the last frame
  */
 void GameScene::preUpdate(float dt) {
-	_input.update(dt);
+    _input->update(dt);
 
-	// Process the toggled key commands
-	if (_input.didDebug()) { setDebug(!isDebug()); }
-	if (_input.didReset()) { reset(); }
-	if (_input.didExit())  {
-		CULog("Shutting down");
-		Application::get()->quit();
-	}
-
-	// Process the movement
-    if (_input.withJoystick()) {
-        if (_input.getHorizontal() < 0) {
-            _leftnode->setVisible(true);
-            _rightnode->setVisible(false);
-        } else if (_input.getHorizontal() > 0) {
-            _leftnode->setVisible(false);
-            _rightnode->setVisible(true);
-        } else {
-            _leftnode->setVisible(false);
-            _rightnode->setVisible(false);
-        }
-        _leftnode->setPosition(_input.getJoystick());
-        _rightnode->setPosition(_input.getJoystick());
-    } else {
-        _leftnode->setVisible(false);
-        _rightnode->setVisible(false);
+    // Process the toggled key commands
+    if (_input->didDebug()) { setDebug(!isDebug()); }
+    if (_input->didReset()) { reset(); }
+    if (_input->didExit()) {
+        CULog("Shutting down");
+        Application::get()->quit();
     }
-    
-	_avatar->setMovement(_input.getHorizontal()*_avatar->getForce());
-	_avatar->setJumping( _input.didJump());
-	_avatar->applyForce();
 
-	if (_avatar->isJumping() && _avatar->isGrounded()) {
-		std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
-		AudioEngine::get()->play(JUMP_EFFECT,source,false,EFFECT_VOLUME);
-	}
+    //_slowed = _input->didSlow();
+    if (_input->didSlow()) {
+        _slowed = !_slowed;
+    }
+    if (!_slowed) {
+    //    _dollarnode->setVisible(false);
 
+        _avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
+        _avatar->setJumping(_input->didJump());
+        _avatar->setDash(_input->didDash());
+        _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
+
+        if (_avatar->isJumping() && _avatar->isGrounded()) {
+            std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
+            AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
+        }
+    }
+    else {
+
+        _avatar->setMovement(0);
+        _avatar->setJumping(_input->didJump());
+        _avatar->setDash(_input->didDash());
+        _avatar->applyForce(0, 0);
+    }
+
+    for (auto& enemy : _enemies) {
+        if (enemy != nullptr && !enemy->isRemoved()) {
+            enemy->update(dt);
+        }
+    }
 }
 
 /**
@@ -660,6 +708,9 @@ void GameScene::preUpdate(float dt) {
  */
 void GameScene::fixedUpdate(float step) {
     // Turn the physics engine crank.
+    if (_slowed) { 
+        step = step / 5;
+    }
     _world->update(step);
 }
     
@@ -691,17 +742,18 @@ void GameScene::postUpdate(float remain) {
     
     // TODO: Update this demo to support interpolation
     // We can interpolate the rope bridge and spinner as we have the data structures
-    
-    // _spinner->update(remain);
-    
-    // _ropebridge->update(remain);
+    _spinner->update(remain);
+    _ropebridge->update(remain);
 
     // Add a bullet AFTER physics allows it to hang in front
     // Otherwise, it looks like bullet appears far away
-    _avatar->setShooting(_input.didFire());
+    _avatar->setShooting(_input->didFire());
     if (_avatar->isShooting()) {
         createBullet();
     }
+
+    _gesturehud->setText(getGestureText(_input->getGestureString(), _input->getGestureSim()));
+
 
     // Record failure if necessary.
     if (!_failed && _avatar->getY() < 0) {
@@ -820,6 +872,7 @@ void GameScene::removeBullet(Bullet* bullet) {
  *
  * @param  contact  The two bodies that collided
  */
+
 void GameScene::beginContact(b2Contact* contact) {
 	b2Fixture* fix1 = contact->GetFixtureA();
 	b2Fixture* fix2 = contact->GetFixtureB();
@@ -847,7 +900,23 @@ void GameScene::beginContact(b2Contact* contact) {
 		// Could have more than one ground
 		_sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
 	}
+    for (auto& _enemy : _enemies) {
+        if (!_enemy->isRemoved()) {
+            if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
+                (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
+                _enemy->setGrounded(true);
+            }
+            if (bd1 == _avatar.get() && bd2 == _enemy.get()
+                || (bd2 == _avatar.get() && bd1 == _enemy.get())) {
+                _enemy->setDebugScene(nullptr);
+                _worldnode->removeChild(_enemy->getSceneNode());
+                _enemy->markRemoved(true);
+           //     _enemy->removeFromGame();
+            }
+        }
+    }
 
+    
 	// If we hit the "win" door, we are done
 	if((bd1 == _avatar.get()   && bd2 == _goalDoor.get()) ||
 		(bd1 == _goalDoor.get() && bd2 == _avatar.get())) {
@@ -882,6 +951,7 @@ void GameScene::endContact(b2Contact* contact) {
 			_avatar->setGrounded(false);
 		}
 	}
+
 }
 
 /**
@@ -900,4 +970,11 @@ Size GameScene::computeActiveSize() const {
         dimen *= SCENE_HEIGHT/dimen.height;
     }
     return dimen;
+}
+
+
+std::string GameScene::getGestureText(std::string gest, float sim) {
+    std::stringstream ss;
+    ss << "Gesture: " << gest << ", " << "Similarity: " << sim;
+    return ss.str();
 }

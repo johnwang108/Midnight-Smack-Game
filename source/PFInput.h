@@ -57,6 +57,19 @@ private:
     bool  _keyLeft;
     /** Whether the right arrow key is down */
     bool  _keyRight;
+    /** Whether the slow key is down */
+    bool _keySlow;
+  
+
+    std::string _lastGestureString;
+    float _lastGestureSimilarity;
+  
+    bool  _keyDown;
+    bool  _keyUp;
+    bool _dashKey;
+   
+    std::shared_ptr<cugl::GameController> _gameCont;
+    
   
 protected:
     // INPUT RESULTS
@@ -70,8 +83,17 @@ protected:
     bool _firePressed;
     /** Whether the jump action was chosen. */
     bool _jumpPressed;
+    /** Whether the slow action was chosen. */
+    bool _slowPressed;
     /** How much did we move horizontally? */
     float _horizontal;
+    float _vertical;
+    bool _dashPressed;
+
+    //axes positions for joystick
+    float _xAxis;
+    float _yAxis;
+
 
 #pragma mark Internal Touch Management   
 	// The screen is divided into four zones: Left, Bottom, Right and Main/
@@ -95,39 +117,13 @@ protected:
         std::unordered_set<Uint64> touchids;
 	};
 
-	/** Enumeration identifying a zone for the current touch */
-	enum class Zone {
-		/** The touch was not inside the screen bounds */
-		UNDEFINED,
-		/** The touch was in the left zone (as shown above) */
-		LEFT,
-		/** The touch was in the right zone (as shown above) */
-		RIGHT,
-		/** The touch was in the main zone (as shown above) */
-		MAIN
-	};
 
 	/** The bounds of the entire game screen (in touch coordinates) */
     cugl::Rect _tbounds;
     /** The bounds of the entire game screen (in scene coordinates) */
 	cugl::Rect _sbounds;
-	/** The bounds of the left touch zone */
-	cugl::Rect _lzone;
-	/** The bounds of the right touch zone */
-	cugl::Rect _rzone;
-
-	// Each zone can have only one touch
-	/** The current touch location for the left zone */
-	TouchInstance _ltouch;
-	/** The current touch location for the right zone */
-	TouchInstance _rtouch;
-	/** The current touch location for the bottom zone */
-	TouchInstance _mtouch;
+	
     
-    /** Whether the virtual joystick is active */
-    bool _joystick;
-    /** The position of the virtual joystick */
-    cugl::Vec2 _joycenter;
     /** Whether or not we have processed a jump for this swipe yet */
     bool _hasJumped;
     /** The timestamp for a double tap on the right */
@@ -135,26 +131,17 @@ protected:
 	/** The timestamp for a double tap in the middle */
 	cugl::Timestamp _mtime;
 
-    /**
-     * Defines the zone boundaries, so we can quickly categorize touches.
-     */
-	void createZones();
+
+    cugl::Path2 _touchPath;
+    std::shared_ptr<cugl::GestureRecognizer> _dollarRecog;
+
   
     /**
      * Populates the initial values of the TouchInstances
      */
     void clearTouchInstance(TouchInstance& touchInstance);
 
-    /**
-     * Returns the correct zone for the given position.
-     *
-     * See the comments above for a description of how zones work.
-     *
-     * @param  pos  a position in screen coordinates
-     *
-     * @return the correct zone for the given position.
-     */
-    Zone getZone(const cugl::Vec2 pos) const;
+    
     
     /**
      * Returns the scene location of a touch
@@ -263,7 +250,15 @@ public:
      *
      * @return the amount of sideways movement.
      */
-	float getHorizontal() const { return _horizontal; }
+    float getHorizontal() const { return _horizontal; }
+    /**
+     * Returns the amount of sideways movement.
+     *
+     * -1 = left, 1 = right, 0 = still
+     *
+     * @return the amount of sideways movement.
+     */
+    float getVertical() const { return _vertical; }
 
     /**
      * Returns if the jump button was pressed.
@@ -299,20 +294,24 @@ public:
 	 * @return true if the exit button was pressed.
 	 */
 	bool didExit() const { return _exitPressed; }
-    
+    bool didSlow() const { return _slowPressed; }
+
+
+    bool didDash() const { return _dashPressed; }
+
     /**
      * Returns true if the virtual joystick is in use (touch only)
      *
      * @return true if the virtual joystick is in use (touch only)
      */
-    bool withJoystick() const { return _joystick; }
+    //bool withJoystick() const { return _joystick; }
 
-    /**
-     * Returns the scene graph position of the virtual joystick
-     *
-     * @return the scene graph position of the virtual joystick
-     */
-    cugl::Vec2 getJoystick() const { return _joycenter; }
+    ///**
+    // * Returns the scene graph position of the virtual joystick
+    // *
+    // * @return the scene graph position of the virtual joystick
+    // */
+    //cugl::Vec2 getJoystick() const { return _joycenter; }
 
 #pragma mark -
 #pragma mark Touch and Mouse Callbacks
@@ -341,7 +340,15 @@ public:
      * @param focus	Whether the listener currently has focus
      */
     void touchesMovedCB(const cugl::TouchEvent& event, const cugl::Vec2& previous, bool focus);
+
+    void PlatformInput::getAxisAngle(const cugl::GameControllerAxisEvent& eventm, bool focus);
+
   
+
+    std::string getGestureString();
+    float getGestureSim();
+
+    cugl::Path2 getTouchPath();
 };
 
 #endif /* __PF_INPUT_H__ */

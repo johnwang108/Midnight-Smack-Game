@@ -35,10 +35,12 @@ void PlatformApp::onStartup() {
     // Start-up basic input
 #ifdef CU_TOUCH_SCREEN
     Input::activate<Touchscreen>();
+    CULog("Touchscreen seen");
 #else
     Input::activate<Mouse>();
 #endif
-    
+   
+
     _assets->attach<Font>(FontLoader::alloc()->getHook());
     _assets->attach<Texture>(TextureLoader::alloc()->getHook());
     _assets->attach<Sound>(SoundLoader::alloc()->getHook());
@@ -52,6 +54,7 @@ void PlatformApp::onStartup() {
     AudioEngine::start();
     _assets->loadDirectoryAsync("json/assets.json",nullptr);
     
+
     Application::onStartup(); // YOU MUST END with call to parent
 }
 
