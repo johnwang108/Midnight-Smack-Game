@@ -505,7 +505,7 @@ void GameScene::populate() {
 #pragma mark : Platforms
 	for (int ii = 0; ii < PLATFORM_COUNT; ii++) {
 		std::shared_ptr<physics2::PolygonObstacle> platobj;
-		Poly2 platform(reinterpret_cast<Vec2*>(PLATFORMS[ii]),4);
+		Poly2 platform(reinterpret_cast<Vec2*>(PLATFORMS[ii]),sizeof(PLATFORMS[ii]) / sizeof(float) / 2);
 
 		EarclipTriangulator triangulator;
 		triangulator.set(platform.vertices);
