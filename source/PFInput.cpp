@@ -142,9 +142,10 @@ bool PlatformInput::init(const Rect bounds) {
     if (contSuccess) {
         GameControllerInput* controller = Input::get<GameControllerInput>();
         std::vector<std::string> deviceUUIDs = controller->devices();
+       
         if (!deviceUUIDs.empty()) {
             _gameCont = controller->open(deviceUUIDs.front());
-            CULog("Controller obtained");
+            CULog("Controller Obtained, Name: %s", _gameCont->getName().c_str());
 
             ////using axis controllers for joystick
             _gameCont->addAxisListener(CONTROLLER_LISTENER_KEY, [=](const GameControllerAxisEvent& event, bool focus) {
@@ -264,6 +265,8 @@ void PlatformInput::update(float dt) {
         _dashKey = _gameCont->isButtonPressed(3);
         _keyReset = _gameCont->isButtonPressed(4);
         _keyExit = _gameCont->isButtonPressed(5);
+
+
     }
 
 
@@ -274,8 +277,8 @@ void PlatformInput::update(float dt) {
     _dashKey = _gameCont->isButtonPressed(3);
     _keyReset = _gameCont->isButtonPressed(4);
     _keyExit = _gameCont->isButtonPressed(5);
-}
-    
+
+
     if (_gameCont->isButtonPressed(4)) CULog("This button is 4");
     if (_gameCont->isButtonPressed(5)) CULog("This button is 5");
     if (_gameCont->isButtonPressed(6)) CULog("This button is 6");
@@ -284,8 +287,16 @@ void PlatformInput::update(float dt) {
     if (_gameCont->isButtonPressed(9)) CULog("This button is 9");
     if (_gameCont->isButtonPressed(10)) CULog("This button is 9");
 
-#endif
+    CULog("======= Polling Results =======");
+    for (int i = 0; i < _gameCont->numberAxes(); i++) {
+        float axisVal = _gameCont->getAxisPosition(i);
+        if (axisVal > .2 || axisVal < -.2) {
+            CULog("Polling %d: %f", i, axisVal);
+        }
+    }
 
+
+#endif
     _resetPressed = _keyReset;
     _debugPressed = _keyDebug;
     _exitPressed = _keyExit;
@@ -584,6 +595,12 @@ void PlatformInput::getAxisAngle(const cugl::GameControllerAxisEvent& event, boo
     //TODO: WHAT ARE AXIS INDICES?? HOW MANY??? 2 or 4
     _xAxis = _gameCont->getAxisPosition(0);
     _yAxis = _gameCont->getAxisPosition(1);
+    
+    for (int i = 0; i < _gameCont->numberAxes(); i++) {
+        CULog("Axis %d: %f", i, _gameCont->getAxisPosition(i));
+    }
+    CULog("End of Call\n\n\n");
+  
 }
 
 std::string  PlatformInput::getGestureString() {

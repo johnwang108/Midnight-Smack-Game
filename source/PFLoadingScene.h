@@ -50,6 +50,8 @@ protected:
     /** Whether or not the player has pressed play to continue */
     bool  _completed;
 
+    bool _keyboardActive;
+
     /**
      * Returns the active screen size of this scene.
      *
