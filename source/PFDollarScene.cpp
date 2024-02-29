@@ -36,6 +36,8 @@
 
 #define SMALL_MSG "retrosmall"  
 
+#define DOLLAR_THRESHOLD 0.5
+
 using namespace cugl;
 
 float SHAPE[] = { 0,300,300,300,300,0,0,0} ;
@@ -122,7 +124,7 @@ bool DollarScene::isPending() {
 
 //is gesture inputting a success?
 bool DollarScene::isSuccess() {
-	return _input->getGestureSim() > 0.5;
+	return _input->getGestureSim() > DOLLAR_THRESHOLD;
 };
 
 //draws a boundary rectangle
