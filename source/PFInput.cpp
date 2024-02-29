@@ -292,7 +292,7 @@ void PlatformInput::update(float dt) {
     _keySlow = _gameCont->isButtonPressed(2); //button 2 is X
     //_dashKey = _gameCont->isButtonPressed(3); button 3 is Y
 
-    float lTriggerAmt = _gameCont->getAxisPosition(4);
+    float lTriggerAmt = _gameCont->getAxisPosition(6);
     _dashKey = (lTriggerAmt > TRIGGER_DEADZONE);
 
     float rTriggerAmt = _gameCont->getAxisPosition(5);
