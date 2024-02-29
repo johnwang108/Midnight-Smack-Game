@@ -84,6 +84,16 @@ float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
     { 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
 };
 
+/** The number of platforms */
+#define ALT_PLATFORM_VERTS  8
+#define ALT_PLATFORM_COUNT  1
+
+/** The outlines of all of the platforms */
+float ALT_PLATFORMS[ALT_PLATFORM_COUNT][ALT_PLATFORM_VERTS] = {
+    { 1.0f, .5f, 1.0f, .0f, 33.0f, .0f, 33.0f, .50f}
+};
+
+
 /** The goal door position */
 float GOAL_POS[] = { 4.0f,14.0f};
 /** The position of the spinning barrier */
@@ -465,9 +475,9 @@ void GameScene::populate() {
 	}
 
 #pragma mark : Platforms
-	for (int ii = 0; ii < PLATFORM_COUNT; ii++) {
+	for (int ii = 0; ii < ALT_PLATFORM_COUNT; ii++) {
 		std::shared_ptr<physics2::PolygonObstacle> platobj;
-		Poly2 platform(reinterpret_cast<Vec2*>(PLATFORMS[ii]),4);
+		Poly2 platform(reinterpret_cast<Vec2*>(ALT_PLATFORMS[ii]),4);
 
 		EarclipTriangulator triangulator;
 		triangulator.set(platform.vertices);
