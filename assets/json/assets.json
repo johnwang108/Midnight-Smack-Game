@@ -23,6 +23,12 @@
         "shrimp": {
             "file":      "textures/shrimp.png"
         },
+        "rice": {
+            "file":      "textures/rice.png"
+        },
+        "egg": {
+            "file":      "textures/egg.png"
+        },
         "dpad": {
             "file": "textures/dpad.png",
             "wrapS": "clamp",

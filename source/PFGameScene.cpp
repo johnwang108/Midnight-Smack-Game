@@ -93,7 +93,9 @@ float DUDE_POS[] = { 2.5f, 5.0f};
 /** The position of the rope bridge */
 float BRIDGE_POS[] = {9.0f, 3.8f};
 
-float shrimp_POS[] = { 21.0f, 16.0f };
+float SHRIMP_POS[] = { 21.0f, 16.0f };
+
+float RICE_POS[] = { 25.0f, 14.0f };
 
 #pragma mark -
 #pragma mark Physics Constants
@@ -184,8 +186,7 @@ GameScene::GameScene() : Scene2(),
 	_world(nullptr),
 	_avatar(nullptr),
 	_complete(false),
-	_debug(false),
-    _enemy(nullptr)
+	_debug(false)
 {    
 }
 
@@ -323,7 +324,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _slowed = false;
 
-    _dollarnode = std::make_shared<DollarScene>();
+   // _dollarnode = std::make_shared<DollarScene>();
     
     addChild(_worldnode);
     addChild(_debugnode);
@@ -332,12 +333,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_leftnode);
     addChild(_rightnode);
     addChild(_gesturehud);
-    addChild(_dollarnode);
-    _dollarnode->init(_assets, _input);
+//    addChild(_dollarnode);
+  //  _dollarnode->init(_assets, _input);
     //_dollarnode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
-    _dollarnode->setPosition(getSize().getIWidth() / 2.0f, getSize().getIHeight() / 2.0f);
+  //  _dollarnode->setPosition(getSize().getIWidth() / 2.0f, getSize().getIHeight() / 2.0f);
     //_dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
-    _dollarnode->setVisible(false);
+  //  _dollarnode->setVisible(false);
 
 
     populate();
@@ -363,8 +364,8 @@ void GameScene::dispose() {
         _losenode = nullptr;
         _leftnode = nullptr;
         _rightnode = nullptr;
-        _dollarnode->dispose();
-        _dollarnode = nullptr;
+    //    _dollarnode->dispose();
+    //    _dollarnode = nullptr;
         _complete = false;
         _debug = false;
         Scene2::dispose();
@@ -388,8 +389,8 @@ void GameScene::reset() {
     _goalDoor = nullptr;
     _spinner = nullptr;
     _ropebridge = nullptr;
-    _enemy = nullptr;
-      
+    _enemies.clear();
+
     setFailure(false);
     setComplete(false);
     populate();
@@ -575,15 +576,24 @@ void GameScene::populate() {
     AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
 
-#pragma mark : Enemies
-    Vec2 shrimp_pos = shrimp_POS;
-    node = scene2::SceneNode::alloc();
+    Vec2 shrimp_pos = SHRIMP_POS;
     image = _assets->get<Texture>(SHRIMP_TEXTURE);
-    //_enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
+    std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
     sprite = scene2::PolygonNode::allocWithTexture(image);
-    //_enemy->setSceneNode(sprite);
-    //_enemy->setDebugColor(DEBUG_COLOR);
-    //addObstacle(_enemy, sprite);
+    _enemy->setSceneNode(sprite);
+    _enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(_enemy, sprite);
+    _enemies.push_back(_enemy);
+
+    Vec2 rice_pos = RICE_POS;
+    image = _assets->get<Texture>(RICE_TEXTURE);
+    _enemy = EnemyModel::alloc(rice_pos, image->getSize() / _scale, _scale, EnemyType::rice);
+    sprite = scene2::PolygonNode::allocWithTexture(image);
+    _enemy->setSceneNode(sprite);
+    _enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(_enemy, sprite);
+    _enemies.push_back(_enemy);
+
 }
 
 /**
@@ -645,46 +655,58 @@ void GameScene::addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj
  * @param dt    The amount of time (in seconds) since the last frame
  */
 void GameScene::preUpdate(float dt) {
-	_input->update(dt);
+    _input->update(dt);
 
-	// Process the toggled key commands
-	if (_input->didDebug()) { setDebug(!isDebug()); }
-	if (_input->didReset()) { reset(); }
-	if (_input->didExit())  {
-		CULog("Shutting down");
-		Application::get()->quit();
-	}
+    // Process the toggled key commands
+    if (_input->didDebug()) { setDebug(!isDebug()); }
+    if (_input->didReset()) { reset(); }
+    if (_input->didExit()) {
+        CULog("Shutting down");
+        Application::get()->quit();
+    }
 
-	//_slowed = _input->didSlow();
+    //_slowed = _input->didSlow();
     if (_input->didSlow()) {
         _slowed = !_slowed;
     }
-	if (!_slowed) {
-		_dollarnode->setVisible(false);
+    if (!_slowed) {
+    //    _dollarnode->setVisible(false);
 
-		_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
-		_avatar->setJumping(_input->didJump());
-		_avatar->setDash(_input->didDash());
-		_avatar->applyForce(_input->getHorizontal(), _input->getVertical());
+        _avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
+        _avatar->setJumping(_input->didJump());
+        _avatar->setDash(_input->didDash());
+        _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
 
-		if (_avatar->isJumping() && _avatar->isGrounded()) {
-			std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
-			AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
-		}
-	}
+        if (_avatar->isJumping() && _avatar->isGrounded()) {
+            std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
+            AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
+        }
+    }
     else {
 
         _avatar->setMovement(0);
         _avatar->setJumping(_input->didJump());
         _avatar->setDash(_input->didDash());
         _avatar->applyForce(0, 0);
-
-        _dollarnode->setVisible(true);
-        _dollarnode->update();
     }
-    //_enemy->update(dt);
- 
-    
+
+    for (auto& enemy : _enemies) {
+        if (enemy != nullptr && !enemy->isRemoved()) {
+            Vec2 avatarPos = _avatar->getPosition();
+            Vec2 enemyPos = enemy->getPosition();
+            float distance = avatarPos.distance(enemyPos);
+
+            if (distance < CHASE_THRESHOLD && !enemy->isChasing()) {
+                enemy->setIsChasing(true);
+                int direction = (avatarPos.x > enemyPos.x) ? 1 : -1;
+                enemy->setDirection(direction);
+            }
+            else if (distance >= CHASE_THRESHOLD && enemy->isChasing()) {
+                enemy->setIsChasing(false);
+            }
+            enemy->update(dt);
+        }
+    }
 }
 
 /**
@@ -903,31 +925,35 @@ void GameScene::beginContact(b2Contact* contact) {
 		removeBullet((Bullet*)bd2);
 	}
 
-
-    // See if we have landed on the ground.
-    if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
-        (_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
-        _avatar->setGrounded(true);
-        // Could have more than one ground
-        _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
+	// See if we have landed on the ground.
+	if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
+		(_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
+		_avatar->setGrounded(true);
+		// Could have more than one ground
+		_sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
+	}
+    for (auto& _enemy : _enemies) {
+        if (!_enemy->isRemoved()) {
+            if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
+                (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
+                _enemy->setGrounded(true);
+            }
+            if (bd1 == _avatar.get() && bd2 == _enemy.get()
+                || (bd2 == _avatar.get() && bd1 == _enemy.get())) {
+                _enemy->setDebugScene(nullptr);
+                _worldnode->removeChild(_enemy->getSceneNode());
+                _enemy->markRemoved(true);
+           //     _enemy->removeFromGame();
+            }
+        }
     }
-    if ((bd1 == _avatar.get() && bd2->getName() == WALL_NAME) ||
-        (bd2 == _avatar.get() && bd1->getName() == WALL_NAME)) {
-        _avatar->setContactingWall(true);
-        _avatar->setVX(0);
-    }
 
-    // If we hit the "win" door, we are done
-    if ((bd1 == _avatar.get() && bd2 == _goalDoor.get()) ||
-        (bd1 == _goalDoor.get() && bd2 == _avatar.get())) {
-        setComplete(true);
-    }
-
-    /*if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
-        (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
-        _enemy->setGrounded(true);*/
-        // Could have more than one ground
-    //}
+    
+	// If we hit the "win" door, we are done
+	if((bd1 == _avatar.get()   && bd2 == _goalDoor.get()) ||
+		(bd1 == _goalDoor.get() && bd2 == _avatar.get())) {
+		setComplete(true);
+	}
 }
 
 /**
@@ -957,16 +983,7 @@ void GameScene::endContact(b2Contact* contact) {
 			_avatar->setGrounded(false);
 		}
 	}
-    // Check if the player is no longer in contact with any walls
-    bool p1 = (_avatar->getSensorName() == fd2);
-    bool p2 = (bd1->getName() != WALL_NAME);
-    bool p3 = (_avatar->getSensorName() == fd1);
-    bool p4 = (bd2->getName() != WALL_NAME );
-    bool p5 = _avatar->contactingWall();
-    if (!(p1 || p2 || p3) && p4 && p5) {
-        _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
-        _avatar->setContactingWall(false);
-    }
+
 }
 
 /**
