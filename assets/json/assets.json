@@ -17,6 +17,12 @@
         "bullet": {
             "file": "textures/bullet.png"
         },
+        "attack_l": {
+            "file": "textures/attack_l.png"
+        },
+        "attack_r": {
+            "file": "textures/attack_r.png"
+        },
         "goal": {
             "file": "textures/goaldoor.png"
         },

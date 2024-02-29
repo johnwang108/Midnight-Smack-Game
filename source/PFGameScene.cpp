@@ -26,7 +26,7 @@
 #include "PFDudeModel.h"
 #include "PFSpinner.h"
 #include "PFRopeBridge.h"
-#include "PFBullet.h"
+#include "PFAttack.h"
 
 #include <ctime>
 #include <string>
@@ -113,6 +113,14 @@ float RICE_POS[] = { 25.0f, 14.0f };
 #define BRIDGE_WIDTH    14.0f
 /** Offset for bullet when firing */
 #define BULLET_OFFSET   0.5f
+/** Offset for attack when firing, hacky */
+#define ATTACK_OFFSET_H   1.0f
+/** Offset for attack when firing, hacky*/
+#define ATTACK_OFFSET_V   -1.0f
+/**Scalar for width of a box attack, hacky*/
+#define ATTACK_W        2.0f
+/**Scalar for height of a box attack, hacky*/
+#define ATTACK_H        0.5f
 /** The speed of the bullet after firing */
 #define BULLET_SPEED   20.0f
 /** The number of frame to wait before reinitializing the game */
@@ -127,8 +135,11 @@ float RICE_POS[] = { 25.0f, 14.0f };
 #define GOAL_TEXTURE    "goal"
 /** The key for the win door texture in the asset manager */
 #define BULLET_TEXTURE  "bullet"
+/** The keys for the attack texture in asset manager*/
+#define ATTACK_TEXTURE_R  "attack_r"
+#define ATTACK_TEXTURE_L  "attack_l"
 /** The name of a bullet (for object identification) */
-#define BULLET_NAME     "bullet"
+#define ATTACK_NAME     "attack"
 /** The name of a wall (for object identification) */
 #define WALL_NAME       "wall"
 /** The name of a platform (for object identification) */
@@ -323,6 +334,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
     _slowed = false;
+    _attacks = std::vector<std::shared_ptr<Attack>>();
 
    // _dollarnode = std::make_shared<DollarScene>();
     
@@ -756,7 +768,7 @@ void GameScene::fixedUpdate(float step) {
 void GameScene::postUpdate(float remain) {
     // Since items may be deleted, garbage collect
     _world->garbageCollect();
-    
+
     // TODO: Update this demo to support interpolation
     // We can interpolate the rope bridge and spinner as we have the data structures
     _spinner->update(remain);
@@ -764,16 +776,30 @@ void GameScene::postUpdate(float remain) {
         _ropebridge->update(remain);
     }
 
+    //_world->
+
 
     // Add a bullet AFTER physics allows it to hang in front
     // Otherwise, it looks like bullet appears far away
     _avatar->setShooting(_input->didFire());
     if (_avatar->isShooting()) {
-        createBullet();
+        createAttack();
     }
 
     _gesturehud->setText(getGestureText(_input->getGestureString(), _input->getGestureSim()));
 
+
+    //iterate through physics objects and delete any timed-out attacks
+    //BAD CODE ALEART
+    for (auto it = _attacks.begin(); it != _attacks.end();) {
+        if ((*it)->killMe()) {
+            removeAttack((*it).get());
+            it = _attacks.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
 
     // Record failure if necessary.
     if (!_failed && _avatar->getY() < 0) {
@@ -834,32 +860,56 @@ void GameScene::setFailure(bool value) {
 /**
  * Add a new bullet to the world and send it in the right direction.
  */
-void GameScene::createBullet() {
-	float offset = BULLET_OFFSET;
+void GameScene::createAttack() {
 	Vec2 pos = _avatar->getPosition();
-	pos.x += (_avatar->isFacingRight() ? offset : -offset);
+	pos.x += (_avatar->isFacingRight() ? ATTACK_OFFSET_H : -ATTACK_OFFSET_H);
+    pos.y += ATTACK_OFFSET_V;
+    std::shared_ptr<Texture> image;
+    if (_avatar->isFacingRight()) {
+        image = _assets->get<Texture>(ATTACK_TEXTURE_R);
+    }
+    else {
+        image = _assets->get<Texture>(ATTACK_TEXTURE_L);
+    }
 
-	std::shared_ptr<Texture> image = _assets->get<Texture>(BULLET_TEXTURE);
-	float radius = 0.5f*image->getSize().width/_scale;
 
-	std::shared_ptr<Bullet> bullet = Bullet::alloc(pos, radius);
-	bullet->setName(BULLET_NAME);
-	bullet->setDensity(HEAVY_DENSITY);
-	bullet->setBullet(true);
-	bullet->setGravityScale(0);
-	bullet->setDebugColor(DEBUG_COLOR);
-	bullet->setDrawScale(_scale);
+    std::vector<Vec2> verts = std::vector<Vec2>();
+
+    //JOHN: CAN"T GET COLLISION TO WORK WITH POLYGON OBSTACLES. 
+    // FOR NOW AM JUST GONNA STICK WITH BOX OBSTACLES BUT NEEDS TO BE ADDRESSED
+
+    /*verts.push_back(cugl::Vec2(0, 0));
+    verts.push_back(cugl::Vec2(50, 0));
+    verts.push_back(cugl::Vec2(50, 50));
+    verts.push_back(cugl::Vec2(0, 50));*/
+    /*verts.push_back(cugl::Vec2(0, 50));
+    verts.push_back(cugl::Vec2(50, 50));
+    verts.push_back(cugl::Vec2(50, 0));
+    verts.push_back(cugl::Vec2(0, 0));*/
+    //cugl::Poly2 attack_poly = cugl::Poly2(verts);
+	//std::shared_ptr<Attack> attack = Attack::alloc(attack_poly, pos);
+	std::shared_ptr<Attack> attack = Attack::alloc(pos, 
+        cugl::Size(ATTACK_W * image->getSize().width / _scale, 
+        ATTACK_H * image->getSize().height / _scale));
+	attack->setName(ATTACK_NAME);
+    attack->setDensity(HEAVY_DENSITY);
+    attack->setBullet(true);
+    attack->setGravityScale(0);
+    attack->setDebugColor(DEBUG_COLOR);
+    attack->setDrawScale(_scale);
+    
 
 	std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
-	bullet->setSceneNode(sprite);
+    attack->setSceneNode(sprite);
+    sprite->setVisible(true);
+    sprite->setPosition(pos);
 
-	// Compute position and velocity
-	float speed  = (_avatar->isFacingRight() ? BULLET_SPEED : -BULLET_SPEED);
-	bullet->setVX(speed);
-	addObstacle(bullet, sprite, 5);
+	addObstacle(attack, sprite, true);
 
 	std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
 	AudioEngine::get()->play(PEW_EFFECT,source, false, EFFECT_VOLUME, true);
+
+    _attacks.push_back(attack);
 }
 
 /**
@@ -867,14 +917,14 @@ void GameScene::createBullet() {
  *
  * @param  bullet   the bullet to remove
  */
-void GameScene::removeBullet(Bullet* bullet) {
+void GameScene::removeAttack(Attack* attack) {
   // do not attempt to remove a bullet that has already been removed
-	if (bullet->isRemoved()) {
+	if (attack->isRemoved()) {
 		return;
 	}
-	_worldnode->removeChild(bullet->getSceneNode());
-	bullet->setDebugScene(nullptr);
-	bullet->markRemoved(true);
+	_worldnode->removeChild(attack->getSceneNode());
+	attack->setDebugScene(nullptr);
+    attack->markRemoved(true);
 
 	std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
 	AudioEngine::get()->play(POP_EFFECT,source,false,EFFECT_VOLUME, true);
@@ -907,10 +957,10 @@ void GameScene::beginContact(b2Contact* contact) {
     physics2::Obstacle* bd2 = reinterpret_cast<physics2::Obstacle*>(body2->GetUserData().pointer);
     
 	// Test bullet collision with world
-	if (bd1->getName() == BULLET_NAME && bd2 != _avatar.get()) {
-		removeBullet((Bullet*)bd1);
-	} else if (bd2->getName() == BULLET_NAME && bd1 != _avatar.get()) {
-		removeBullet((Bullet*)bd2);
+	if (bd1->getName() == ATTACK_NAME && bd2 != _avatar.get()) {
+		removeAttack((Attack*)bd1);
+	} else if (bd2->getName() == ATTACK_NAME && bd1 != _avatar.get()) {
+		removeAttack((Attack*)bd2);
 	}
 
 	// See if we have landed on the ground.
@@ -920,6 +970,7 @@ void GameScene::beginContact(b2Contact* contact) {
 		// Could have more than one ground
 		_sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
 	}
+
     for (auto& _enemy : _enemies) {
         if (!_enemy->isRemoved()) {
             if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
@@ -933,6 +984,17 @@ void GameScene::beginContact(b2Contact* contact) {
                 _enemy->markRemoved(true);
            //     _enemy->removeFromGame();
             }
+
+            //temp code for attack collision
+            if (bd1->getName() == ATTACK_NAME && bd2 == _enemy.get()
+                || (bd2->getName() == ATTACK_NAME && bd1 == _enemy.get())) {
+                _enemy->setDebugScene(nullptr);
+                _worldnode->removeChild(_enemy->getSceneNode());
+                _enemy->markRemoved(true);
+                //     _enemy->removeFromGame();
+            }
+
+
         }
     }
 
