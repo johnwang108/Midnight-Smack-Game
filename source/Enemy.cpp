@@ -119,7 +119,6 @@ void EnemyModel::update(float dt) {
         }
         if (isChasing()) {
             velocity.x *= CHASE_SPEED;
-
         } else {
             _nextChangeTime -= dt;
             if (_nextChangeTime <= 0) {
@@ -127,19 +126,18 @@ void EnemyModel::update(float dt) {
                 _nextChangeTime = _changeDirectionInterval + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * _changeDirectionInterval;
             }
 
-            if (_direction != _lastDirection) {
-                // If direction changed, flip the image
-                scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
-                if (image != nullptr) {
-                    image->flipHorizontal(!image->isFlipHorizontal());
-                }
-                _lastDirection = _direction; // Update last direction
-            }
         }
+        if (_direction != _lastDirection) {
+            // If direction changed, flip the image
+            scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
+            if (image != nullptr) {
+                image->flipHorizontal(!image->isFlipHorizontal());
+            }
+     }
+     _lastDirection = _direction; // Update last direction
 
-
-        _body->SetLinearVelocity(velocity);
-    }
+     _body->SetLinearVelocity(velocity);
+ }
    
 
     
