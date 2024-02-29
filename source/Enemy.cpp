@@ -7,8 +7,8 @@
 #define ENEMY_DAMPING    5.0f
 #define ENEMY_MAXSPEED   10.0f
 #define ENEMY_JUMP       2.5f
-#define ENEMY_VSHRINK    0.8f
-#define ENEMY_HSHRINK    0.7f
+#define ENEMY_VSHRINK    1.0f
+#define ENEMY_HSHRINK    1.0f
 #define ENEMY_DENSITY    1.0f
 
 #define SENSOR_HEIGHT 0.1f

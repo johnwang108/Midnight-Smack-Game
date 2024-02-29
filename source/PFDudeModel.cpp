@@ -66,9 +66,9 @@ float floatyFrames = 10;
 /** Cooldown (in animation frames) for shooting */
 #define SHOOT_COOLDOWN  20
 /** The amount to shrink the body fixture (vertically) relative to the image */
-#define DUDE_VSHRINK  0.95f
+#define DUDE_VSHRINK  1.0f
 /** The amount to shrink the body fixture (horizontally) relative to the image */
-#define DUDE_HSHRINK  0.7f
+#define DUDE_HSHRINK  1.0f
 /** The amount to shrink the sensor fixture (horizontally) relative to the image */
 #define DUDE_SSHRINK  0.6f
 /** Height of the sensor attached to the player's feet */
