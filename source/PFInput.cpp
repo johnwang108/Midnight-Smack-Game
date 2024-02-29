@@ -236,7 +236,7 @@ void PlatformInput::update(float dt) {
         _keyExit = keys->keyPressed(EXIT_KEY);
         _keyFire = keys->keyPressed(FIRE_KEY);
         _keyJump = keys->keyPressed(JUMP_KEY);
-        _keySlow = keys->keyDown(SLOW_KEY);
+        _keySlow = keys->keyPressed(SLOW_KEY);
 
         _dashKey = keys->keyPressed(DASH_KEY);
 

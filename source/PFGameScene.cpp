@@ -655,7 +655,6 @@ void GameScene::preUpdate(float dt) {
 		Application::get()->quit();
 	}
 
-	//_slowed = _input->didSlow();
     if (_input->didSlow()) {
         _slowed = !_slowed;
     }
@@ -671,8 +670,7 @@ void GameScene::preUpdate(float dt) {
 			std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
 			AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
 		}
-	}
-    else {
+	} else {
 
         _avatar->setMovement(0);
         _avatar->setJumping(_input->didJump());

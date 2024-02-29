@@ -95,7 +95,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 //re-extrudes the path and updates the polygon node
 void DollarScene::update() {
 	//get new path
-	//_path = _input->getTouchPath();
+	_path = _input->getTouchPath();
 
 	//re-extrude path
 	_se.set(_path);
@@ -105,7 +105,9 @@ void DollarScene::update() {
 	_poly->setAnchor(cugl::Vec2::ANCHOR_CENTER);
 
 	//update bounding box
-	cugl::Rect bounding = _poly->getBoundingRect();
+	//cugl::Rect bounding = _poly->getBoundingRect();
+	cugl::Rect bounding;
+	bounding = cugl::Rect(cugl::Vec2(0,0), cugl::Size(500, 500));
 	_box->setPolygon(cugl::Poly2(bounding));
 	_box->setColor(cugl::Color4::GREEN);
 	_box->setAnchor(cugl::Vec2::ANCHOR_CENTER);

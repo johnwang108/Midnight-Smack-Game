@@ -294,7 +294,9 @@ public:
 	 * @return true if the exit button was pressed.
 	 */
 	bool didExit() const { return _exitPressed; }
-    bool didSlow() const { return _slowPressed; }
+    bool didSlow() const { 
+            return _slowPressed; 
+    }
 
 
     bool didDash() const { return _dashPressed; }
