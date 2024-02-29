@@ -18,6 +18,9 @@
 #define ENEMY_DENSITY    1.0f
 
 #define SENSOR_HEIGHT 0.1f
+
+#define CHASE_THRESHOLD 10.0f  
+#define CHASE_SPEED 2.0f
 /**
  * Enum for enemy types.
  * Add additional enemy types as needed.
@@ -41,6 +44,7 @@ protected:
     /** Whether the enemy is currently on the ground */
     bool _isGrounded;
     /** The node for visual representation of the enemy */
+    bool _isChasing;
     std::shared_ptr<cugl::scene2::SceneNode> _node;
     /** The node for debugging the sensor */
  //   std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
@@ -100,7 +104,13 @@ public:
 
     int getDirection() const { return _direction; }
 
+    void setDirection(int d) { _direction = d; }
+
     const std::shared_ptr<cugl::scene2::SceneNode>& getSceneNode() const { return _node; }
+
+    void setIsChasing(bool isChasing) { _isChasing = isChasing; }
+
+    bool isChasing() const { return _isChasing; }
 
 
 #pragma mark -
@@ -151,6 +161,8 @@ public:
      * disposed, a DudeModel may not be used until it is initialized again.
      */
     void dispose();
+
+
 
 };
 

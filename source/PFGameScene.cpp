@@ -692,6 +692,18 @@ void GameScene::preUpdate(float dt) {
 
     for (auto& enemy : _enemies) {
         if (enemy != nullptr && !enemy->isRemoved()) {
+            Vec2 avatarPos = _avatar->getPosition();
+            Vec2 enemyPos = enemy->getPosition();
+            float distance = avatarPos.distance(enemyPos);
+
+            if (distance < CHASE_THRESHOLD && !enemy->isChasing()) {
+                enemy->setIsChasing(true);
+                int direction = (avatarPos.x > enemyPos.x) ? 1 : -1;
+                enemy->setDirection(direction);
+            }
+            else if (distance >= CHASE_THRESHOLD && enemy->isChasing()) {
+                enemy->setIsChasing(false);
+            }
             enemy->update(dt);
         }
     }
