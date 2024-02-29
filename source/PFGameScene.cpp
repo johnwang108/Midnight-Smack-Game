@@ -137,7 +137,7 @@ boolean isLevel1 = true;
 /** Offset for attack when firing, hacky */
 #define ATTACK_OFFSET_H   1.0f
 /** Offset for attack when firing, hacky*/
-#define ATTACK_OFFSET_V   -1.0f
+#define ATTACK_OFFSET_V   0.0f
 /**Scalar for width of a box attack, hacky*/
 #define ATTACK_W        2.0f
 /**Scalar for height of a box attack, hacky*/
@@ -163,6 +163,8 @@ boolean isLevel1 = true;
 #define ATTACK_NAME     "attack"
 /** The name of a wall (for object identification) */
 #define WALL_NAME       "wall"
+/** The name of an enemy for object id */
+#define ENEMY_NAME	    "enemy"
 /** The name of a platform (for object identification) */
 #define PLATFORM_NAME   "platform"
 /** The font for victory/failure messages */
@@ -586,6 +588,7 @@ void GameScene::populate() {
     std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
     sprite = scene2::PolygonNode::allocWithTexture(image);
     _enemy->setSceneNode(sprite);
+    _enemy->setName(ENEMY_NAME);
     _enemy->setDebugColor(DEBUG_COLOR);
     addObstacle(_enemy, sprite);
     _enemies.push_back(_enemy);
@@ -595,6 +598,7 @@ void GameScene::populate() {
     _enemy = EnemyModel::alloc(rice_pos, image->getSize() / _scale, _scale, EnemyType::rice);
     sprite = scene2::PolygonNode::allocWithTexture(image);
     _enemy->setSceneNode(sprite);
+    _enemy->setName(ENEMY_NAME);
     _enemy->setDebugColor(DEBUG_COLOR);
     addObstacle(_enemy, sprite);
     _enemies.push_back(_enemy);
@@ -604,6 +608,7 @@ void GameScene::populate() {
     _enemy = EnemyModel::alloc(egg_pos, image->getSize() / _scale, _scale, EnemyType::egg);
     sprite = scene2::PolygonNode::allocWithTexture(image);
     _enemy->setSceneNode(sprite);
+    _enemy->setName(ENEMY_NAME);
     _enemy->setDebugColor(DEBUG_COLOR);
     addObstacle(_enemy, sprite);
     _enemies.push_back(_enemy);
@@ -1000,11 +1005,13 @@ void GameScene::beginContact(b2Contact* contact) {
     physics2::Obstacle* bd1 = reinterpret_cast<physics2::Obstacle*>(body1->GetUserData().pointer);
     physics2::Obstacle* bd2 = reinterpret_cast<physics2::Obstacle*>(body2->GetUserData().pointer);
     
-	// Test bullet collision with world
-	if (bd1->getName() == ATTACK_NAME && bd2 != _avatar.get()) {
+	// Test bullet collision with enemy
+	if (bd1->getName() == ATTACK_NAME && bd2->getName() == ENEMY_NAME) {
 		removeAttack((Attack*)bd1);
-	} else if (bd2->getName() == ATTACK_NAME && bd1 != _avatar.get()) {
+        removeEnemy((EnemyModel*)bd2);
+	} else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
 		removeAttack((Attack*)bd2);
+        removeEnemy((EnemyModel*)bd1);
 	}
 
 	// See if we have landed on the ground.
@@ -1015,28 +1022,37 @@ void GameScene::beginContact(b2Contact* contact) {
 		_sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
 	}
 
+    //See if the player collided with an enemy.
+
+    if ((_avatar.get() == bd1 && bd2->getName() == ENEMY_NAME) ||
+        (_avatar.get() == bd2 && bd1->getName() == ENEMY_NAME)) {
+
+        setFailure(true);
+    }
+
     for (auto& _enemy : _enemies) {
         if (!_enemy->isRemoved()) {
             if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
                 (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
                 _enemy->setGrounded(true);
             }
-            if (bd1 == _avatar.get() && bd2 == _enemy.get()
-                || (bd2 == _avatar.get() && bd1 == _enemy.get())) {
-                _enemy->setDebugScene(nullptr);
-                _worldnode->removeChild(_enemy->getSceneNode());
-                _enemy->markRemoved(true);
-           //     _enemy->removeFromGame();
-            }
 
-            //temp code for attack collision
-            if (bd1->getName() == ATTACK_NAME && bd2 == _enemy.get()
-                || (bd2->getName() == ATTACK_NAME && bd1 == _enemy.get())) {
-                _enemy->setDebugScene(nullptr);
-                _worldnode->removeChild(_enemy->getSceneNode());
-                _enemy->markRemoved(true);
-                //     _enemy->removeFromGame();
-            }
+           // if (bd1 == _avatar.get() && bd2 == _enemy.get()
+           //     || (bd2 == _avatar.get() && bd1 == _enemy.get())) {
+           //     _enemy->setDebugScene(nullptr);
+           //     _worldnode->removeChild(_enemy->getSceneNode());
+           //     _enemy->markRemoved(true);
+           ////     _enemy->removeFromGame();
+           // }
+
+            ////temp code for attack collision
+            //if (bd1->getName() == ATTACK_NAME && bd2 == _enemy.get()
+            //    || (bd2->getName() == ATTACK_NAME && bd1 == _enemy.get())) {
+            //    _enemy->setDebugScene(nullptr);
+            //    _worldnode->removeChild(_enemy->getSceneNode());
+            //    _enemy->markRemoved(true);
+            //    //     _enemy->removeFromGame();
+            //}
 
 
         }
@@ -1048,6 +1064,20 @@ void GameScene::beginContact(b2Contact* contact) {
 		(bd1 == _goalDoor.get() && bd2 == _avatar.get())) {
 		setComplete(true);
 	}
+}
+
+
+//Basically the same as removeAttack, can refactor
+void GameScene::removeEnemy(EnemyModel* enemy) {
+    if (enemy->isRemoved()) {
+		return;
+	}
+    _worldnode->removeChild(enemy->getSceneNode());
+	enemy->setDebugScene(nullptr);
+	enemy->markRemoved(true); 
+    
+    std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
+    AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
 }
 
 /**
