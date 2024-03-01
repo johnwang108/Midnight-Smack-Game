@@ -399,8 +399,8 @@ void GameScene::dispose() {
         _losenode = nullptr;
         _leftnode = nullptr;
         _rightnode = nullptr;
-    //    _dollarnode->dispose();
-    //    _dollarnode = nullptr;
+        _dollarnode->dispose();
+        _dollarnode = nullptr;
         _complete = false;
         _debug = false;
         Scene2::dispose();
@@ -572,7 +572,7 @@ void GameScene::populate() {
 	Vec2 dudePos = DUDE_POS;
 	// node = scene2::SceneNode::alloc();
     image = _assets->get<Texture>(DUDE_TEXTURE);
-	_avatar = DudeModel::alloc(dudePos,image->getSize()/_scale,_scale);
+	_avatar = DudeModel::alloc(dudePos,image->getSize()/(2+_scale),_scale);
 	sprite = scene2::PolygonNode::allocWithTexture(image);
 	_avatar->setSceneNode(sprite);
 	_avatar->setDebugColor(DEBUG_COLOR);
@@ -605,7 +605,7 @@ void GameScene::populate() {
 
     Vec2 egg_pos = EGG_POS;
     image = _assets->get<Texture>(EGG_TEXTURE);
-    _enemy = EnemyModel::alloc(egg_pos, image->getSize() / _scale, _scale, EnemyType::egg);
+    _enemy = EnemyModel::alloc(egg_pos, image->getSize() / (_scale), _scale, EnemyType::egg);
     sprite = scene2::PolygonNode::allocWithTexture(image);
     _enemy->setSceneNode(sprite);
     _enemy->setName(ENEMY_NAME);
@@ -715,7 +715,7 @@ void GameScene::preUpdate(float dt) {
             Vec2 enemyPos = enemy->getPosition();
             float distance = avatarPos.distance(enemyPos);
 
-            if (distance < CHASE_THRESHOLD && !enemy->isChasing()) {
+            if (distance < CHASE_THRESHOLD) {
                 enemy->setIsChasing(true);
                 int direction = (avatarPos.x > enemyPos.x) ? 1 : -1;
                 enemy->setDirection(direction);
