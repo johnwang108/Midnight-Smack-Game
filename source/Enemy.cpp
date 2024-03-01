@@ -106,7 +106,7 @@ void EnemyModel::update(float dt) {
     // Example movement logic for enemy
     if (_isGrounded) {
         b2Vec2 velocity = _body->GetLinearVelocity();
-        velocity.x = ENEMY_FORCE * _direction;
+        velocity.x = ENEMY_FORCE;
 
         // Reverse direction at edges or obstacles
         if (velocity.x > ENEMY_MAXSPEED) {
@@ -134,6 +134,9 @@ void EnemyModel::update(float dt) {
                 image->flipHorizontal(!image->isFlipHorizontal());
             }
      }
+
+
+     velocity.x *= _direction;
      _lastDirection = _direction; // Update last direction
 
      _body->SetLinearVelocity(velocity);
