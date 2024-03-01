@@ -31,7 +31,7 @@
 #include <unordered_set>
 #include <vector>
 #include "PFInput.h"
-#include "PFBullet.h"
+#include "PFAttack.h"
 #include "PFDudeModel.h"
 #include "PFRopeBridge.h"
 #include "PFSpinner.h"
@@ -86,6 +86,8 @@ protected:
     // Physics objects for the game
     /** Reference to the goalDoor (for collision detection) */
     std::shared_ptr<cugl::physics2::BoxObstacle>    _goalDoor;
+
+    std::shared_ptr<cugl::physics2::BoxObstacle>    _background;
     /** Reference to the player avatar */
     std::shared_ptr<DudeModel>			  _avatar;
 
@@ -94,6 +96,10 @@ protected:
     std::shared_ptr<Spinner>			  _spinner;
     /** Reference to the rope bridge */
     std::shared_ptr<RopeBridge>			  _ropebridge;
+
+    //temp bad code
+    std::vector<std::shared_ptr<Attack>>  _attacks;
+    time_t start;
 
     /** Whether we have completed this "game" */
     bool _complete;
@@ -391,16 +397,16 @@ public:
     /**
     * Adds a new bullet to the world and sends it in the right direction.
     */
-    void createBullet();
+    void createAttack();
 
     /**
     * Removes the input Bullet from the world.
     *
     * @param  bullet   the bullet to remove
     */
-    void removeBullet(Bullet* bullet);
+    void removeAttack(Attack* attack);
 
-
+    void GameScene::removeEnemy(EnemyModel* enemy);
 
   };
 

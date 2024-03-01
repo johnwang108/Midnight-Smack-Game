@@ -9,7 +9,7 @@
 #define EGG_TEXTURE    "egg"
 #define RICE_TEXTURE    "rice"
 
-#define ENEMY_FORCE      1.0f
+#define ENEMY_FORCE      0.75f
 #define ENEMY_DAMPING    5.0f
 #define ENEMY_MAXSPEED   10.0f
 #define ENEMY_JUMP       2.5f
