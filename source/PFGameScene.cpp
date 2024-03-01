@@ -399,7 +399,7 @@ void GameScene::dispose() {
         _losenode = nullptr;
         _leftnode = nullptr;
         _rightnode = nullptr;
-        _dollarnode->dispose();
+        //_dollarnode->dispose();
         _dollarnode = nullptr;
         _complete = false;
         _debug = false;
