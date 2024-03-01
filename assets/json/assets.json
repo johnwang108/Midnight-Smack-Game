@@ -8,6 +8,9 @@
         "dude": {
             "file":     "textures/dude.png"
         },
+        "background-1": {
+            "file":     "textures/background-image-1.png"
+        },
         "spinner": {
             "file": "textures/barrier.png"
         },
