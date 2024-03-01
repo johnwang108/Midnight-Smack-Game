@@ -26,15 +26,13 @@
 #include "PFDudeModel.h"
 #include "PFSpinner.h"
 #include "PFRopeBridge.h"
-#include "PFBullet.h"
+#include "PFAttack.h"
 
 #include <ctime>
 #include <string>
 #include <iostream>
 #include <sstream>
 #include <random>
-#include <SDL.h>
-
 
 using namespace cugl;
 
@@ -42,8 +40,8 @@ using namespace cugl;
 #pragma mark Level Geography
 
 /** This is adjusted by screen aspect ratio to get the height */
-#define SCENE_WIDTH 1280
-#define SCENE_HEIGHT 800
+#define SCENE_WIDTH 1024
+#define SCENE_HEIGHT 576
 
 /** This is the aspect ratio for physics */
 #define SCENE_ASPECT 10.0/16.0
@@ -71,21 +69,49 @@ float WALL[WALL_COUNT][WALL_VERTS] = {
 
 /** The number of platforms */
 #define PLATFORM_VERTS  8
-#define PLATFORM_COUNT  7
+#define PLATFORM_COUNT  10
 
 /** The outlines of all of the platforms */
+
+//float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
+//	{ 1.0f, 3.0f, 1.0f, 2.5f, 6.0f, 2.5f, 6.0f, 3.0f},
+//	{ 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
+//	{23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
+//	{26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
+//	{29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
+//	{24.0f, 8.5f,24.0f, 8.0f,27.0f, 8.0f,27.0f, 8.5f},
+//	{29.0f,10.0f,29.0f, 9.5f,31.0f, 9.5f,31.0f,10.0f},
+//	{23.0f,11.5f,23.0f,11.0f,27.0f,11.0f,27.0f,11.5f},
+//	{19.0f,12.5f,19.0f,12.0f,23.0f,12.0f,23.0f,12.5f},
+//	{ 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
+//};
+
 float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
-    { 1.0f, .5f, 1.0f, .0f, 6.0f, .0f, 6.0f, .50f},
-    { 6.0f, 1.0f, 6.0f, .0f, 9.0f, .0f, 9.0f, 1.0f},
-    {23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
-    {26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
-    {29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
-    {19.0f,12.0f,19.0f,11.5f,23.0f,11.5f,23.0f,12.0f},
+    {1.0f, 4.0f, 1.0f, 2.0f, 4.0f, 2.0f, 4.0f, 4.0f},
+    { 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
+    {9.5f, 6.0f, 9.5f, 5.0f, 12.5f, 5.0f, 12.5f, 6.0f},
+    {15.0f, 8.5f, 15.0f, 7.0f, 20.0f, 4.5f, 20.0f, 6.0f},
+    {23.0f, 4.0f, 23.0f, 3.0f, 27.0f, 3.0f, 27.0f, 4.0f},
+    {28.0f, 5.0f, 28.0f, 4.0f, 30.0f, 8.0f, 30.0f, 9.0f},
+    {23.0f, 10.0f, 23.0f, 9.f, 27.0f, 9.f, 27.0f, 10.f},
+    {16.0f, 12.f, 16.0f, 10.0f, 22.0f, 12.0f, 22.0f, 10.f},
+    {6.0f, 15.0f, 6.0f, 14.5f, 14.0f, 12.5f, 14.0f, 13.0f},
     { 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
 };
 
+/** The number of platforms */
+#define ALT_PLATFORM_VERTS  8
+#define ALT_PLATFORM_COUNT  1
+
+/** The outlines of all of the platforms */
+float ALT_PLATFORMS[ALT_PLATFORM_COUNT][ALT_PLATFORM_VERTS] = {
+    { 1.0f, .5f, 1.0f, .0f, 33.0f, .0f, 33.0f, .50f}
+};
+
+
 /** The goal door position */
 float GOAL_POS[] = { 4.0f,14.0f};
+// float GOAL_POS[] = { 6.0f, 5.0f };
 /** The position of the spinning barrier */
 float SPIN_POS[] = {13.0f,12.5f};
 /** The initial position of the dude */
@@ -93,9 +119,15 @@ float DUDE_POS[] = { 2.5f, 5.0f};
 /** The position of the rope bridge */
 float BRIDGE_POS[] = {9.0f, 3.8f};
 
-float SHRIMP_POS[] = { 21.0f, 16.0f };
+float SHRIMP_POS[] = { 22.0f, 16.0f };
+
+float EGG_POS[] = { 14.0f, 18.0f };
 
 float RICE_POS[] = { 25.0f, 14.0f };
+
+float BACKGROUND_POS[] = { 16.0f, 10.0f };
+
+boolean isLevel1 = true;
 
 #pragma mark -
 #pragma mark Physics Constants
@@ -113,6 +145,14 @@ float RICE_POS[] = { 25.0f, 14.0f };
 #define BRIDGE_WIDTH    14.0f
 /** Offset for bullet when firing */
 #define BULLET_OFFSET   0.5f
+/** Offset for attack when firing, hacky */
+#define ATTACK_OFFSET_H   1.0f
+/** Offset for attack when firing, hacky*/
+#define ATTACK_OFFSET_V   0.0f
+/**Scalar for width of a box attack, hacky*/
+#define ATTACK_W        2.0f
+/**Scalar for height of a box attack, hacky*/
+#define ATTACK_H        0.5f
 /** The speed of the bullet after firing */
 #define BULLET_SPEED   20.0f
 /** The number of frame to wait before reinitializing the game */
@@ -127,12 +167,19 @@ float RICE_POS[] = { 25.0f, 14.0f };
 #define GOAL_TEXTURE    "goal"
 /** The key for the win door texture in the asset manager */
 #define BULLET_TEXTURE  "bullet"
+/** The keys for the attack texture in asset manager*/
+#define ATTACK_TEXTURE_R  "attack_r"
+#define ATTACK_TEXTURE_L  "attack_l"
 /** The name of a bullet (for object identification) */
-#define BULLET_NAME     "bullet"
+#define ATTACK_NAME     "attack"
 /** The name of a wall (for object identification) */
 #define WALL_NAME       "wall"
+/** The name of an enemy for object id */
+#define ENEMY_NAME	    "enemy"
 /** The name of a platform (for object identification) */
 #define PLATFORM_NAME   "platform"
+
+#define BACKGROUND_NAME "background"
 /** The font for victory/failure messages */
 #define MESSAGE_FONT    "retro"
 
@@ -323,6 +370,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
     _slowed = false;
+    _attacks = std::vector<std::shared_ptr<Attack>>();
 
    // _dollarnode = std::make_shared<DollarScene>();
     
@@ -347,7 +395,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     setDebug(false);
     
     // XNA nostalgia
-    Application::get()->setClearColor(Color4f::CORNFLOWER);
+    // Application::get()->setClearColor(Color4f::CORNFLOWER);
+    Application::get()->setClearColor(Color4::YELLOW);
     return true;
 }
 
@@ -364,8 +413,8 @@ void GameScene::dispose() {
         _losenode = nullptr;
         _leftnode = nullptr;
         _rightnode = nullptr;
-    //    _dollarnode->dispose();
-    //    _dollarnode = nullptr;
+        //_dollarnode->dispose();
+        _dollarnode = nullptr;
         _complete = false;
         _debug = false;
         Scene2::dispose();
@@ -387,8 +436,11 @@ void GameScene::reset() {
     _debugnode->removeAllChildren();
     _avatar = nullptr;
     _goalDoor = nullptr;
-    _spinner = nullptr;
-    _ropebridge = nullptr;
+    _background = nullptr;
+    //I CHANGED THIS
+    // _spinner = nullptr;
+    // _ropebridge = nullptr;
+
     _enemies.clear();
 
     setFailure(false);
@@ -408,11 +460,26 @@ void GameScene::reset() {
  * with your serialization loader, which would process a level file.
  */
 void GameScene::populate() {
+
+# pragma mark: Background
+    Vec2 background_pos = BACKGROUND_POS;
+    std::shared_ptr<Texture> image = _assets->get<Texture>("background-1");
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    Size background_size(image->getSize().width / _scale, image->getSize().height / _scale);
+    _background = physics2::BoxObstacle::alloc(background_pos, background_size);
+    _background->setName(BACKGROUND_NAME);
+    _background->setBodyType(b2_staticBody);
+    _background->setDensity(0.0f);
+    _background->setFriction(0.0f);
+    _background->setRestitution(0.0f);
+    _background->setEnabled(false);
+    _background->setSensor(true);
+    addObstacle(_background, sprite);
     
     
 #pragma mark : Goal door
-	std::shared_ptr<Texture> image = _assets->get<Texture>(GOAL_TEXTURE);
-	std::shared_ptr<scene2::PolygonNode> sprite;
+	image = _assets->get<Texture>(GOAL_TEXTURE);
+    sprite = scene2::PolygonNode::allocWithTexture(image);
 	std::shared_ptr<scene2::WireNode> draw;
 
 	// Create obstacle
@@ -427,6 +494,7 @@ void GameScene::populate() {
 	_goalDoor->setFriction(0.0f);
 	_goalDoor->setRestitution(0.0f);
 	_goalDoor->setSensor(true);
+    // _goalDoor->setEnabled
 
 	// Add the scene graph nodes to this object
 	sprite = scene2::PolygonNode::allocWithTexture(image);
@@ -468,7 +536,7 @@ void GameScene::populate() {
 #pragma mark : Platforms
 	for (int ii = 0; ii < PLATFORM_COUNT; ii++) {
 		std::shared_ptr<physics2::PolygonObstacle> platobj;
-		Poly2 platform(reinterpret_cast<Vec2*>(PLATFORMS[ii]),4);
+		Poly2 platform(reinterpret_cast<Vec2*>(PLATFORMS[ii]),sizeof(PLATFORMS[ii]) / sizeof(float) / 2);
 
 		EarclipTriangulator triangulator;
 		triangulator.set(platform.vertices);
@@ -492,80 +560,50 @@ void GameScene::populate() {
 		addObstacle(platobj,sprite,1);
 	}
 
-    //hack for rope bridge removal
-    if (!INCLUDE_ROPE_BRIDGE) {
-        std::shared_ptr<physics2::PolygonObstacle> platobj;
-        float plat[PLATFORM_VERTS] = { 9.0f, 3.0f, 9.0f, 2.5f, 23.0f, 2.5f, 23.0f, 3.0f };
-        Poly2 platform(reinterpret_cast<Vec2*>(plat), 4);
+// I CHANGED THIS
 
-        EarclipTriangulator triangulator;
-        triangulator.set(platform.vertices);
-        triangulator.calculate();
-        platform.setIndices(triangulator.getTriangulation());
-        triangulator.clear();
+//#pragma mark : Spinner
+//	Vec2 spinPos = SPIN_POS;
+//    image = _assets->get<Texture>(SPINNER_TEXTURE);
+//	_spinner = Spinner::alloc(spinPos,image->getSize()/_scale,_scale);
+//    _spinner->setTexture(image);
+//	std::shared_ptr<scene2::SceneNode> node = scene2::SceneNode::alloc();
+//    
+//    // With refactor, must be added manually
+//    // Add the node to the world before calling setSceneNode,
+//    _worldnode->addChild(node);
+//    _spinner->setSceneNode(node);
+//
+//    _spinner->setDrawScale(_scale);
+//    _spinner->setDebugColor(DEBUG_COLOR);
+//    _spinner->setDebugScene(_debugnode);
+//    _spinner->activate(_world);
 
-        platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_CENTER);
-        // You cannot add constant "".  Must stringify
-        platobj->setName(std::string(PLATFORM_NAME) + cugl::strtool::to_string(PLATFORM_COUNT));
-
-        // Set the physics attributes
-        platobj->setBodyType(b2_staticBody);
-        platobj->setDensity(BASIC_DENSITY);
-        platobj->setFriction(BASIC_FRICTION);
-        platobj->setRestitution(BASIC_RESTITUTION);
-        platobj->setDebugColor(DEBUG_COLOR);
-
-        platform *= _scale;
-        sprite = scene2::PolygonNode::allocWithTexture(image, platform);
-        addObstacle(platobj, sprite, 1);
-    }
-
-#pragma mark : Spinner
-	Vec2 spinPos = SPIN_POS;
-    image = _assets->get<Texture>(SPINNER_TEXTURE);
-	_spinner = Spinner::alloc(spinPos,image->getSize()/_scale,_scale);
-    _spinner->setTexture(image);
-	std::shared_ptr<scene2::SceneNode> node = scene2::SceneNode::alloc();
-    
-    // With refactor, must be added manually
-    // Add the node to the world before calling setSceneNode,
-    _worldnode->addChild(node);
-    //_spinner->setSceneNode(node);
-
-    _spinner->setDrawScale(_scale);
-    _spinner->setDebugColor(DEBUG_COLOR);
-    _spinner->setDebugScene(_debugnode);
-    //_spinner->activate(_world);
-
-#pragma mark : Rope Bridge
-	Vec2 bridgeStart = BRIDGE_POS;
-	Vec2 bridgeEnd   = bridgeStart;
-	bridgeEnd.x += BRIDGE_WIDTH;
-    image = _assets->get<Texture>(BRIDGE_TEXTURE);
-
-    if (INCLUDE_ROPE_BRIDGE) {
-        _ropebridge = RopeBridge::alloc(bridgeStart,bridgeEnd,image->getSize()/_scale,_scale);
-        _ropebridge->setTexture(image);
-        node = scene2::SceneNode::alloc();
-
-        // With refactor, must be added manually
-        // Add the node to the world before calling setSceneNode,
-        _worldnode->addChild(node);
-        _ropebridge->setSceneNode(node);
-   
-        _ropebridge->setDrawScale(_scale);
-        _ropebridge->setDebugColor(DEBUG_COLOR);
-        _ropebridge->setDebugScene(_debugnode);
-        _ropebridge->activate(_world);
-    }
-    
-
+//#pragma mark : Rope Bridge
+//	Vec2 bridgeStart = BRIDGE_POS;
+//	Vec2 bridgeEnd   = bridgeStart;
+//	bridgeEnd.x += BRIDGE_WIDTH;
+//    image = _assets->get<Texture>(BRIDGE_TEXTURE);
+//    
+//	_ropebridge = RopeBridge::alloc(bridgeStart,bridgeEnd,image->getSize()/_scale,_scale);
+//    _ropebridge->setTexture(image);
+//	node = scene2::SceneNode::alloc();
+//
+//    // With refactor, must be added manually
+//    // Add the node to the world before calling setSceneNode,
+//    _worldnode->addChild(node);
+//    _ropebridge->setSceneNode(node);
+//    
+//    _ropebridge->setDrawScale(_scale);
+//    _ropebridge->setDebugColor(DEBUG_COLOR);
+//    _ropebridge->setDebugScene(_debugnode);
+//    _ropebridge->activate(_world);
 
 #pragma mark : Dude
 	Vec2 dudePos = DUDE_POS;
-	node = scene2::SceneNode::alloc();
+	// node = scene2::SceneNode::alloc();
     image = _assets->get<Texture>(DUDE_TEXTURE);
-	_avatar = DudeModel::alloc(dudePos,image->getSize()/_scale,_scale);
+	_avatar = DudeModel::alloc(dudePos,image->getSize()/(2+_scale),_scale);
 	sprite = scene2::PolygonNode::allocWithTexture(image);
 	_avatar->setSceneNode(sprite);
 	_avatar->setDebugColor(DEBUG_COLOR);
@@ -581,6 +619,7 @@ void GameScene::populate() {
     std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
     sprite = scene2::PolygonNode::allocWithTexture(image);
     _enemy->setSceneNode(sprite);
+    _enemy->setName(ENEMY_NAME);
     _enemy->setDebugColor(DEBUG_COLOR);
     addObstacle(_enemy, sprite);
     _enemies.push_back(_enemy);
@@ -590,6 +629,17 @@ void GameScene::populate() {
     _enemy = EnemyModel::alloc(rice_pos, image->getSize() / _scale, _scale, EnemyType::rice);
     sprite = scene2::PolygonNode::allocWithTexture(image);
     _enemy->setSceneNode(sprite);
+    _enemy->setName(ENEMY_NAME);
+    _enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(_enemy, sprite);
+    _enemies.push_back(_enemy);
+
+    Vec2 egg_pos = EGG_POS;
+    image = _assets->get<Texture>(EGG_TEXTURE);
+    _enemy = EnemyModel::alloc(egg_pos, image->getSize() / (_scale), _scale, EnemyType::egg);
+    sprite = scene2::PolygonNode::allocWithTexture(image);
+    _enemy->setSceneNode(sprite);
+    _enemy->setName(ENEMY_NAME);
     _enemy->setDebugColor(DEBUG_COLOR);
     addObstacle(_enemy, sprite);
     _enemies.push_back(_enemy);
@@ -768,24 +818,36 @@ void GameScene::fixedUpdate(float step) {
 void GameScene::postUpdate(float remain) {
     // Since items may be deleted, garbage collect
     _world->garbageCollect();
-    
+
     // TODO: Update this demo to support interpolation
     // We can interpolate the rope bridge and spinner as we have the data structures
-    _spinner->update(remain);
-    if (INCLUDE_ROPE_BRIDGE) {
-        _ropebridge->update(remain);
-    }
+    
+    // I CHANGED THIS
+    // _spinner->update(remain);
+    // _ropebridge->update(remain);
 
 
     // Add a bullet AFTER physics allows it to hang in front
     // Otherwise, it looks like bullet appears far away
     _avatar->setShooting(_input->didFire());
     if (_avatar->isShooting()) {
-        createBullet();
+        createAttack();
     }
 
     _gesturehud->setText(getGestureText(_input->getGestureString(), _input->getGestureSim()));
 
+
+    //iterate through physics objects and delete any timed-out attacks
+    //BAD CODE ALEART
+    for (auto it = _attacks.begin(); it != _attacks.end();) {
+        if ((*it)->killMe()) {
+            removeAttack((*it).get());
+            it = _attacks.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
 
     // Record failure if necessary.
     if (!_failed && _avatar->getY() < 0) {
@@ -796,6 +858,50 @@ void GameScene::postUpdate(float remain) {
     if (_countdown > 0) {
         _countdown--;
     } else if (_countdown == 0) {
+        if (_failed == false && isLevel1) {
+            isLevel1 = false;
+            float x = 0.0f;
+            float y = 0.0f;
+            for (int i = 0; i < 8; ++i) {
+                PLATFORMS[i][0] = 1.0f + x;
+                PLATFORMS[i][1] = 4.0f + y;
+                PLATFORMS[i][2] = 1.0f + x;
+                PLATFORMS[i][3] = 2.5f + y;
+                PLATFORMS[i][4] = 4.5f + x;
+                PLATFORMS[i][5] = 2.5f + y;
+                PLATFORMS[i][6] = 4.5f + x;
+                PLATFORMS[i][7] = 4.0f + y;
+                x = x + 3.5f;
+                y = y + 1.5f;
+            }
+            PLATFORMS[8][0] = 29.0f;
+            PLATFORMS[8][1] = 14.5f;
+            PLATFORMS[8][2] = 29.0f;
+            PLATFORMS[8][3] = 13.0f;
+            PLATFORMS[8][4] = 31.0f;
+            PLATFORMS[8][5] = 13.0f;
+            PLATFORMS[8][6] = 31.0f;
+            PLATFORMS[8][7] = 14.5f;
+            PLATFORMS[9][0] = 0.0f;
+            PLATFORMS[9][1] = 1.0f;
+            PLATFORMS[9][2] = 0.0f;
+            PLATFORMS[9][3] = 0.0f;
+            PLATFORMS[9][4] = 1.0f;
+            PLATFORMS[9][5] = 0.0f;
+            PLATFORMS[9][6] = 1.0f;
+            PLATFORMS[9][7] = 1.0f;
+            GOAL_POS[0] = 29.0f;
+            GOAL_POS[1] = 16.0f;
+            SHRIMP_POS[0] = 14.0f,
+            SHRIMP_POS[1] = 16.0f;
+            RICE_POS[0] = 21.0f;
+            RICE_POS[1] = 14.0f;
+            EGG_POS[0] = 10.0f;
+            EGG_POS[1] = 12.0f;
+        }
+        else if(_failed == false && !isLevel1) {
+            //close game somehow
+        }
         reset();
     }
 }
@@ -846,32 +952,56 @@ void GameScene::setFailure(bool value) {
 /**
  * Add a new bullet to the world and send it in the right direction.
  */
-void GameScene::createBullet() {
-	float offset = BULLET_OFFSET;
+void GameScene::createAttack() {
 	Vec2 pos = _avatar->getPosition();
-	pos.x += (_avatar->isFacingRight() ? offset : -offset);
+	pos.x += (_avatar->isFacingRight() ? ATTACK_OFFSET_H : -ATTACK_OFFSET_H);
+    pos.y += ATTACK_OFFSET_V;
+    std::shared_ptr<Texture> image;
+    if (_avatar->isFacingRight()) {
+        image = _assets->get<Texture>(ATTACK_TEXTURE_R);
+    }
+    else {
+        image = _assets->get<Texture>(ATTACK_TEXTURE_L);
+    }
 
-	std::shared_ptr<Texture> image = _assets->get<Texture>(BULLET_TEXTURE);
-	float radius = 0.5f*image->getSize().width/_scale;
 
-	std::shared_ptr<Bullet> bullet = Bullet::alloc(pos, radius);
-	bullet->setName(BULLET_NAME);
-	bullet->setDensity(HEAVY_DENSITY);
-	bullet->setBullet(true);
-	bullet->setGravityScale(0);
-	bullet->setDebugColor(DEBUG_COLOR);
-	bullet->setDrawScale(_scale);
+    std::vector<Vec2> verts = std::vector<Vec2>();
+
+    //JOHN: CAN"T GET COLLISION TO WORK WITH POLYGON OBSTACLES. 
+    // FOR NOW AM JUST GONNA STICK WITH BOX OBSTACLES BUT NEEDS TO BE ADDRESSED
+
+    /*verts.push_back(cugl::Vec2(0, 0));
+    verts.push_back(cugl::Vec2(50, 0));
+    verts.push_back(cugl::Vec2(50, 50));
+    verts.push_back(cugl::Vec2(0, 50));*/
+    /*verts.push_back(cugl::Vec2(0, 50));
+    verts.push_back(cugl::Vec2(50, 50));
+    verts.push_back(cugl::Vec2(50, 0));
+    verts.push_back(cugl::Vec2(0, 0));*/
+    //cugl::Poly2 attack_poly = cugl::Poly2(verts);
+	//std::shared_ptr<Attack> attack = Attack::alloc(attack_poly, pos);
+	std::shared_ptr<Attack> attack = Attack::alloc(pos, 
+        cugl::Size(ATTACK_W * image->getSize().width / _scale, 
+        ATTACK_H * image->getSize().height / _scale));
+	attack->setName(ATTACK_NAME);
+    attack->setDensity(HEAVY_DENSITY);
+    attack->setBullet(true);
+    attack->setGravityScale(0);
+    attack->setDebugColor(DEBUG_COLOR);
+    attack->setDrawScale(_scale);
+    
 
 	std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
-	bullet->setSceneNode(sprite);
+    attack->setSceneNode(sprite);
+    sprite->setVisible(true);
+    sprite->setPosition(pos);
 
-	// Compute position and velocity
-	float speed  = (_avatar->isFacingRight() ? BULLET_SPEED : -BULLET_SPEED);
-	bullet->setVX(speed);
-	addObstacle(bullet, sprite, 5);
+	addObstacle(attack, sprite, true);
 
 	std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
 	AudioEngine::get()->play(PEW_EFFECT,source, false, EFFECT_VOLUME, true);
+
+    _attacks.push_back(attack);
 }
 
 /**
@@ -879,14 +1009,14 @@ void GameScene::createBullet() {
  *
  * @param  bullet   the bullet to remove
  */
-void GameScene::removeBullet(Bullet* bullet) {
+void GameScene::removeAttack(Attack* attack) {
   // do not attempt to remove a bullet that has already been removed
-	if (bullet->isRemoved()) {
+	if (attack->isRemoved()) {
 		return;
 	}
-	_worldnode->removeChild(bullet->getSceneNode());
-	bullet->setDebugScene(nullptr);
-	bullet->markRemoved(true);
+	_worldnode->removeChild(attack->getSceneNode());
+	attack->setDebugScene(nullptr);
+    attack->markRemoved(true);
 
 	std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
 	AudioEngine::get()->play(POP_EFFECT,source,false,EFFECT_VOLUME, true);
@@ -912,17 +1042,25 @@ void GameScene::beginContact(b2Contact* contact) {
 	b2Body* body1 = fix1->GetBody();
 	b2Body* body2 = fix2->GetBody();
 
+
     std::string* fd1 = reinterpret_cast<std::string*>(fix1->GetUserData().pointer);
     std::string* fd2 = reinterpret_cast<std::string*>(fix2->GetUserData().pointer);
 
     physics2::Obstacle* bd1 = reinterpret_cast<physics2::Obstacle*>(body1->GetUserData().pointer);
     physics2::Obstacle* bd2 = reinterpret_cast<physics2::Obstacle*>(body2->GetUserData().pointer);
     
-	// Test bullet collision with world
-	if (bd1->getName() == BULLET_NAME && bd2 != _avatar.get()) {
-		removeBullet((Bullet*)bd1);
-	} else if (bd2->getName() == BULLET_NAME && bd1 != _avatar.get()) {
-		removeBullet((Bullet*)bd2);
+
+    if (bd1->getName() == BACKGROUND_NAME || bd2->getName() == BACKGROUND_NAME) {
+        return;
+    }
+
+	// Test bullet collision with enemy
+	if (bd1->getName() == ATTACK_NAME && bd2->getName() == ENEMY_NAME) {
+		removeAttack((Attack*)bd1);
+        removeEnemy((EnemyModel*)bd2);
+	} else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
+		removeAttack((Attack*)bd2);
+        removeEnemy((EnemyModel*)bd1);
 	}
 
 	// See if we have landed on the ground.
@@ -932,19 +1070,40 @@ void GameScene::beginContact(b2Contact* contact) {
 		// Could have more than one ground
 		_sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
 	}
+
+    //See if the player collided with an enemy.
+
+    if ((_avatar.get() == bd1 && bd2->getName() == ENEMY_NAME) ||
+        (_avatar.get() == bd2 && bd1->getName() == ENEMY_NAME)) {
+
+        setFailure(true);
+    }
+
     for (auto& _enemy : _enemies) {
         if (!_enemy->isRemoved()) {
             if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
                 (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
                 _enemy->setGrounded(true);
             }
-            if (bd1 == _avatar.get() && bd2 == _enemy.get()
-                || (bd2 == _avatar.get() && bd1 == _enemy.get())) {
-                _enemy->setDebugScene(nullptr);
-                _worldnode->removeChild(_enemy->getSceneNode());
-                _enemy->markRemoved(true);
-           //     _enemy->removeFromGame();
-            }
+
+           // if (bd1 == _avatar.get() && bd2 == _enemy.get()
+           //     || (bd2 == _avatar.get() && bd1 == _enemy.get())) {
+           //     _enemy->setDebugScene(nullptr);
+           //     _worldnode->removeChild(_enemy->getSceneNode());
+           //     _enemy->markRemoved(true);
+           ////     _enemy->removeFromGame();
+           // }
+
+            ////temp code for attack collision
+            //if (bd1->getName() == ATTACK_NAME && bd2 == _enemy.get()
+            //    || (bd2->getName() == ATTACK_NAME && bd1 == _enemy.get())) {
+            //    _enemy->setDebugScene(nullptr);
+            //    _worldnode->removeChild(_enemy->getSceneNode());
+            //    _enemy->markRemoved(true);
+            //    //     _enemy->removeFromGame();
+            //}
+
+
         }
     }
 
@@ -954,6 +1113,20 @@ void GameScene::beginContact(b2Contact* contact) {
 		(bd1 == _goalDoor.get() && bd2 == _avatar.get())) {
 		setComplete(true);
 	}
+}
+
+
+//Basically the same as removeAttack, can refactor
+void GameScene::removeEnemy(EnemyModel* enemy) {
+    if (enemy->isRemoved()) {
+		return;
+	}
+    _worldnode->removeChild(enemy->getSceneNode());
+	enemy->setDebugScene(nullptr);
+	enemy->markRemoved(true); 
+    
+    std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
+    AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
 }
 
 /**

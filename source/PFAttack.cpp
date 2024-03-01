@@ -1,15 +1,15 @@
 //
-//  PFBullet.cpp
+//  PFAttack.cpp
 //  PlatformDemo
 //
 //  This class is a simple extension of WheelObstacle in order to simplify the
-//  process of adding and removing Bullets from the game world, as well as for
-//  drawing the sprite of the bullet.
+//  process of adding and removing Attacks from the game world, as well as for
+//  drawing the sprite of the attack.
 //
 //  Author:  Walker White and Anthony Perello
 //  Version: 2/9/21
 //
-#include "PFBullet.h"
+#include "PFAttack.h"
 #include <cugl/scene2/graph/CUPolygonNode.h>
 #include <cugl/scene2/graph/CUTexturedNode.h>
 #include <cugl/assets/CUAssetManager.h>
@@ -19,6 +19,8 @@
 
 using namespace cugl;
 
+//lifetime in frames
+
 
 /**
  * Updates the object's physics state (NOT GAME LOGIC).
@@ -27,8 +29,14 @@ using namespace cugl;
  *
  * @param delta Number of seconds since last animation frame
  */
-void Bullet::update(float dt) {
-	WheelObstacle::update(dt);
+void Attack::update(float dt) {
+	BoxObstacle::update(dt);
+	if (_lifetime == 0) {
+		_killme = true;
+	}
+	else {
+		_lifetime = (_lifetime > 0 ? _lifetime - 1 : 0);
+	}
 
 	if (_node != nullptr) {
 		_node->setPosition(getPosition()*_drawScale);
@@ -37,12 +45,12 @@ void Bullet::update(float dt) {
 }
 
 /**
- * Disposes all resources and assets of this Bullet
+ * Disposes all resources and assets of this Attack
  *
  * Any assets owned by this object will be immediately released.  Once
- * disposed, a Bullet may not be used until it is initialized again.
+ * disposed, a Attack may not be used until it is initialized again.
  */
-void Bullet::dispose() {
+void Attack::dispose() {
 	_node = nullptr;
 }
 
