@@ -116,6 +116,8 @@ float EGG_POS[] = { 14.0f, 18.0f };
 
 float RICE_POS[] = { 25.0f, 14.0f };
 
+float BACKGROUND_POS[] = { 16.0f, 10.0f };
+
 boolean isLevel1 = true;
 
 #pragma mark -
@@ -382,7 +384,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     setDebug(false);
     
     // XNA nostalgia
-    Application::get()->setClearColor(Color4f::CORNFLOWER);
+    // Application::get()->setClearColor(Color4f::CORNFLOWER);
+    Application::get()->setClearColor(Color4::YELLOW);
     return true;
 }
 
@@ -422,6 +425,7 @@ void GameScene::reset() {
     _debugnode->removeAllChildren();
     _avatar = nullptr;
     _goalDoor = nullptr;
+    _background = nullptr;
     //I CHANGED THIS
     // _spinner = nullptr;
     // _ropebridge = nullptr;
@@ -445,11 +449,26 @@ void GameScene::reset() {
  * with your serialization loader, which would process a level file.
  */
 void GameScene::populate() {
+
+# pragma mark: Background
+    Vec2 background_pos = BACKGROUND_POS;
+    std::shared_ptr<Texture> image = _assets->get<Texture>("background-1");
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    Size background_size(image->getSize().width / _scale, image->getSize().height / _scale);
+    _background = physics2::BoxObstacle::alloc(background_pos, background_size);
+    _background->setBodyType(b2_staticBody);
+    _background->setDensity(0.0f);
+    _background->setFriction(0.0f);
+    _background->setRestitution(0.0f);
+    _background->setEnabled(false);
+    _background->setSensor(false);
+    // _background->deactivatePhysics(_world);
+    addObstacle(_background, sprite);
     
     
 #pragma mark : Goal door
-	std::shared_ptr<Texture> image = _assets->get<Texture>(GOAL_TEXTURE);
-	std::shared_ptr<scene2::PolygonNode> sprite;
+	image = _assets->get<Texture>(GOAL_TEXTURE);
+    sprite = scene2::PolygonNode::allocWithTexture(image);
 	std::shared_ptr<scene2::WireNode> draw;
 
 	// Create obstacle
@@ -464,6 +483,7 @@ void GameScene::populate() {
 	_goalDoor->setFriction(0.0f);
 	_goalDoor->setRestitution(0.0f);
 	_goalDoor->setSensor(true);
+    // _goalDoor->setEnabled
 
 	// Add the scene graph nodes to this object
 	sprite = scene2::PolygonNode::allocWithTexture(image);

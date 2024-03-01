@@ -86,6 +86,8 @@ protected:
     // Physics objects for the game
     /** Reference to the goalDoor (for collision detection) */
     std::shared_ptr<cugl::physics2::BoxObstacle>    _goalDoor;
+
+    std::shared_ptr<cugl::physics2::BoxObstacle>    _background;
     /** Reference to the player avatar */
     std::shared_ptr<DudeModel>			  _avatar;
 
