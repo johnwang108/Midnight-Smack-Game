@@ -1036,11 +1036,11 @@ void GameScene::removeAttack(Attack* attack) {
  */
 
 void GameScene::beginContact(b2Contact* contact) {
-	b2Fixture* fix1 = contact->GetFixtureA();
-	b2Fixture* fix2 = contact->GetFixtureB();
+    b2Fixture* fix1 = contact->GetFixtureA();
+    b2Fixture* fix2 = contact->GetFixtureB();
 
-	b2Body* body1 = fix1->GetBody();
-	b2Body* body2 = fix2->GetBody();
+    b2Body* body1 = fix1->GetBody();
+    b2Body* body2 = fix2->GetBody();
 
 
     std::string* fd1 = reinterpret_cast<std::string*>(fix1->GetUserData().pointer);
@@ -1048,28 +1048,36 @@ void GameScene::beginContact(b2Contact* contact) {
 
     physics2::Obstacle* bd1 = reinterpret_cast<physics2::Obstacle*>(body1->GetUserData().pointer);
     physics2::Obstacle* bd2 = reinterpret_cast<physics2::Obstacle*>(body2->GetUserData().pointer);
-    
+
 
     if (bd1->getName() == BACKGROUND_NAME || bd2->getName() == BACKGROUND_NAME) {
         return;
     }
 
-	// Test bullet collision with enemy
-	if (bd1->getName() == ATTACK_NAME && bd2->getName() == ENEMY_NAME) {
-		removeAttack((Attack*)bd1);
-        removeEnemy((EnemyModel*)bd2);
-	} else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
-		removeAttack((Attack*)bd2);
-        removeEnemy((EnemyModel*)bd1);
-	}
+    // Check if the player hits a wall NOT PLATFORM (not implemented for that atm)
+    if ((bd1 == _avatar.get() && bd2->getName() == WALL_NAME) ||
+        (bd2 == _avatar.get() && bd1->getName() == WALL_NAME)) {
+        _avatar->setContactingWall(true);
+        _avatar->setVX(0);
+    }
 
-	// See if we have landed on the ground.
-	if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
-		(_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
-		_avatar->setGrounded(true);
-		// Could have more than one ground
-		_sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
-	}
+    // Test bullet collision with enemy
+    if (bd1->getName() == ATTACK_NAME && bd2->getName() == ENEMY_NAME) {
+        removeAttack((Attack*)bd1);
+        removeEnemy((EnemyModel*)bd2);
+    }
+    else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
+        removeAttack((Attack*)bd2);
+        removeEnemy((EnemyModel*)bd1);
+    }
+
+    // See if we have landed on the ground.
+    if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
+        (_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
+        _avatar->setGrounded(true);
+        // Could have more than one ground
+        _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
+    }
 
     //See if the player collided with an enemy.
 
@@ -1086,45 +1094,45 @@ void GameScene::beginContact(b2Contact* contact) {
                 _enemy->setGrounded(true);
             }
 
-           // if (bd1 == _avatar.get() && bd2 == _enemy.get()
-           //     || (bd2 == _avatar.get() && bd1 == _enemy.get())) {
-           //     _enemy->setDebugScene(nullptr);
-           //     _worldnode->removeChild(_enemy->getSceneNode());
-           //     _enemy->markRemoved(true);
-           ////     _enemy->removeFromGame();
-           // }
+            // if (bd1 == _avatar.get() && bd2 == _enemy.get()
+            //     || (bd2 == _avatar.get() && bd1 == _enemy.get())) {
+            //     _enemy->setDebugScene(nullptr);
+            //     _worldnode->removeChild(_enemy->getSceneNode());
+            //     _enemy->markRemoved(true);
+            ////     _enemy->removeFromGame();
+            // }
 
-            ////temp code for attack collision
-            //if (bd1->getName() == ATTACK_NAME && bd2 == _enemy.get()
-            //    || (bd2->getName() == ATTACK_NAME && bd1 == _enemy.get())) {
-            //    _enemy->setDebugScene(nullptr);
-            //    _worldnode->removeChild(_enemy->getSceneNode());
-            //    _enemy->markRemoved(true);
-            //    //     _enemy->removeFromGame();
-            //}
+             ////temp code for attack collision
+             //if (bd1->getName() == ATTACK_NAME && bd2 == _enemy.get()
+             //    || (bd2->getName() == ATTACK_NAME && bd1 == _enemy.get())) {
+             //    _enemy->setDebugScene(nullptr);
+             //    _worldnode->removeChild(_enemy->getSceneNode());
+             //    _enemy->markRemoved(true);
+             //    //     _enemy->removeFromGame();
+             //}
 
 
         }
     }
 
-    
-	// If we hit the "win" door, we are done
-	if((bd1 == _avatar.get()   && bd2 == _goalDoor.get()) ||
-		(bd1 == _goalDoor.get() && bd2 == _avatar.get())) {
-		setComplete(true);
-	}
+
+    // If we hit the "win" door, we are done
+    if ((bd1 == _avatar.get() && bd2 == _goalDoor.get()) ||
+        (bd1 == _goalDoor.get() && bd2 == _avatar.get())) {
+        setComplete(true);
+    }
 }
 
 
 //Basically the same as removeAttack, can refactor
 void GameScene::removeEnemy(EnemyModel* enemy) {
     if (enemy->isRemoved()) {
-		return;
-	}
+        return;
+    }
     _worldnode->removeChild(enemy->getSceneNode());
-	enemy->setDebugScene(nullptr);
-	enemy->markRemoved(true); 
-    
+    enemy->setDebugScene(nullptr);
+    enemy->markRemoved(true);
+
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
 }
@@ -1137,11 +1145,11 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
  * double jumping.
  */
 void GameScene::endContact(b2Contact* contact) {
-	b2Fixture* fix1 = contact->GetFixtureA();
-	b2Fixture* fix2 = contact->GetFixtureB();
+    b2Fixture* fix1 = contact->GetFixtureA();
+    b2Fixture* fix2 = contact->GetFixtureB();
 
-	b2Body* body1 = fix1->GetBody();
-	b2Body* body2 = fix2->GetBody();
+    b2Body* body1 = fix1->GetBody();
+    b2Body* body2 = fix2->GetBody();
 
     std::string* fd1 = reinterpret_cast<std::string*>(fix1->GetUserData().pointer);
     std::string* fd2 = reinterpret_cast<std::string*>(fix2->GetUserData().pointer);
@@ -1149,13 +1157,24 @@ void GameScene::endContact(b2Contact* contact) {
     physics2::Obstacle* bd1 = reinterpret_cast<physics2::Obstacle*>(body1->GetUserData().pointer);
     physics2::Obstacle* bd2 = reinterpret_cast<physics2::Obstacle*>(body2->GetUserData().pointer);
 
-	if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
-		(_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
-		_sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
-		if (_sensorFixtures.empty()) {
-			_avatar->setGrounded(false);
-		}
-	}
+    if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
+        (_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
+        _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
+        if (_sensorFixtures.empty()) {
+            _avatar->setGrounded(false);
+        }
+    }
+    // Check if the player is no longer in contact with any walls
+    bool p1 = (_avatar->getSensorName() == fd2);
+    bool p2 = (bd1->getName() != WALL_NAME);
+    bool p3 = (_avatar->getSensorName() == fd1);
+    bool p4 = (bd2->getName() != WALL_NAME);
+    bool p5 = _avatar->contactingWall();
+    CULog("5 %d", p5);
+    if (!(p1 || p2 || p3) && p4 && p5) {
+        _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
+        _avatar->setContactingWall(false);
+    }
 
 }
 
