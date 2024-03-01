@@ -93,7 +93,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 //re-extrudes the path and updates the polygon node
 void DollarScene::update() {
 	//get new path
-	//_path = _input->getTouchPath();
+	_path = _input->getTouchPath();
 
 	//re-extrude path
 	_se.set(_path);

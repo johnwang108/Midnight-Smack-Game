@@ -61,7 +61,10 @@ bool LoadingScene::init(const std::shared_ptr<cugl::AssetManager>& assets) {
     _button->addListener([=](const std::string& name, bool down) {
         this->_active = down;
     });
+
+    _keyboardActive = Input::activate<Keyboard>();
     
+
     Application::get()->setClearColor(Color4(192,192,192,255));
     addChild(layer);
     return true;
@@ -80,6 +83,7 @@ void LoadingScene::dispose() {
     _bar = nullptr;
     _assets = nullptr;
     _progress = 0.0f;
+    Input::deactivate<Keyboard>();
 }
 
 
@@ -101,6 +105,16 @@ void LoadingScene::update(float progress) {
             _brand->setVisible(false);
             _button->setVisible(true);
             _button->activate();
+            if (_keyboardActive) {
+                Keyboard* keys = Input::get<Keyboard>();
+                keys->addKeyDownListener(10, [=](const KeyEvent& event, bool focus) {
+                    this->_active = false;
+                    });
+            }
+            else {
+                CULog("No Keyboard");
+            }
+            
         }
         _bar->setProgress(_progress);
     }
