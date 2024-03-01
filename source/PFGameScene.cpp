@@ -99,6 +99,15 @@ float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
     { 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
 };
 
+/** The number of platforms */
+#define ALT_PLATFORM_VERTS  8
+#define ALT_PLATFORM_COUNT  1
+
+/** The outlines of all of the platforms */
+float ALT_PLATFORMS[ALT_PLATFORM_COUNT][ALT_PLATFORM_VERTS] = {
+    { 1.0f, .5f, 1.0f, .0f, 33.0f, .0f, 33.0f, .50f}
+};
+
 
 /** The goal door position */
 float GOAL_POS[] = { 4.0f,14.0f};
@@ -169,6 +178,8 @@ boolean isLevel1 = true;
 #define ENEMY_NAME	    "enemy"
 /** The name of a platform (for object identification) */
 #define PLATFORM_NAME   "platform"
+
+#define BACKGROUND_NAME "background"
 /** The font for victory/failure messages */
 #define MESSAGE_FONT    "retro"
 
@@ -456,13 +467,13 @@ void GameScene::populate() {
     std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
     Size background_size(image->getSize().width / _scale, image->getSize().height / _scale);
     _background = physics2::BoxObstacle::alloc(background_pos, background_size);
+    _background->setName(BACKGROUND_NAME);
     _background->setBodyType(b2_staticBody);
     _background->setDensity(0.0f);
     _background->setFriction(0.0f);
     _background->setRestitution(0.0f);
-    //_background->setEnabled(false);
+    _background->setEnabled(false);
     _background->setSensor(true);
-    // _background->deactivatePhysics(_world);
     addObstacle(_background, sprite);
     
     
@@ -1031,12 +1042,18 @@ void GameScene::beginContact(b2Contact* contact) {
 	b2Body* body1 = fix1->GetBody();
 	b2Body* body2 = fix2->GetBody();
 
+
     std::string* fd1 = reinterpret_cast<std::string*>(fix1->GetUserData().pointer);
     std::string* fd2 = reinterpret_cast<std::string*>(fix2->GetUserData().pointer);
 
     physics2::Obstacle* bd1 = reinterpret_cast<physics2::Obstacle*>(body1->GetUserData().pointer);
     physics2::Obstacle* bd2 = reinterpret_cast<physics2::Obstacle*>(body2->GetUserData().pointer);
     
+
+    if (bd1->getName() == BACKGROUND_NAME || bd2->getName() == BACKGROUND_NAME) {
+        return;
+    }
+
 	// Test bullet collision with enemy
 	if (bd1->getName() == ATTACK_NAME && bd2->getName() == ENEMY_NAME) {
 		removeAttack((Attack*)bd1);
