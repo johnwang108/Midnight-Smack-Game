@@ -248,6 +248,7 @@ void PlatformInput::update(float dt) {
         _dashKey = _gameCont->isButtonPressed(3);
         _keyReset = _gameCont->isButtonPressed(4);
         _keyExit = _gameCont->isButtonPressed(5);
+        _keyDebug = _gameCont->isButtonPressed(9);
     }
 
 

@@ -62,7 +62,7 @@ float floatyFrames = 10;
 /** Cooldown (in animation frames) for jumping */
 #define JUMP_COOLDOWN   5
 /** Cooldown (in animation frames) for shooting */
-#define DASH_COOLDOWN  20
+#define DASH_COOLDOWN  10
 /** Cooldown (in animation frames) for shooting */
 #define SHOOT_COOLDOWN  20
 /** The amount to shrink the body fixture (vertically) relative to the image */
@@ -239,7 +239,7 @@ void DudeModel::applyForce(float h, float v) {
             // Instant friction on the ground
             b2Vec2 vel = _body->GetLinearVelocity();
             float LogVal = std::log(abs(vel.x) + 1);
-            float whyDoesntSTDMinWorkpls = LogVal < .8 ? LogVal : .8;
+            float whyDoesntSTDMinWorkpls = LogVal < .7 ? LogVal : .7;
             if (abs(getVX()) > 0) {
                 int negativeAccounter = SIGNUM(vel.x);
                 vel.x = negativeAccounter * vel.x * whyDoesntSTDMinWorkpls < negativeAccounter * .01 ? 0 : whyDoesntSTDMinWorkpls * vel.x; // If you set y, you will stop a jump in place
@@ -265,7 +265,7 @@ void DudeModel::applyForce(float h, float v) {
     }
     else if (isJumping() && contactingWall() && !isGrounded()) {
         setVY(0);
-        b2Vec2 force(DUDE_JUMP*5* (isFacingRight() ? 1: -1), DUDE_JUMP * 1.2);
+        b2Vec2 force(DUDE_JUMP*3* (isFacingRight() ? 1: -1), DUDE_JUMP * .8);
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
     }
     if (canDash() && getDashNum()>0) {
