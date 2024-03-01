@@ -460,8 +460,8 @@ void GameScene::populate() {
     _background->setDensity(0.0f);
     _background->setFriction(0.0f);
     _background->setRestitution(0.0f);
-    _background->setEnabled(false);
-    _background->setSensor(false);
+    //_background->setEnabled(false);
+    _background->setSensor(true);
     // _background->deactivatePhysics(_world);
     addObstacle(_background, sprite);
     
