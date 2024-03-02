@@ -343,7 +343,7 @@ public:
      */
     void touchesMovedCB(const cugl::TouchEvent& event, const cugl::Vec2& previous, bool focus);
 
-    void PlatformInput::getAxisAngle(const cugl::GameControllerAxisEvent& eventm, bool focus);
+    void getAxisAngle(const cugl::GameControllerAxisEvent& eventm, bool focus);
 
   
 

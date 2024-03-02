@@ -6,14 +6,29 @@
 
 #define ENEMY_SENSOR_NAME     "enemysensor"
 #define SHRIMP_TEXTURE    "shrimp"
+#define EGG_TEXTURE    "egg"
+#define RICE_TEXTURE    "rice"
+
+#define ENEMY_FORCE      0.75f
+#define ENEMY_DAMPING    5.0f
+#define ENEMY_MAXSPEED   10.0f
+#define ENEMY_JUMP       2.5f
+#define ENEMY_VSHRINK    0.8f
+#define ENEMY_HSHRINK    0.7f
+#define ENEMY_DENSITY    1.0f
+
+#define SENSOR_HEIGHT 0.1f
+
+#define CHASE_THRESHOLD 10.0f  
+#define CHASE_SPEED 2.0f
 /**
  * Enum for enemy types.
  * Add additional enemy types as needed.
  */
 enum class EnemyType {
     shrimp, 
-    FLYING, 
-    CHARGER 
+    rice, 
+    egg 
 };
 
 class EnemyModel : public cugl::physics2::CapsuleObstacle {
@@ -29,7 +44,10 @@ protected:
     /** Whether the enemy is currently on the ground */
     bool _isGrounded;
     /** The node for visual representation of the enemy */
+    bool _isChasing;
     std::shared_ptr<cugl::scene2::SceneNode> _node;
+    /** The node for debugging the sensor */
+ //   std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
     /** The scale between the physics world and the screen (MUST BE UNIFORM) */
     float _drawScale;
 
@@ -41,6 +59,8 @@ protected:
 
     float _changeDirectionInterval; 
     float _nextChangeTime;
+
+
 
 
 public:
@@ -84,6 +104,14 @@ public:
 
     int getDirection() const { return _direction; }
 
+    void setDirection(int d) { _direction = d; }
+
+    const std::shared_ptr<cugl::scene2::SceneNode>& getSceneNode() const { return _node; }
+
+    void setIsChasing(bool isChasing) { _isChasing = isChasing; }
+
+    bool isChasing() const { return _isChasing; }
+
 
 #pragma mark -
 #pragma mark Physics Methods
@@ -120,6 +148,22 @@ public:
      * This method should be called after the force attribute is set.
      */
     void applyForce(float h, float v);
+
+    /**
+  * Destroys this DudeModel, releasing all resources.
+  */
+    virtual ~EnemyModel(void) { dispose(); }
+
+    /**
+     * Disposes all resources and assets of this DudeModel
+     *
+     * Any assets owned by this object will be immediately released.  Once
+     * disposed, a DudeModel may not be used until it is initialized again.
+     */
+    void dispose();
+
+
+
 };
 
 #endif /* __ENEMY_MODEL_H__ */

@@ -52,6 +52,9 @@ using namespace cugl;
 /** How fast a double click must be in milliseconds */
 #define DOUBLE_CLICK    400
 
+
+#define TRIGGER_DEADZONE 0
+
 // The screen is divided into four zones: Left, Bottom, Right and Main/
 // These are all shown in the diagram below.
 //
@@ -114,7 +117,7 @@ void PlatformInput::dispose() {
         touch->removeBeginListener(LISTENER_KEY);
         touch->removeEndListener(LISTENER_KEY);
         touch->removeMotionListener(LISTENER_KEY);
-        _gameCont->removeAxisListener(CONTROLLER_LISTENER_KEY);
+        //_gameCont->removeAxisListener(CONTROLLER_LISTENER_KEY);
 #endif
         _active = false;
     }
@@ -142,19 +145,15 @@ bool PlatformInput::init(const Rect bounds) {
     if (contSuccess) {
         GameControllerInput* controller = Input::get<GameControllerInput>();
         std::vector<std::string> deviceUUIDs = controller->devices();
-
-        for (const std::string& str : deviceUUIDs) {
-            CULog("%s", str.c_str());
-        }
-
+       
         if (!deviceUUIDs.empty()) {
             _gameCont = controller->open(deviceUUIDs.front());
-            CULog("Controller obtained");
+            CULog("Controller Obtained, Name: %s", _gameCont->getName().c_str());
 
             ////using axis controllers for joystick
-            //_gameCont->addAxisListener(CONTROLLER_LISTENER_KEY, [=](const GameControllerAxisEvent& event, bool focus) {
-            //    this->getAxisAngle(event, focus);
-            //    });
+         /*   _gameCont->addAxisListener(CONTROLLER_LISTENER_KEY, [=](const GameControllerAxisEvent& event, bool focus) {
+                this->getAxisAngle(event, focus);
+                });*/
 
             _xAxis = 0;
             _yAxis = 0;
@@ -193,15 +192,30 @@ bool PlatformInput::init(const Rect bounds) {
     _dollarRecog->setAlgorithm(cugl::GestureRecognizer::Algorithm::ONEDOLLAR);
 
 
-    std::vector<Vec2> swipeVertices = { Vec2(1,1), Vec2(1,249) };
+    std::vector<Vec2> swipeVertices = { Vec2(0,0), Vec2(0,249) };
     cugl::Path2 swipeGesturePath = cugl::Path2(swipeVertices);
 
-    if (!_dollarRecog->addGesture("swipe", swipeGesturePath, true)) CULog("failed to initialize swipe");
+    if (!_dollarRecog->addGesture("vertSwipe", swipeGesturePath, true)) CULog("failed to initialize vertSwipe");
 
-    std::vector<Vec2> vVertices = { Vec2(0,0), Vec2(124,124), Vec2(249,0) };
+    std::vector<Vec2> hSwipeVertices = { Vec2(0,0), Vec2(249,0) };
+    cugl::Path2 hSwipeGesturePath = cugl::Path2(hSwipeVertices);
+
+    if (!_dollarRecog->addGesture("horizSwipe", hSwipeGesturePath, true)) CULog("failed to initialize horizSwipe");
+
+    std::vector<Vec2> vVertices = { Vec2(89,164),Vec2(90,162),Vec2(92,162),Vec2(94,164),Vec2(95,166),Vec2(96,169),Vec2(97,171),Vec2(99,175),Vec2(101,178),Vec2(103,182),Vec2(106,189),Vec2(108,194),Vec2(111,199),Vec2(114,204),Vec2(117,209),Vec2(119,214),Vec2(122,218),Vec2(124,222),Vec2(126,225),Vec2(128,228),Vec2(130,229),Vec2(133,233),Vec2(134,236),Vec2(136,239),Vec2(138,240),Vec2(139,242),Vec2(140,244),Vec2(142,242),Vec2(142,240),Vec2(142,237),Vec2(143,235),Vec2(143,233),Vec2(145,229),Vec2(146,226),Vec2(148,217),Vec2(149,208),Vec2(149,205),Vec2(151,196),Vec2(151,193),Vec2(153,182),Vec2(155,172),Vec2(157,165),Vec2(159,160),Vec2(162,155),Vec2(164,150),Vec2(165,148),Vec2(166,146) };
     cugl::Path2 vGesturePath = cugl::Path2(vVertices);
 
     if (!_dollarRecog->addGesture("v", vGesturePath, true)) CULog("failed to initialize v");
+
+    std::vector<Vec2> circVertices = { Vec2(127,141),Vec2(124,140),Vec2(120,139),Vec2(118,139),Vec2(116,139),Vec2(111,140),Vec2(109,141),Vec2(104,144),Vec2(100,147),Vec2(96,152),Vec2(93,157),Vec2(90,163),Vec2(87,169),Vec2(85,175),Vec2(83,181),Vec2(82,190),Vec2(82,195),Vec2(83,200),Vec2(84,205),Vec2(88,213),Vec2(91,216),Vec2(96,219),Vec2(103,222),Vec2(108,224),Vec2(111,224),Vec2(120,224),Vec2(133,223),Vec2(142,222),Vec2(152,218),Vec2(160,214),Vec2(167,210),Vec2(173,204),Vec2(178,198),Vec2(179,196),Vec2(182,188),Vec2(182,177),Vec2(178,167),Vec2(170,150),Vec2(163,138),Vec2(152,130),Vec2(143,129),Vec2(140,131),Vec2(129,136),Vec2(126,139) };
+    cugl::Path2 circGesturePath = cugl::Path2(circVertices);
+
+    if (!_dollarRecog->addGesture("circle", circGesturePath, true)) CULog("failed to initialize circle");
+
+    std::vector<Vec2> pigtailVert = { Vec2(81,219),Vec2(84,218),Vec2(86,220),Vec2(88,220),Vec2(90,220),Vec2(92,219),Vec2(95,220),Vec2(97,219),Vec2(99,220),Vec2(102,218),Vec2(105,217),Vec2(107,216),Vec2(110,216),Vec2(113,214),Vec2(116,212),Vec2(118,210),Vec2(121,208),Vec2(124,205),Vec2(126,202),Vec2(129,199),Vec2(132,196),Vec2(136,191),Vec2(139,187),Vec2(142,182),Vec2(144,179),Vec2(146,174),Vec2(148,170),Vec2(149,168),Vec2(151,162),Vec2(152,160),Vec2(152,157),Vec2(152,155),Vec2(152,151),Vec2(152,149),Vec2(152,146),Vec2(149,142),Vec2(148,139),Vec2(145,137),Vec2(141,135),Vec2(139,135),Vec2(134,136),Vec2(130,140),Vec2(128,142),Vec2(126,145),Vec2(122,150),Vec2(119,158),Vec2(117,163),Vec2(115,170),Vec2(114,175),Vec2(117,184),Vec2(120,190),Vec2(125,199),Vec2(129,203),Vec2(133,208),Vec2(138,213),Vec2(145,215),Vec2(155,218),Vec2(164,219),Vec2(166,219),Vec2(177,219),Vec2(182,218),Vec2(192,216),Vec2(196,213),Vec2(199,212),Vec2(201,211) };
+    cugl::Path2 pigtailGesturePath = cugl::Path2(pigtailVert);
+
+    if (!_dollarRecog->addGesture("pigtail", pigtailGesturePath, true)) CULog("failed to initialize pigtail");
 
     CULog("initialized all recognizer stuff");
     _lastGestureSimilarity = 0;
@@ -209,6 +223,7 @@ bool PlatformInput::init(const Rect bounds) {
 
 
 #endif
+
     _active = success;
     return success;
 }
@@ -248,14 +263,23 @@ void PlatformInput::update(float dt) {
     }
     else {
         _keyJump = _gameCont->isButtonPressed(0);
-        //_keyFire = _gameCont->isButtonPressed(1);
+        _keyDebug = _gameCont->isButtonPressed(1);
         _keySlow = _gameCont->isButtonPressed(2);
-        _dashKey = _gameCont->isButtonPressed(3);
         _keyReset = _gameCont->isButtonPressed(4);
         _keyExit = _gameCont->isButtonPressed(5);
+        
+
+
+        float lTriggerAmt = _gameCont->getAxisPosition(4);
+        _dashKey = (lTriggerAmt > TRIGGER_DEADZONE) || _gameCont->isButtonPressed(3);
+
+        float rTriggerAmt = _gameCont->getAxisPosition(5);
+        _keyFire = (rTriggerAmt > TRIGGER_DEADZONE);
+
 
         _xAxis = _gameCont->getAxisPosition(0);
         _yAxis = _gameCont->getAxisPosition(1);
+
     }
 
 #else
@@ -266,10 +290,26 @@ void PlatformInput::update(float dt) {
     _keyReset = _gameCont->isButtonPressed(4);
     _keyExit = _gameCont->isButtonPressed(5);
 
+#else 
+    _keyJump = _gameCont->isButtonPressed(0);
+    _keyDebug = _gameCont->isButtonPressed(1);
+    _keySlow = _gameCont->isButtonPressed(2); //button 2 is X
+    _keyReset = _gameCont->isButtonPressed(4);
+    _keyExit = _gameCont->isButtonPressed(5);
+
+    float lTriggerAmt = _gameCont->getAxisPosition(4);
+    _dashKey = (lTriggerAmt > TRIGGER_DEADZONE) || _gameCont->isButtonPressed(3);
+
+    float rTriggerAmt = _gameCont->getAxisPosition(5);
+    _keyFire = (rTriggerAmt > TRIGGER_DEADZONE);
+
+
     _xAxis = _gameCont->getAxisPosition(0);
     _yAxis = _gameCont->getAxisPosition(1);
 
 #endif
+   
+
 
     _resetPressed = _keyReset;
     _debugPressed = _keyDebug;
@@ -303,34 +343,8 @@ void PlatformInput::update(float dt) {
         }
         if (std::abs(_yAxis) >= 0.2) {
             _vertical -= _yAxis;
-            //CULog("%f", _vertical);
         }
     }
-#ifndef CU_TOUCH_SCREEN
-
-
-
-
-    //_keyJump = _gameCont->isButtonPressed(0);
-    ////_keyFire = _gameCont->isButtonPressed(1);
-    //_keySlow = _gameCont->isButtonPressed(2);
-    //_dashKey = _gameCont->isButtonPressed(3);
-    //_keyReset = _gameCont->isButtonPressed(4);
-    //_keyExit = _gameCont->isButtonPressed(5);
-
-
-    //if (_gameCont->isButtonPressed(0)) CULog("This button is 0");
-    //if (_gameCont->isButtonPressed(1)) CULog("This button is 1");
-    //if (_gameCont->isButtonPressed(2)) CULog("This button is 2");
-    //if (_gameCont->isButtonPressed(3)) CULog("This button is 3");
-    //if (_gameCont->isButtonPressed(4)) CULog("This button is 4");
-    //if (_gameCont->isButtonPressed(5)) CULog("This button is 5");
-    //if (_gameCont->isButtonPressed(6)) CULog("This button is 6");
-    //if (_gameCont->isButtonPressed(7)) CULog("This button is 7");
-    //if (_gameCont->isButtonPressed(8)) CULog("This button is 8");
-    //if (_gameCont->isButtonPressed(9)) CULog("This button is 9");
-    //if (_gameCont->isButtonPressed(10)) CULog("This button is 10");
-#endif
 
 // If it does not support keyboard, we must reset "virtual" keyboard
 //#ifdef CU_TOUCH_SCREEN
@@ -590,17 +604,11 @@ void PlatformInput::touchesMovedCB(const TouchEvent& event, const Vec2& previous
     //}
 }
 
-//void PlatformInput::getAxisAngle(const cugl::GameControllerAxisEvent& event, bool focus) {
-//    //TODO: WHAT ARE AXIS INDICES?? HOW MANY??? 2 or 4
-//    _xAxis = _gameCont->getAxisPosition(0);
-//    _yAxis = _gameCont->getAxisPosition(1);
-//
-//    CULog("xAxis (0) %f", _xAxis);
-//    CULog("yAxis (1) %f", _yAxis);
-//    CULog("axis (2) %f", _gameCont->getAxisPosition(2));
-//    CULog("axis (3) %f", _gameCont->getAxisPosition(3));
-//    CULog("getAxisAngle is running");
-//}
+void PlatformInput::getAxisAngle(const cugl::GameControllerAxisEvent& event, bool focus) {
+    //TODO: WHAT ARE AXIS INDICES?? HOW MANY??? 2 or 4
+    _xAxis = _gameCont->getAxisPosition(0);
+    _yAxis = _gameCont->getAxisPosition(1); 
+}
 
 std::string  PlatformInput::getGestureString() {
     return _lastGestureString;

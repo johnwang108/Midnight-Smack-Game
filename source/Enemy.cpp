@@ -3,15 +3,7 @@
 #include <cugl/scene2/graph/CUTexturedNode.h>
 #include <cugl/assets/CUAssetManager.h>
 
-#define ENEMY_FORCE      1.0f
-#define ENEMY_DAMPING    5.0f
-#define ENEMY_MAXSPEED   10.0f
-#define ENEMY_JUMP       2.5f
-#define ENEMY_VSHRINK    0.8f
-#define ENEMY_HSHRINK    0.7f
-#define ENEMY_DENSITY    1.0f
 
-#define SENSOR_HEIGHT 0.1f
 
 using namespace cugl;
 
@@ -35,6 +27,7 @@ bool EnemyModel::init(const Vec2& pos, const Size& size, float scale, EnemyType 
         setFriction(0.0f); // Prevent sticking to walls
         setFixedRotation(true); // Avoid tumbling
 
+        _isChasing = false;
         _isGrounded = false;
         _direction = -1; // Start moving right by default
         _lastDirection = _direction;
@@ -98,6 +91,7 @@ void EnemyModel::releaseFixtures() {
         _body->DestroyFixture(_sensorFixture);
         _sensorFixture = nullptr;
     }
+
 }
 
 #pragma mark -
@@ -105,6 +99,9 @@ void EnemyModel::releaseFixtures() {
 
 void EnemyModel::update(float dt) {
     CapsuleObstacle::update(dt);
+    if (_body == nullptr) {
+        return;
+    }
 
     // Example movement logic for enemy
     if (_isGrounded) {
@@ -120,25 +117,32 @@ void EnemyModel::update(float dt) {
             velocity.x = -ENEMY_MAXSPEED;
             _direction = -_direction;
         }
+        if (isChasing()) {
+            velocity.x *= CHASE_SPEED;
+
+        } else {
+            _nextChangeTime -= dt;
+            if (_nextChangeTime <= 0) {
+                _direction = (rand() % 2) * 2 - 1;
+                _nextChangeTime = _changeDirectionInterval + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * _changeDirectionInterval;
+            }
+
+            if (_direction != _lastDirection) {
+                // If direction changed, flip the image
+                scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
+                if (image != nullptr) {
+                    image->flipHorizontal(!image->isFlipHorizontal());
+                }
+                _lastDirection = _direction; // Update last direction
+            }
+        }
+
 
         _body->SetLinearVelocity(velocity);
     }
+   
 
-    _nextChangeTime -= dt;
-    if (_nextChangeTime <= 0) {
-        _direction = (rand() % 2) * 2 - 1;
-        _nextChangeTime = _changeDirectionInterval + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * _changeDirectionInterval;
-    }
-
-    if (_direction != _lastDirection) {
-        // If direction changed, flip the image
-        scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
-        if (image != nullptr) {
-            image->flipHorizontal(!image->isFlipHorizontal());
-        }
-        _lastDirection = _direction; // Update last direction
-    }
-
+    
 
     // Update scene node position and rotation to match physics body
     if (_node != nullptr) {
@@ -153,3 +157,10 @@ void EnemyModel::setSceneNode(const std::shared_ptr<scene2::SceneNode>& node) {
     _node = node;
     _node->setPosition(getPosition() * _drawScale);
 }
+
+void EnemyModel::dispose() {
+    _core = nullptr;
+    _node = nullptr;
+}
+
+
