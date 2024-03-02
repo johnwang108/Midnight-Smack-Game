@@ -283,14 +283,7 @@ void PlatformInput::update(float dt) {
     }
 
 #else
-    _keyJump = _gameCont->isButtonPressed(0);
-    //_keyFire = _gameCont->isButtonPressed(1);
-    _keySlow = _gameCont->isButtonPressed(2);
-    _dashKey = _gameCont->isButtonPressed(3);
-    _keyReset = _gameCont->isButtonPressed(4);
-    _keyExit = _gameCont->isButtonPressed(5);
 
-#else 
     _keyJump = _gameCont->isButtonPressed(0);
     _keyDebug = _gameCont->isButtonPressed(1);
     _keySlow = _gameCont->isButtonPressed(2); //button 2 is X

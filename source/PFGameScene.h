@@ -109,6 +109,9 @@ protected:
     bool _failed;
     /** Countdown active for winning or losing */
     int _countdown;
+
+    //camera
+    //std::shared_ptr<cugl::OrthographicCamera> _camera;
       
     /** Mark set to handle more sophisticated collision callbacks */
     std::unordered_set<b2Fixture*> _sensorFixtures;
@@ -408,6 +411,9 @@ public:
 
     void removeEnemy(EnemyModel* enemy);
 
+    void GameScene::zoomCamera(float scale);
+
+    void GameScene::unzoomCamera();
   };
 
 #endif /* __PF_GAME_SCENE_H__ */

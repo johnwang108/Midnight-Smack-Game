@@ -217,6 +217,8 @@ boolean isLevel1 = true;
 #define DEBUG_COLOR     Color4::YELLOW
 /** Opacity of the physics outlines */
 #define DEBUG_OPACITY   192
+/** Does the camera follow the player?*/
+#define CAMERA_FOLLOWS_PLAYER true
 
 
 #pragma mark -
@@ -387,6 +389,10 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
   //  _dollarnode->setPosition(getSize().getIWidth() / 2.0f, getSize().getIHeight() / 2.0f);
     //_dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
   //  _dollarnode->setVisible(false);
+
+
+    //camera
+    //_camera = cugl::OrthographicCamera::alloc(getSize());
 
 
     populate();
@@ -790,6 +796,13 @@ void GameScene::fixedUpdate(float step) {
     if (_slowed) { 
         step = step / 5;
     }
+    //camera
+    if (CAMERA_FOLLOWS_PLAYER) {
+        cugl::Vec3 pos = _avatar->getPosition() * _scale;
+        _camera->setPosition(pos);
+		_camera->update();
+    }
+
     _world->update(step);
 }
     
@@ -1202,4 +1215,15 @@ std::string GameScene::getGestureText(std::string gest, float sim) {
     std::stringstream ss;
     ss << "Gesture: " << gest << ", " << "Similarity: " << sim;
     return ss.str();
+}
+
+void GameScene::zoomCamera(float scale) {
+    _camera->setZoom(scale);
+	_camera->update();
+
+}
+
+void GameScene::unzoomCamera() {
+    _camera->setZoom(1);
+    _camera->update();
 }
