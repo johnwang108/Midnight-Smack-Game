@@ -263,22 +263,19 @@ void PlatformInput::update(float dt) {
     }
     else {
         _keyJump = _gameCont->isButtonPressed(0);
-        _keyFire = _gameCont->isButtonPressed(1);
+        _keyDebug = _gameCont->isButtonPressed(1);
         _keySlow = _gameCont->isButtonPressed(2);
-        //_dashKey = _gameCont->isButtonPressed(3);
         _keyReset = _gameCont->isButtonPressed(4);
         _keyExit = _gameCont->isButtonPressed(5);
+        
 
 
         float lTriggerAmt = _gameCont->getAxisPosition(4);
-        _dashKey = (lTriggerAmt > TRIGGER_DEADZONE);
+        _dashKey = (lTriggerAmt > TRIGGER_DEADZONE) || _gameCont->isButtonPressed(3);
 
         float rTriggerAmt = _gameCont->getAxisPosition(5);
         _keyFire = (rTriggerAmt > TRIGGER_DEADZONE);
 
-
-        _keyReset = _gameCont->isButtonPressed(4);
-        _keyExit = _gameCont->isButtonPressed(5);
 
         _xAxis = _gameCont->getAxisPosition(0);
         _yAxis = _gameCont->getAxisPosition(1);
@@ -288,18 +285,17 @@ void PlatformInput::update(float dt) {
 
 #else 
     _keyJump = _gameCont->isButtonPressed(0);
-    //_keyFire = _gameCont->isButtonPressed(1); button 1 is B
+    _keyDebug = _gameCont->isButtonPressed(1);
     _keySlow = _gameCont->isButtonPressed(2); //button 2 is X
-    //_dashKey = _gameCont->isButtonPressed(3); button 3 is Y
+    _keyReset = _gameCont->isButtonPressed(4);
+    _keyExit = _gameCont->isButtonPressed(5);
 
-    float lTriggerAmt = _gameCont->getAxisPosition(6);
-    _dashKey = (lTriggerAmt > TRIGGER_DEADZONE);
+    float lTriggerAmt = _gameCont->getAxisPosition(4);
+    _dashKey = (lTriggerAmt > TRIGGER_DEADZONE) || _gameCont->isButtonPressed(3);
 
     float rTriggerAmt = _gameCont->getAxisPosition(5);
     _keyFire = (rTriggerAmt > TRIGGER_DEADZONE);
 
-    _keyReset = _gameCont->isButtonPressed(4);
-    _keyExit = _gameCont->isButtonPressed(5);
 
     _xAxis = _gameCont->getAxisPosition(0);
     _yAxis = _gameCont->getAxisPosition(1);
