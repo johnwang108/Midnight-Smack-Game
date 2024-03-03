@@ -732,7 +732,6 @@ void GameScene::preUpdate(float dt) {
         _avatar->setJumping(_input->didJump());
         _avatar->setDash(_input->didDash());
         _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
-
         if (_avatar->isJumping() && _avatar->isGrounded()) {
             std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
             AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
@@ -798,7 +797,12 @@ void GameScene::fixedUpdate(float step) {
     }
     //camera
     if (CAMERA_FOLLOWS_PLAYER) {
-        cugl::Vec3 pos = _avatar->getPosition() * _scale;
+        cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
+        cugl::Vec3 pos = _camera->getPosition();
+        //magic number 0.2 are for smoothness
+        float smooth = std::min(0.2f, (target - pos).length());
+        pos.smooth(target, step, smooth);
+        //cugl::Vec3 pos = _avatar->getPosition() * _scale;
         _camera->setPosition(pos);
 		_camera->update();
     }

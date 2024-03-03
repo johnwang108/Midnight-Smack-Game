@@ -112,6 +112,10 @@ protected:
 
     //camera
     //std::shared_ptr<cugl::OrthographicCamera> _camera;
+    cugl::Vec3 _cameraOffset = Vec3::ZERO;
+    float _smoothTime = 0.25f;
+    cugl::Vec3 _velocity = Vec3::ZERO;
+
       
     /** Mark set to handle more sophisticated collision callbacks */
     std::unordered_set<b2Fixture*> _sensorFixtures;

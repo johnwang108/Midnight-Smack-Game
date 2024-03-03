@@ -303,7 +303,6 @@ void PlatformInput::update(float dt) {
 #endif
    
 
-
     _resetPressed = _keyReset;
     _debugPressed = _keyDebug;
     _exitPressed = _keyExit;
