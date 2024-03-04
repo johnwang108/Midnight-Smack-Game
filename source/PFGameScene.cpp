@@ -127,7 +127,7 @@ float RICE_POS[] = { 25.0f, 14.0f };
 
 float BACKGROUND_POS[] = { 16.0f, 10.0f };
 
-boolean isLevel1 = true;
+bool isLevel1 = true;
 
 #pragma mark -
 #pragma mark Physics Constants
