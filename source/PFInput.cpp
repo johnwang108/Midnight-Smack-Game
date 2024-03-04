@@ -262,43 +262,45 @@ void PlatformInput::update(float dt) {
         _keyDown = keys->keyDown(KeyCode::S);
     }
     else {
-        _keyJump = _gameCont->isButtonPressed(0);
-        _keyDebug = _gameCont->isButtonPressed(1);
-        _keySlow = _gameCont->isButtonPressed(2);
-        _keyReset = _gameCont->isButtonPressed(4);
-        _keyExit = _gameCont->isButtonPressed(5);
+        _keyJump = _gameCont->isButtonPressed(GameController::Button::A);
+        _keyDebug = _gameCont->isButtonPressed(GameController::Button::B);
+        _keySlow = _gameCont->isButtonPressed(GameController::Button::X);
+        _keyReset = _gameCont->isButtonPressed(GameController::Button::LEFT_SHOULDER);
+        _keyExit = _gameCont->isButtonPressed(GameController::Button::RIGHT_SHOULDER);
         
 
 
-        float lTriggerAmt = _gameCont->getAxisPosition(4);
-        _dashKey = (lTriggerAmt > TRIGGER_DEADZONE) || _gameCont->isButtonPressed(3);
+        float lTriggerAmt = _gameCont->getAxisPosition(GameController::Axis::TRIGGER_LEFT);
+        _dashKey = (lTriggerAmt > TRIGGER_DEADZONE) || _gameCont->isButtonPressed(GameController::Button::Y);
 
-        float rTriggerAmt = _gameCont->getAxisPosition(5);
+        float rTriggerAmt = _gameCont->getAxisPosition(GameController::Axis::TRIGGER_RIGHT);
         _keyFire = (rTriggerAmt > TRIGGER_DEADZONE);
 
 
-        _xAxis = _gameCont->getAxisPosition(0);
-        _yAxis = _gameCont->getAxisPosition(1);
+        _xAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_X);
+        _yAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_Y);
 
     }
 
 
 #else 
-    _keyJump = _gameCont->isButtonPressed(0);
-    _keyDebug = _gameCont->isButtonPressed(1);
-    _keySlow = _gameCont->isButtonPressed(2); //button 2 is X
-    _keyReset = _gameCont->isButtonPressed(4);
-    _keyExit = _gameCont->isButtonPressed(5);
+    _keyJump = _gameCont->isButtonPressed(GameController::Button::A);
+    _keyDebug = _gameCont->isButtonPressed(GameController::Button::B);
+    _keySlow = _gameCont->isButtonPressed(GameController::Button::X);
+    _keyReset = _gameCont->isButtonPressed(GameController::Button::LEFT_SHOULDER);
+    _keyExit = _gameCont->isButtonPressed(GameController::Button::RIGHT_SHOULDER);
 
-    float lTriggerAmt = _gameCont->getAxisPosition(4);
-    _dashKey = (lTriggerAmt > TRIGGER_DEADZONE) || _gameCont->isButtonPressed(3);
 
-    float rTriggerAmt = _gameCont->getAxisPosition(5);
+
+    float lTriggerAmt = _gameCont->getAxisPosition(GameController::Axis::TRIGGER_LEFT);
+    _dashKey = (lTriggerAmt > TRIGGER_DEADZONE) || _gameCont->isButtonPressed(GameController::Button::Y);
+
+    float rTriggerAmt = _gameCont->getAxisPosition(GameController::Axis::TRIGGER_RIGHT);
     _keyFire = (rTriggerAmt > TRIGGER_DEADZONE);
 
 
-    _xAxis = _gameCont->getAxisPosition(0);
-    _yAxis = _gameCont->getAxisPosition(1);
+    _xAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_X);
+    _yAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_Y);
 
 
 #endif
@@ -600,8 +602,8 @@ void PlatformInput::touchesMovedCB(const TouchEvent& event, const Vec2& previous
 
 void PlatformInput::getAxisAngle(const cugl::GameControllerAxisEvent& event, bool focus) {
     //TODO: WHAT ARE AXIS INDICES?? HOW MANY??? 2 or 4
-    _xAxis = _gameCont->getAxisPosition(0);
-    _yAxis = _gameCont->getAxisPosition(1); 
+    _xAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_X);
+    _yAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_Y); 
 }
 
 std::string  PlatformInput::getGestureString() {
