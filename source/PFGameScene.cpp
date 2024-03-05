@@ -795,12 +795,14 @@ void GameScene::fixedUpdate(float step) {
     if (_slowed) { 
         step = step / 5;
     }
-    //camera
+    //camera logic
     if (CAMERA_FOLLOWS_PLAYER) {
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
         cugl::Vec3 pos = _camera->getPosition();
+
         //magic number 0.2 are for smoothness
-        float smooth = std::min(0.2f, (target - pos).length());
+        //float smooth = std::min(0.2f, (target - pos).length());
+        float smooth = 0.2;
         pos.smooth(target, step, smooth);
         //cugl::Vec3 pos = _avatar->getPosition() * _scale;
         _camera->setPosition(pos);
