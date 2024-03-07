@@ -995,8 +995,7 @@ void GameScene::createAttack() {
     attack->setGravityScale(0);
     attack->setDebugColor(DEBUG_COLOR);
     attack->setDrawScale(_scale);
-    attack->setEnabled(true);
-    attack->setMass(100);
+
 
 
 	std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
