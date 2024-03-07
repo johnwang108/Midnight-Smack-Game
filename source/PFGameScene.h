@@ -406,7 +406,7 @@ public:
     */
     void removeAttack(Attack* attack);
 
-    void GameScene::removeEnemy(EnemyModel* enemy);
+    void removeEnemy(EnemyModel* enemy);
 
   };
 
