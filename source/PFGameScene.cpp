@@ -748,11 +748,17 @@ void GameScene::preUpdate(float dt) {
 
             if (distance < CHASE_THRESHOLD) {
                 enemy->setIsChasing(true);
-                int direction = (avatarPos.x > enemyPos.x) ? 1 : -1;
-                enemy->setDirection(direction);
+                if (enemy->getnextchangetime() < 0) {
+                    int direction = (avatarPos.x > enemyPos.x) ? 1 : -1;
+                    enemy->setDirection(direction);
+                    enemy->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+                }
             }
             else if (distance >= CHASE_THRESHOLD && enemy->isChasing()) {
                 enemy->setIsChasing(false);
+            }
+            if (enemy->getHealth() <= 0) {
+                removeEnemy(enemy.get());
             }
             enemy->update(dt);
         }
@@ -989,7 +995,9 @@ void GameScene::createAttack() {
     attack->setGravityScale(0);
     attack->setDebugColor(DEBUG_COLOR);
     attack->setDrawScale(_scale);
-    
+    attack->setEnabled(true);
+    attack->setMass(100);
+
 
 	std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
     attack->setSceneNode(sprite);
@@ -1061,15 +1069,7 @@ void GameScene::beginContact(b2Contact* contact) {
         _avatar->setVX(0);
     }
 
-    // Test bullet collision with enemy
-    if (bd1->getName() == ATTACK_NAME && bd2->getName() == ENEMY_NAME) {
-        removeAttack((Attack*)bd1);
-        removeEnemy((EnemyModel*)bd2);
-    }
-    else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
-        removeAttack((Attack*)bd2);
-        removeEnemy((EnemyModel*)bd1);
-    }
+
 
     // See if we have landed on the ground.
     if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
@@ -1093,25 +1093,6 @@ void GameScene::beginContact(b2Contact* contact) {
                 (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
                 _enemy->setGrounded(true);
             }
-
-            // if (bd1 == _avatar.get() && bd2 == _enemy.get()
-            //     || (bd2 == _avatar.get() && bd1 == _enemy.get())) {
-            //     _enemy->setDebugScene(nullptr);
-            //     _worldnode->removeChild(_enemy->getSceneNode());
-            //     _enemy->markRemoved(true);
-            ////     _enemy->removeFromGame();
-            // }
-
-             ////temp code for attack collision
-             //if (bd1->getName() == ATTACK_NAME && bd2 == _enemy.get()
-             //    || (bd2->getName() == ATTACK_NAME && bd1 == _enemy.get())) {
-             //    _enemy->setDebugScene(nullptr);
-             //    _worldnode->removeChild(_enemy->getSceneNode());
-             //    _enemy->markRemoved(true);
-             //    //     _enemy->removeFromGame();
-             //}
-
-
         }
     }
 
@@ -1171,10 +1152,25 @@ void GameScene::endContact(b2Contact* contact) {
     bool p3 = (_avatar->getSensorName() == fd1);
     bool p4 = (bd2->getName() != WALL_NAME);
     bool p5 = _avatar->contactingWall();
-    CULog("5 %d", p5);
+  //  CULog("5 %d", p5);
     if (!(p1 || p2 || p3) && p4 && p5) {
         _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
         _avatar->setContactingWall(false);
+    }
+    // Test bullet collision with enemy
+    if (bd1->getName() == ATTACK_NAME && bd2->getName() == ENEMY_NAME) {
+        Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
+        Vec2 attackerPos = ((Attack*)bd1)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+      //  removeAttack((Attack*)bd1);
+        ((EnemyModel*)bd2)->takeDamage(34, direction);
+    }
+    else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
+        Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
+        Vec2 attackerPos = ((Attack*)bd2)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+     //   removeAttack((Attack*)bd2);
+        ((EnemyModel*)bd1)->takeDamage(34, direction);
     }
 
 }
