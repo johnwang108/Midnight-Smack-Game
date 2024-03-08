@@ -14,6 +14,11 @@ using namespace cugl;
 #define BULL_KNOCKBACK_FORCE 15.0f        // Increased knockback force due to the Bull's strength
 #define BULL_KNOCKBACK_FORCE_UP 5.0f      // Vertical knockback component
 
+#define BULL_VSHRINK    0.8f
+#define BULL_HSHRINK    0.7f
+
+#define SENSOR_HEIGHT 0.1f
+
 class BullModel : public physics2::CapsuleObstacle {
 protected:
     float _drawScale;
@@ -24,6 +29,8 @@ protected:
     int _direction;
     float _knockbackTime;
     std::shared_ptr<cugl::scene2::SceneNode> _node;
+    b2Fixture* _sensorFixture;
+    std::string _sensorName;
 
 public:
     BullModel() : CapsuleObstacle(), _drawScale(1.0f), _health(100.0f), _healthCooldown(0.2f), _lastDamageTime(0), _isChasing(true), _direction(-1) {}
@@ -45,7 +52,11 @@ public:
 
     void setSceneNode(const std::shared_ptr<scene2::SceneNode>& node);
 
+    void createFixtures() override;
 
+    void releaseFixtures() override;
+
+    std::string* getSensorName() { return &_sensorName; };
 };
 
 #endif /* __BULL_MODEL_H__ */

@@ -4,8 +4,11 @@ using namespace cugl;
 
 
 bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
-
-    if (CapsuleObstacle::init(pos, size)) {
+    Size scaledSize = size;
+    scaledSize.width *= BULL_HSHRINK;
+    scaledSize.height *= BULL_VSHRINK;
+    _drawScale = scale;
+    if (CapsuleObstacle::init(pos, scaledSize)) {
         _drawScale = scale;
         _isChasing = true; // Always chasing
         _direction = -1; // Could start in any direction
@@ -63,4 +66,52 @@ void BullModel::setSceneNode(const std::shared_ptr<scene2::SceneNode>& node) {
     if (_node != nullptr) {
         _node->setPosition(getPosition() * _drawScale);
     }
+}
+
+void BullModel::dispose() {
+    _core = nullptr;
+    _node = nullptr;
+}
+
+void BullModel::releaseFixtures() {
+    if (_body != nullptr) {
+        return;
+    }
+
+    CapsuleObstacle::releaseFixtures();
+    if (_sensorFixture != nullptr) {
+        _body->DestroyFixture(_sensorFixture);
+        _sensorFixture = nullptr;
+    }
+
+}
+
+void BullModel::createFixtures() {
+    if (_body == nullptr) {
+        return;
+    }
+
+    CapsuleObstacle::createFixtures();
+
+
+    b2FixtureDef sensorDef;
+    sensorDef.density = 0;
+    sensorDef.isSensor = true;
+
+    b2PolygonShape sensorShape;
+    b2Vec2 sensorVertices[4];
+    sensorVertices[0].Set(-getWidth() * BULL_HSHRINK / 2.0f, -getHeight() / 2.0f);
+    sensorVertices[1].Set(getWidth() * BULL_HSHRINK / 2.0f, -getHeight() / 2.0f);
+    sensorVertices[2].Set(getWidth() * BULL_HSHRINK / 2.0f, -getHeight() / 2.0f - SENSOR_HEIGHT);
+    sensorVertices[3].Set(-getWidth() * BULL_HSHRINK / 2.0f, -getHeight() / 2.0f - SENSOR_HEIGHT);
+    sensorShape.Set(sensorVertices, 4);
+
+    sensorDef.shape = &sensorShape;
+
+    sensorDef.userData.pointer = reinterpret_cast<uintptr_t>(getSensorName());
+
+
+    _sensorFixture = _body->CreateFixture(&sensorDef);
+
+
 }
