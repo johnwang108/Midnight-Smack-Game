@@ -638,19 +638,7 @@ void GameScene::createAttack() {
 
     std::vector<Vec2> verts = std::vector<Vec2>();
 
-    //JOHN: CAN"T GET COLLISION TO WORK WITH POLYGON OBSTACLES. 
-    // FOR NOW AM JUST GONNA STICK WITH BOX OBSTACLES BUT NEEDS TO BE ADDRESSED
 
-    /*verts.push_back(cugl::Vec2(0, 0));
-    verts.push_back(cugl::Vec2(50, 0));
-    verts.push_back(cugl::Vec2(50, 50));
-    verts.push_back(cugl::Vec2(0, 50));*/
-    /*verts.push_back(cugl::Vec2(0, 50));
-    verts.push_back(cugl::Vec2(50, 50));
-    verts.push_back(cugl::Vec2(50, 0));
-    verts.push_back(cugl::Vec2(0, 0));*/
-    //cugl::Poly2 attack_poly = cugl::Poly2(verts);
-	//std::shared_ptr<Attack> attack = Attack::alloc(attack_poly, pos);
 	std::shared_ptr<Attack> attack = Attack::alloc(pos, 
         cugl::Size(ATTACK_W * image->getSize().width / _scale, 
         ATTACK_H * image->getSize().height / _scale));

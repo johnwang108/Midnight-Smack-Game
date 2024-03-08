@@ -31,6 +31,7 @@ protected:
     std::shared_ptr<cugl::scene2::SceneNode> _node;
     b2Fixture* _sensorFixture;
     std::string _sensorName;
+    int _lastDirection;
 
 public:
     BullModel() : CapsuleObstacle(), _drawScale(1.0f), _health(100.0f), _healthCooldown(0.2f), _lastDamageTime(0), _isChasing(true), _direction(-1) {}
