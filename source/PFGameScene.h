@@ -122,6 +122,10 @@ protected:
 
     std::shared_ptr<BullModel>			  _Bull;
 
+    std::shared_ptr<Level2> level2 = std::make_shared<Level2>();
+
+    std::shared_ptr<Level1> level1 = std::make_shared<Level1>();
+
 #pragma mark Internal Object Management
     /**
      * Lays out the game geography.
