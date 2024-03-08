@@ -232,8 +232,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
   //  populate();
-    std::shared_ptr<Level2> level1 = std::make_shared<Level2>();
-    loadLevel(level1);
+
+    loadLevel(level2);
+
     _active = true;
     _complete = false;
     setDebug(false);
@@ -290,7 +291,6 @@ void GameScene::reset() {
     setFailure(false);
     setComplete(false);
     //populate();
-    std::shared_ptr<Level1> level1 = std::make_shared<Level1>();
     loadLevel(level1);
 }
 
