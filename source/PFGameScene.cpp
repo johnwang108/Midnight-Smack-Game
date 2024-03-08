@@ -53,170 +53,12 @@ using namespace cugl;
 
 #define INCLUDE_ROPE_BRIDGE false
 
-// Since these appear only once, we do not care about the magic numbers.
-// In an actual game, this information would go in a data file.
-// IMPORTANT: Note that Box2D units do not equal drawing units
-/** The wall vertices */
-#define WALL_VERTS 12
-#define WALL_COUNT  2
-
-float WALL[WALL_COUNT][WALL_VERTS] = {
-    {16.0f, 20.0f,  0.0f, 20.0f,  0.0f,  0.0f,
-      1.0f,  0.0f,  1.0f, 19.5f, 16.0f, 19.5f },
-    {32.0f, 20.0f, 16.0f, 20.0f, 16.0f, 19.5f,
-     31.0f, 19.5f, 31.0f,  0.0f, 32.0f,  0.0f }
-};
-
-/** The number of platforms */
-#define PLATFORM_VERTS  8
-#define PLATFORM_COUNT  10
-
-/** The outlines of all of the platforms */
-
-//float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
-//	{ 1.0f, 3.0f, 1.0f, 2.5f, 6.0f, 2.5f, 6.0f, 3.0f},
-//	{ 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
-//	{23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
-//	{26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
-//	{29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
-//	{24.0f, 8.5f,24.0f, 8.0f,27.0f, 8.0f,27.0f, 8.5f},
-//	{29.0f,10.0f,29.0f, 9.5f,31.0f, 9.5f,31.0f,10.0f},
-//	{23.0f,11.5f,23.0f,11.0f,27.0f,11.0f,27.0f,11.5f},
-//	{19.0f,12.5f,19.0f,12.0f,23.0f,12.0f,23.0f,12.5f},
-//	{ 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
-//};
-
-float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
-    {1.0f, 4.0f, 1.0f, 2.0f, 4.0f, 2.0f, 4.0f, 4.0f},
-    { 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
-    {9.5f, 6.0f, 9.5f, 5.0f, 12.5f, 5.0f, 12.5f, 6.0f},
-    {15.0f, 8.5f, 15.0f, 7.0f, 20.0f, 4.5f, 20.0f, 6.0f},
-    {23.0f, 4.0f, 23.0f, 3.0f, 27.0f, 3.0f, 27.0f, 4.0f},
-    {28.0f, 5.0f, 28.0f, 4.0f, 30.0f, 8.0f, 30.0f, 9.0f},
-    {23.0f, 10.0f, 23.0f, 9.f, 27.0f, 9.f, 27.0f, 10.f},
-    {16.0f, 12.f, 16.0f, 10.0f, 22.0f, 12.0f, 22.0f, 10.f},
-    {6.0f, 15.0f, 6.0f, 14.5f, 14.0f, 12.5f, 14.0f, 13.0f},
-    { 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
-};
-
-/** The number of platforms */
-#define ALT_PLATFORM_VERTS  8
-#define ALT_PLATFORM_COUNT  1
-
-/** The outlines of all of the platforms */
-float ALT_PLATFORMS[ALT_PLATFORM_COUNT][ALT_PLATFORM_VERTS] = {
-    { 1.0f, .5f, 1.0f, .0f, 33.0f, .0f, 33.0f, .50f}
-};
 
 
-/** The goal door position */
-float GOAL_POS[] = { 4.0f,14.0f};
-// float GOAL_POS[] = { 6.0f, 5.0f };
-/** The position of the spinning barrier */
-float SPIN_POS[] = {13.0f,12.5f};
-/** The initial position of the dude */
-float DUDE_POS[] = { 2.5f, 5.0f};
-/** The position of the rope bridge */
-float BRIDGE_POS[] = {9.0f, 3.8f};
 
-float SHRIMP_POS[] = { 22.0f, 16.0f };
-
-float EGG_POS[] = { 14.0f, 18.0f };
-
-float RICE_POS[] = { 25.0f, 14.0f };
-
-float BACKGROUND_POS[] = { 16.0f, 10.0f };
 
 bool isLevel1 = true;
 
-#pragma mark -
-#pragma mark Physics Constants
-/** The new heavier gravity for this world (so it is not so floaty) */
-#define DEFAULT_GRAVITY -28.9f
-/** The density for most physics objects */
-#define BASIC_DENSITY   0.0f
-/** The density for a bullet */
-#define HEAVY_DENSITY   10.0f
-/** Friction of most platforms */
-#define BASIC_FRICTION  0.4f
-/** The restitution for all physics objects */
-#define BASIC_RESTITUTION   0.1f
-/** The width of the rope bridge */
-#define BRIDGE_WIDTH    14.0f
-/** Offset for bullet when firing */
-#define BULLET_OFFSET   0.5f
-/** Offset for attack when firing, hacky */
-#define ATTACK_OFFSET_H   1.0f
-/** Offset for attack when firing, hacky*/
-#define ATTACK_OFFSET_V   0.0f
-/**Scalar for width of a box attack, hacky*/
-#define ATTACK_W        2.0f
-/**Scalar for height of a box attack, hacky*/
-#define ATTACK_H        0.5f
-/** The speed of the bullet after firing */
-#define BULLET_SPEED   20.0f
-/** The number of frame to wait before reinitializing the game */
-#define EXIT_COUNT      240
-
-
-#pragma mark -
-#pragma mark Asset Constants
-/** The key for the earth texture in the asset manager */
-#define EARTH_TEXTURE   "earth"
-/** The key for the win door texture in the asset manager */
-#define GOAL_TEXTURE    "goal"
-/** The key for the win door texture in the asset manager */
-#define BULLET_TEXTURE  "bullet"
-/** The keys for the attack texture in asset manager*/
-#define ATTACK_TEXTURE_R  "attack_r"
-#define ATTACK_TEXTURE_L  "attack_l"
-/** The name of a bullet (for object identification) */
-#define ATTACK_NAME     "attack"
-/** The name of a wall (for object identification) */
-#define WALL_NAME       "wall"
-/** The name of an enemy for object id */
-#define ENEMY_NAME	    "enemy"
-/** The name of a platform (for object identification) */
-#define PLATFORM_NAME   "platform"
-
-#define BACKGROUND_NAME "background"
-/** The font for victory/failure messages */
-#define MESSAGE_FONT    "retro"
-
-#define SMALL_MSG "retrosmall"  
-/** The message for winning the game */
-#define WIN_MESSAGE     "VICTORY!"
-/** The color of the win message */
-#define WIN_COLOR       Color4::YELLOW
-/** The message for losing the game */
-#define LOSE_MESSAGE    "FAILURE!"
-/** The color of the lose message */
-#define LOSE_COLOR      Color4::RED
-/** The key the basic game music */
-#define GAME_MUSIC      "game"
-/** The key the victory game music */
-#define WIN_MUSIC       "win"
-/** The key the failure game music */
-#define LOSE_MUSIC      "lose"
-/** The sound effect for firing a bullet */
-#define PEW_EFFECT      "pew"
-/** The sound effect for a bullet collision */
-#define POP_EFFECT      "pop"
-/** The sound effect for jumping */
-#define JUMP_EFFECT     "jump"
-/** The volume for the music */
-#define MUSIC_VOLUME    0.7f
-/** The volume for sound effects */
-#define EFFECT_VOLUME   0.8f
-/** The image for the left dpad/joystick */
-#define LEFT_IMAGE      "dpad_left"
-/** The image for the right dpad/joystick */
-#define RIGHT_IMAGE     "dpad_right"
-
-/** Color to outline the physics nodes */
-#define DEBUG_COLOR     Color4::YELLOW
-/** Opacity of the physics outlines */
-#define DEBUG_OPACITY   192
 
 
 #pragma mark -
@@ -389,7 +231,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
   //  _dollarnode->setVisible(false);
 
 
-    populate();
+  //  populate();
+    std::shared_ptr<Level2> level1 = std::make_shared<Level2>();
+    loadLevel(level1);
     _active = true;
     _complete = false;
     setDebug(false);
@@ -445,7 +289,9 @@ void GameScene::reset() {
 
     setFailure(false);
     setComplete(false);
-    populate();
+    //populate();
+    std::shared_ptr<Level1> level1 = std::make_shared<Level1>();
+    loadLevel(level1);
 }
 
 /**
@@ -459,192 +305,11 @@ void GameScene::reset() {
  * This method is really, really long.  In practice, you would replace this
  * with your serialization loader, which would process a level file.
  */
-void GameScene::populate() {
 
-# pragma mark: Background
-    Vec2 background_pos = BACKGROUND_POS;
-    std::shared_ptr<Texture> image = _assets->get<Texture>("background-1");
-    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
-    Size background_size(image->getSize().width / _scale, image->getSize().height / _scale);
-    _background = physics2::BoxObstacle::alloc(background_pos, background_size);
-    _background->setName(BACKGROUND_NAME);
-    _background->setBodyType(b2_staticBody);
-    _background->setDensity(0.0f);
-    _background->setFriction(0.0f);
-    _background->setRestitution(0.0f);
-    _background->setEnabled(false);
-    _background->setSensor(true);
-    addObstacle(_background, sprite);
-    
-    
-#pragma mark : Goal door
-	image = _assets->get<Texture>(GOAL_TEXTURE);
-    sprite = scene2::PolygonNode::allocWithTexture(image);
-	std::shared_ptr<scene2::WireNode> draw;
-
-	// Create obstacle
-	Vec2 goalPos = GOAL_POS;
-	Size goalSize(image->getSize().width/_scale,
-	image->getSize().height/_scale);
-	_goalDoor = physics2::BoxObstacle::alloc(goalPos,goalSize);
-	
-	// Set the physics attributes
-	_goalDoor->setBodyType(b2_staticBody);
-	_goalDoor->setDensity(0.0f);
-	_goalDoor->setFriction(0.0f);
-	_goalDoor->setRestitution(0.0f);
-	_goalDoor->setSensor(true);
-    // _goalDoor->setEnabled
-
-	// Add the scene graph nodes to this object
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_goalDoor->setDebugColor(DEBUG_COLOR);
-	addObstacle(_goalDoor, sprite);
-
-#pragma mark : Walls
-	// All walls and platforms share the same texture
-	image  = _assets->get<Texture>(EARTH_TEXTURE);
-	std::string wname = "wall";
-	for (int ii = 0; ii < WALL_COUNT; ii++) {
-		std::shared_ptr<physics2::PolygonObstacle> wallobj;
-
-		Poly2 wall(reinterpret_cast<Vec2*>(WALL[ii]),WALL_VERTS/2);
-		// Call this on a polygon to get a solid shape
-		EarclipTriangulator triangulator;
-		triangulator.set(wall.vertices);
-		triangulator.calculate();
-		wall.setIndices(triangulator.getTriangulation());
-        triangulator.clear();
-
-		wallobj = physics2::PolygonObstacle::allocWithAnchor(wall,Vec2::ANCHOR_CENTER);
-		// You cannot add constant "".  Must stringify
-		wallobj->setName(std::string(WALL_NAME)+cugl::strtool::to_string(ii));
-		wallobj->setName(wname);
-
-		// Set the physics attributes
-		wallobj->setBodyType(b2_staticBody);
-		wallobj->setDensity(BASIC_DENSITY);
-		wallobj->setFriction(BASIC_FRICTION);
-		wallobj->setRestitution(BASIC_RESTITUTION);
-		wallobj->setDebugColor(DEBUG_COLOR);
-
-		wall *= _scale;
-		sprite = scene2::PolygonNode::allocWithTexture(image,wall);
-		addObstacle(wallobj,sprite,1);  // All walls share the same texture
-	}
-
-#pragma mark : Platforms
-	for (int ii = 0; ii < PLATFORM_COUNT; ii++) {
-		std::shared_ptr<physics2::PolygonObstacle> platobj;
-		Poly2 platform(reinterpret_cast<Vec2*>(PLATFORMS[ii]),sizeof(PLATFORMS[ii]) / sizeof(float) / 2);
-
-		EarclipTriangulator triangulator;
-		triangulator.set(platform.vertices);
-		triangulator.calculate();
-		platform.setIndices(triangulator.getTriangulation());
-        triangulator.clear();
-
-        platobj = physics2::PolygonObstacle::allocWithAnchor(platform,Vec2::ANCHOR_CENTER);
-		// You cannot add constant "".  Must stringify
-		platobj->setName(std::string(PLATFORM_NAME)+cugl::strtool::to_string(ii));
-
-		// Set the physics attributes
-		platobj->setBodyType(b2_staticBody);
-		platobj->setDensity(BASIC_DENSITY);
-		platobj->setFriction(BASIC_FRICTION);
-		platobj->setRestitution(BASIC_RESTITUTION);
-		platobj->setDebugColor(DEBUG_COLOR);
-
-		platform *= _scale;
-		sprite = scene2::PolygonNode::allocWithTexture(image,platform);
-		addObstacle(platobj,sprite,1);
-	}
-
-// I CHANGED THIS
-
-//#pragma mark : Spinner
-//	Vec2 spinPos = SPIN_POS;
-//    image = _assets->get<Texture>(SPINNER_TEXTURE);
-//	_spinner = Spinner::alloc(spinPos,image->getSize()/_scale,_scale);
-//    _spinner->setTexture(image);
-//	std::shared_ptr<scene2::SceneNode> node = scene2::SceneNode::alloc();
-//    
-//    // With refactor, must be added manually
-//    // Add the node to the world before calling setSceneNode,
-//    _worldnode->addChild(node);
-//    _spinner->setSceneNode(node);
-//
-//    _spinner->setDrawScale(_scale);
-//    _spinner->setDebugColor(DEBUG_COLOR);
-//    _spinner->setDebugScene(_debugnode);
-//    _spinner->activate(_world);
-
-//#pragma mark : Rope Bridge
-//	Vec2 bridgeStart = BRIDGE_POS;
-//	Vec2 bridgeEnd   = bridgeStart;
-//	bridgeEnd.x += BRIDGE_WIDTH;
-//    image = _assets->get<Texture>(BRIDGE_TEXTURE);
-//    
-//	_ropebridge = RopeBridge::alloc(bridgeStart,bridgeEnd,image->getSize()/_scale,_scale);
-//    _ropebridge->setTexture(image);
-//	node = scene2::SceneNode::alloc();
-//
-//    // With refactor, must be added manually
-//    // Add the node to the world before calling setSceneNode,
-//    _worldnode->addChild(node);
-//    _ropebridge->setSceneNode(node);
-//    
-//    _ropebridge->setDrawScale(_scale);
-//    _ropebridge->setDebugColor(DEBUG_COLOR);
-//    _ropebridge->setDebugScene(_debugnode);
-//    _ropebridge->activate(_world);
-
-#pragma mark : Dude
-	Vec2 dudePos = DUDE_POS;
-	// node = scene2::SceneNode::alloc();
-    image = _assets->get<Texture>(DUDE_TEXTURE);
-	_avatar = DudeModel::alloc(dudePos,image->getSize()/(2+_scale),_scale);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_avatar->setSceneNode(sprite);
-	_avatar->setDebugColor(DEBUG_COLOR);
-	addObstacle(_avatar,sprite); // Put this at the very front
-
-	// Play the background music on a loop.
-	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
-    AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
+//void GameScene::populate() {
 
 
-    Vec2 shrimp_pos = SHRIMP_POS;
-    image = _assets->get<Texture>(SHRIMP_TEXTURE);
-    std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
-    sprite = scene2::PolygonNode::allocWithTexture(image);
-    _enemy->setSceneNode(sprite);
-    _enemy->setName(ENEMY_NAME);
-    _enemy->setDebugColor(DEBUG_COLOR);
-    addObstacle(_enemy, sprite);
-    _enemies.push_back(_enemy);
-
-    Vec2 rice_pos = RICE_POS;
-    image = _assets->get<Texture>(RICE_TEXTURE);
-    _enemy = EnemyModel::alloc(rice_pos, image->getSize() / _scale, _scale, EnemyType::rice);
-    sprite = scene2::PolygonNode::allocWithTexture(image);
-    _enemy->setSceneNode(sprite);
-    _enemy->setName(ENEMY_NAME);
-    _enemy->setDebugColor(DEBUG_COLOR);
-    addObstacle(_enemy, sprite);
-    _enemies.push_back(_enemy);
-
-    Vec2 egg_pos = EGG_POS;
-    image = _assets->get<Texture>(EGG_TEXTURE);
-    _enemy = EnemyModel::alloc(egg_pos, image->getSize() / (_scale), _scale, EnemyType::egg);
-    sprite = scene2::PolygonNode::allocWithTexture(image);
-    _enemy->setSceneNode(sprite);
-    _enemy->setName(ENEMY_NAME);
-    _enemy->setDebugColor(DEBUG_COLOR);
-    addObstacle(_enemy, sprite);
-    _enemies.push_back(_enemy);
-
-}
+//}
 
 /**
  * Adds the physics object to the physics world and loosely couples it to the scene graph
@@ -861,7 +526,7 @@ void GameScene::postUpdate(float remain) {
     }
 
     // Reset the game if we win or lose.
-    if (_countdown > 0) {
+   /* if (_countdown > 0) {
         _countdown--;
     } else if (_countdown == 0) {
         if (_failed == false && isLevel1) {
@@ -909,7 +574,7 @@ void GameScene::postUpdate(float remain) {
             //close game somehow
         }
         reset();
-    }
+    }*/
 }
 
 
