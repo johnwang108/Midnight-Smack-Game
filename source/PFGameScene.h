@@ -36,7 +36,12 @@
 #include "PFRopeBridge.h"
 #include "PFSpinner.h"
 #include "PFDollarScene.h"
-#include "Enemy.h"
+#include "Enemys/Enemy.h"
+#include "Enemys/Bull.h"
+#include "Levels/Levels.h"
+#include "Levels/Level1.h"
+#include "Levels/Level2.h"
+
 
 /**
  * This class is the primary gameplay constroller for the demo.
@@ -120,6 +125,14 @@ protected:
     /** Mark set to handle more sophisticated collision callbacks */
     std::unordered_set<b2Fixture*> _sensorFixtures;
 
+    std::shared_ptr<Levels> currentLevel;
+
+    std::shared_ptr<BullModel>			  _Bull;
+
+    std::shared_ptr<Level2> level2 = std::make_shared<Level2>();
+
+    std::shared_ptr<Level1> level1 = std::make_shared<Level1>();
+
 #pragma mark Internal Object Management
     /**
      * Lays out the game geography.
@@ -132,7 +145,7 @@ protected:
      * This method is really, really long.  In practice, you would replace this
      * with your serialization loader, which would process a level file.
      */
-    void populate();
+  //  void populate();
     
     /**
      * Adds the physics object to the physics world and loosely couples it to the scene graph
@@ -146,9 +159,6 @@ protected:
      * @param node   The scene graph node to attach it to
      * @param useObjPosition  Whether to update the node's position to be at the object's position
      */
-    void addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj,
-                     const std::shared_ptr<cugl::scene2::SceneNode>& node,
-                     bool useObjPosition=true);
 
     /**
      * Returns the active screen size of this scene.
@@ -415,9 +425,38 @@ public:
 
     void removeEnemy(EnemyModel* enemy);
 
-    void GameScene::zoomCamera(float scale);
+    std::shared_ptr<AssetManager> getAssets() const { return _assets; }
 
-    void GameScene::unzoomCamera();
+    float getScale() const { return _scale; }
+
+    std::shared_ptr<cugl::physics2::BoxObstacle> getBackground() const { return _background; }
+
+    void addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj,
+        const std::shared_ptr<cugl::scene2::SceneNode>& node,
+        bool useObjPosition = true);
+
+    std::shared_ptr<cugl::physics2::BoxObstacle> getGoalDoor() const { return _goalDoor; }
+
+    std::shared_ptr<DudeModel> getAvatar() const { return _avatar; }
+
+    std::vector<std::shared_ptr<EnemyModel>> getEnemies() const { return _enemies; }
+
+    void loadLevel(std::shared_ptr<Levels> level) {
+        level->populate(*this);
+    }
+
+    void setAssets(const std::shared_ptr<AssetManager>& assets) { _assets = assets; }
+    void setScale(float scale) { _scale = scale; }
+    void setBackground(const std::shared_ptr<cugl::physics2::BoxObstacle>& background) { _background = background; }
+    void setAvatar(const std::shared_ptr<DudeModel>& avatar) { _avatar = avatar; }
+    void setEnemies(const std::vector<std::shared_ptr<EnemyModel>>& enemies) { _enemies = enemies; }
+    void setGoalDoor(const std::shared_ptr<cugl::physics2::BoxObstacle>& goalDoor) { _goalDoor = goalDoor; }
+
+    void unzoomCamera();
+    void zoomCamera(float scale);
+
+    std::shared_ptr<BullModel> getBull() const { return _Bull; }
+    void setBull(const std::shared_ptr<BullModel>& bull) { _Bull = bull; }
   };
 
 #endif /* __PF_GAME_SCENE_H__ */

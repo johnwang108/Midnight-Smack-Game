@@ -60,6 +60,13 @@ protected:
     float _changeDirectionInterval; 
     float _nextChangeTime;
 
+    float _health;
+
+    float _healthCooldown;
+    float _lastDamageTime;
+
+    float _knockbackTime;
+
 
 
 
@@ -111,6 +118,14 @@ public:
     void setIsChasing(bool isChasing) { _isChasing = isChasing; }
 
     bool isChasing() const { return _isChasing; }
+
+    void setnextchangetime(double nextChangeTime) { _nextChangeTime = nextChangeTime; }
+
+    double getnextchangetime() { return _nextChangeTime; }
+
+    void takeDamage(float damage, const int attackDirection);
+
+    float getHealth() { return _health; }
 
 
 #pragma mark -

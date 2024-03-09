@@ -38,6 +38,9 @@
         "egg": {
             "file":      "textures/egg.png"
         },
+        "bull": {
+            "file":      "textures/bull.png"
+        },
         "dpad": {
             "file": "textures/dpad.png",
             "wrapS": "clamp",

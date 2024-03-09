@@ -33,6 +33,9 @@ bool EnemyModel::init(const Vec2& pos, const Size& size, float scale, EnemyType 
         _lastDirection = _direction;
         _changeDirectionInterval = 3.0f;
         _nextChangeTime = _changeDirectionInterval + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * _changeDirectionInterval;
+        _health = 100.0f;
+        _healthCooldown = 0.2f;
+        _lastDamageTime = 0;
 
         return true;
     }
@@ -81,6 +84,20 @@ void EnemyModel::createFixtures() {
 
 }
 
+void EnemyModel::takeDamage(float damage, const int attackDirection) {
+    if (_lastDamageTime >= _healthCooldown) {
+        _lastDamageTime= 0;
+        _health -= damage;
+        if (_health < 0) {
+            _health = 0;
+        }else {
+            b2Vec2 impulse = b2Vec2(-attackDirection * 5, 10);
+            _body->ApplyLinearImpulseToCenter(impulse, true);
+            _knockbackTime = 1;
+        }
+    }
+}
+
 void EnemyModel::releaseFixtures() {
     if (_body != nullptr) {
         return;
@@ -102,11 +119,16 @@ void EnemyModel::update(float dt) {
     if (_body == nullptr) {
         return;
     }
+    
+    if (_knockbackTime > 0) {
+        _knockbackTime -= dt;
+        return;
+    }
 
     // Example movement logic for enemy
     if (_isGrounded) {
         b2Vec2 velocity = _body->GetLinearVelocity();
-        velocity.x = ENEMY_FORCE * _direction;
+        velocity.x = ENEMY_FORCE;
 
         // Reverse direction at edges or obstacles
         if (velocity.x > ENEMY_MAXSPEED) {
@@ -117,31 +139,30 @@ void EnemyModel::update(float dt) {
             velocity.x = -ENEMY_MAXSPEED;
             _direction = -_direction;
         }
+        _nextChangeTime -= dt;
         if (isChasing()) {
             velocity.x *= CHASE_SPEED;
-
-        } else {
-            _nextChangeTime -= dt;
-            if (_nextChangeTime <= 0) {
-                _direction = (rand() % 2) * 2 - 1;
-                _nextChangeTime = _changeDirectionInterval + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * _changeDirectionInterval;
+        } else if (!isChasing() && _nextChangeTime <= 0) {
+              _direction = (rand() % 2) * 2 - 1;
+              _nextChangeTime = _changeDirectionInterval + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * _changeDirectionInterval;
             }
 
-            if (_direction != _lastDirection) {
-                // If direction changed, flip the image
-                scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
-                if (image != nullptr) {
-                    image->flipHorizontal(!image->isFlipHorizontal());
-                }
-                _lastDirection = _direction; // Update last direction
+        if (_direction != _lastDirection) {
+            // If direction changed, flip the image
+            scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
+            if (image != nullptr) {
+                image->flipHorizontal(!image->isFlipHorizontal());
             }
-        }
+     }
 
 
-        _body->SetLinearVelocity(velocity);
-    }
+     velocity.x *= _direction;
+     _lastDirection = _direction; // Update last direction
+
+     _body->SetLinearVelocity(velocity);
+ }
    
-
+    _lastDamageTime+= dt;
     
 
     // Update scene node position and rotation to match physics body
