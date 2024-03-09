@@ -127,7 +127,7 @@ float RICE_POS[] = { 25.0f, 14.0f };
 
 float BACKGROUND_POS[] = { 16.0f, 10.0f };
 
-boolean isLevel1 = true;
+bool isLevel1 = true;
 
 #pragma mark -
 #pragma mark Physics Constants
@@ -668,6 +668,11 @@ void GameScene::populate() {
 void GameScene::addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj,
                             const std::shared_ptr<cugl::scene2::SceneNode>& node,
                             bool useObjPosition) {
+    // Don't add out of bounds obstacles
+    if (!(_world->inBounds(obj.get()))) {
+        return;
+    }
+
     _world->addObstacle(obj);
     obj->setDebugScene(_debugnode);
     
@@ -1100,9 +1105,10 @@ void GameScene::beginContact(b2Contact* contact) {
 
     //See if the player collided with an enemy.
 
-    if ((_avatar.get() == bd1 && bd2->getName() == ENEMY_NAME) ||
-        (_avatar.get() == bd2 && bd1->getName() == ENEMY_NAME)) {
+    if ((!_failed && !_complete) && ((_avatar.get() == bd1 && bd2->getName() == ENEMY_NAME) ||
+        (_avatar.get() == bd2 && bd1->getName() == ENEMY_NAME))) {
 
+        //if complete, don't fail
         setFailure(true);
     }
 
@@ -1136,8 +1142,8 @@ void GameScene::beginContact(b2Contact* contact) {
 
 
     // If we hit the "win" door, we are done
-    if ((bd1 == _avatar.get() && bd2 == _goalDoor.get()) ||
-        (bd1 == _goalDoor.get() && bd2 == _avatar.get())) {
+    if (!_failed && ((bd1 == _avatar.get() && bd2 == _goalDoor.get()) ||
+        (bd1 == _goalDoor.get() && bd2 == _avatar.get()))) {
         setComplete(true);
     }
 }
