@@ -10,9 +10,14 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
     _drawScale = scale;
     if (CapsuleObstacle::init(pos, scaledSize)) {
         _drawScale = scale;
-        _isChasing = true; // Always chasing
+        _isChasing = false;
         _direction = -1; 
         _lastDirection = _direction;
+        _nextChangeTime = 0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 0.5;
+        _health = 100.0f;
+        _healthCooldown = 0.2f;
+        _isPreparingSprint = false;
+        _sprintPrepareTime = 0;
         setDensity(BULL_DENSITY);
         setFriction(0.0f);
         setFixedRotation(true);
@@ -32,10 +37,23 @@ void BullModel::update(float dt) {
     }
 
     b2Vec2 velocity = _body->GetLinearVelocity();
-    velocity.x = _direction * BULL_CHASE_SPEED; 
+    velocity.x = BULL_FORCE * _direction;
 
-
-    _body->SetLinearVelocity(velocity);
+    if (_isPreparingSprint && _sprintPrepareTime > 0) {
+        _sprintPrepareTime -= dt;
+        velocity.x = 0;
+        if (_sprintPrepareTime <= 0) {
+            _isChasing = true;
+            _isPreparingSprint = false;
+        }
+    }
+    else if (!_isChasing && !_isPreparingSprint && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < BULL_ATTACK_CHANCE) {
+        _isPreparingSprint = true;
+        _sprintPrepareTime = 3;
+    }
+    if (_isChasing) {
+        velocity.x *= BULL_CHASE_SPEED;
+    }
 
 
     if (_node != nullptr) {
@@ -51,10 +69,12 @@ void BullModel::update(float dt) {
     }
     _lastDirection = _direction;
     _lastDamageTime += dt;
+    _nextChangeTime -= dt;
+    _body->SetLinearVelocity(velocity);
 }
 
 void BullModel::takeDamage(float damage, int attackDirection) {
-
+ 
     if (_lastDamageTime >= _healthCooldown) {
         _lastDamageTime = 0;
         _health -= damage;
@@ -62,9 +82,13 @@ void BullModel::takeDamage(float damage, int attackDirection) {
             _health = 0;
         }
         else {
-            b2Vec2 impulse = b2Vec2(-attackDirection * 5, 10);
+            b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE, BULL_KNOCKBACK_FORCE_UP*25);
             _body->ApplyLinearImpulseToCenter(impulse, true);
-            _knockbackTime = 1;
+            b2Vec2 tee=_body->GetLinearVelocity();
+            CULog("%f",tee.y);
+            
+
+            _knockbackTime = 6;
         }
     }
 }

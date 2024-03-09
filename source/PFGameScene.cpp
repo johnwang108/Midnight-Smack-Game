@@ -231,8 +231,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
   //  _dollarnode->setVisible(false);
 
 
-  //  populate();
-
     loadLevel(level2);
 
     _active = true;
@@ -287,11 +285,12 @@ void GameScene::reset() {
     // _ropebridge = nullptr;
 
     _enemies.clear();
+    _Bull= nullptr;
 
     setFailure(false);
     setComplete(false);
-    //populate();
-    loadLevel(level1);
+
+    loadLevel(level2);
 }
 
 /**
@@ -404,10 +403,9 @@ void GameScene::preUpdate(float dt) {
         _avatar->setDash(_input->didDash());
         _avatar->applyForce(0, 0);
     }
-
+    Vec2 avatarPos = _avatar->getPosition();
     for (auto& enemy : _enemies) {
         if (enemy != nullptr && !enemy->isRemoved()) {
-            Vec2 avatarPos = _avatar->getPosition();
             Vec2 enemyPos = enemy->getPosition();
             float distance = avatarPos.distance(enemyPos);
 
@@ -427,6 +425,19 @@ void GameScene::preUpdate(float dt) {
             }
             enemy->update(dt);
         }
+    }
+    if (!_Bull->isChasing() && _Bull != nullptr && !_Bull->isRemoved()) {
+        Vec2 BullPos = _Bull->getPosition();
+        float distance = avatarPos.distance(BullPos);
+        if (_Bull->getnextchangetime() < 0) {
+            int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
+            _Bull->setDirection(direction);
+            _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+        }
+        if (_Bull->getHealth() <= 0) {
+            _Bull->markRemoved(true);
+        }
+        _Bull->update(dt);
     }
 }
 
@@ -746,6 +757,19 @@ void GameScene::beginContact(b2Contact* contact) {
                 _enemy->setGrounded(true);
             }
         }
+    }
+    if (_Bull ->isChasing() && bd1 == _Bull.get() && bd2->getName() == WALL_NAME) {
+        Vec2 wallPos = ((physics2::PolygonObstacle*)bd2)->getPosition();
+        Vec2 bullPos = _Bull->getPosition();
+        int direction = (wallPos.x > bullPos.x) ? 1 : -1;
+        _Bull->setIsChasing(false);
+        _Bull->takeDamage(0, direction);
+    }else if(_Bull->isChasing() && bd1->getName() == WALL_NAME && bd2 == _Bull.get()) {
+        Vec2 wallPos = ((physics2::PolygonObstacle*)bd1)->getPosition();
+        Vec2 bullPos = _Bull->getPosition();
+        int direction = (wallPos.x > bullPos.x) ? 1 : -1;
+        _Bull->setIsChasing(false);
+        _Bull->takeDamage(0, direction);
     }
 
 

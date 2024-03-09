@@ -4,12 +4,9 @@
 /** The goal door position */
 static float GOAL_POS[] = { 4.0f,14.0f };
 // float GOAL_POS[] = { 6.0f, 5.0f };
-/** The position of the spinning barrier */
-static float SPIN_POS[] = { 13.0f,12.5f };
+
 /** The initial position of the dude */
 static float DUDE_POS[] = { 2.5f, 5.0f };
-/** The position of the rope bridge */
-static float BRIDGE_POS[] = { 9.0f, 3.8f };
 
 static float SHRIMP_POS[] = { 22.0f, 16.0f };
 
@@ -107,7 +104,6 @@ void Level2::populate(GameScene& scene) {
 #pragma mark : Walls
 	// All walls and platforms share the same texture
 	image = _assets->get<Texture>(EARTH_TEXTURE);
-	std::string wname = "wall";
 	for (int ii = 0; ii < WALL_COUNT; ii++) {
 		std::shared_ptr<physics2::PolygonObstacle> wallobj;
 
@@ -121,8 +117,7 @@ void Level2::populate(GameScene& scene) {
 
 		wallobj = physics2::PolygonObstacle::allocWithAnchor(wall, Vec2::ANCHOR_CENTER);
 		// You cannot add constant "".  Must stringify
-		wallobj->setName(std::string(WALL_NAME) + cugl::strtool::to_string(ii));
-		wallobj->setName(wname);
+		wallobj->setName(WALL_NAME);
 
 		// Set the physics attributes
 		wallobj->setBodyType(b2_staticBody);
@@ -139,7 +134,7 @@ void Level2::populate(GameScene& scene) {
 #pragma mark : Platforms
 	for (int ii = 0; ii < PLATFORM_COUNT; ii++) {
 		std::shared_ptr<physics2::PolygonObstacle> platobj;
-		Poly2 platform(reinterpret_cast<Vec2*>(PLATFORMS[ii]), sizeof(PLATFORMS[ii]) / sizeof(float) / 2);
+		Poly2 platform(reinterpret_cast<Vec2*>(ALT_PLATFORMS[ii]), sizeof(ALT_PLATFORMS[ii]) / sizeof(float) / 2);
 
 		EarclipTriangulator triangulator;
 		triangulator.set(platform.vertices);
@@ -171,6 +166,7 @@ void Level2::populate(GameScene& scene) {
 	sprite = scene2::PolygonNode::allocWithTexture(image);
 	_avatar->setSceneNode(sprite);
 	_avatar->setDebugColor(DEBUG_COLOR);
+	_avatar->setName(DUDE_TEXTURE);
 	scene.addObstacle(_avatar, sprite); // Put this at the very front
 
 	// Play the background music on a loop.
@@ -179,14 +175,24 @@ void Level2::populate(GameScene& scene) {
 
 
 	Vec2 shrimp_pos = SHRIMP_POS;
-	image = _assets->get<Texture>(SHRIMP_TEXTURE);
+	image = _assets->get<Texture>(BULL_TEXTURE);
 	std::shared_ptr<BullModel> _bull = BullModel::alloc(shrimp_pos, image->getSize() / _scale, _scale);
 	sprite = scene2::PolygonNode::allocWithTexture(image);
 	_bull->setSceneNode(sprite);
-	_bull->setName(ENEMY_NAME);
+	_bull->setName(BULL_TEXTURE);
 	_bull->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_bull, sprite);
-
+	/*
+	Vec2 egg_pos = EGG_POS;
+	image = _assets->get<Texture>(EGG_TEXTURE);
+	std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc(egg_pos, image->getSize() / (_scale), _scale, EnemyType::egg);
+	sprite = scene2::PolygonNode::allocWithTexture(image);
+	_enemy->setSceneNode(sprite);
+	_enemy->setName(ENEMY_NAME);
+	_enemy->setDebugColor(DEBUG_COLOR);
+	scene.addObstacle(_enemy, sprite);
+	_enemies.push_back(_enemy);
+	*/
 
 	scene.setAssets(_assets);
 	scene.setScale(_scale);

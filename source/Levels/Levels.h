@@ -56,6 +56,7 @@
 #define WALL_NAME       "wall"
 /** The name of an enemy for object id */
 #define ENEMY_NAME	    "enemy"
+
 /** The name of a platform (for object identification) */
 #define PLATFORM_NAME   "platform"
 
@@ -92,6 +93,8 @@
 #define LEFT_IMAGE      "dpad_left"
 /** The image for the right dpad/joystick */
 #define RIGHT_IMAGE     "dpad_right"
+
+#define BULL_TEXTURE    "bull"
 
 /** Color to outline the physics nodes */
 #define DEBUG_COLOR     Color4::YELLOW
