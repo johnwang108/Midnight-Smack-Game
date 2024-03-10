@@ -426,18 +426,20 @@ void GameScene::preUpdate(float dt) {
             enemy->update(dt);
         }
     }
-    if (!_Bull->isChasing() && _Bull != nullptr && !_Bull->isRemoved()) {
-        Vec2 BullPos = _Bull->getPosition();
-        float distance = avatarPos.distance(BullPos);
-        if (_Bull->getnextchangetime() < 0) {
-            int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
-            _Bull->setDirection(direction);
-            _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+    if (_Bull != nullptr && !_Bull->isRemoved()) {
+        if (!_Bull->isChasing()) {
+            Vec2 BullPos = _Bull->getPosition();
+            float distance = avatarPos.distance(BullPos);
+            if (_Bull->getnextchangetime() < 0) {
+                int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
+                _Bull->setDirection(direction);
+                _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+            }
+            if (_Bull->getHealth() <= 0) {
+                _Bull->markRemoved(true);
+            }
+            _Bull->update(dt);
         }
-        if (_Bull->getHealth() <= 0) {
-            _Bull->markRemoved(true);
-        }
-        _Bull->update(dt);
     }
 }
 
@@ -758,13 +760,13 @@ void GameScene::beginContact(b2Contact* contact) {
             }
         }
     }
-    if (_Bull ->isChasing() && bd1 == _Bull.get() && bd2->getName() == WALL_NAME) {
+    if (_Bull!=nullptr && _Bull ->isChasing() && bd1 == _Bull.get() && bd2->getName() == WALL_NAME) {
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd2)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
         _Bull->setIsChasing(false);
         _Bull->takeDamage(0, direction);
-    }else if(_Bull->isChasing() && bd1->getName() == WALL_NAME && bd2 == _Bull.get()) {
+    }else if(_Bull != nullptr && _Bull->isChasing() && bd1->getName() == WALL_NAME && bd2 == _Bull.get()) {
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd1)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;

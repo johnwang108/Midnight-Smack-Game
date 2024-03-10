@@ -85,14 +85,11 @@ void BullModel::takeDamage(float damage, int attackDirection) {
             b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE, BULL_KNOCKBACK_FORCE_UP*25);
             _body->ApplyLinearImpulseToCenter(impulse, true);
             b2Vec2 tee=_body->GetLinearVelocity();
-            CULog("%f",tee.y);
-            
-
             _knockbackTime = 6;
         }
     }
 }
-
+ 
 void BullModel::setSceneNode(const std::shared_ptr<scene2::SceneNode>& node) {
     _node = node;
     if (_node != nullptr) {
