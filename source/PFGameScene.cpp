@@ -214,7 +214,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _slowed = false;
     _attacks = std::vector<std::shared_ptr<Attack>>();
 
-   // _dollarnode = std::make_shared<DollarScene>();
+    _dollarnode = std::make_shared<DollarScene>();
     
     addChild(_worldnode);
     addChild(_debugnode);
@@ -223,15 +223,15 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_leftnode);
     addChild(_rightnode);
     addChild(_gesturehud);
-//    addChild(_dollarnode);
-  //  _dollarnode->init(_assets, _input);
-    //_dollarnode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
-  //  _dollarnode->setPosition(getSize().getIWidth() / 2.0f, getSize().getIHeight() / 2.0f);
-    //_dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
-  //  _dollarnode->setVisible(false);
+    addChild(_dollarnode);
+    _dollarnode->init(_assets, _input);
+    _dollarnode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
+    //_dollarnode->setPosition(getSize().getIWidth() / 2.0f, getSize().getIHeight() / 2.0f);
+    _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
+    _dollarnode->setVisible(false);
 
 
-    loadLevel(level2);
+    loadLevel(level1);
 
     _active = true;
     _complete = false;
@@ -389,7 +389,7 @@ void GameScene::preUpdate(float dt) {
         _slowed = !_slowed;
     }
     if (!_slowed) {
-    //    _dollarnode->setVisible(false);
+        _dollarnode->setVisible(false);
 
         _avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
         _avatar->setJumping(_input->didJump());
@@ -401,6 +401,7 @@ void GameScene::preUpdate(float dt) {
         }
     }
     else {
+        _dollarnode->setVisible(true);
 
         _avatar->setMovement(0);
         _avatar->setJumping(_input->didJump());

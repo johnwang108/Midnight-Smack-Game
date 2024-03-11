@@ -41,6 +41,11 @@
         "bull": {
             "file":      "textures/bull.png"
         },
+        "panfry_station":{
+            "file":      "textures/Panfry_Station.png",
+            "wrapS":    "repeat",
+            "wrapT":    "repeat"
+        },
         "dpad": {
             "file": "textures/dpad.png",
             "wrapS": "clamp",

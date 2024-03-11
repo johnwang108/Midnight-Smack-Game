@@ -73,9 +73,13 @@ public:
 
     void dispose();
 
-    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input);
+    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
+        return init(assets, input, cugl::Rect(0, 0, 1000, 1000), "panfry_station");
+    };
 
-    void update();
+    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture);
+
+    void update(float timestep);
 
     bool isPending();
     

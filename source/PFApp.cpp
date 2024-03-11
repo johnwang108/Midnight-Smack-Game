@@ -15,6 +15,8 @@
 
 using namespace cugl;
 
+#define MULTI_SCREEN true
+
 
 #pragma mark -
 #pragma mark Application State
@@ -135,7 +137,8 @@ void PlatformApp::update(float dt) {
         _loading.update(0.01f);
     } else if (!_loaded) {
         _loading.dispose(); // Disables the input listeners in this mode
-        _gameplay.init(_assets);
+        //_gameplay.init(_assets);
+        _multiScreen.init(_assets);
         _loaded = true;
         
         // Switch to deterministic mode
@@ -164,7 +167,8 @@ void PlatformApp::update(float dt) {
  * @param dt    The amount of time (in seconds) since the last frame
  */
 void PlatformApp::preUpdate(float dt) {
-    _gameplay.preUpdate(dt);
+    //_gameplay.preUpdate(dt);
+    _multiScreen.preUpdate(dt);
 }
 
 /**
@@ -191,7 +195,8 @@ void PlatformApp::preUpdate(float dt) {
 void PlatformApp::fixedUpdate() {
     // Compute time to report to game scene version of fixedUpdate
     float time = getFixedStep()/1000000.0f;
-    _gameplay.fixedUpdate(time);
+    //_gameplay.fixedUpdate(time);
+    _multiScreen.fixedUpdate(time);
 }
 
 /**
@@ -220,7 +225,8 @@ void PlatformApp::fixedUpdate() {
 void PlatformApp::postUpdate(float dt) {
     // Compute time to report to game scene version of postUpdate
     float time = getFixedRemainder()/1000000.0f;
-    _gameplay.postUpdate(time);
+    //_gameplay.postUpdate(time);
+    _multiScreen.postUpdate(time);
 }
 
 /**
@@ -236,7 +242,12 @@ void PlatformApp::draw() {
     if (!_loaded) {
         _loading.render(_batch);
     } else {
-        _gameplay.render(_batch);
+        if (MULTI_SCREEN) {
+            _multiScreen.render(_batch);
+        }
+        else {
+			_gameplay.render(_batch);
+        }
     }
 }
 
