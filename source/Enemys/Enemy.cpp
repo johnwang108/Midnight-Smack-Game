@@ -2,6 +2,7 @@
 #include <cugl/scene2/graph/CUPolygonNode.h>
 #include <cugl/scene2/graph/CUTexturedNode.h>
 #include <cugl/assets/CUAssetManager.h>
+#include "../PFGameScene.h"
 
 
 
@@ -29,13 +30,16 @@ bool EnemyModel::init(const Vec2& pos, const Size& size, float scale, EnemyType 
 
         _isChasing = false;
         _isGrounded = false;
-        _direction = -1; // Start moving right by default
+        _direction = -1; 
         _lastDirection = _direction;
         _changeDirectionInterval = 3.0f;
         _nextChangeTime = _changeDirectionInterval + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * _changeDirectionInterval;
         _health = 100.0f;
         _healthCooldown = 0.2f;
         _lastDamageTime = 0;
+        _attacktime = false;
+        _preparetime= 0;
+        _shooted = false;
 
         return true;
     }
@@ -120,10 +124,21 @@ void EnemyModel::update(float dt) {
         return;
     }
     
-    if (_knockbackTime > 0) {
+    if (_knockbackTime > 1) {
         _knockbackTime -= dt;
         return;
-    }
+    }else if (_preparetime > 0) {
+        if (_preparetime < 1 && _shooted) {
+            _attacktime = true;
+        }
+		_preparetime-=dt;
+        _body->SetLinearVelocity(b2Vec2(0,0));
+        if (_node != nullptr) {
+            _node->setPosition(getPosition() * _drawScale);
+            _node->setAngle(getAngle());
+        }
+        return;
+	}
 
     // Example movement logic for enemy
     if (_isGrounded) {
@@ -141,6 +156,10 @@ void EnemyModel::update(float dt) {
         }
         _nextChangeTime -= dt;
         if (isChasing()) {
+            if (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < ENEMY_ATTACK_CHANCE) {
+                _preparetime = 2.5;
+                _shooted = true;
+            }
             velocity.x *= CHASE_SPEED;
         } else if (!isChasing() && _nextChangeTime <= 0) {
               _direction = (rand() % 2) * 2 - 1;
@@ -153,6 +172,7 @@ void EnemyModel::update(float dt) {
             if (image != nullptr) {
                 image->flipHorizontal(!image->isFlipHorizontal());
             }
+
      }
 
 
@@ -182,6 +202,47 @@ void EnemyModel::setSceneNode(const std::shared_ptr<scene2::SceneNode>& node) {
 void EnemyModel::dispose() {
     _core = nullptr;
     _node = nullptr;
+}
+
+void EnemyModel::createAttack(GameScene& scene) {
+    std::shared_ptr<AssetManager> _assets = scene.getAssets();
+    float _scale = scene.getScale();
+
+    std::shared_ptr<Texture> image;
+    image = _assets->get<Texture>(ATTACK_TEXTURE_L);
+    Vec2 pos = getPosition();
+
+    std::shared_ptr<EnemyAttack> attack = EnemyAttack::alloc(pos,
+        cugl::Size(ATTACK_W * image->getSize().width / _scale,
+            ATTACK_H * image->getSize().height / _scale));
+
+    pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
+    pos.y += ATTACK_OFFSET_Y;
+
+
+
+    if (getDirection() > 0) {
+		attack->setFaceRight(true);
+	}
+    attack->setName("enemy_attack");
+    attack->setBullet(true);
+    attack->setGravityScale(0.1);
+    attack->setDebugColor(DEBUG_COLOR);
+    attack->setDrawScale(_scale);
+    attack->setEnabled(true);
+
+
+
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    attack->setSceneNode(sprite);
+    sprite->setPosition(pos);
+
+    scene.addObstacle(attack, sprite, true);
+
+    std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
+    AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);
+
+    _attacks.push_back(attack);
 }
 
 

@@ -3,6 +3,10 @@
 #include <cugl/cugl.h>
 #include <cugl/physics2/CUBoxObstacle.h>
 #include <cugl/physics2/CUCapsuleObstacle.h>
+#include "EnemyAttack.h"
+
+
+
 
 #define ENEMY_SENSOR_NAME     "enemysensor"
 #define SHRIMP_TEXTURE    "shrimp"
@@ -21,6 +25,14 @@
 
 #define CHASE_THRESHOLD 10.0f  
 #define CHASE_SPEED 2.0f
+
+#define ATTACK_OFFSET_X 0.5f
+#define ATTACK_OFFSET_Y 0.5f
+
+#define ENEMY_ATTACK_CHANCE 0.001f
+
+class GameScene;
+
 /**
  * Enum for enemy types.
  * Add additional enemy types as needed.
@@ -66,6 +78,13 @@ protected:
     float _lastDamageTime;
 
     float _knockbackTime;
+
+    bool _attacktime;
+    float _preparetime;
+    bool _shooted;
+
+
+    std::vector<std::shared_ptr<EnemyAttack>> _attacks;
 
 
 
@@ -127,6 +146,12 @@ public:
 
     float getHealth() { return _health; }
 
+    std::vector<std::shared_ptr<EnemyAttack>> getAttacks() { return _attacks; }
+
+    bool getattacktime() { return _attacktime; }
+    void setattacktime(bool attacktime) { _attacktime = attacktime; }
+    void setshooted(bool shooted) { _shooted = shooted; }
+
 
 #pragma mark -
 #pragma mark Physics Methods
@@ -177,7 +202,7 @@ public:
      */
     void dispose();
 
-
+    void createAttack(GameScene& scene);
 
 };
 
