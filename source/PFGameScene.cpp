@@ -23,10 +23,6 @@
 #include <box2d/b2_world.h>
 #include <box2d/b2_contact.h>
 #include <box2d/b2_collision.h>
-#include "PFDudeModel.h"
-#include "PFSpinner.h"
-#include "PFRopeBridge.h"
-#include "PFAttack.h"
 
 #include <ctime>
 #include <string>
@@ -231,7 +227,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
   //  _dollarnode->setVisible(false);
 
 
-    loadLevel(level2);
+    loadLevel(level1);
 
     _active = true;
     _complete = false;
@@ -280,9 +276,6 @@ void GameScene::reset() {
     _avatar = nullptr;
     _goalDoor = nullptr;
     _background = nullptr;
-    //I CHANGED THIS
-    // _spinner = nullptr;
-    // _ropebridge = nullptr;
 
     _enemies.clear();
     _Bull= nullptr;
@@ -290,7 +283,7 @@ void GameScene::reset() {
     setFailure(false);
     setComplete(false);
 
-    loadLevel(level2);
+    loadLevel(level1);
 }
 
 /**
@@ -416,6 +409,11 @@ void GameScene::preUpdate(float dt) {
                     enemy->setDirection(direction);
                     enemy->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
                 }
+                if (enemy->getattacktime()) {
+                    enemy->createAttack(*this);
+                    enemy->setattacktime(false);
+                    enemy->setshooted(false);
+                }
             }
             else if (distance >= CHASE_THRESHOLD && enemy->isChasing()) {
                 enemy->setIsChasing(false);
@@ -530,6 +528,18 @@ void GameScene::postUpdate(float remain) {
         }
         else {
             ++it;
+        }
+    }
+    for (auto& enemy : _enemies) {
+        std::vector<std::shared_ptr<EnemyAttack>> attacks=enemy->getAttacks();
+        for (auto it = attacks.begin(); it != attacks.end();) {
+            if ((*it)->killMe()) {
+                removeAttack((*it).get());
+                it = attacks.erase(it);
+            }
+            else {
+                ++it;
+            }
         }
     }
 
@@ -649,9 +659,6 @@ void GameScene::createAttack() {
     }
 
 
-    std::vector<Vec2> verts = std::vector<Vec2>();
-
-
 	std::shared_ptr<Attack> attack = Attack::alloc(pos, 
         cugl::Size(ATTACK_W * image->getSize().width / _scale, 
         ATTACK_H * image->getSize().height / _scale));
@@ -682,7 +689,8 @@ void GameScene::createAttack() {
  *
  * @param  bullet   the bullet to remove
  */
-void GameScene::removeAttack(Attack* attack) {
+template<typename T>
+void GameScene::removeAttack(T* attack) {
   // do not attempt to remove a bullet that has already been removed
 	if (attack->isRemoved()) {
 		return;
@@ -758,6 +766,7 @@ void GameScene::beginContact(b2Contact* contact) {
                 (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
                 _enemy->setGrounded(true);
             }
+
         }
     }
     if (_Bull!=nullptr && _Bull ->isChasing() && bd1 == _Bull.get() && bd2->getName() == WALL_NAME) {
@@ -849,6 +858,19 @@ void GameScene::endContact(b2Contact* contact) {
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
      //   removeAttack((Attack*)bd2);
         ((EnemyModel*)bd1)->takeDamage(34, direction);
+    }
+
+    if (bd1->getName() == "enemy_attack" && bd2 == _avatar.get()) {
+        Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
+        Vec2 attackerPos = ((Attack*)bd1)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        removeAttack((Attack*)bd1);
+    }
+    else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
+        Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
+        Vec2 attackerPos = ((Attack*)bd2)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        removeAttack((Attack*)bd2);
     }
 
 }

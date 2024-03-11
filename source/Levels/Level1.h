@@ -3,9 +3,6 @@
 #include "Levels.h"
 
 
-
-
-
 class Level1 : public Levels {
 protected:
     std::shared_ptr<AssetManager> _assets;

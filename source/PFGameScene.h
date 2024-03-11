@@ -36,9 +36,6 @@
 #include "PFRopeBridge.h"
 #include "PFSpinner.h"
 #include "PFDollarScene.h"
-#include "Enemys/Enemy.h"
-#include "Enemys/Bull.h"
-#include "Levels/Levels.h"
 #include "Levels/Level1.h"
 #include "Levels/Level2.h"
 
@@ -414,7 +411,8 @@ public:
     *
     * @param  bullet   the bullet to remove
     */
-    void removeAttack(Attack* attack);
+    template<typename T>
+    void removeAttack(T* attack);
 
     void removeEnemy(EnemyModel* enemy);
 
