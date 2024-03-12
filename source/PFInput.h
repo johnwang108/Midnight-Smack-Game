@@ -63,7 +63,7 @@ private:
    
     std::string _lastGestureString;
     float _lastGestureSimilarity;
-  
+    
     bool  _keyDown;
     bool  _keyUp;
     bool _dashKey;
@@ -137,6 +137,8 @@ protected:
 
     cugl::Path2 _touchPath;
     std::shared_ptr<cugl::GestureRecognizer> _dollarRecog;
+
+    cugl::Vec2 _swipeDelta;
 
   
     /**
@@ -345,6 +347,11 @@ public:
      * @param focus	Whether the listener currently has focus
      */
     void touchesMovedCB(const cugl::TouchEvent& event, const cugl::Vec2& previous, bool focus);
+
+    void swipeBeganCB(const cugl::PanEvent& event, bool focus);
+
+
+    void swipeEndedCB(const cugl::PanEvent& event, bool focus);
 
     void getAxisAngle(const cugl::GameControllerAxisEvent& eventm, bool focus);
 

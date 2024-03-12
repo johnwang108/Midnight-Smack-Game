@@ -36,10 +36,13 @@ using namespace cugl;
 /** How close we need to be for a multi touch */
 #define NEAR_TOUCH      100
 /** The key for the event handlers */
-#define LISTENER_KEY      1
+#define GESTURE_LISTENER_KEY      1
 
 /** The key for the controller event handlers */
 #define CONTROLLER_LISTENER_KEY 2
+
+/** The key for the swipe evevnt handlers */
+#define SWIPE_LISTENER_KEY 3
 
 /** This defines the joystick "deadzone" (how far we must move) */
 #define JSTICK_DEADZONE  15
@@ -114,9 +117,10 @@ void PlatformInput::dispose() {
         Input::deactivate<Mouse>();
 #else
         Touchscreen* touch = Input::get<Touchscreen>();
-        touch->removeBeginListener(LISTENER_KEY);
-        touch->removeEndListener(LISTENER_KEY);
-        touch->removeMotionListener(LISTENER_KEY);
+        touch->removeBeginListener(GESTURE_LISTENER_KEY);
+        touch->removeEndListener(GESTURE_LISTENER_KEY);
+        touch->removeMotionListener(GESTURE_LISTENER_KEY);
+            
         //_gameCont->removeAxisListener(CONTROLLER_LISTENER_KEY);
 #endif
         _active = false;
@@ -166,8 +170,8 @@ bool PlatformInput::init(const Rect bounds) {
     else {
         CULog("cont failed");
     }
-   
- 
+
+        
 
 #ifndef CU_TOUCH_SCREEN
     success = Input::activate<Keyboard>();
@@ -177,13 +181,13 @@ bool PlatformInput::init(const Rect bounds) {
 #else
     CULog("%d", CU_TOUCH_SCREEN);
     Touchscreen* touch = Input::get<Touchscreen>();
-    touch->addBeginListener(LISTENER_KEY,[=](const TouchEvent& event, bool focus) {
+    touch->addBeginListener(GESTURE_LISTENER_KEY,[=](const TouchEvent& event, bool focus) {
         this->touchBeganCB(event,focus);
     });
-    touch->addEndListener(LISTENER_KEY,[=](const TouchEvent& event, bool focus) {
+    touch->addEndListener(GESTURE_LISTENER_KEY,[=](const TouchEvent& event, bool focus) {
         this->touchEndedCB(event,focus);
     });
-    touch->addMotionListener(LISTENER_KEY,[=](const TouchEvent& event, const Vec2& previous, bool focus) {
+    touch->addMotionListener(GESTURE_LISTENER_KEY,[=](const TouchEvent& event, const Vec2& previous, bool focus) {
         this->touchesMovedCB(event, previous, focus);
     });
     _dollarRecog = cugl::GestureRecognizer::alloc();
@@ -222,7 +226,26 @@ bool PlatformInput::init(const Rect bounds) {
     _lastGestureString = "";
 
 
+    // init pan/swipe gesture
 #endif
+
+    bool swipeSuccess = Input::activate<PanGesture>();
+    CULog("%d", swipeSuccess);
+    PanGesture* swiper = Input::get<PanGesture>();
+    if (CU_PLATFORM == CU_PLATFORM_LINUX) {
+        swiper->setTouchScreen(true);
+    }
+    else {
+        swiper->setTouchScreen(false);
+    }
+
+    swiper->addBeginListener(SWIPE_LISTENER_KEY, [=](const PanEvent& event, bool focus) {
+        this->swipeBeganCB(event, focus);
+    });
+
+    swiper->addEndListener(SWIPE_LISTENER_KEY, [=](const PanEvent& event, bool focus) {
+        this->swipeEndedCB(event, focus);
+    });
 
     _active = success;
     return success;
@@ -476,53 +499,6 @@ void PlatformInput::touchBeganCB(const TouchEvent& event, bool focus) {
     _touchPath = cugl::Path2();
     _touchPath.push(pos);
 
-
-    //switch (zone) {
-    //    case Zone::LEFT:
-    //        // Only process if no touch in zone
-    //        if (_ltouch.touchids.empty()) {
-    //            // Left is the floating joystick
-    //            _ltouch.position = event.position;
-    //            _ltouch.timestamp.mark();
-    //            _ltouch.touchids.insert(event.touch);
-
-    //            _joystick = true;
-    //            _joycenter = touch2Screen(event.position);
-    //            _joycenter.y += JSTICK_OFFSET;
-    //        }
-    //        break;
-    //    case Zone::RIGHT:
-    //        // Only process if no touch in zone
-    //        if (_rtouch.touchids.empty()) {
-    //            // Right is jump AND fire controls
-    //            _keyFire = (event.timestamp.ellapsedMillis(_rtime) <= DOUBLE_CLICK);
-    //            _rtouch.position = event.position;
-    //            _rtouch.timestamp.mark();
-    //            _rtouch.touchids.insert(event.touch);
-    //            _hasJumped = false;
-    //        }
-    //        break;
-    //    case Zone::MAIN:
-    //        // Only check for double tap in Main if nothing else down
-    //        if (_ltouch.touchids.empty() && _rtouch.touchids.empty() && _mtouch.touchids.empty()) {
-    //            _keyDebug = (event.timestamp.ellapsedMillis(_mtime) <= DOUBLE_CLICK);
-    //        }
-    //        
-    //        // Keep count of touches in Main zone if next to each other.
-    //        if (_mtouch.touchids.empty()) {
-    //            _mtouch.position = event.position;
-    //            _mtouch.touchids.insert(event.touch);
-    //        } else {
-    //            Vec2 offset = event.position-_mtouch.position;
-    //            if (offset.lengthSquared() < NEAR_TOUCH*NEAR_TOUCH) {
-    //                _mtouch.touchids.insert(event.touch);
-    //            }
-    //        }
-    //        break;
-    //    default:
-    //        CUAssertLog(false, "Touch is out of bounds");
-    //        break;
-    //}
 }
 
  
@@ -548,22 +524,7 @@ void PlatformInput::touchEndedCB(const TouchEvent& event, bool focus) {
     _lastGestureString = result;
     _lastGestureSimilarity = similarity;
     CULog("Gesture Guess: %s, Similarity: %f", result.c_str(), similarity);
-    /*Zone zone = getZone(pos);
-    if (_ltouch.touchids.find(event.touch) != _ltouch.touchids.end()) {
-        _ltouch.touchids.clear();
-        _keyLeft = false;
-        _keyRight = false;
-        _joystick = false;
-    } else if (_rtouch.touchids.find(event.touch) != _rtouch.touchids.end()) {
-        _hasJumped = false;
-        _rtime = event.timestamp;
-        _rtouch.touchids.clear();
-    } else if (zone == Zone::MAIN) {
-        if (_mtouch.touchids.find(event.touch) != _mtouch.touchids.end()) {
-            _mtouch.touchids.erase(event.touch);
-        }
-        _mtime = event.timestamp;
-    }*/
+   
 }
 
 
@@ -577,25 +538,15 @@ void PlatformInput::touchEndedCB(const TouchEvent& event, bool focus) {
 void PlatformInput::touchesMovedCB(const TouchEvent& event, const Vec2& previous, bool focus) {
     Vec2 pos = event.position;
     _touchPath.push(pos);
-    // Only check for swipes in the main zone if there is more than one finger.
-    //if (_ltouch.touchids.find(event.touch) != _ltouch.touchids.end()) {
-    //    processJoystick(pos);
-    //} else if (_rtouch.touchids.find(event.touch) != _rtouch.touchids.end()) {
-    //    if (!_hasJumped) {
-    //        if ((_rtouch.position.y-pos.y) > SWIPE_LENGTH) {
-    //            _keyJump = true;
-    //            _hasJumped = true;
-    //        }
-    //    }
-    //} else if (_mtouch.touchids.size() > 1) {
-    //    // We only process multifinger swipes in main
-    //    int swipe = processSwipe(_mtouch.position, event.position, event.timestamp);
-    //    if (swipe == 1) {
-    //        _keyReset = true;
-    //    } else if (swipe == -1) {
-    //        _keyExit = true;
-    //    }
-    //}
+}
+
+void PlatformInput::swipeBeganCB(const PanEvent& event, bool focus) {
+    CULog("swipe began");
+}
+
+void PlatformInput::swipeEndedCB(const PanEvent& event, bool focus) {
+    _swipeDelta = event.currPosition - event.origPosition;
+    CULog("%f, %f", _swipeDelta.x, _swipeDelta.y);
 }
 
 void PlatformInput::getAxisAngle(const cugl::GameControllerAxisEvent& event, bool focus) {
