@@ -2,9 +2,18 @@
 #include "PFDollarScene.h"
 #include <algorithm> 
 
-#define CAMERA_MOVE_SPEED 10.0f
+#define CAMERA_MOVE_SPEED 50.0f
 
 using namespace cugl;
+
+namespace LayoutPositions {
+	Vec2 Top(const Vec2& size) { return Vec2(0, size.y); }
+	Vec2 MidLeft(const Vec2& size) { return Vec2(-size.x, 0); }
+	Vec2 Mid(const Vec2& size) { return Vec2(0, 0); }
+	Vec2 MidRight(const Vec2& size) { return Vec2(size.x, 0); }
+	Vec2 Bottom(const Vec2& size) { return Vec2(0, -size.y); }
+ }
+
 
 //basic math funcs
 float abs_min(float a, float b) {
@@ -73,66 +82,9 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets) {
 	_input = std::make_shared<PlatformInput>();
 	_input->init(getBounds());
 
-	std::shared_ptr<DollarScene> scene = std::make_shared<DollarScene>();
-	float x_offset = 0;
-	float y_offset = _size.height;
-	cugl::Rect rect = cugl::Rect(Vec2::ZERO, _size);
-	std::string texture = "panfry_station";
-	scene->init(_assets, _input, rect, texture);
-	scene->setAnchor(Vec2::ANCHOR_CENTER);
-	scene->setPosition(x_offset, y_offset);
-	scene->setVisible(true);
-	setScene(0, scene);
+	std::string stationTextures[5] = {"panfry_station","panfry_station" ,"panfry_station" ,"panfry_station" ,"panfry_station"};
+	initStations(stationTextures, 5);
 
-	x_offset = -(_size.width);
-	y_offset = 0;
-	rect = cugl::Rect(Vec2::ZERO, _size);
-	texture = "panfry_station";
-	scene = std::make_shared<DollarScene>();
-	scene->init(_assets, _input, rect, texture);
-	scene->setAnchor(Vec2::ANCHOR_CENTER);
-	scene->setPosition(x_offset, y_offset);
-	scene->setVisible(true);
-	setScene(1, scene);
-
-	x_offset = 0;
-	y_offset = 0;
-	rect = cugl::Rect(Vec2::ZERO, _size);
-	texture = "panfry_station";
-	scene = std::make_shared<DollarScene>();
-	scene->init(_assets, _input, rect, texture);
-	scene->setAnchor(Vec2::ANCHOR_CENTER);
-	scene->setPosition(x_offset, y_offset);
-	scene->setVisible(true);
-	setScene(2, scene);
-
-	x_offset = _size.width;
-	y_offset = 0;
-	rect = cugl::Rect(Vec2::ZERO, _size);
-	texture = "panfry_station";
-	scene = std::make_shared<DollarScene>();
-	scene->init(_assets, _input, rect, texture);
-	scene->setAnchor(Vec2::ANCHOR_CENTER);
-	scene->setPosition(x_offset, y_offset);
-	scene->setVisible(true);
-	setScene(3, scene);
-
-	x_offset = 0;
-	y_offset = -(_size.height);
-	rect = cugl::Rect(Vec2::ZERO, _size);
-	texture = "panfry_station";
-	scene = std::make_shared<DollarScene>();
-	scene->init(_assets, _input, rect, texture);
-	scene->setAnchor(Vec2::ANCHOR_CENTER);
-	scene->setPosition(x_offset, y_offset);
-	scene->setVisible(true);
-	setScene(4, scene);
-
-	addChild(_scenes[0]);
-	addChild(_scenes[1]);
-	addChild(_scenes[2]);
-	addChild(_scenes[3]);
-	addChild(_scenes[4]);
 
 	_active = true;
 
@@ -143,6 +95,35 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets) {
 	return true;
 
 }
+
+void MultiScreenScene::initStations(std::string textures[], int size) {
+	std::shared_ptr<DollarScene> scene;
+	
+	cugl::Rect rect;
+	std::vector<Vec2> positions = {
+		LayoutPositions::Top(_size),
+		LayoutPositions::MidLeft(_size),
+		LayoutPositions::Mid(_size),
+		LayoutPositions::MidRight(_size),
+		LayoutPositions::Bottom(_size)
+	};
+
+	for (int i = 0; i < size; i++) {
+		scene = std::make_shared<DollarScene>();
+				
+		rect = cugl::Rect(Vec2::ZERO, _size);
+		scene->init(_assets, _input, rect, textures[i]);
+		scene->setAnchor(Vec2::ANCHOR_CENTER);
+		scene->setPosition(positions[i]);
+		scene->setVisible(true);
+		setScene(i, scene);
+	}
+
+	for (int i = 0; i < size; i++) {
+		addChild(_scenes[i]);
+	}
+}
+ 
 
 void MultiScreenScene::update(float timestep) {
 	
