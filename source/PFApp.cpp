@@ -15,7 +15,7 @@
 
 using namespace cugl;
 
-#define MULTI_SCREEN false
+#define MULTI_SCREEN true
 
 
 #pragma mark -
