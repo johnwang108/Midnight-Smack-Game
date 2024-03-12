@@ -60,6 +60,8 @@ private:
     /** Whether the slow key is down */
     bool _keySlow;
 
+    bool _keyTransition;
+
    
     std::string _lastGestureString;
     float _lastGestureSimilarity;
@@ -89,6 +91,8 @@ protected:
     float _horizontal;
     float _vertical;
     bool _dashPressed;
+
+    bool _transitionPressed;
 
     bool _zoomIn;
     bool _zoomOut;
@@ -303,6 +307,8 @@ public:
 
 
     bool didDash() const { return _dashPressed; }
+
+    bool didTransition() const { return _transitionPressed; }
 
     /**
      * Returns true if the virtual joystick is in use (touch only)

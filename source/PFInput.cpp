@@ -260,6 +260,8 @@ void PlatformInput::update(float dt) {
 
         _keyUp = keys->keyDown(KeyCode::W);
         _keyDown = keys->keyDown(KeyCode::S);
+
+        _keyTransition = keys->keyPressed(KeyCode::T);
     }
     else {
         _keyJump = _gameCont->isButtonPressed(GameController::Button::A);
@@ -312,6 +314,7 @@ void PlatformInput::update(float dt) {
     _jumpPressed = _keyJump;
     _slowPressed = _keySlow;
     _dashPressed = _dashKey;
+    _transitionPressed = _keyTransition;
 
     // Directional controls
     _horizontal = 0.0f;

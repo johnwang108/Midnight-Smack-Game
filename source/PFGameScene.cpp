@@ -229,6 +229,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     loadLevel(level1);
 
+    //App class will set active true
+    setActive(false);
+    transition(false);
     _active = true;
     _complete = false;
     setDebug(false);
@@ -375,6 +378,12 @@ void GameScene::preUpdate(float dt) {
     if (_input->didExit()) {
         CULog("Shutting down");
         Application::get()->quit();
+    }
+
+    if (_input->didTransition()) {
+        transition(true);
+        CULog("TTTTTTTTTTT");
+        return;
     }
 
     //_slowed = _input->didSlow();
@@ -929,4 +938,11 @@ void GameScene::zoomCamera(float scale) {
 void GameScene::unzoomCamera() {
     _camera->setZoom(1);
     _camera->update();
+}
+
+
+//Marks transitioning between cooking and platforming. Call this method with t = true when you want to transition away from this scene
+void GameScene::transition(bool t) {
+    _transitionScenes = t;
+
 }

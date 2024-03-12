@@ -134,8 +134,10 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets) {
 	addChild(_scenes[3]);
 	addChild(_scenes[4]);
 
-	_active = true;
-
+	//init inactive
+	setActive(false);
+	_transitionScenes = false;
+	
 	_curr = 2;
 	_animating = false;
 	Application::get()->setClearColor(Color4::BLACK);
@@ -165,21 +167,24 @@ void MultiScreenScene::preUpdate(float timestep) {
 		Application::get()->quit();
 	}
 
-	
+	if (_input->didTransition()) {
+		transition(true);
+		CULog("______________________________________________________________________________________________________");
+		return;
+	}
+
 	//if not animating, listen for screen change input. TODO for three fingered swipes to switch scenes
 	if (!_animating) {
 		if (_input->getHorizontal() > 0) {
 			if ((_curr == 1) || (_curr == 2)) {
 				_curr++;
 				_animating = true;
-				CULog("%d", _curr);
 			}
 		}
 		else if (_input->getHorizontal() < 0) {
 			if ((_curr == 2) || (_curr == 3)) {
 				_curr--;
 				_animating = true;
-				CULog("%d", _curr);
 			}
 		}
 
@@ -187,14 +192,12 @@ void MultiScreenScene::preUpdate(float timestep) {
 			if ((_curr == 2) || (_curr == 4)) {
 				_curr -= 2;
 				_animating = true;
-				CULog("%d", _curr);
 			}
 		}
 		else if (_input->getVertical() < 0) {
 			if ((_curr == 0) || (_curr == 2)) {
 				_curr += 2;
 				_animating = true;
-				CULog("%d", _curr);
 			}
 		}
 
@@ -217,4 +220,9 @@ void MultiScreenScene::fixedUpdate(float timestep) {
 
 void MultiScreenScene::postUpdate(float timestep) {
 
+}
+
+//Marks transitioning between cooking and platforming. Call this method with t = true when you want to transition away from this scene
+void MultiScreenScene::transition(bool t) {
+	_transitionScenes = t;
 }
