@@ -71,6 +71,9 @@ private:
     bool _dashKey;
    
     std::shared_ptr<cugl::GameController> _gameCont;
+
+
+
     
   
 protected:
@@ -188,6 +191,12 @@ protected:
 public:
 #pragma mark -
 #pragma mark Constructors
+
+
+    float id;
+
+
+
     /**
      * Creates a new input controller.
      *
@@ -360,6 +369,32 @@ public:
     float getGestureSim();
 
     cugl::Path2 getTouchPath();
+
+    cugl::Path2 popTouchPath();
+
+    /**
+     * Callback for the beginning of a mouse press event
+     *
+     * @param event The associated event
+     * @param focus	Whether the listener currently has focus
+     */
+    void mousePressCB(const cugl::MouseEvent& event, bool focus);
+
+    /**
+     * Callback for the beginning of a mouse move event
+     *
+     * @param event The associated event
+     * @param focus	Whether the listener currently has focus
+     */
+    void mouseDragCB(const cugl::MouseEvent& event, bool focus);
+
+    /**
+     * Callback for the beginning of a mouse release event
+     *
+     * @param event The associated event
+     * @param focus	Whether the listener currently has focus
+     */
+    void mouseReleaseCB(const cugl::MouseEvent& event, bool focus);
 };
 
 #endif /* __PF_INPUT_H__ */

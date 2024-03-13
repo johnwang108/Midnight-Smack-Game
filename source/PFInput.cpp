@@ -41,6 +41,8 @@ using namespace cugl;
 /** The key for the controller event handlers */
 #define CONTROLLER_LISTENER_KEY 2
 
+#define MOUSE_LISTENER_KEY 3
+
 /** This defines the joystick "deadzone" (how far we must move) */
 #define JSTICK_DEADZONE  15
 /** This defines the joystick radial size (for reseting the anchor) */
@@ -135,10 +137,13 @@ void PlatformInput::dispose() {
  * @return true if the controller was initialized successfully
  */
 bool PlatformInput::init(const Rect bounds) {
+    CULog("HI I INITEEDDDD!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! :D");
+    id = rand();
+    CULog("ID: %f", id);
     bool success = true;
     _sbounds = bounds;
     _tbounds = Application::get()->getDisplayBounds();
-
+    _touchPath = cugl::Path2();
 
     bool contSuccess = Input::activate<GameControllerInput>();
 
@@ -174,6 +179,22 @@ bool PlatformInput::init(const Rect bounds) {
     _lastGestureSimilarity = -1;
     _lastGestureString = "No Touchscreen";
     CULog("no touch screen sad");
+
+    success = Input::activate<Mouse>();
+    CULog("%s", success ? "Mouse Activated" : "Mouse Failed");
+    Mouse* mouse = Input::get<Mouse>();
+    mouse->setPointerAwareness(Mouse::PointerAwareness::DRAG);
+    mouse ->addPressListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, Uint8 clicks, bool focus) {
+        		this->mousePressCB(event, focus);
+         });
+
+    mouse -> addDragListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, const Vec2& previous, bool focus) {
+        		this->mouseDragCB(event, focus);
+                		});
+
+    mouse->addReleaseListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, Uint8 clicks, bool focus) {
+        this->mouseReleaseCB(event, focus);
+        });
 #else
     CULog("%d", CU_TOUCH_SCREEN);
     Touchscreen* touch = Input::get<Touchscreen>();
@@ -186,6 +207,8 @@ bool PlatformInput::init(const Rect bounds) {
     touch->addMotionListener(LISTENER_KEY,[=](const TouchEvent& event, const Vec2& previous, bool focus) {
         this->touchesMovedCB(event, previous, focus);
     });
+
+#endif
     _dollarRecog = cugl::GestureRecognizer::alloc();
 
     if (!_dollarRecog->init()) CULog("Recognizer Init Failed");
@@ -222,7 +245,7 @@ bool PlatformInput::init(const Rect bounds) {
     _lastGestureString = "";
 
 
-#endif
+
 
     _active = success;
     return success;
@@ -240,6 +263,12 @@ bool PlatformInput::init(const Rect bounds) {
  * frame, so we need to accumulate all of the data together.
  */
 void PlatformInput::update(float dt) {
+    //CULog("PATH STATS");
+    //CULog("SIZE: %d", _touchPath.size());
+    //CULog("EMPTY: %s", _touchPath.empty() ? "true" : "false");
+    if (!_touchPath.empty()) {
+        CULog("Not empty :0");
+    }
 #ifndef CU_TOUCH_SCREEN
     // DESKTOP CONTROLS
     Keyboard* keys = Input::get<Keyboard>();
@@ -615,8 +644,62 @@ float PlatformInput::getGestureSim() {
     return _lastGestureSimilarity;
 }
 
+/** Returns touch path.*/
 cugl::Path2 PlatformInput::getTouchPath() {
     return _touchPath;
 }
 
+/** Returns touch path and sets it to empty.*/
+cugl::Path2 PlatformInput::popTouchPath() {
+    cugl::Path2 temp = _touchPath;
+    _touchPath = cugl::Path2();
+    return temp;
+}
+
+
+void PlatformInput::mousePressCB(const cugl::MouseEvent& event, bool focus) {
+    CULog("Mouse began");
+    Vec2 pos = event.position;
+
+    _touchPath = cugl::Path2();
+    _touchPath.push(pos);
+}
+
+void PlatformInput::mouseDragCB(const cugl::MouseEvent& event, bool focus) {
+    CULog("Mouse drag");
+	Vec2 pos = event.position;
+    _touchPath.push(pos);
+}
+
+void PlatformInput::mouseReleaseCB(const cugl::MouseEvent& event, bool focus) {
+    // Reset all keys that might have been set
+    CULog("Mouse end");
+    Vec2 pos = event.position;
+    _touchPath.push(pos);
+
+
+    float similarity = -1.0f;
+
+    PathSmoother smoother = PathSmoother();
+    smoother.set(_touchPath);
+    smoother.calculate();
+    _touchPath = smoother.getPath();
+
+    if (_touchPath.size() < 1) {
+		_lastGestureSimilarity = -1;
+		_lastGestureString = "No Touchscreen";
+		return;
+    }
+    else {
+        std::string result = _dollarRecog->match(_touchPath, similarity);
+        _lastGestureString = result;
+        _lastGestureSimilarity = similarity;
+    }
+
+    //CULog("Gesture Guess: %s, Similarity: %f", result.c_str(), similarity);
+    //CULog("PATH STATS");
+    //CULog("SIZE: %d", _touchPath.size());
+    //CULog("THIS");
+    //CULog("%f", this->id);
+}
 

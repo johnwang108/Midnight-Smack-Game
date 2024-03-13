@@ -57,9 +57,13 @@ protected:
 
     cugl::SimpleExtruder _se;
 
+    //transform for poly
+    cugl::Affine2 _trans;
+
     //temp
     cugl::Spline2 _spline;
-    cugl::SplinePather sp;
+
+    bool _focus;
 
     //Todo: need library of existing predetermined inputs to check against
 
@@ -84,6 +88,8 @@ public:
     bool isPending();
     
     bool isSuccess();
+
+    void setFocus(bool focus);
 
     //virtual void draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint);
 

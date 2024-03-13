@@ -89,8 +89,8 @@ GameScene::GameScene() : Scene2(),
  *
  * @return true if the controller is initialized properly, false otherwise.
  */
-bool GameScene::init(const std::shared_ptr<AssetManager>& assets) {
-    return init(assets,Rect(0,0,DEFAULT_WIDTH,DEFAULT_HEIGHT),Vec2(0,DEFAULT_GRAVITY));
+bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
+    return init(assets,Rect(0,0,DEFAULT_WIDTH,DEFAULT_HEIGHT),Vec2(0,DEFAULT_GRAVITY), input);
 }
 
 /**
@@ -109,8 +109,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets) {
  *
  * @return  true if the controller is initialized properly, false otherwise.
  */
-bool GameScene::init(const std::shared_ptr<AssetManager>& assets, const Rect& rect) {
-    return init(assets,rect,Vec2(0,DEFAULT_GRAVITY));
+bool GameScene::init(const std::shared_ptr<AssetManager>& assets, const Rect& rect, std::shared_ptr<PlatformInput> input) {
+    return init(assets,rect,Vec2(0,DEFAULT_GRAVITY), input);
 }
 
 /**
@@ -131,7 +131,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets, const Rect& re
  * @return  true if the controller is initialized properly, false otherwise.
  */
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets, 
-                     const Rect& rect, const Vec2& gravity) {
+                     const Rect& rect, const Vec2& gravity, std::shared_ptr<PlatformInput> input) {
     // Initialize the scene to a locked height (iPhone X is narrow, but wide)
     Size dimen = computeActiveSize();
     SDL_ShowCursor(SDL_DISABLE);
@@ -144,8 +144,10 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     // Start up the input handler
     _assets = assets;
-    _input = std::make_shared<PlatformInput>();
-    _input->init(getBounds());
+
+    _input = input;
+    /*_input = std::make_shared<PlatformInput>();
+    _input->init(getBounds());*/
     
     // Create the world and attach the listeners.
     _world = physics2::ObstacleWorld::alloc(rect,gravity);
@@ -211,6 +213,11 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _attacks = std::vector<std::shared_ptr<Attack>>();
 
     _dollarnode = std::make_shared<DollarScene>();
+    _dollarnode->init(_assets, _input);
+    _dollarnode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
+    //_dollarnode->setPosition(getSize().getIWidth() / 2.0f, getSize().getIHeight() / 2.0f);
+    _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
+    _dollarnode->setVisible(false);
     
     addChild(_worldnode);
     addChild(_debugnode);
@@ -220,11 +227,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_rightnode);
     addChild(_gesturehud);
     addChild(_dollarnode);
-    _dollarnode->init(_assets, _input);
-    _dollarnode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
-    //_dollarnode->setPosition(getSize().getIWidth() / 2.0f, getSize().getIHeight() / 2.0f);
-    _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
-    _dollarnode->setVisible(false);
+    
 
 
     loadLevel(level1);

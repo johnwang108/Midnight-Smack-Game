@@ -1,6 +1,7 @@
 #include "MultiScreenScene.h"
 #include "PFDollarScene.h"
 #include <algorithm> 
+#include "Levels/Levels.h"
 
 #define CAMERA_MOVE_SPEED 10.0f
 
@@ -55,7 +56,7 @@ void MultiScreenScene::dispose() {
 	_scenes[4] = nullptr;
 }
 
-bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets) {
+bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
 	_size = Application::get()->getDisplaySize();
 	if (assets == nullptr) {
 		return false;
@@ -69,9 +70,11 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets) {
 
 	_assets = assets;
 
-	CULog("Size: %f %f", _size.width, _size.height);
-	_input = std::make_shared<PlatformInput>();
+	//MULTISCREEN IS RESPONSIBLE FOR INITING THE SHARED INPUT CONTROLLER. TEMPORARY SOLUTION
+	_input = input;
 	_input->init(getBounds());
+	//_input = std::make_shared<PlatformInput>();
+	//_input->init(getBounds());
 
 	std::shared_ptr<DollarScene> scene = std::make_shared<DollarScene>();
 	float x_offset = 0;
@@ -134,6 +137,9 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets) {
 	addChild(_scenes[3]);
 	addChild(_scenes[4]);
 
+	_scenes[2]->setFocus(true);
+
+
 	//init inactive
 	setActive(false);
 	_transitionScenes = false;
@@ -177,26 +183,34 @@ void MultiScreenScene::preUpdate(float timestep) {
 	if (!_animating) {
 		if (_input->getHorizontal() > 0) {
 			if ((_curr == 1) || (_curr == 2)) {
+				_scenes[_curr]->setFocus(false);
 				_curr++;
+				_scenes[_curr]->setFocus(true);
 				_animating = true;
 			}
 		}
 		else if (_input->getHorizontal() < 0) {
 			if ((_curr == 2) || (_curr == 3)) {
+				_scenes[_curr]->setFocus(false);
 				_curr--;
+				_scenes[_curr]->setFocus(true);
 				_animating = true;
 			}
 		}
 
 		else if (_input->getVertical() > 0) {
 			if ((_curr == 2) || (_curr == 4)) {
+				_scenes[_curr]->setFocus(false);
 				_curr -= 2;
+				_scenes[_curr]->setFocus(true);
 				_animating = true;
 			}
 		}
 		else if (_input->getVertical() < 0) {
 			if ((_curr == 0) || (_curr == 2)) {
+				_scenes[_curr]->setFocus(false);
 				_curr += 2;
+				_scenes[_curr]->setFocus(true);
 				_animating = true;
 			}
 		}
