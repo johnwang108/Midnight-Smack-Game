@@ -50,13 +50,6 @@ float SHAPE[] = { 0,300,300,300,300,0,0,0} ;
 
 DollarScene::DollarScene() : scene2::SceneNode() {
 	_assets = nullptr;
-	cugl::Vec2* verts = reinterpret_cast<Vec2*>(SHAPE);
-	_spline.set(verts, sizeof(SHAPE) / sizeof(float) / 2);
-	sp = cugl::SplinePather();
-	sp.set(&_spline);
-	sp.calculate();
-	_path = sp.getPath();
-	_childOffset = -1;
 }
 
 void DollarScene::dispose() {
@@ -65,20 +58,38 @@ void DollarScene::dispose() {
 	_assets = nullptr;
 }
 
+bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::string texture) {
+	//FIX - JOHN
+	std::shared_ptr<cugl::Texture> t = assets->get<cugl::Texture>(texture);
+	cugl::Rect rect = cugl::Rect(Vec2::ZERO, t->getSize());
+	
+	return init(assets, input, rect, texture);
+}
 
 //main init
 bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture) {
 	_input = input;
 	_assets = assets;
 	_se = cugl::SimpleExtruder();
-	//_contentSize = size;
-	//_childOffset = -1;
+	_childOffset = -1;
 	_combined = Affine2::IDENTITY;
+	_focus = false;
+	countdown = 0;
+	//reflection across the x axis is necessary for polygon path
+	/**
+	* 1 0
+	* 0 -1
+	* transform 0,0
+	*/
+	_trans = Affine2(1, 0, 0, -1, 0, 0);
 	_poly = cugl::scene2::PolygonNode::alloc();
 	_box = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>(texture), rect);
-	_header = scene2::Label::allocWithText("NICE GESTURE!", _assets->get<Font>(SMALL_MSG));
-	_header->setAnchor(Vec2::ANCHOR_TOP_CENTER);
-	_header->setScale(1.1f);
+
+	//default pigtail
+	_targetGesture = "pigtail";
+
+	_header = scene2::Label::allocWithText("Gestures, Similarity: t tosdgodfho figjgoj ghkohko ", _assets->get<Font>(SMALL_MSG));
+	_header->setAnchor(Vec2::ANCHOR_CENTER);
 	_header->setPosition(cugl::Vec2(0, 200));
 	_header->setForeground(cugl::Color4::RED);
 
@@ -93,40 +104,67 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 
 //re-extrudes the path and updates the polygon node
 void DollarScene::update(float timestep) {
-	//get new path
-	//_path = _input->getTouchPath();
+	//pop new path if this node is focused on and the input controller contains a nonempty path.
+	if (_focus) {
+		if (!(_input->getTouchPath().empty())) {
+			_path = _input->getTouchPath();
+		}
+	}
+
+	//TODO: handle rendering smarter
+	if (countdown > 0) {
+		countdown--;
+	}
+	else {
+		countdown = 0;
+	}
+
 
 	//re-extrude path
 	_se.set(_path);
 	_se.calculate(WIDTH);
-	_poly->setPolygon(_se.getPolygon());
+
+
+	//have to reflect across x axis with _trans
+	_poly->setPolygon(_se.getPolygon() * _trans);
 	_poly->setColor(cugl::Color4::BLACK);
 	_poly->setAnchor(cugl::Vec2::ANCHOR_CENTER);
 
-	//update bounding box
-	//cugl::Rect bounding = _poly->getBoundingRect();
-	/*cugl::Rect bounding;
-	bounding = cugl::Rect(cugl::Vec2(0,0), cugl::Size(500, 500));
-	_box->setPolygon(cugl::Poly2(bounding));
-	_box->setColor(cugl::Color4::GREEN);
-	_box->setAnchor(cugl::Vec2::ANCHOR_CENTER);*/
-
+	//GET RID OF HARDCODE JOHN TODO
 	_poly->setPosition(cugl::Vec2(0,0));
 	_box->setPosition(cugl::Vec2(0, 0));
 
 	//_header->setVisible(!isPending() && isSuccess());
+	_header->setText("Target gesture: " + _targetGesture + " | Similarity: " + std::to_string(_input->getGestureSim()));
 };
 
 //is gesture inputting still in progress?
 bool DollarScene::isPending() {
 	//TODO
-	return false;
+	return !_input->isGestureCompleted();
 };
 
 //is gesture inputting a success?
 bool DollarScene::isSuccess() {
+	countdown = 60;
 	return _input->getGestureSim() > DOLLAR_THRESHOLD;
 };
+
+void DollarScene::setFocus(bool focus) {
+	_focus = focus;
+	if (focus) {
+		_input->popTouchPath();
+	}
+}
+
+void DollarScene::setTargetGesture(std::string gesture) {
+	_targetGesture = gesture;
+	_input->setTargetGesture(gesture);
+}
+
+bool DollarScene::shouldIDisappear() {
+	return countdown == 0;
+}
 
 //draws a boundary rectangle
 //void DollarScene::draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint) {

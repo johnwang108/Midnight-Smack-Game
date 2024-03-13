@@ -31,6 +31,9 @@ protected:
 	bool _animating;
 	/** The current scene */
 	int _curr;
+
+	/** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
+	bool _transitionScenes;
 public:
 	MultiScreenScene();
 
@@ -38,7 +41,7 @@ public:
 
 	void dispose();
 
-	bool init(const std::shared_ptr<cugl::AssetManager>& assets);
+	bool init(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input);
 
 	void initStations(std::string arr[], int size);
 
@@ -53,6 +56,10 @@ public:
 	void fixedUpdate(float timestep);
 
 	void postUpdate(float timestep);
+
+	void transition(bool t);
+
+	bool transitionedAway() { return _transitionScenes; }
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */

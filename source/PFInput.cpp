@@ -41,6 +41,8 @@ using namespace cugl;
 /** The key for the controller event handlers */
 #define CONTROLLER_LISTENER_KEY 2
 
+#define MOUSE_LISTENER_KEY 3
+
 /** This defines the joystick "deadzone" (how far we must move) */
 #define JSTICK_DEADZONE  15
 /** This defines the joystick radial size (for reseting the anchor) */
@@ -135,10 +137,17 @@ void PlatformInput::dispose() {
  * @return true if the controller was initialized successfully
  */
 bool PlatformInput::init(const Rect bounds) {
+    if (_active) {
+        CULog("ALREADY INITED"); 
+        return false;
+    }
+    CULog("HI I INITEDDDD!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! :D");
+    id = rand();
+    CULog("ID: %f", id);
     bool success = true;
     _sbounds = bounds;
     _tbounds = Application::get()->getDisplayBounds();
-
+    _touchPath = cugl::Path2();
 
     bool contSuccess = Input::activate<GameControllerInput>();
 
@@ -174,6 +183,22 @@ bool PlatformInput::init(const Rect bounds) {
     _lastGestureSimilarity = -1;
     _lastGestureString = "No Touchscreen";
     CULog("no touch screen sad");
+
+    success = Input::activate<Mouse>();
+    CULog("%s", success ? "Mouse Activated" : "Mouse Failed");
+    Mouse* mouse = Input::get<Mouse>();
+    mouse->setPointerAwareness(Mouse::PointerAwareness::DRAG);
+    mouse ->addPressListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, Uint8 clicks, bool focus) {
+        		this->mousePressCB(event, focus);
+         });
+
+    mouse -> addDragListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, const Vec2& previous, bool focus) {
+        		this->mouseDragCB(event, focus);
+                		});
+
+    mouse->addReleaseListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, Uint8 clicks, bool focus) {
+        this->mouseReleaseCB(event, focus);
+        });
 #else
     CULog("%d", CU_TOUCH_SCREEN);
     Touchscreen* touch = Input::get<Touchscreen>();
@@ -186,6 +211,8 @@ bool PlatformInput::init(const Rect bounds) {
     touch->addMotionListener(LISTENER_KEY,[=](const TouchEvent& event, const Vec2& previous, bool focus) {
         this->touchesMovedCB(event, previous, focus);
     });
+
+#endif
     _dollarRecog = cugl::GestureRecognizer::alloc();
 
     if (!_dollarRecog->init()) CULog("Recognizer Init Failed");
@@ -222,7 +249,7 @@ bool PlatformInput::init(const Rect bounds) {
     _lastGestureString = "";
 
 
-#endif
+
 
     _active = success;
     return success;
@@ -260,6 +287,8 @@ void PlatformInput::update(float dt) {
 
         _keyUp = keys->keyDown(KeyCode::W);
         _keyDown = keys->keyDown(KeyCode::S);
+
+        _keyTransition = keys->keyPressed(KeyCode::T);
     }
     else {
         _keyJump = _gameCont->isButtonPressed(GameController::Button::A);
@@ -267,7 +296,7 @@ void PlatformInput::update(float dt) {
         _keySlow = _gameCont->isButtonPressed(GameController::Button::X);
         _keyReset = _gameCont->isButtonPressed(GameController::Button::LEFT_SHOULDER);
         _keyExit = _gameCont->isButtonPressed(GameController::Button::RIGHT_SHOULDER);
-        
+        _keyTransition = _gameCont->isButtonPressed(GameController::Button::B);
 
 
         float lTriggerAmt = _gameCont->getAxisPosition(GameController::Axis::TRIGGER_LEFT);
@@ -289,6 +318,7 @@ void PlatformInput::update(float dt) {
     _keySlow = _gameCont->isButtonPressed(GameController::Button::X);
     _keyReset = _gameCont->isButtonPressed(GameController::Button::LEFT_SHOULDER);
     _keyExit = _gameCont->isButtonPressed(GameController::Button::RIGHT_SHOULDER);
+    _keyTransition = _gameCont->isButtonPressed(GameController::Button::B);
 
 
 
@@ -312,6 +342,7 @@ void PlatformInput::update(float dt) {
     _jumpPressed = _keyJump;
     _slowPressed = _keySlow;
     _dashPressed = _dashKey;
+    _transitionPressed = _keyTransition;
 
     // Directional controls
     _horizontal = 0.0f;
@@ -362,6 +393,7 @@ void PlatformInput::clear() {
     _firePressed = false;
     _dashPressed = false;
     _slowPressed = false;
+    _transitionPressed = false;
 }
 
 #pragma mark -
@@ -612,8 +644,58 @@ float PlatformInput::getGestureSim() {
     return _lastGestureSimilarity;
 }
 
+/** Returns touch path.*/
 cugl::Path2 PlatformInput::getTouchPath() {
     return _touchPath;
 }
 
+/** Returns touch path and sets it to empty. Also sets complete to false.*/
+cugl::Path2 PlatformInput::popTouchPath() {
+    cugl::Path2 temp = _touchPath;
+    _touchPath = cugl::Path2();
+    _gestureCompleted = false;
+    return temp;
+}
+
+
+void PlatformInput::mousePressCB(const cugl::MouseEvent& event, bool focus) {
+    Vec2 pos = event.position;
+    _gestureCompleted = false;
+    _touchPath = cugl::Path2();
+    _touchPath.push(pos);
+}
+
+void PlatformInput::mouseDragCB(const cugl::MouseEvent& event, bool focus) {
+	Vec2 pos = event.position;
+    _touchPath.push(pos);
+}
+
+void PlatformInput::mouseReleaseCB(const cugl::MouseEvent& event, bool focus) {
+    // Reset all keys that might have been set
+    Vec2 pos = event.position;
+    _touchPath.push(pos);
+
+
+    float similarity = -1.0f;
+
+    PathSmoother smoother = PathSmoother();
+    smoother.set(_touchPath);
+    smoother.calculate();
+    _touchPath = smoother.getPath();
+    _gestureCompleted = true;
+
+    if (_touchPath.size() < 3) {
+		_lastGestureSimilarity = -1;
+		_lastGestureString = "No Touchscreen";
+		return;
+    }
+    else {
+        //std::string result = _dollarRecog->match(_touchPath, similarity);
+        //_lastGestureString = result;
+        //_lastGestureSimilarity = similarity;
+        similarity = _dollarRecog->similarity(_targetGesture, _touchPath);
+        _lastGestureString = _targetGesture;
+        _lastGestureSimilarity = similarity;
+    }
+}
 

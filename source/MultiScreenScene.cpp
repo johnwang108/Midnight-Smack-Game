@@ -1,6 +1,7 @@
 #include "MultiScreenScene.h"
 #include "PFDollarScene.h"
 #include <algorithm> 
+#include "Levels/Levels.h"
 
 #define CAMERA_MOVE_SPEED 50.0f
 
@@ -13,6 +14,8 @@ namespace LayoutPositions {
 	Vec2 MidRight(const Vec2& size) { return Vec2(size.x, 0); }
 	Vec2 Bottom(const Vec2& size) { return Vec2(0, -size.y); }
  }
+
+std::string targets[5] = { "pigtail", "circle", "vertSwipe", "horizSwipe", "v" };
 
 
 //basic math funcs
@@ -64,7 +67,7 @@ void MultiScreenScene::dispose() {
 	_scenes[4] = nullptr;
 }
 
-bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets) {
+bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
 	_size = Application::get()->getDisplaySize();
 	if (assets == nullptr) {
 		return false;
@@ -78,16 +81,23 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets) {
 
 	_assets = assets;
 
-	CULog("Size: %f %f", _size.width, _size.height);
-	_input = std::make_shared<PlatformInput>();
+	//MULTISCREEN IS RESPONSIBLE FOR INITING THE SHARED INPUT CONTROLLER. TEMPORARY SOLUTION
+	_input = input;
 	_input->init(getBounds());
+	//_input = std::make_shared<PlatformInput>();
+	//_input->init(getBounds());
 
 	std::string stationTextures[5] = {"panfry_station","panfry_station" ,"panfry_station" ,"panfry_station" ,"panfry_station"};
 	initStations(stationTextures, 5);
 
 
-	_active = true;
+	_scenes[2]->setFocus(true);
 
+
+	//init inactive
+	setActive(false);
+	_transitionScenes = false;
+	
 	_curr = 2;
 	_animating = false;
 	Application::get()->setClearColor(Color4::BLACK);
@@ -117,6 +127,7 @@ void MultiScreenScene::initStations(std::string textures[], int size) {
 		scene->setPosition(positions[i]);
 		scene->setVisible(true);
 		setScene(i, scene);
+		scene->setTargetGesture(targets[i]);
 	}
 
 	for (int i = 0; i < size; i++) {
@@ -146,36 +157,45 @@ void MultiScreenScene::preUpdate(float timestep) {
 		Application::get()->quit();
 	}
 
-	
+	if (_input->didTransition()) {
+		transition(true);
+		CULog("______________________________________________________________________________________________________");
+		return;
+	}
+
 	//if not animating, listen for screen change input. TODO for three fingered swipes to switch scenes
 	if (!_animating) {
 		if (_input->getHorizontal() > 0) {
 			if ((_curr == 1) || (_curr == 2)) {
+				_scenes[_curr]->setFocus(false);
 				_curr++;
+				_scenes[_curr]->setFocus(true);
 				_animating = true;
-				CULog("%d", _curr);
 			}
 		}
 		else if (_input->getHorizontal() < 0) {
 			if ((_curr == 2) || (_curr == 3)) {
+				_scenes[_curr]->setFocus(false);
 				_curr--;
+				_scenes[_curr]->setFocus(true);
 				_animating = true;
-				CULog("%d", _curr);
 			}
 		}
 
 		else if (_input->getVertical() > 0) {
 			if ((_curr == 2) || (_curr == 4)) {
+				_scenes[_curr]->setFocus(false);
 				_curr -= 2;
+				_scenes[_curr]->setFocus(true);
 				_animating = true;
-				CULog("%d", _curr);
 			}
 		}
 		else if (_input->getVertical() < 0) {
 			if ((_curr == 0) || (_curr == 2)) {
+				_scenes[_curr]->setFocus(false);
 				_curr += 2;
+				_scenes[_curr]->setFocus(true);
 				_animating = true;
-				CULog("%d", _curr);
 			}
 		}
 
@@ -198,4 +218,9 @@ void MultiScreenScene::fixedUpdate(float timestep) {
 
 void MultiScreenScene::postUpdate(float timestep) {
 
+}
+
+//Marks transitioning between cooking and platforming. Call this method with t = true when you want to transition away from this scene
+void MultiScreenScene::transition(bool t) {
+	_transitionScenes = t;
 }

@@ -173,7 +173,6 @@ void Level2::populate(GameScene& scene) {
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
 	AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
-
 	Vec2 shrimp_pos = SHRIMP_POS;
 	image = _assets->get<Texture>(BULL_TEXTURE);
 	std::shared_ptr<BullModel> _bull = BullModel::alloc(shrimp_pos, image->getSize() / _scale, _scale);

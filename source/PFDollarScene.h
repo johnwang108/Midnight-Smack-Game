@@ -57,9 +57,17 @@ protected:
 
     cugl::SimpleExtruder _se;
 
+    //transform for poly
+    cugl::Affine2 _trans;
+
     //temp
     cugl::Spline2 _spline;
-    cugl::SplinePather sp;
+
+    bool _focus;
+
+    std::string _targetGesture;
+    
+    int countdown;
 
     //Todo: need library of existing predetermined inputs to check against
 
@@ -77,6 +85,8 @@ public:
         return init(assets, input, cugl::Rect(0, 0, 1000, 1000), "panfry_station");
     };
 
+    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::string texture);
+
     bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture);
 
     void update(float timestep);
@@ -85,8 +95,18 @@ public:
     
     bool isSuccess();
 
+    void setFocus(bool focus);
+
+    bool isFocus() { return _focus; };
+
+    //gets what gesture was just matched
+    std::string getGestureString(){ return _input->getGestureString(); };
+
+    void setTargetGesture(std::string gesture);
+
     //virtual void draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint);
 
+    bool shouldIDisappear();
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */
