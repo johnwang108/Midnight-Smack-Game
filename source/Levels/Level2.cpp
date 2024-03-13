@@ -132,7 +132,7 @@ void Level2::populate(GameScene& scene) {
 	}
 
 #pragma mark : Platforms
-	for (int ii = 0; ii < PLATFORM_COUNT; ii++) {
+	for (int ii = 0; ii < ALT_PLATFORM_COUNT; ii++) {
 		std::shared_ptr<physics2::PolygonObstacle> platobj;
 		Poly2 platform(reinterpret_cast<Vec2*>(ALT_PLATFORMS[ii]), sizeof(ALT_PLATFORMS[ii]) / sizeof(float) / 2);
 

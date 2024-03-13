@@ -36,8 +36,8 @@ using namespace cugl;
 #pragma mark Level Geography
 
 /** This is adjusted by screen aspect ratio to get the height */
-#define SCENE_WIDTH 1024
-#define SCENE_HEIGHT 576
+#define SCENE_WIDTH 1280
+#define SCENE_HEIGHT 800
 
 /** This is the aspect ratio for physics */
 #define SCENE_ASPECT 10.0/16.0
@@ -49,11 +49,6 @@ using namespace cugl;
 
 #define INCLUDE_ROPE_BRIDGE false
 
-
-
-
-
-bool isLevel1 = true;
 
 
 
@@ -283,7 +278,7 @@ void GameScene::reset() {
     setFailure(false);
     setComplete(false);
 
-    loadLevel(level1);
+    loadLevel(currentLevel);
 }
 
 /**
@@ -548,56 +543,25 @@ void GameScene::postUpdate(float remain) {
         setFailure(true);
     }
 
-    // Reset the game if we win or lose.
-   /* if (_countdown > 0) {
+     //Reset the game if we win or lose.
+   if (_countdown > 0) {
         _countdown--;
     } else if (_countdown == 0) {
-        if (_failed == false && isLevel1) {
-            isLevel1 = false;
-            float x = 0.0f;
-            float y = 0.0f;
-            for (int i = 0; i < 8; ++i) {
-                PLATFORMS[i][0] = 1.0f + x;
-                PLATFORMS[i][1] = 4.0f + y;
-                PLATFORMS[i][2] = 1.0f + x;
-                PLATFORMS[i][3] = 2.5f + y;
-                PLATFORMS[i][4] = 4.5f + x;
-                PLATFORMS[i][5] = 2.5f + y;
-                PLATFORMS[i][6] = 4.5f + x;
-                PLATFORMS[i][7] = 4.0f + y;
-                x = x + 3.5f;
-                y = y + 1.5f;
+        if (_failed == false) {
+           
+            if (currentLevel == level1) {
+                loadLevel(level2);
+                reset();
             }
-            PLATFORMS[8][0] = 29.0f;
-            PLATFORMS[8][1] = 14.5f;
-            PLATFORMS[8][2] = 29.0f;
-            PLATFORMS[8][3] = 13.0f;
-            PLATFORMS[8][4] = 31.0f;
-            PLATFORMS[8][5] = 13.0f;
-            PLATFORMS[8][6] = 31.0f;
-            PLATFORMS[8][7] = 14.5f;
-            PLATFORMS[9][0] = 0.0f;
-            PLATFORMS[9][1] = 1.0f;
-            PLATFORMS[9][2] = 0.0f;
-            PLATFORMS[9][3] = 0.0f;
-            PLATFORMS[9][4] = 1.0f;
-            PLATFORMS[9][5] = 0.0f;
-            PLATFORMS[9][6] = 1.0f;
-            PLATFORMS[9][7] = 1.0f;
-            GOAL_POS[0] = 29.0f;
-            GOAL_POS[1] = 16.0f;
-            SHRIMP_POS[0] = 14.0f,
-            SHRIMP_POS[1] = 16.0f;
-            RICE_POS[0] = 21.0f;
-            RICE_POS[1] = 14.0f;
-            EGG_POS[0] = 10.0f;
-            EGG_POS[1] = 12.0f;
+            else {
+                loadLevel(level1);
+                reset();
+            }
         }
-        else if(_failed == false && !isLevel1) {
-            //close game somehow
+        else if(_failed) {
+            reset();
         }
-        reset();
-    }*/
+    }
 }
 
 
@@ -769,6 +733,7 @@ void GameScene::beginContact(b2Contact* contact) {
 
         }
     }
+
     if (_Bull!=nullptr && _Bull ->isChasing() && bd1 == _Bull.get() && bd2->getName() == WALL_NAME) {
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd2)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
@@ -782,6 +747,7 @@ void GameScene::beginContact(b2Contact* contact) {
         _Bull->setIsChasing(false);
         _Bull->takeDamage(0, direction);
     }
+
 
 
     // If we hit the "win" door, we are done
