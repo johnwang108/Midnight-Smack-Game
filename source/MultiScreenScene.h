@@ -4,6 +4,7 @@
 #include <cugl/cugl.h>
 #include "PFInput.h"
 #include "PFDollarScene.h"
+#include "Order.h"
 #include <cugl/cugl.h>
 #include <box2d/b2_world_callbacks.h>
 #include <box2d/b2_fixture.h>
@@ -44,7 +45,7 @@ protected:
 
 	std::shared_ptr<cugl::scene2::Label> _timer;
 
-	//std::vector<Order> _orders; 
+	std::vector<Order> _orders; 
 public:
 	MultiScreenScene();
 

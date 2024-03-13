@@ -243,6 +243,7 @@ void MultiScreenScene::preUpdate(float timestep) {
 	_currentTime = now.ellapsedMillis(_startTime);
 	_timer->setText(std::to_string((int) (_currentTime/1000)));
 
+	
 }
 
 
