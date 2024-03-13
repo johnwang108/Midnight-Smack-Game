@@ -251,7 +251,7 @@ void PlatformInput::update(float dt) {
         _keyExit = keys->keyPressed(EXIT_KEY);
         _keyFire = keys->keyPressed(FIRE_KEY);
         _keyJump = keys->keyPressed(JUMP_KEY);
-        _keySlow = keys->keyDown(SLOW_KEY);
+        _keySlow = keys->keyPressed(SLOW_KEY);
 
         _dashKey = keys->keyPressed(DASH_KEY);
 
@@ -302,10 +302,8 @@ void PlatformInput::update(float dt) {
     _xAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_X);
     _yAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_Y);
 
-
 #endif
    
-
 
     _resetPressed = _keyReset;
     _debugPressed = _keyDebug;
@@ -343,14 +341,14 @@ void PlatformInput::update(float dt) {
     }
 
 // If it does not support keyboard, we must reset "virtual" keyboard
-#ifdef CU_TOUCH_SCREEN
-    _keyExit = false;
-    _keyReset = false;
-    _keyDebug = false;
-    _keyJump  = false;
-    _keyFire  = false;
-
-#endif
+//#ifdef CU_TOUCH_SCREEN
+//    _keyExit = false;
+//    _keyReset = false;
+//    _keyDebug = false;
+//    _keyJump  = false;
+//    _keyFire  = false;
+//
+//#endif
 }
 
 /**
@@ -549,7 +547,7 @@ void PlatformInput::touchEndedCB(const TouchEvent& event, bool focus) {
 
     _lastGestureString = result;
     _lastGestureSimilarity = similarity;
-    CULog("Gesture Guess: %s, Similarity: %f", result, similarity);
+    CULog("Gesture Guess: %s, Similarity: %f", result.c_str(), similarity);
     /*Zone zone = getZone(pos);
     if (_ltouch.touchids.find(event.touch) != _ltouch.touchids.end()) {
         _ltouch.touchids.clear();

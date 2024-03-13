@@ -59,8 +59,8 @@ private:
     bool  _keyRight;
     /** Whether the slow key is down */
     bool _keySlow;
-  
 
+   
     std::string _lastGestureString;
     float _lastGestureSimilarity;
   
@@ -89,6 +89,9 @@ protected:
     float _horizontal;
     float _vertical;
     bool _dashPressed;
+
+    bool _zoomIn;
+    bool _zoomOut;
 
     //axes positions for joystick
     float _xAxis;
@@ -294,7 +297,9 @@ public:
 	 * @return true if the exit button was pressed.
 	 */
 	bool didExit() const { return _exitPressed; }
-    bool didSlow() const { return _slowPressed; }
+    bool didSlow() const { 
+            return _slowPressed; 
+    }
 
 
     bool didDash() const { return _dashPressed; }

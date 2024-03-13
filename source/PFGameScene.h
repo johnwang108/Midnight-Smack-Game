@@ -111,6 +111,13 @@ protected:
     bool _failed;
     /** Countdown active for winning or losing */
     int _countdown;
+
+    //camera
+    //std::shared_ptr<cugl::OrthographicCamera> _camera;
+    cugl::Vec3 _cameraOffset = Vec3::ZERO;
+    float _smoothTime = 0.25f;
+    cugl::Vec3 _velocity = Vec3::ZERO;
+
       
     /** Mark set to handle more sophisticated collision callbacks */
     std::unordered_set<b2Fixture*> _sensorFixtures;
@@ -444,6 +451,8 @@ public:
     void setEnemies(const std::vector<std::shared_ptr<EnemyModel>>& enemies) { _enemies = enemies; }
     void setGoalDoor(const std::shared_ptr<cugl::physics2::BoxObstacle>& goalDoor) { _goalDoor = goalDoor; }
 
+    void unzoomCamera();
+    void zoomCamera(float scale);
 
     std::shared_ptr<BullModel> getBull() const { return _Bull; }
     void setBull(const std::shared_ptr<BullModel>& bull) { _Bull = bull; }

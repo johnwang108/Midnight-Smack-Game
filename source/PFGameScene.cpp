@@ -49,6 +49,7 @@ using namespace cugl;
 
 #define INCLUDE_ROPE_BRIDGE false
 
+#define CAMERA_FOLLOWS_PLAYER true
 
 
 
@@ -195,8 +196,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _gesturehud = scene2::Label::allocWithText("Gestures, Similarity: t tosdgodfho figjgoj ghkohko ", _assets->get<Font>(SMALL_MSG));
     _gesturehud->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
     _gesturehud->setScale(0.7f);
-    CULog("%f", _gesturehud->getContentWidth());
-    CULog("%f", _gesturehud->getWidth());
+  //  CULog("%f", _gesturehud->getContentWidth());
+   // CULog("%f", _gesturehud->getWidth());
     _gesturehud->setPosition(0,50);
     _gesturehud->setForeground(LOSE_COLOR);
     _gesturehud->setVisible(true);
@@ -205,7 +206,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _slowed = false;
     _attacks = std::vector<std::shared_ptr<Attack>>();
 
-   // _dollarnode = std::make_shared<DollarScene>();
+    _dollarnode = std::make_shared<DollarScene>();
     
     addChild(_worldnode);
     addChild(_debugnode);
@@ -214,15 +215,15 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_leftnode);
     addChild(_rightnode);
     addChild(_gesturehud);
-//    addChild(_dollarnode);
-  //  _dollarnode->init(_assets, _input);
-    //_dollarnode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
-  //  _dollarnode->setPosition(getSize().getIWidth() / 2.0f, getSize().getIHeight() / 2.0f);
-    //_dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
-  //  _dollarnode->setVisible(false);
+    addChild(_dollarnode);
+    _dollarnode->init(_assets, _input);
+    _dollarnode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
+    //_dollarnode->setPosition(getSize().getIWidth() / 2.0f, getSize().getIHeight() / 2.0f);
+    _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
+    _dollarnode->setVisible(false);
 
 
-    loadLevel(level1);
+    loadLevel(level2);
 
     _active = true;
     _complete = false;
@@ -314,6 +315,11 @@ void GameScene::reset() {
 void GameScene::addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj,
                             const std::shared_ptr<cugl::scene2::SceneNode>& node,
                             bool useObjPosition) {
+    // Don't add out of bounds obstacles
+    if (!(_world->inBounds(obj.get()))) {
+        return;
+    }
+
     _world->addObstacle(obj);
     obj->setDebugScene(_debugnode);
     
@@ -372,19 +378,19 @@ void GameScene::preUpdate(float dt) {
         _slowed = !_slowed;
     }
     if (!_slowed) {
-    //    _dollarnode->setVisible(false);
+        _dollarnode->setVisible(false);
 
         _avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
         _avatar->setJumping(_input->didJump());
         _avatar->setDash(_input->didDash());
         _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
-
         if (_avatar->isJumping() && _avatar->isGrounded()) {
             std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
             AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
         }
     }
     else {
+        _dollarnode->setVisible(true);
 
         _avatar->setMovement(0);
         _avatar->setJumping(_input->didJump());
@@ -467,6 +473,22 @@ void GameScene::fixedUpdate(float step) {
     if (_slowed) { 
         step = step / 5;
     }
+    //camera logic
+    if (CAMERA_FOLLOWS_PLAYER) {
+        cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
+        cugl::Vec3 pos = _camera->getPosition();
+
+        //magic number 0.2 are for smoothness
+        //float smooth = std::min(0.2f, (target - pos).length());
+        float smooth = 0.2;
+        pos.smooth(target, step, smooth);
+        //cugl::Vec3 pos = _avatar->getPosition() * _scale;
+        _camera->setPosition(pos);
+		_camera->update();
+    }
+    if (_avatar->getHealth()<=0) {
+        setFailure(true);
+	}
     _world->update(step);
 }
     
@@ -718,9 +740,10 @@ void GameScene::beginContact(b2Contact* contact) {
 
     //See if the player collided with an enemy.
 
-    if ((_avatar.get() == bd1 && bd2->getName() == ENEMY_NAME) ||
-        (_avatar.get() == bd2 && bd1->getName() == ENEMY_NAME)) {
+    if ((!_failed && !_complete) && ((_avatar.get() == bd1 && bd2->getName() == ENEMY_NAME) ||
+        (_avatar.get() == bd2 && bd1->getName() == ENEMY_NAME))) {
 
+        //if complete, don't fail
         setFailure(true);
     }
 
@@ -747,12 +770,24 @@ void GameScene::beginContact(b2Contact* contact) {
         _Bull->setIsChasing(false);
         _Bull->takeDamage(0, direction);
     }
+    if (_Bull != nullptr && bd1 == _Bull.get() && bd2 == _avatar.get()) {
+        Vec2 avatarPos = _avatar->getPosition();
+        Vec2 bullPos = _Bull->getPosition();
+        int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
+        _avatar->takeDamage(34, direction);
+    }
+    else if (_Bull != nullptr && bd1 == _avatar.get() && bd2 == _Bull.get()) {
+        Vec2 avatarPos = _avatar->getPosition();
+        Vec2 bullPos = _Bull->getPosition();
+        int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
+        _avatar->takeDamage(34, direction);
+    }
 
 
 
     // If we hit the "win" door, we are done
-    if ((bd1 == _avatar.get() && bd2 == _goalDoor.get()) ||
-        (bd1 == _goalDoor.get() && bd2 == _avatar.get())) {
+    if (!_failed && ((bd1 == _avatar.get() && bd2 == _goalDoor.get()) ||
+        (bd1 == _goalDoor.get() && bd2 == _avatar.get()))) {
         setComplete(true);
     }
 }
@@ -864,4 +899,15 @@ std::string GameScene::getGestureText(std::string gest, float sim) {
     std::stringstream ss;
     ss << "Gesture: " << gest << ", " << "Similarity: " << sim;
     return ss.str();
+}
+
+void GameScene::zoomCamera(float scale) {
+    _camera->setZoom(scale);
+	_camera->update();
+
+}
+
+void GameScene::unzoomCamera() {
+    _camera->setZoom(1);
+    _camera->update();
 }

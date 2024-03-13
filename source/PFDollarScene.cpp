@@ -36,6 +36,8 @@
 
 #define SMALL_MSG "retrosmall"  
 
+#define DOLLAR_THRESHOLD 0.5
+
 using namespace cugl;
 
 float SHAPE[] = { 0,300,300,300,300,0,0,0} ;
@@ -65,7 +67,7 @@ void DollarScene::dispose() {
 
 
 //main init
-bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
+bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture) {
 	_input = input;
 	_assets = assets;
 	_se = cugl::SimpleExtruder();
@@ -73,27 +75,26 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	//_childOffset = -1;
 	_combined = Affine2::IDENTITY;
 	_poly = cugl::scene2::PolygonNode::alloc();
-	_box = cugl::scene2::PolygonNode::alloc();
+	_box = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>(texture), rect);
 	_header = scene2::Label::allocWithText("NICE GESTURE!", _assets->get<Font>(SMALL_MSG));
 	_header->setAnchor(Vec2::ANCHOR_TOP_CENTER);
 	_header->setScale(1.1f);
 	_header->setPosition(cugl::Vec2(0, 200));
 	_header->setForeground(cugl::Color4::RED);
-	_header->setVisible(false);
 
 	addChild(_box);
 	addChild(_poly);
 	addChild(_header);
 
-	update();
+	update(0);
 
 	return true;
 }
 
 //re-extrudes the path and updates the polygon node
-void DollarScene::update() {
+void DollarScene::update(float timestep) {
 	//get new path
-	_path = _input->getTouchPath();
+	//_path = _input->getTouchPath();
 
 	//re-extrude path
 	_se.set(_path);
@@ -103,15 +104,17 @@ void DollarScene::update() {
 	_poly->setAnchor(cugl::Vec2::ANCHOR_CENTER);
 
 	//update bounding box
-	cugl::Rect bounding = _poly->getBoundingRect();
+	//cugl::Rect bounding = _poly->getBoundingRect();
+	/*cugl::Rect bounding;
+	bounding = cugl::Rect(cugl::Vec2(0,0), cugl::Size(500, 500));
 	_box->setPolygon(cugl::Poly2(bounding));
 	_box->setColor(cugl::Color4::GREEN);
-	_box->setAnchor(cugl::Vec2::ANCHOR_CENTER);
+	_box->setAnchor(cugl::Vec2::ANCHOR_CENTER);*/
 
 	_poly->setPosition(cugl::Vec2(0,0));
 	_box->setPosition(cugl::Vec2(0, 0));
 
-	_header->setVisible(!isPending() && isSuccess());
+	//_header->setVisible(!isPending() && isSuccess());
 };
 
 //is gesture inputting still in progress?
@@ -122,7 +125,7 @@ bool DollarScene::isPending() {
 
 //is gesture inputting a success?
 bool DollarScene::isSuccess() {
-	return _input->getGestureSim() > 0.5;
+	return _input->getGestureSim() > DOLLAR_THRESHOLD;
 };
 
 //draws a boundary rectangle
