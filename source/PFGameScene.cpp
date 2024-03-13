@@ -232,7 +232,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_dollarnode);
     
 
-
+    _target = std::make_shared<EnemyModel>();
     loadLevel(level1);
 
     //App class will set active true
@@ -413,13 +413,15 @@ void GameScene::preUpdate(float dt) {
                 }
             }
             if (minDist < COOKTIME_MAX_DIST) {
-                _slowed = !_slowed;
+                _slowed = true;
+                _dollarnode->setTargetGesture(_target->getGestureString());
             }
 
         }
 
     }
-    if (!_slowed) {
+
+    if (!_slowed && (_dollarnode->shouldIDisappear())) {
         _dollarnode->setVisible(false);
         if (_dollarnode->isFocus()) {
             _dollarnode->setFocus(false);
@@ -447,18 +449,23 @@ void GameScene::preUpdate(float dt) {
         _avatar->setDash(false);
         _avatar->applyForce(0, 0);
 
-        //cooktime handling. Assume that _target not null
+        //cooktime handling. Assume that _target not null, if it is null then continue
         if (!_dollarnode->isPending()) {
-            _slowed = !_slowed;
-            std::string s = _target->getGestureString();
-            if (_dollarnode->isSuccess() && (_dollarnode->getGestureString() == s)) {
-                CULog("NICE!!!!!!!!!!!!!!");
-                removeEnemy(_target.get());
+            if (_target != nullptr) {
+                _slowed = false;
+                std::string s = _target->getGestureString();
+                if (_dollarnode->isSuccess()) {
+                    CULog("NICE!!!!!!!!!!!!!!");
+                    removeEnemy(_target.get());
+                }
+                else {
+                    CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
+                }
+                _target = nullptr;
             }
             else {
-                CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
+
             }
-            _target = nullptr;
         }
     }
     Vec2 avatarPos = _avatar->getPosition();

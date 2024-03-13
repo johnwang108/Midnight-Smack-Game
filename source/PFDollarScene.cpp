@@ -74,6 +74,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_childOffset = -1;
 	_combined = Affine2::IDENTITY;
 	_focus = false;
+	countdown = 0;
 	//reflection across the x axis is necessary for polygon path
 	/**
 	* 1 0
@@ -110,6 +111,15 @@ void DollarScene::update(float timestep) {
 		}
 	}
 
+	//TODO: handle rendering smarter
+	if (countdown > 0) {
+		countdown--;
+	}
+	else {
+		countdown = 0;
+	}
+
+
 	//re-extrude path
 	_se.set(_path);
 	_se.calculate(WIDTH);
@@ -136,6 +146,7 @@ bool DollarScene::isPending() {
 
 //is gesture inputting a success?
 bool DollarScene::isSuccess() {
+	countdown = 60;
 	return _input->getGestureSim() > DOLLAR_THRESHOLD;
 };
 
@@ -149,6 +160,10 @@ void DollarScene::setFocus(bool focus) {
 void DollarScene::setTargetGesture(std::string gesture) {
 	_targetGesture = gesture;
 	_input->setTargetGesture(gesture);
+}
+
+bool DollarScene::shouldIDisappear() {
+	return countdown == 0;
 }
 
 //draws a boundary rectangle

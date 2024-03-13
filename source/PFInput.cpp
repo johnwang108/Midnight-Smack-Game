@@ -657,7 +657,6 @@ cugl::Path2 PlatformInput::popTouchPath() {
 
 
 void PlatformInput::mousePressCB(const cugl::MouseEvent& event, bool focus) {
-    CULog("Mouse began");
     Vec2 pos = event.position;
     _gestureCompleted = false;
     _touchPath = cugl::Path2();
@@ -665,14 +664,12 @@ void PlatformInput::mousePressCB(const cugl::MouseEvent& event, bool focus) {
 }
 
 void PlatformInput::mouseDragCB(const cugl::MouseEvent& event, bool focus) {
-    CULog("Mouse drag");
 	Vec2 pos = event.position;
     _touchPath.push(pos);
 }
 
 void PlatformInput::mouseReleaseCB(const cugl::MouseEvent& event, bool focus) {
     // Reset all keys that might have been set
-    CULog("Mouse end");
     Vec2 pos = event.position;
     _touchPath.push(pos);
 

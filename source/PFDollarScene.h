@@ -66,6 +66,8 @@ protected:
     bool _focus;
 
     std::string _targetGesture;
+    
+    int countdown;
 
     //Todo: need library of existing predetermined inputs to check against
 
@@ -104,6 +106,7 @@ public:
 
     //virtual void draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint);
 
+    bool shouldIDisappear();
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */
