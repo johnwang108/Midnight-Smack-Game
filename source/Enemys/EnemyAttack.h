@@ -97,7 +97,7 @@ public:
         return (result->init(pos, size) ? result : nullptr);
     }
 
-    bool EnemyAttack::init(cugl::Vec2 pos, const cugl::Size& size);
+    bool init(cugl::Vec2 pos, const cugl::Size& size);
 #pragma mark -
 #pragma mark Animation
     /**

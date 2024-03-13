@@ -453,6 +453,7 @@ public:
 
     void loadLevel(std::shared_ptr<Levels> level) {
         level->populate(*this);
+        currentLevel = level;
     }
 
     void setAssets(const std::shared_ptr<AssetManager>& assets) { _assets = assets; }

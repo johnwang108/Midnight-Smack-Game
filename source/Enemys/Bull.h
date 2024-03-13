@@ -7,7 +7,7 @@
 using namespace cugl;
 
 #define BULL_SENSOR_NAME     "bullsensor" // If the Bull requires a unique sensor
-#define BULL_CHASE_SPEED     3.0f         // Using the CHASE_SPEED for consistency
+#define BULL_CHASE_SPEED     5.0f         // Using the CHASE_SPEED for consistency
 #define BULL_DENSITY         2.0f         // Assuming the Bull is heavier than a regular enemy
 #define BULL_FORCE           1.0f         // Force specific to the Bull's movement, potentially stronger
 #define BULL_MAXSPEED        5.0f         // A reasonable max speed for the Bull, ensuring it's fast but manageable
