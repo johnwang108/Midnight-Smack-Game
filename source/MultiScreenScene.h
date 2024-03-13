@@ -43,6 +43,8 @@ public:
 
 	bool init(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input);
 
+	void initStations(std::string arr[], int size);
+
 	void setScene(Uint32 slot, std::shared_ptr<DollarScene> scene) { _scenes[slot] = scene; }
 
 	std::shared_ptr<cugl::Scene2> getScene(Uint32 slot) const;

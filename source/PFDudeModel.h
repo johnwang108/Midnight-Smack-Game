@@ -112,6 +112,12 @@ protected:
     float _dashCooldown;
     bool _contactingWall;
 
+    float _health;
+
+    float _healthCooldown;
+    float _knockbackTime;
+    float _lastDamageTime;
+
 	/**
 	* Redraws the outline of the physics fixtures to the debug node
 	*
@@ -483,8 +489,9 @@ public:
      */
     void applyForce(float h, float v);
 
-
+    void DudeModel::takeDamage(float damage, const int attackDirection);
 	
+    float getHealth() { return _health; }
 };
 
 #endif /* __PF_DUDE_MODEL_H__ */
