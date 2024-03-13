@@ -200,8 +200,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _gesturehud = scene2::Label::allocWithText("Gestures, Similarity: t tosdgodfho figjgoj ghkohko ", _assets->get<Font>(SMALL_MSG));
     _gesturehud->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
     _gesturehud->setScale(0.7f);
-    CULog("%f", _gesturehud->getContentWidth());
-    CULog("%f", _gesturehud->getWidth());
+  //  CULog("%f", _gesturehud->getContentWidth());
+   // CULog("%f", _gesturehud->getWidth());
     _gesturehud->setPosition(0,50);
     _gesturehud->setForeground(LOSE_COLOR);
     _gesturehud->setVisible(true);
@@ -227,7 +227,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode->setVisible(false);
 
 
-    loadLevel(level1);
+    loadLevel(level2);
 
     _active = true;
     _complete = false;
@@ -283,7 +283,7 @@ void GameScene::reset() {
     setFailure(false);
     setComplete(false);
 
-    loadLevel(level1);
+    loadLevel(level2);
 }
 
 /**
@@ -490,7 +490,9 @@ void GameScene::fixedUpdate(float step) {
         _camera->setPosition(pos);
 		_camera->update();
     }
-
+    if (_avatar->getHealth()<=0) {
+        setFailure(true);
+	}
     _world->update(step);
 }
     
@@ -801,6 +803,18 @@ void GameScene::beginContact(b2Contact* contact) {
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
         _Bull->setIsChasing(false);
         _Bull->takeDamage(0, direction);
+    }
+    if (_Bull != nullptr && bd1 == _Bull.get() && bd2 == _avatar.get()) {
+        Vec2 avatarPos = _avatar->getPosition();
+        Vec2 bullPos = _Bull->getPosition();
+        int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
+        _avatar->takeDamage(34, direction);
+    }
+    else if (_Bull != nullptr && bd1 == _avatar.get() && bd2 == _Bull.get()) {
+        Vec2 avatarPos = _avatar->getPosition();
+        Vec2 bullPos = _Bull->getPosition();
+        int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
+        _avatar->takeDamage(34, direction);
     }
 
 
