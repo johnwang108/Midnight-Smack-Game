@@ -222,8 +222,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
     _dollarnode->setVisible(false);
 
-
-    loadLevel(level2);
+    currentLevel = level1;
+    loadLevel(currentLevel);
 
     _active = true;
     _complete = false;
@@ -584,6 +584,7 @@ void GameScene::postUpdate(float remain) {
             reset();
         }
     }
+    if(_input->)
 }
 
 
@@ -740,11 +741,16 @@ void GameScene::beginContact(b2Contact* contact) {
 
     //See if the player collided with an enemy.
 
-    if ((!_failed && !_complete) && ((_avatar.get() == bd1 && bd2->getName() == ENEMY_NAME) ||
-        (_avatar.get() == bd2 && bd1->getName() == ENEMY_NAME))) {
-
-        //if complete, don't fail
-        setFailure(true);
+    if (_avatar.get() == bd1 && bd2->getName() == ENEMY_NAME) {
+        Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x < enemyPos.x) ? 1 : -1;
+        _avatar->takeDamage(34, direction);
+    }else if (_avatar.get() == bd2 && bd1->getName() == ENEMY_NAME) {
+        Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x < enemyPos.x) ? 1 : -1;
+        _avatar->takeDamage(34, direction);
     }
 
     for (auto& _enemy : _enemies) {
@@ -866,12 +872,14 @@ void GameScene::endContact(b2Contact* contact) {
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         removeAttack((Attack*)bd1);
+        _avatar->takeDamage(34, direction);
     }
     else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
         Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
         Vec2 attackerPos = ((Attack*)bd2)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         removeAttack((Attack*)bd2);
+        _avatar->takeDamage(34, direction);
     }
 
 }

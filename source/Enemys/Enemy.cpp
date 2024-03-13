@@ -124,7 +124,7 @@ void EnemyModel::update(float dt) {
         return;
     }
     
-    if (_knockbackTime > 1) {
+    if (_knockbackTime > 0) {
         _knockbackTime -= dt;
         return;
     }else if (_preparetime > 0) {
