@@ -102,8 +102,20 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 
 
 	_startTime = Timestamp();
-	_startTime.mark();
 
+	_uiScene = cugl::Scene2::alloc(_size);
+	_uiScene->init(_size);
+	_uiScene->setActive(true);
+	
+	
+
+	_timer = scene2::Label::allocWithText(WIN_MESSAGE, _assets->get<Font>(MESSAGE_FONT));
+
+	_timer->setAnchor(Vec2::ANCHOR_CENTER);
+	_timer->setPosition(_size.width/2, _size.height - _timer->getHeight());
+	_timer->setForeground(Color4::BLACK);
+
+	_uiScene->addChild(_timer);
 	return true;
 
 }
@@ -223,6 +235,14 @@ void MultiScreenScene::preUpdate(float timestep) {
 	else {
 		_animating = false;
 	}
+
+	Timestamp now = Timestamp();
+
+	//CULog("%llu", now.ellapsedMillis(_startTime));
+
+	_currentTime = now.ellapsedMillis(_startTime);
+	_timer->setText(std::to_string((int) (_currentTime/1000)));
+
 }
 
 
@@ -239,10 +259,7 @@ int MultiScreenScene::determineSwipeDirection() {
 }
 
 void MultiScreenScene::fixedUpdate(float timestep) {
-	Timestamp now = Timestamp();
-	now.mark();
 
-	//CULog("%llu", _startTime.ellapsedNanos(now));
 
 }
 
@@ -253,4 +270,8 @@ void MultiScreenScene::postUpdate(float timestep) {
 //Marks transitioning between cooking and platforming. Call this method with t = true when you want to transition away from this scene
 void MultiScreenScene::transition(bool t) {
 	_transitionScenes = t;
+}
+
+void MultiScreenScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
+	_uiScene->render(batch);
 }
