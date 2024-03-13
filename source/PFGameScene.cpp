@@ -227,7 +227,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode->setVisible(false);
 
 
-    loadLevel(level2);
+    loadLevel(level1);
 
     _active = true;
     _complete = false;

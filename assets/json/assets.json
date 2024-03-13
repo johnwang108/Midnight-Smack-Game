@@ -46,6 +46,21 @@
             "wrapS": "repeat",
             "wrapT": "repeat"
         },
+        "pot_station": {
+            "file": "textures/Pot_Station.png",
+            "wrapS": "repeat",
+            "wrapT": "repeat"
+        },
+        "prep_station": {
+            "file": "textures/PrepSink_Station.png",
+            "wrapS": "repeat",
+            "wrapT": "repeat"
+        },
+        "cutting_station": {
+            "file": "textures/Cutting_Station.png",
+            "wrapS": "repeat",
+            "wrapT": "repeat"
+        },
         "dpad": {
             "file": "textures/dpad.png",
             "wrapS": "clamp",

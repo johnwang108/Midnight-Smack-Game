@@ -82,7 +82,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets) {
 	_input = std::make_shared<PlatformInput>();
 	_input->init(getBounds());
 
-	std::string stationTextures[5] = {"panfry_station","panfry_station" ,"panfry_station" ,"panfry_station" ,"panfry_station"};
+	std::string stationTextures[5] = {"pot_station","prep_station" ,"panfry_station" ,"cutting_station" ,"panfry_station"};
 	initStations(stationTextures, 5);
 
 
