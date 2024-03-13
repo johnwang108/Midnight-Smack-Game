@@ -178,6 +178,10 @@ void MultiScreenScene::preUpdate(float timestep) {
 				CULog("%d", _curr);
 			}
 		}
+		// check for swipes now
+		if (!_animating) {
+			
+		}
 
 	}
 	Vec2 dist = _scenes[_curr]->getPosition() - _camera->getPosition();
@@ -191,6 +195,17 @@ void MultiScreenScene::preUpdate(float timestep) {
 }
 
 
+int MultiScreenScene::determineSwipeDirection() {
+	Vec2 swipeDelta = _input->getSwipeDelta();
+
+	Vec2 normSwipeDelta = swipeDelta.getNormalization();
+
+	if (std::fabs(normSwipeDelta.x) > std::fabs(normSwipeDelta.y)) {
+		if (normSwipeDelta.x > 0) { 
+			return 1;
+		}
+	}
+}
 
 void MultiScreenScene::fixedUpdate(float timestep) {
 

@@ -361,6 +361,8 @@ public:
     float getGestureSim();
 
     cugl::Path2 getTouchPath();
+
+    cugl::Vec2 getSwipeDelta() { return _swipeDelta; }
 };
 
 #endif /* __PF_INPUT_H__ */

@@ -53,6 +53,8 @@ public:
 	void fixedUpdate(float timestep);
 
 	void postUpdate(float timestep);
+
+	int determineSwipeDirection();
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */
