@@ -228,7 +228,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
 
     _target = std::make_shared<EnemyModel>();
-    loadLevel(level1);
+    currentLevel = level1;
+    loadLevel(currentLevel);
 
     //App class will set active true
     setActive(false);
@@ -654,7 +655,6 @@ void GameScene::postUpdate(float remain) {
             reset();
         }
     }
-    if(_input->)
 }
 
 
@@ -808,15 +808,6 @@ void GameScene::beginContact(b2Contact* contact) {
         // Could have more than one ground
         _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
     }
-
-    //See if the player collided with an enemy.
-
-    //if ((!_failed && !_complete) && ((_avatar.get() == bd1 && bd2->getName() == ENEMY_NAME) ||
-    //    (_avatar.get() == bd2 && bd1->getName() == ENEMY_NAME))) {
-
-    //    //if complete, don't fail
-    //    setFailure(true);
-    //}
 
     for (auto& _enemy : _enemies) {
         if (!_enemy->isRemoved()) {

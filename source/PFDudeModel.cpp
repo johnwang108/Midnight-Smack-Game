@@ -383,7 +383,7 @@ void DudeModel::takeDamage(float damage, const int attackDirection) {
             _health = 0;
         }
         else {
-            b2Vec2 impulse = b2Vec2(attackDirection * 15, 15);
+            b2Vec2 impulse = b2Vec2(attackDirection * 15, 10);
             _body->ApplyLinearImpulseToCenter(impulse, true);
             _knockbackTime = 2;
         }
