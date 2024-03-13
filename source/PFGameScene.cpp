@@ -810,12 +810,12 @@ void GameScene::beginContact(b2Contact* contact) {
 
     //See if the player collided with an enemy.
 
-    if ((!_failed && !_complete) && ((_avatar.get() == bd1 && bd2->getName() == ENEMY_NAME) ||
-        (_avatar.get() == bd2 && bd1->getName() == ENEMY_NAME))) {
+    //if ((!_failed && !_complete) && ((_avatar.get() == bd1 && bd2->getName() == ENEMY_NAME) ||
+    //    (_avatar.get() == bd2 && bd1->getName() == ENEMY_NAME))) {
 
-        //if complete, don't fail
-        setFailure(true);
-    }
+    //    //if complete, don't fail
+    //    setFailure(true);
+    //}
 
     for (auto& _enemy : _enemies) {
         if (!_enemy->isRemoved()) {
@@ -940,14 +940,29 @@ void GameScene::endContact(b2Contact* contact) {
     if (bd1->getName() == "enemy_attack" && bd2 == _avatar.get()) {
         Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
         removeAttack((Attack*)bd1);
     }
     else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
         Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
         Vec2 attackerPos = ((Attack*)bd2)->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
         removeAttack((Attack*)bd2);
+    }
+
+    if (bd1->getName() == ENEMY_NAME && bd2 == _avatar.get()) {
+        Vec2 enemyPos = ((DudeModel*)bd2)->getPosition();
+        Vec2 attackerPos = ((EnemyModel*)bd1)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+    }
+    else if (bd2->getName() == ENEMY_NAME && bd1 == _avatar.get()) {
+        Vec2 enemyPos = ((DudeModel*)bd1)->getPosition();
+        Vec2 attackerPos = ((EnemyModel*)bd2)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
     }
 
 }
