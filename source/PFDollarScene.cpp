@@ -58,6 +58,13 @@ void DollarScene::dispose() {
 	_assets = nullptr;
 }
 
+bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::string texture) {
+	//FIX - JOHN
+	std::shared_ptr<cugl::Texture> t = assets->get<cugl::Texture>(texture);
+	cugl::Rect rect = cugl::Rect(Vec2::ZERO, t->getSize());
+	
+	return init(assets, input, rect, texture);
+}
 
 //main init
 bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture) {
@@ -77,9 +84,11 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_poly = cugl::scene2::PolygonNode::alloc();
 	_box = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>(texture), rect);
 
+	//default pigtail
+	_targetGesture = "pigtail";
+
 	_header = scene2::Label::allocWithText("Gestures, Similarity: t tosdgodfho figjgoj ghkohko ", _assets->get<Font>(SMALL_MSG));
-	_header->setAnchor(Vec2::ANCHOR_TOP_CENTER);
-	_header->setScale(1.1f);
+	_header->setAnchor(Vec2::ANCHOR_CENTER);
 	_header->setPosition(cugl::Vec2(0, 200));
 	_header->setForeground(cugl::Color4::RED);
 
@@ -96,14 +105,11 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 void DollarScene::update(float timestep) {
 	//pop new path if this node is focused on and the input controller contains a nonempty path.
 	if (_focus) {
-		if (!_input->getTouchPath().empty()) {
+		if (!(_input->getTouchPath().empty())) {
 			_path = _input->getTouchPath();
 		}
 	}
-	
 
-
-	
 	//re-extrude path
 	_se.set(_path);
 	_se.calculate(WIDTH);
@@ -114,17 +120,18 @@ void DollarScene::update(float timestep) {
 	_poly->setColor(cugl::Color4::BLACK);
 	_poly->setAnchor(cugl::Vec2::ANCHOR_CENTER);
 
+	//GET RID OF HARDCODE JOHN TODO
 	_poly->setPosition(cugl::Vec2(0,0));
 	_box->setPosition(cugl::Vec2(0, 0));
 
 	//_header->setVisible(!isPending() && isSuccess());
-	_header->setText("Target gesture: " + _input->getGestureString() + " | Similarity: " + std::to_string(_input->getGestureSim()));
+	_header->setText("Target gesture: " + _targetGesture + " | Similarity: " + std::to_string(_input->getGestureSim()));
 };
 
 //is gesture inputting still in progress?
 bool DollarScene::isPending() {
 	//TODO
-	return false;
+	return !_input->isGestureCompleted();
 };
 
 //is gesture inputting a success?
@@ -137,6 +144,11 @@ void DollarScene::setFocus(bool focus) {
 	if (focus) {
 		_input->popTouchPath();
 	}
+}
+
+void DollarScene::setTargetGesture(std::string gesture) {
+	_targetGesture = gesture;
+	_input->setTargetGesture(gesture);
 }
 
 //draws a boundary rectangle

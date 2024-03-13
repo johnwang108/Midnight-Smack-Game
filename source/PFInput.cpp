@@ -137,7 +137,11 @@ void PlatformInput::dispose() {
  * @return true if the controller was initialized successfully
  */
 bool PlatformInput::init(const Rect bounds) {
-    CULog("HI I INITEEDDDD!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! :D");
+    if (_active) {
+        CULog("ALREADY INITED"); 
+        return false;
+    }
+    CULog("HI I INITEDDDD!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! :D");
     id = rand();
     CULog("ID: %f", id);
     bool success = true;
@@ -263,12 +267,6 @@ bool PlatformInput::init(const Rect bounds) {
  * frame, so we need to accumulate all of the data together.
  */
 void PlatformInput::update(float dt) {
-    //CULog("PATH STATS");
-    //CULog("SIZE: %d", _touchPath.size());
-    //CULog("EMPTY: %s", _touchPath.empty() ? "true" : "false");
-    if (!_touchPath.empty()) {
-        CULog("Not empty :0");
-    }
 #ifndef CU_TOUCH_SCREEN
     // DESKTOP CONTROLS
     Keyboard* keys = Input::get<Keyboard>();
@@ -649,10 +647,11 @@ cugl::Path2 PlatformInput::getTouchPath() {
     return _touchPath;
 }
 
-/** Returns touch path and sets it to empty.*/
+/** Returns touch path and sets it to empty. Also sets complete to false.*/
 cugl::Path2 PlatformInput::popTouchPath() {
     cugl::Path2 temp = _touchPath;
     _touchPath = cugl::Path2();
+    _gestureCompleted = false;
     return temp;
 }
 
@@ -660,7 +659,7 @@ cugl::Path2 PlatformInput::popTouchPath() {
 void PlatformInput::mousePressCB(const cugl::MouseEvent& event, bool focus) {
     CULog("Mouse began");
     Vec2 pos = event.position;
-
+    _gestureCompleted = false;
     _touchPath = cugl::Path2();
     _touchPath.push(pos);
 }
@@ -684,22 +683,20 @@ void PlatformInput::mouseReleaseCB(const cugl::MouseEvent& event, bool focus) {
     smoother.set(_touchPath);
     smoother.calculate();
     _touchPath = smoother.getPath();
+    _gestureCompleted = true;
 
-    if (_touchPath.size() < 1) {
+    if (_touchPath.size() < 3) {
 		_lastGestureSimilarity = -1;
 		_lastGestureString = "No Touchscreen";
 		return;
     }
     else {
-        std::string result = _dollarRecog->match(_touchPath, similarity);
-        _lastGestureString = result;
+        //std::string result = _dollarRecog->match(_touchPath, similarity);
+        //_lastGestureString = result;
+        //_lastGestureSimilarity = similarity;
+        similarity = _dollarRecog->similarity(_targetGesture, _touchPath);
+        _lastGestureString = _targetGesture;
         _lastGestureSimilarity = similarity;
     }
-
-    //CULog("Gesture Guess: %s, Similarity: %f", result.c_str(), similarity);
-    //CULog("PATH STATS");
-    //CULog("SIZE: %d", _touchPath.size());
-    //CULog("THIS");
-    //CULog("%f", this->id);
 }
 

@@ -42,7 +42,10 @@
             "file":      "textures/bull.png"
         },
         "panfry_station":{
-            "file":      "textures/Panfry_Station.png",
+            "file":      "textures/Panfry_Station.png"
+        },
+        "cooktime" : {
+            "file":      "textures/cutting_board.png",
             "wrapS":    "repeat",
             "wrapT":    "repeat"
         },

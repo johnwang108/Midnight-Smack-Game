@@ -83,6 +83,12 @@ protected:
     float _preparetime;
     bool _shooted;
 
+    //true if quick time can be initiated
+    bool _vulnerable;
+
+    //placeholder, name of the gesture to input for this enemy
+    std::string _gestureName;
+
 
     std::vector<std::shared_ptr<EnemyAttack>> _attacks;
 
@@ -203,6 +209,15 @@ public:
     void dispose();
 
     void createAttack(GameScene& scene);
+
+
+    void setVulnerable(bool vulnerable) { _vulnerable = vulnerable; }
+
+    bool isVulnerable() {return _vulnerable; }
+
+    std::string getGestureString() { return _gestureName; }
+    
+    void setGestureString(std::string gesture) { _gestureName = gesture; };
 
 };
 
