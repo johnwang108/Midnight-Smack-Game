@@ -296,7 +296,7 @@ void PlatformInput::update(float dt) {
         _keySlow = _gameCont->isButtonPressed(GameController::Button::X);
         _keyReset = _gameCont->isButtonPressed(GameController::Button::LEFT_SHOULDER);
         _keyExit = _gameCont->isButtonPressed(GameController::Button::RIGHT_SHOULDER);
-        
+        _keyTransition = _gameCont->isButtonPressed(GameController::Button::B);
 
 
         float lTriggerAmt = _gameCont->getAxisPosition(GameController::Axis::TRIGGER_LEFT);
@@ -318,6 +318,7 @@ void PlatformInput::update(float dt) {
     _keySlow = _gameCont->isButtonPressed(GameController::Button::X);
     _keyReset = _gameCont->isButtonPressed(GameController::Button::LEFT_SHOULDER);
     _keyExit = _gameCont->isButtonPressed(GameController::Button::RIGHT_SHOULDER);
+    _keyTransition = _gameCont->isButtonPressed(GameController::Button::B);
 
 
 
@@ -392,6 +393,7 @@ void PlatformInput::clear() {
     _firePressed = false;
     _dashPressed = false;
     _slowPressed = false;
+    _transitionPressed = false;
 }
 
 #pragma mark -
