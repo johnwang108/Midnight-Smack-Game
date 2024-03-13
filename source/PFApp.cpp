@@ -137,8 +137,18 @@ void PlatformApp::update(float dt) {
         _loading.update(0.01f);
     } else if (!_loaded) {
         _loading.dispose(); // Disables the input listeners in this mode
-        _gameplay.init(_assets);
-        _multiScreen.init(_assets);
+
+        std::shared_ptr<PlatformInput> input = std::make_shared<PlatformInput>();
+
+        //MULTISCREEN IS RESPONSIBLE FOR INITING THE INPUT CONTROLLER.  THIS IS A TEMPORARY SOLUTION
+        _multiScreen.init(_assets, input);
+        _multiScreen.setActive(MULTI_SCREEN);
+
+        _gameplay.init(_assets, input);
+        _gameplay.setActive(!MULTI_SCREEN);
+
+
+
         _loaded = true;
         
         // Switch to deterministic mode
@@ -167,8 +177,30 @@ void PlatformApp::update(float dt) {
  * @param dt    The amount of time (in seconds) since the last frame
  */
 void PlatformApp::preUpdate(float dt) {
-    _gameplay.preUpdate(dt);
-    _multiScreen.preUpdate(dt);
+
+    if (_gameplay.transitionedAway()) {
+        _gameplay.setActive(false);
+        _gameplay.transition(false);
+
+        _multiScreen.setActive(true);
+        _multiScreen.preUpdate(dt);
+    }
+    else if (_multiScreen.transitionedAway()) {
+		_multiScreen.transition(false);
+		_multiScreen.setActive(false);
+
+		_gameplay.setActive(true);
+		_gameplay.preUpdate(dt);
+    }
+    else if (_gameplay.isActive()) {
+		_gameplay.preUpdate(dt);
+    }
+    else if (_multiScreen.isActive()) {
+		_multiScreen.preUpdate(dt);
+    }
+    else {
+		CULog("ERROR ERROR ERROR");
+	}
 }
 
 /**
@@ -195,8 +227,14 @@ void PlatformApp::preUpdate(float dt) {
 void PlatformApp::fixedUpdate() {
     // Compute time to report to game scene version of fixedUpdate
     float time = getFixedStep()/1000000.0f;
-    _gameplay.fixedUpdate(time);
-    _multiScreen.fixedUpdate(time);
+    if (_gameplay.isActive()) {
+        _gameplay.fixedUpdate(time);
+    }
+    else {
+        _multiScreen.fixedUpdate(time);
+    }
+    
+    
 }
 
 /**
@@ -225,8 +263,12 @@ void PlatformApp::fixedUpdate() {
 void PlatformApp::postUpdate(float dt) {
     // Compute time to report to game scene version of postUpdate
     float time = getFixedRemainder()/1000000.0f;
-    _gameplay.postUpdate(time);
-    _multiScreen.postUpdate(time);
+    if (_gameplay.isActive()) {
+		_gameplay.postUpdate(time);
+	}
+    else {
+		_multiScreen.postUpdate(time);
+	}
 }
 
 /**
@@ -242,11 +284,11 @@ void PlatformApp::draw() {
     if (!_loaded) {
         _loading.render(_batch);
     } else {
-        if (MULTI_SCREEN) {
-            _multiScreen.render(_batch);
+        if (_gameplay.isActive()) {
+            _gameplay.render(_batch);
         }
         else {
-			_gameplay.render(_batch);
+            _multiScreen.render(_batch);
         }
     }
 }

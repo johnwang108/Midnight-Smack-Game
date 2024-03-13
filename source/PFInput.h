@@ -60,6 +60,8 @@ private:
     /** Whether the slow key is down */
     bool _keySlow;
 
+    bool _keyTransition;
+
    
     std::string _lastGestureString;
     float _lastGestureSimilarity;
@@ -69,6 +71,9 @@ private:
     bool _dashKey;
    
     std::shared_ptr<cugl::GameController> _gameCont;
+
+
+
     
   
 protected:
@@ -89,6 +94,8 @@ protected:
     float _horizontal;
     float _vertical;
     bool _dashPressed;
+
+    bool _transitionPressed;
 
     bool _zoomIn;
     bool _zoomOut;
@@ -186,6 +193,12 @@ protected:
 public:
 #pragma mark -
 #pragma mark Constructors
+
+
+    float id;
+
+
+
     /**
      * Creates a new input controller.
      *
@@ -306,6 +319,8 @@ public:
 
     bool didDash() const { return _dashPressed; }
 
+    bool didTransition() const { return _transitionPressed; }
+
     /**
      * Returns true if the virtual joystick is in use (touch only)
      *
@@ -361,6 +376,32 @@ public:
     float getGestureSim();
 
     cugl::Path2 getTouchPath();
+
+    cugl::Path2 popTouchPath();
+
+    /**
+     * Callback for the beginning of a mouse press event
+     *
+     * @param event The associated event
+     * @param focus	Whether the listener currently has focus
+     */
+    void mousePressCB(const cugl::MouseEvent& event, bool focus);
+
+    /**
+     * Callback for the beginning of a mouse move event
+     *
+     * @param event The associated event
+     * @param focus	Whether the listener currently has focus
+     */
+    void mouseDragCB(const cugl::MouseEvent& event, bool focus);
+
+    /**
+     * Callback for the beginning of a mouse release event
+     *
+     * @param event The associated event
+     * @param focus	Whether the listener currently has focus
+     */
+    void mouseReleaseCB(const cugl::MouseEvent& event, bool focus);
 
     cugl::Vec2 getSwipeDelta() { return _swipeDelta; }
 };

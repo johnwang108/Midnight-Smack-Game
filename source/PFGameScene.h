@@ -130,6 +130,9 @@ protected:
 
     std::shared_ptr<Level1> level1 = std::make_shared<Level1>();
 
+    /** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
+    bool _transitionScenes;
+
 #pragma mark Internal Object Management
     /**
      * Lays out the game geography.
@@ -205,7 +208,7 @@ public:
      *
      * @return true if the controller is initialized properly, false otherwise.
      */
-    bool init(const std::shared_ptr<cugl::AssetManager>& assets);
+    bool init(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input);
 
     /**
      * Initializes the controller contents, and starts the game
@@ -224,7 +227,7 @@ public:
      * @return  true if the controller is initialized properly, false otherwise.
      */
     bool init(const std::shared_ptr<cugl::AssetManager>& assets, 
-              const cugl::Rect& rect);
+              const cugl::Rect& rect, std::shared_ptr<PlatformInput> input);
     
     /**
      * Initializes the controller contents, and starts the game
@@ -244,7 +247,7 @@ public:
      * @return  true if the controller is initialized properly, false otherwise.
      */
     bool init(const std::shared_ptr<cugl::AssetManager>& assets, 
-              const cugl::Rect& rect, const cugl::Vec2& gravity);
+              const cugl::Rect& rect, const cugl::Vec2& gravity, std::shared_ptr<PlatformInput> input);
     
     
 #pragma mark -
@@ -455,6 +458,9 @@ public:
 
     std::shared_ptr<BullModel> getBull() const { return _Bull; }
     void setBull(const std::shared_ptr<BullModel>& bull) { _Bull = bull; }
-  };
 
+    void transition(bool t);
+
+    bool transitionedAway() { return _transitionScenes; }
+  };
 #endif /* __PF_GAME_SCENE_H__ */

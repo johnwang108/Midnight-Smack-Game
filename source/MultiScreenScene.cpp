@@ -1,6 +1,7 @@
 #include "MultiScreenScene.h"
 #include "PFDollarScene.h"
 #include <algorithm> 
+#include "Levels/Levels.h"
 
 #define CAMERA_MOVE_SPEED 50.0f
 
@@ -64,7 +65,7 @@ void MultiScreenScene::dispose() {
 	_scenes[4] = nullptr;
 }
 
-bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets) {
+bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
 	_size = Application::get()->getDisplaySize();
 	if (assets == nullptr) {
 		return false;
@@ -78,19 +79,30 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets) {
 
 	_assets = assets;
 
-	CULog("Size: %f %f", _size.width, _size.height);
-	_input = std::make_shared<PlatformInput>();
+	//MULTISCREEN IS RESPONSIBLE FOR INITING THE SHARED INPUT CONTROLLER. TEMPORARY SOLUTION
+	_input = input;
 	_input->init(getBounds());
+	//_input = std::make_shared<PlatformInput>();
+	//_input->init(getBounds());
 
 	std::string stationTextures[5] = {"pot_station","prep_station" ,"panfry_station" ,"cutting_station" ,"panfry_station"};
 	initStations(stationTextures, 5);
 
 
-	_active = true;
+	_scenes[2]->setFocus(true);
 
+
+	//init inactive
+	setActive(false);
+	_transitionScenes = false;
+	
 	_curr = 2;
 	_animating = false;
 	Application::get()->setClearColor(Color4::BLACK);
+
+
+	_startTime = Timestamp();
+	_startTime.mark();
 
 	return true;
 
@@ -123,6 +135,16 @@ void MultiScreenScene::initStations(std::string textures[], int size) {
 		addChild(_scenes[i]);
 	}
 }
+
+void MultiScreenScene::readLevel(std::shared_ptr<JsonValue> level) {
+	std::shared_ptr<JsonValue> events = level->get("events");
+	if (events->type() == JsonValue::Type::ArrayType) {
+		for (int i = 0; i < events->size(); i++) {
+			std::shared_ptr<JsonValue> item = events->get(i);
+			
+		}
+	}
+}
  
 
 void MultiScreenScene::update(float timestep) {
@@ -146,36 +168,45 @@ void MultiScreenScene::preUpdate(float timestep) {
 		Application::get()->quit();
 	}
 
-	
+	if (_input->didTransition()) {
+		transition(true);
+		CULog("______________________________________________________________________________________________________");
+		return;
+	}
+
 	//if not animating, listen for screen change input. TODO for three fingered swipes to switch scenes
 	if (!_animating) {
 		if (_input->getHorizontal() > 0) {
 			if ((_curr == 1) || (_curr == 2)) {
+				_scenes[_curr]->setFocus(false);
 				_curr++;
+				_scenes[_curr]->setFocus(true);
 				_animating = true;
-				CULog("%d", _curr);
 			}
 		}
 		else if (_input->getHorizontal() < 0) {
 			if ((_curr == 2) || (_curr == 3)) {
+				_scenes[_curr]->setFocus(false);
 				_curr--;
+				_scenes[_curr]->setFocus(true);
 				_animating = true;
-				CULog("%d", _curr);
 			}
 		}
 
 		else if (_input->getVertical() > 0) {
 			if ((_curr == 2) || (_curr == 4)) {
+				_scenes[_curr]->setFocus(false);
 				_curr -= 2;
+				_scenes[_curr]->setFocus(true);
 				_animating = true;
-				CULog("%d", _curr);
 			}
 		}
 		else if (_input->getVertical() < 0) {
 			if ((_curr == 0) || (_curr == 2)) {
+				_scenes[_curr]->setFocus(false);
 				_curr += 2;
+				_scenes[_curr]->setFocus(true);
 				_animating = true;
-				CULog("%d", _curr);
 			}
 		}
 		// check for swipes now
@@ -208,9 +239,18 @@ int MultiScreenScene::determineSwipeDirection() {
 }
 
 void MultiScreenScene::fixedUpdate(float timestep) {
+	Timestamp now = Timestamp();
+	now.mark();
+
+	//CULog("%llu", _startTime.ellapsedNanos(now));
 
 }
 
 void MultiScreenScene::postUpdate(float timestep) {
 
+}
+
+//Marks transitioning between cooking and platforming. Call this method with t = true when you want to transition away from this scene
+void MultiScreenScene::transition(bool t) {
+	_transitionScenes = t;
 }

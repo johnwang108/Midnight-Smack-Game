@@ -4,6 +4,7 @@
 #include <cugl/cugl.h>
 #include "PFInput.h"
 #include "PFDollarScene.h"
+#include "Order.h"
 #include <cugl/cugl.h>
 #include <box2d/b2_world_callbacks.h>
 #include <box2d/b2_fixture.h>
@@ -12,6 +13,8 @@
 
 
 class MultiScreenScene : public cugl::Scene2 {
+private:
+	cugl::Timestamp _startTime;
 protected:
 	std::shared_ptr<cugl::AssetManager> _assets;
 
@@ -31,6 +34,11 @@ protected:
 	bool _animating;
 	/** The current scene */
 	int _curr;
+
+	/** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
+	bool _transitionScenes;
+
+	std::vector<Order> _orders; 
 public:
 	MultiScreenScene();
 
@@ -38,7 +46,7 @@ public:
 
 	void dispose();
 
-	bool init(const std::shared_ptr<cugl::AssetManager>& assets);
+	bool init(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input);
 
 	void initStations(std::string arr[], int size);
 
@@ -54,7 +62,13 @@ public:
 
 	void postUpdate(float timestep);
 
+	void transition(bool t);
+
+	bool transitionedAway() { return _transitionScenes; }
+
 	int determineSwipeDirection();
+
+	void readLevel(std::shared_ptr<JsonValue> level);
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */
