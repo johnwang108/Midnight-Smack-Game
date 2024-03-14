@@ -94,6 +94,15 @@ protected:
     std::shared_ptr<DudeModel>			  _avatar;
 
     std::vector<std::shared_ptr<EnemyModel>> _enemies;
+
+
+    //Valid targets for cook-time
+    std::vector<std::shared_ptr<EnemyModel>> _vulnerables;
+
+    //Current target for cook-time
+    std::shared_ptr<EnemyModel> _target;
+
+
     /** Reference to the spinning barrier */
     std::shared_ptr<Spinner>			  _spinner;
     /** Reference to the rope bridge */
@@ -444,6 +453,7 @@ public:
 
     void loadLevel(std::shared_ptr<Levels> level) {
         level->populate(*this);
+        currentLevel = level;
     }
 
     void setAssets(const std::shared_ptr<AssetManager>& assets) { _assets = assets; }

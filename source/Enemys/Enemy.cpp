@@ -40,6 +40,7 @@ bool EnemyModel::init(const Vec2& pos, const Size& size, float scale, EnemyType 
         _attacktime = false;
         _preparetime= 0;
         _shooted = false;
+        _vulnerable = false;
 
         return true;
     }
@@ -94,7 +95,11 @@ void EnemyModel::takeDamage(float damage, const int attackDirection) {
         _health -= damage;
         if (_health < 0) {
             _health = 0;
-        }else {
+        }
+        else {
+            if (_health == 1) {
+                setVulnerable(true);
+            }
             b2Vec2 impulse = b2Vec2(-attackDirection * 5, 10);
             _body->ApplyLinearImpulseToCenter(impulse, true);
             _knockbackTime = 1;

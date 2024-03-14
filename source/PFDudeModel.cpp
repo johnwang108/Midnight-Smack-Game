@@ -114,7 +114,6 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         setDensity(DUDE_DENSITY);
         setFriction(0.0f);      // HE WILL STICK TO WALLS IF YOU FORGET
         setFixedRotation(true); // OTHERWISE, HE IS A WEEBLE WOBBLE
-        
         // Gameplay attributes
         _isGrounded = false;
         _isShooting = false;
@@ -127,6 +126,13 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         _shootCooldown = 0;
         _jumpCooldown  = 0;
         _dashNum = 1;
+
+        _health=100;
+
+        _healthCooldown=0.2;
+        _lastDamageTime=0;
+        _knockbackTime = 0;
+
         return true;
     }
     return false;
@@ -265,7 +271,7 @@ void DudeModel::applyForce(float h, float v) {
     }
     else if (isJumping() && contactingWall() && !isGrounded()) {
         setVY(0);
-        b2Vec2 force(DUDE_JUMP*5* (isFacingRight() ? 1: -1), DUDE_JUMP * 1.2);
+        b2Vec2 force(4 * DUDE_JUMP*5* (isFacingRight() ? 1: -1), DUDE_JUMP * 1.2);
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
     }
     if (canDash() && getDashNum()>0) {
@@ -285,6 +291,27 @@ void DudeModel::applyForce(float h, float v) {
  * @param delta Number of seconds since last animation frame
  */
 void DudeModel::update(float dt) {
+
+    CapsuleObstacle::update(dt);
+
+    if (_knockbackTime > 0) {
+        if (int(_knockbackTime*10) % 2 <1) {
+			_node->setVisible(true);
+		}
+        else {
+			_node->setVisible(false);
+		}
+		_knockbackTime -= dt;
+        if (_node != nullptr) {
+            _node->setPosition(getPosition() * _drawScale);
+            _node->setAngle(getAngle());
+        }
+        return;
+	}
+    else {
+        _lastDamageTime += dt;
+	}
+
     if (_dashCooldown > DASH_COOLDOWN - floatyFrames) {
         setGravityScale(0);
     }
@@ -317,7 +344,7 @@ void DudeModel::update(float dt) {
         }
     }
     
-    CapsuleObstacle::update(dt);
+
     
     if (_node != nullptr) {
         _node->setPosition(getPosition()*_drawScale);
@@ -348,5 +375,18 @@ void DudeModel::resetDebug() {
 }
 
 
-
+void DudeModel::takeDamage(float damage, const int attackDirection) {
+    if (_lastDamageTime >= _healthCooldown) {
+        _lastDamageTime = 0;
+        _health -= damage;
+        if (_health < 0) {
+            _health = 0;
+        }
+        else {
+            b2Vec2 impulse = b2Vec2(attackDirection * 15, 15);
+            _body->ApplyLinearImpulseToCenter(impulse, true);
+            _knockbackTime = 2;
+        }
+    }
+}
 

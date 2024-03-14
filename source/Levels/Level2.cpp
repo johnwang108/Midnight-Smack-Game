@@ -132,7 +132,7 @@ void Level2::populate(GameScene& scene) {
 	}
 
 #pragma mark : Platforms
-	for (int ii = 0; ii < PLATFORM_COUNT; ii++) {
+	for (int ii = 0; ii < ALT_PLATFORM_COUNT; ii++) {
 		std::shared_ptr<physics2::PolygonObstacle> platobj;
 		Poly2 platform(reinterpret_cast<Vec2*>(ALT_PLATFORMS[ii]), sizeof(ALT_PLATFORMS[ii]) / sizeof(float) / 2);
 
@@ -172,7 +172,6 @@ void Level2::populate(GameScene& scene) {
 	// Play the background music on a loop.
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
 	AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
-
 
 	Vec2 shrimp_pos = SHRIMP_POS;
 	image = _assets->get<Texture>(BULL_TEXTURE);

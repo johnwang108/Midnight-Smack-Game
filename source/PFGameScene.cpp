@@ -51,10 +51,7 @@ using namespace cugl;
 
 #define CAMERA_FOLLOWS_PLAYER true
 
-
-
-bool isLevel1 = true;
-
+#define COOKTIME_MAX_DIST 3.5f
 
 
 #pragma mark -
@@ -146,6 +143,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _assets = assets;
 
     _input = input;
+    _input->init(getBounds());
     /*_input = std::make_shared<PlatformInput>();
     _input->init(getBounds());*/
     
@@ -202,8 +200,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _gesturehud = scene2::Label::allocWithText("Gestures, Similarity: t tosdgodfho figjgoj ghkohko ", _assets->get<Font>(SMALL_MSG));
     _gesturehud->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
     _gesturehud->setScale(0.7f);
-    CULog("%f", _gesturehud->getContentWidth());
-    CULog("%f", _gesturehud->getWidth());
+  //  CULog("%f", _gesturehud->getContentWidth());
+   // CULog("%f", _gesturehud->getWidth());
     _gesturehud->setPosition(0,50);
     _gesturehud->setForeground(LOSE_COLOR);
     _gesturehud->setVisible(true);
@@ -212,11 +210,11 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _slowed = false;
     _attacks = std::vector<std::shared_ptr<Attack>>();
 
+    
     _dollarnode = std::make_shared<DollarScene>();
-    _dollarnode->init(_assets, _input);
-    _dollarnode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
-    //_dollarnode->setPosition(getSize().getIWidth() / 2.0f, getSize().getIHeight() / 2.0f);
-    _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
+    //_dollarnode->init(_assets, _input, cugl::Rect(Vec2::ZERO, computeActiveSize()/2), "cooktime");
+    _dollarnode->init(_assets, _input, "cooktime");
+    _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_BOTTOM_LEFT);
     _dollarnode->setVisible(false);
     
     addChild(_worldnode);
@@ -229,7 +227,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_dollarnode);
     
 
-
+    _target = std::make_shared<EnemyModel>();
     loadLevel(level1);
 
     //App class will set active true
@@ -284,12 +282,13 @@ void GameScene::reset() {
     _background = nullptr;
 
     _enemies.clear();
+    _vulnerables.clear();
     _Bull= nullptr;
 
     setFailure(false);
     setComplete(false);
 
-    loadLevel(level1);
+    loadLevel(currentLevel);
 }
 
 /**
@@ -389,12 +388,39 @@ void GameScene::preUpdate(float dt) {
         return;
     }
 
-    //_slowed = _input->didSlow();
+    //TODO handle vulnerables smarter
     if (_input->didSlow()) {
-        _slowed = !_slowed;
+        if (_slowed) {
+            //_slowed = !_slowed;
+            //_target = nullptr;
+        }
+        //activate cooktime
+        else {
+            CULog("Activate!");
+            float minDist = FLT_MAX;
+            for (auto& e : _enemies) {
+                if (e->isRemoved() || !(e->isVulnerable())) {
+                    continue;
+                }
+                if ((e->getPosition() - _avatar->getPosition()).length() < minDist) {
+                    _target = e;
+                    minDist = (e->getPosition() - _avatar->getPosition()).length();
+                }
+            }
+            if (minDist < COOKTIME_MAX_DIST) {
+                _slowed = true;
+                _dollarnode->setTargetGesture(_target->getGestureString());
+            }
+
+        }
+
     }
-    if (!_slowed) {
+
+    if (!_slowed && (_dollarnode->shouldIDisappear())) {
         _dollarnode->setVisible(false);
+        if (_dollarnode->isFocus()) {
+            _dollarnode->setFocus(false);
+        }
 
         _avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
         _avatar->setJumping(_input->didJump());
@@ -407,11 +433,35 @@ void GameScene::preUpdate(float dt) {
     }
     else {
         _dollarnode->setVisible(true);
+        if (!(_dollarnode->isFocus())) {
+            _dollarnode->setFocus(true);
+        }
 
         _avatar->setMovement(0);
-        _avatar->setJumping(_input->didJump());
-        _avatar->setDash(_input->didDash());
+        //_avatar->setJumping(_input->didJump());
+        _avatar->setJumping(false);
+        //_avatar->setDash(_input->didDash());
+        _avatar->setDash(false);
         _avatar->applyForce(0, 0);
+
+        //cooktime handling. Assume that _target not null, if it is null then continue
+        if (!_dollarnode->isPending()) {
+            if (_target != nullptr) {
+                _slowed = false;
+                std::string s = _target->getGestureString();
+                if (_dollarnode->isSuccess()) {
+                    CULog("NICE!!!!!!!!!!!!!!");
+                    removeEnemy(_target.get());
+                }
+                else {
+                    CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
+                }
+                _target = nullptr;
+            }
+            else {
+
+            }
+        }
     }
     Vec2 avatarPos = _avatar->getPosition();
     for (auto& enemy : _enemies) {
@@ -456,6 +506,9 @@ void GameScene::preUpdate(float dt) {
             _Bull->update(dt);
         }
     }
+
+    //update dollar node
+    _dollarnode->update(dt);
 }
 
 /**
@@ -487,7 +540,7 @@ void GameScene::preUpdate(float dt) {
 void GameScene::fixedUpdate(float step) {
     // Turn the physics engine crank.
     if (_slowed) { 
-        step = step / 5;
+        step = step / 15;
     }
     //camera logic
     if (CAMERA_FOLLOWS_PLAYER) {
@@ -501,8 +554,11 @@ void GameScene::fixedUpdate(float step) {
         //cugl::Vec3 pos = _avatar->getPosition() * _scale;
         _camera->setPosition(pos);
 		_camera->update();
+        _dollarnode->setPosition(pos);
     }
-
+    if (_avatar->getHealth()<=0) {
+        setFailure(true);
+	}
     _world->update(step);
 }
     
@@ -579,56 +635,25 @@ void GameScene::postUpdate(float remain) {
         setFailure(true);
     }
 
-    // Reset the game if we win or lose.
-   /* if (_countdown > 0) {
+     //Reset the game if we win or lose.
+   if (_countdown > 0) {
         _countdown--;
     } else if (_countdown == 0) {
-        if (_failed == false && isLevel1) {
-            isLevel1 = false;
-            float x = 0.0f;
-            float y = 0.0f;
-            for (int i = 0; i < 8; ++i) {
-                PLATFORMS[i][0] = 1.0f + x;
-                PLATFORMS[i][1] = 4.0f + y;
-                PLATFORMS[i][2] = 1.0f + x;
-                PLATFORMS[i][3] = 2.5f + y;
-                PLATFORMS[i][4] = 4.5f + x;
-                PLATFORMS[i][5] = 2.5f + y;
-                PLATFORMS[i][6] = 4.5f + x;
-                PLATFORMS[i][7] = 4.0f + y;
-                x = x + 3.5f;
-                y = y + 1.5f;
+        if (_failed == false) {
+           
+            if (currentLevel == level1) {
+                loadLevel(level2);
+                reset();
             }
-            PLATFORMS[8][0] = 29.0f;
-            PLATFORMS[8][1] = 14.5f;
-            PLATFORMS[8][2] = 29.0f;
-            PLATFORMS[8][3] = 13.0f;
-            PLATFORMS[8][4] = 31.0f;
-            PLATFORMS[8][5] = 13.0f;
-            PLATFORMS[8][6] = 31.0f;
-            PLATFORMS[8][7] = 14.5f;
-            PLATFORMS[9][0] = 0.0f;
-            PLATFORMS[9][1] = 1.0f;
-            PLATFORMS[9][2] = 0.0f;
-            PLATFORMS[9][3] = 0.0f;
-            PLATFORMS[9][4] = 1.0f;
-            PLATFORMS[9][5] = 0.0f;
-            PLATFORMS[9][6] = 1.0f;
-            PLATFORMS[9][7] = 1.0f;
-            GOAL_POS[0] = 29.0f;
-            GOAL_POS[1] = 16.0f;
-            SHRIMP_POS[0] = 14.0f,
-            SHRIMP_POS[1] = 16.0f;
-            RICE_POS[0] = 21.0f;
-            RICE_POS[1] = 14.0f;
-            EGG_POS[0] = 10.0f;
-            EGG_POS[1] = 12.0f;
+            else {
+                loadLevel(level1);
+                reset();
+            }
         }
-        else if(_failed == false && !isLevel1) {
-            //close game somehow
+        else if(_failed) {
+            reset();
         }
-        reset();
-    }*/
+    }
 }
 
 
@@ -785,35 +810,49 @@ void GameScene::beginContact(b2Contact* contact) {
 
     //See if the player collided with an enemy.
 
-    if ((!_failed && !_complete) && ((_avatar.get() == bd1 && bd2->getName() == ENEMY_NAME) ||
-        (_avatar.get() == bd2 && bd1->getName() == ENEMY_NAME))) {
+    //if ((!_failed && !_complete) && ((_avatar.get() == bd1 && bd2->getName() == ENEMY_NAME) ||
+    //    (_avatar.get() == bd2 && bd1->getName() == ENEMY_NAME))) {
 
-        //if complete, don't fail
-        setFailure(true);
-    }
+    //    //if complete, don't fail
+    //    setFailure(true);
+    //}
 
     for (auto& _enemy : _enemies) {
         if (!_enemy->isRemoved()) {
             if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
                 (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
-                _enemy->setGrounded(true);
+                    _enemy->setGrounded(true);
             }
 
         }
     }
-    if (_Bull!=nullptr && _Bull ->isChasing() && bd1 == _Bull.get() && bd2->getName() == WALL_NAME) {
+    if (_Bull != nullptr && _Bull->isChasing() && bd1 == _Bull.get() && bd2->getName() == WALL_NAME) {
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd2)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
         _Bull->setIsChasing(false);
         _Bull->takeDamage(0, direction);
-    }else if(_Bull != nullptr && _Bull->isChasing() && bd1->getName() == WALL_NAME && bd2 == _Bull.get()) {
+    }
+    else if (_Bull != nullptr && _Bull->isChasing() && bd1->getName() == WALL_NAME && bd2 == _Bull.get()) {
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd1)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
         _Bull->setIsChasing(false);
         _Bull->takeDamage(0, direction);
     }
+    if (_Bull != nullptr && bd1 == _Bull.get() && bd2 == _avatar.get()) {
+        Vec2 avatarPos = _avatar->getPosition();
+        Vec2 bullPos = _Bull->getPosition();
+        int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
+        _avatar->takeDamage(34, direction);
+    }
+    else if (_Bull != nullptr && bd1 == _avatar.get() && bd2 == _Bull.get()) {
+        Vec2 avatarPos = _avatar->getPosition();
+        Vec2 bullPos = _Bull->getPosition();
+        int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
+        _avatar->takeDamage(34, direction);
+    }
+
 
 
     // If we hit the "win" door, we are done
@@ -827,12 +866,12 @@ void GameScene::beginContact(b2Contact* contact) {
 //Basically the same as removeAttack, can refactor
 void GameScene::removeEnemy(EnemyModel* enemy) {
     if (enemy->isRemoved()) {
-		return;
-	}
+        return;
+    }
     _worldnode->removeChild(enemy->getSceneNode());
-	enemy->setDebugScene(nullptr);
-	enemy->markRemoved(true); 
-    
+    enemy->setDebugScene(nullptr);
+    enemy->markRemoved(true);
+
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
 }
@@ -871,7 +910,7 @@ void GameScene::endContact(b2Contact* contact) {
     bool p3 = (_avatar->getSensorName() == fd1);
     bool p4 = (bd2->getName() != WALL_NAME);
     bool p5 = _avatar->contactingWall();
-  //  CULog("5 %d", p5);
+    //  CULog("5 %d", p5);
     if (!(p1 || p2 || p3) && p4 && p5) {
         _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
         _avatar->setContactingWall(false);
@@ -881,8 +920,11 @@ void GameScene::endContact(b2Contact* contact) {
         Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-      //  removeAttack((Attack*)bd1);
+        //  removeAttack((Attack*)bd1);
         ((EnemyModel*)bd2)->takeDamage(34, direction);
+        if (((EnemyModel*)bd2)->getHealth() <= 50){
+            ((EnemyModel*)bd2)->setVulnerable(true);
+        }
     }
     else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
         Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
@@ -890,19 +932,37 @@ void GameScene::endContact(b2Contact* contact) {
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
      //   removeAttack((Attack*)bd2);
         ((EnemyModel*)bd1)->takeDamage(34, direction);
+        if (((EnemyModel*)bd1)->getHealth() <= 50) {
+            ((EnemyModel*)bd1)->setVulnerable(true);
+        }
     }
 
     if (bd1->getName() == "enemy_attack" && bd2 == _avatar.get()) {
         Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
         removeAttack((Attack*)bd1);
     }
     else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
         Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
         Vec2 attackerPos = ((Attack*)bd2)->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
         removeAttack((Attack*)bd2);
+    }
+
+    if (bd1->getName() == ENEMY_NAME && bd2 == _avatar.get()) {
+        Vec2 enemyPos = ((DudeModel*)bd2)->getPosition();
+        Vec2 attackerPos = ((EnemyModel*)bd1)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+    }
+    else if (bd2->getName() == ENEMY_NAME && bd1 == _avatar.get()) {
+        Vec2 enemyPos = ((DudeModel*)bd1)->getPosition();
+        Vec2 attackerPos = ((EnemyModel*)bd2)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
     }
 
 }
@@ -947,5 +1007,4 @@ void GameScene::unzoomCamera() {
 //Marks transitioning between cooking and platforming. Call this method with t = true when you want to transition away from this scene
 void GameScene::transition(bool t) {
     _transitionScenes = t;
-
 }

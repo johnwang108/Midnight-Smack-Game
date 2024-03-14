@@ -15,6 +15,8 @@ namespace LayoutPositions {
 	Vec2 Bottom(const Vec2& size) { return Vec2(0, -size.y); }
  }
 
+std::string targets[5] = { "pigtail", "circle", "vertSwipe", "horizSwipe", "v" };
+
 
 //basic math funcs
 float abs_min(float a, float b) {
@@ -151,6 +153,7 @@ void MultiScreenScene::initStations(std::string textures[], int size) {
 		scene->setPosition(positions[i]);
 		scene->setVisible(true);
 		setScene(i, scene);
+		scene->setTargetGesture(targets[i]);
 	}
 
 	for (int i = 0; i < size; i++) {

@@ -65,7 +65,12 @@ private:
    
     std::string _lastGestureString;
     float _lastGestureSimilarity;
-    
+
+    std::string _targetGesture;
+
+    //is the current path ready for recog and rendering
+    bool _gestureCompleted;
+  
     bool  _keyDown;
     bool  _keyUp;
     bool _dashKey;
@@ -401,6 +406,10 @@ public:
      * @param focus	Whether the listener currently has focus
      */
     void mouseReleaseCB(const cugl::MouseEvent& event, bool focus);
+
+    bool isGestureCompleted() { return _gestureCompleted; };
+
+    void setTargetGesture(std::string gesture) { _targetGesture = gesture; };
 
     cugl::Vec2 getSwipeDelta() { return _swipeDelta; }
 };

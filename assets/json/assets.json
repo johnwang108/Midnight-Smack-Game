@@ -66,6 +66,11 @@
             "wrapS": "repeat",
             "wrapT": "repeat"
         },
+        "cooktime" : {
+            "file":      "textures/cutting_board.png",
+            "wrapS":    "repeat",
+            "wrapT":    "repeat"
+        },
         "dpad": {
             "file": "textures/dpad.png",
             "wrapS": "clamp",

@@ -71,6 +71,10 @@ protected:
 
    
 
+    std::string _targetGesture;
+    
+    int countdown;
+
     //Todo: need library of existing predetermined inputs to check against
 
 public:
@@ -87,6 +91,7 @@ public:
         return init(assets, input, cugl::Rect(0, 0, 1000, 1000), "panfry_station");
     };
 
+    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::string texture);
     bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture) {
         return init(assets, input, rect, texture, std::vector<std::string>());
     }
@@ -104,8 +109,16 @@ public:
     void setTargetGestures(std::vector<std::string> gestures) { _currentTargetGestures = gestures; }
 
 
+    bool isFocus() { return _focus; };
+
+    //gets what gesture was just matched
+    std::string getGestureString(){ return _input->getGestureString(); };
+
+    void setTargetGesture(std::string gesture);
+
     //virtual void draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint);
 
+    bool shouldIDisappear();
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */
