@@ -4,7 +4,7 @@ using namespace cugl;
 
 
 bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
-    Size scaledSize = size;
+    scaledSize = size;
     scaledSize.width *= BULL_HSHRINK;
     scaledSize.height *= BULL_VSHRINK;
     if (CapsuleObstacle::init(pos, scaledSize)) {
@@ -18,7 +18,9 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         _angrytime = 0;
         _sprintPrepareTime = 0;
         _shake = false;
+        _bull_attack_chance= BULL_ATTACK_CHANCE;
         _P2start = false;
+        _shoot = false;
         setDensity(BULL_DENSITY);
         setFriction(0.0f);
         setFixedRotation(true);
@@ -41,18 +43,23 @@ void BullModel::update(float dt) {
         _sprintPrepareTime -= dt;
         velocity.x = 0;
         if (_sprintPrepareTime <= 0) {
-            if (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) > 5) {
+            float pa = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+         //   pa = 0.87;
+            if (pa<0.33) {
                 _isChasing = true;
             }
-            else {
+            else if(pa>=0.33 && pa<0.66){
                 _shake = true;
                 b2Vec2 impulse = b2Vec2(0, BULL_KNOCKBACK_FORCE_UP * 25);
                 _body->ApplyLinearImpulseToCenter(impulse, true);
                 _knockbackTime = 2;
             }
+            else {
+                _shoot = true;
+			}
             
         }
-    }else if (!_isChasing &&  static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < BULL_ATTACK_CHANCE) {
+    }else if (!_isChasing &&  static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _bull_attack_chance) {
         _sprintPrepareTime = 2;
     }
 
@@ -65,9 +72,16 @@ void BullModel::update(float dt) {
         _angrytime -= dt;
         _body->SetLinearVelocity(b2Vec2(0, 0));
         if (_node != nullptr) {
+            scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
+            if (_assets != nullptr) {
+                if (image->getTexture() != _assets->get<Texture>("P2bull")) {
+                    image->setTexture(_assets->get<Texture>("P2bull"));
+                }
+            }
             _node->setPosition(getPosition() * _drawScale);
             _node->setAngle(getAngle());
         }
+        _bull_attack_chance = BULL_ATTACK_CHANCE*2;
         return;
     }
 
@@ -170,15 +184,15 @@ void BullModel::createFixtures() {
 }
 
 void BullModel::createAttack(GameScene& scene) {
-    std::shared_ptr<AssetManager> _assets = scene.getAssets();
+    _assets = scene.getAssets();
     float _scale = scene.getScale();
 
-    std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE_L);
+    std::shared_ptr<Texture> image = _assets->get<Texture>("unball");
     Vec2 pos = getPosition();
 
     std::shared_ptr<EnemyAttack> attack = EnemyAttack::alloc(pos,
-        cugl::Size(ATTACK_W * image->getSize().width / _scale,
-            ATTACK_H * image->getSize().height / _scale));
+        cugl::Size(0.8*image->getSize().width / _scale,
+              0.8*image->getSize().height / _scale)*1.3);
 
     pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
     pos.y += ATTACK_OFFSET_Y;
@@ -210,7 +224,7 @@ void BullModel::createAttack(GameScene& scene) {
 }
 
 void BullModel::createAttack2(GameScene& scene) {
-    std::shared_ptr<AssetManager> _assets = scene.getAssets();
+    _assets = scene.getAssets();
     float _scale = scene.getScale();
 
     std::shared_ptr<Texture> image = _assets->get<Texture>(SHAKE_TEXTURE);
@@ -218,13 +232,13 @@ void BullModel::createAttack2(GameScene& scene) {
     pos.x += ATTACK_OFFSET_X*6;
     pos.y -= ATTACK_OFFSET_Y * 3;
     std::shared_ptr<Attack> attack = Attack::alloc(pos,
-        cugl::Size(ATTACK_W * image->getSize().width / _scale,
+        cugl::Size(0.9*image->getSize().width / _scale,
             ATTACK_H * image->getSize().height / _scale));
 
     Vec2 pos2 = pos;
     pos2.x -= ATTACK_OFFSET_X *12;
     std::shared_ptr<Attack> attack2 = Attack::alloc(pos2,
-        cugl::Size(ATTACK_W * image->getSize().width / _scale,
+        cugl::Size(0.9*image->getSize().width / _scale,
             ATTACK_H * image->getSize().height / _scale));
 
     attack->setFaceRight(true);
@@ -259,6 +273,44 @@ void BullModel::createAttack2(GameScene& scene) {
     sprite2->flipHorizontal(true);
 
     scene.addObstacle(attack2, sprite2, true);
+
+    std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
+    AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);
+
+}
+
+void BullModel::createAttack3(GameScene& scene) {
+    _assets = scene.getAssets();
+    std::shared_ptr<DudeModel> _Su = scene.getAvatar();
+    float _scale = scene.getScale();
+
+    std::shared_ptr<Texture> image = _assets->get<Texture>("dball");
+    Vec2 pos = getPosition();
+
+    std::shared_ptr<EnemyAttack> attack = EnemyAttack::alloc(pos,
+        cugl::Size(0.8 * image->getSize().width / _scale,
+            0.8 * image->getSize().height / _scale) * 1.3);
+
+    pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
+    pos.y += ATTACK_OFFSET_Y;
+
+
+
+    attack->setName("enemy_attack");
+    attack->setBullet(true);
+    attack->setGravityScale(0);
+    attack->setDebugColor(DEBUG_COLOR);
+    attack->setDrawScale(_scale);
+    attack->setEnabled(true);
+    attack->setstraight(_Su->getPosition());
+
+
+
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    attack->setSceneNode(sprite);
+    sprite->setPosition(pos);
+
+    scene.addObstacle(attack, sprite, true);
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
     AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);

@@ -503,10 +503,15 @@ void GameScene::preUpdate(float dt) {
             if (int(_Bull->getangrytime() * 10) % 2 < 1) {
                 _Bull->createAttack(*this);
             }
-        }if (_Bull->getshake() && _Bull->getknockbacktime() <= 0) {
+        }
+        if (_Bull->getshake() && _Bull->getknockbacktime() <= 0) {
 			_Bull->setshake(false);
 			_Bull->createAttack2(*this);
 		}
+        if (_Bull->getshoot()) {
+            _Bull->setshoot(false);
+            _Bull->createAttack3(*this);
+        }
         if (!_Bull->isChasing()) {
             Vec2 BullPos = _Bull->getPosition();
             float distance = avatarPos.distance(BullPos);
@@ -716,7 +721,7 @@ void GameScene::createAttack() {
 
 
 	std::shared_ptr<Attack> attack = Attack::alloc(pos, 
-        cugl::Size(ATTACK_W * image->getSize().width / _scale, 
+        cugl::Size(0.6*ATTACK_W * image->getSize().width / _scale, 
         ATTACK_H * image->getSize().height / _scale));
 	attack->setName(ATTACK_NAME);
     attack->setDensity(HEAVY_DENSITY);
@@ -950,18 +955,31 @@ void GameScene::endContact(b2Contact* contact) {
 
 
     if (bd1->getName() == "enemy_attack" && bd2 == _avatar.get()) {
-        Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
-        Vec2 attackerPos = ((Attack*)bd1)->getPosition();
+        Vec2 enemyPos = ((EnemyAttack*)bd1)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
         _avatar->takeDamage(34, direction);
-        removeAttack((Attack*)bd1);
+        removeAttack((EnemyAttack*)bd1);
     }
     else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
-        Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
-        Vec2 attackerPos = ((Attack*)bd2)->getPosition();
+        Vec2 enemyPos = ((EnemyAttack*)bd2)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
         _avatar->takeDamage(34, direction);
-        removeAttack((Attack*)bd2);
+        removeAttack((EnemyAttack*)bd2);
+    }
+
+    if (bd1->getName() == "shake" && bd2 == _avatar.get()) {
+        Vec2 enemyPos = ((Attack*)bd1)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+    }
+    else if (bd2->getName() == "shake" && bd1 == _avatar.get()) {
+        Vec2 enemyPos = ((Attack*)bd2)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
     }
 
     if (bd1->getName() == ENEMY_NAME && bd2 == _avatar.get()) {

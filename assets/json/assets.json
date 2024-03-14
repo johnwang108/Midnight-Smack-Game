@@ -47,6 +47,15 @@
         "panfry_station":{
             "file":      "textures/Panfry_Station.png"
         },
+        "unball":{
+            "file":      "textures/unball.png"
+        },
+        "dball":{
+            "file":      "textures/dball.png"
+        },
+        "P2bull":{
+            "file":      "textures/P2bull.png"
+        },
         "cooktime" : {
             "file":      "textures/cutting_board.png",
             "wrapS":    "repeat",

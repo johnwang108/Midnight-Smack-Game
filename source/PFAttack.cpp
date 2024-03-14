@@ -23,7 +23,7 @@ using namespace cugl;
 
 bool Attack::init(cugl::Vec2 pos, const cugl::Size& size) {
 	Size scaledSize = size;
-	scaledSize.width *= 0.6;
+	scaledSize.width *= 1;
 	scaledSize.height *= 1;
 	if (BoxObstacle::init(pos, scaledSize)) {
 		setDensity(1);
@@ -49,10 +49,10 @@ void Attack::update(float dt) {
 	BoxObstacle::update(dt);
 	if (_go) {
 		if (_faceright) {
-			_body->SetLinearVelocity(b2Vec2(5, 0));
+			_body->SetLinearVelocity(b2Vec2(8, 0));
 		}
 		else {
-			_body->SetLinearVelocity(b2Vec2(-5, 0));
+			_body->SetLinearVelocity(b2Vec2(-8, 0));
 		}
 	}
 	else {

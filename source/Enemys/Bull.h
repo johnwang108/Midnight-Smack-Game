@@ -24,6 +24,7 @@ using namespace cugl;
 class GameScene;
 class BullModel : public physics2::CapsuleObstacle {
 protected:
+    Size scaledSize;
     float _drawScale;
     float _health;
     float _healthCooldown;
@@ -40,6 +41,9 @@ protected:
     float _sprintPrepareTime;
     bool _P2start;
     bool _shake;
+    float _bull_attack_chance;
+    std::shared_ptr<AssetManager> _assets;
+    bool _shoot;
 
 public:
     BullModel() : CapsuleObstacle(), _drawScale(1.0f), _health(100.0f), _healthCooldown(0.2f), _lastDamageTime(0), _isChasing(true), _direction(-1) {}
@@ -94,6 +98,9 @@ public:
     bool getshake() { return _shake; }
 
     void setshake(bool shake) { _shake = shake; }
+    void createAttack3(GameScene& scene);
+    bool getshoot() { return _shoot; }
+    void setshoot(bool shoot) { _shoot = shoot; }
 
 };
 

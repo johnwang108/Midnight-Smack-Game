@@ -50,6 +50,9 @@ protected:
     std::string _sensorName;
 
     b2Fixture* _sensorFixture;
+    cugl::Vec2 _straight;
+
+    float _angle;
 
 public:
 #pragma mark Constructors
@@ -158,6 +161,7 @@ public:
     void createFixtures();
     std::string* getSensorName() { return &_sensorName; };
     void setrand(bool rand=false) { _rand = rand; }
+    void setstraight(cugl::Vec2 straight) { _straight = straight; }
 };
 
 #endif /* __PF_ENEMY_ATTACK_MODEL_H__ */
