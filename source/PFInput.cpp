@@ -159,11 +159,6 @@ bool PlatformInput::init(const Rect bounds) {
             _gameCont = controller->open(deviceUUIDs.front());
             CULog("Controller Obtained, Name: %s", _gameCont->getName().c_str());
 
-            ////using axis controllers for joystick
-         /*   _gameCont->addAxisListener(CONTROLLER_LISTENER_KEY, [=](const GameControllerAxisEvent& event, bool focus) {
-                this->getAxisAngle(event, focus);
-                });*/
-
             _xAxis = 0;
             _yAxis = 0;
 
@@ -581,12 +576,6 @@ void PlatformInput::swipeBeganCB(const PanEvent& event, bool focus) {
 void PlatformInput::swipeEndedCB(const PanEvent& event, bool focus) {
     _swipeDelta = event.currPosition - event.origPosition;
     CULog("%f, %f", _swipeDelta.x, _swipeDelta.y);
-}
-
-void PlatformInput::getAxisAngle(const cugl::GameControllerAxisEvent& event, bool focus) {
-    //TODO: WHAT ARE AXIS INDICES?? HOW MANY??? 2 or 4
-    _xAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_X);
-    _yAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_Y); 
 }
 
 std::string  PlatformInput::getGestureString() {

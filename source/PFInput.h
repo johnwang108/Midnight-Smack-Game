@@ -368,7 +368,6 @@ public:
 
     void swipeEndedCB(const cugl::PanEvent& event, bool focus);
 
-    void getAxisAngle(const cugl::GameControllerAxisEvent& eventm, bool focus);
 
   
 
