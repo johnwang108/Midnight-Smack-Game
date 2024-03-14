@@ -60,13 +60,14 @@ void DollarScene::dispose() {
 
 
 //main init
-bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture) {
+bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector<std::string> gestures) {
 	_input = input;
 	_assets = assets;
 	_se = cugl::SimpleExtruder();
 	_childOffset = -1;
 	_combined = Affine2::IDENTITY;
 	_focus = false;
+	_currentTargetGestures = gestures;
 	//reflection across the x axis is necessary for polygon path
 	/**
 	* 1 0

@@ -85,6 +85,13 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	//_input = std::make_shared<PlatformInput>();
 	//_input->init(getBounds());
 
+	_stationMap;
+	_stationMap["pot_station"] = 0;
+	_stationMap["prep_station"] = 1;
+	_stationMap["panfry_station"] = 2;
+	_stationMap["cutting_station"] = 3;
+	_stationMap["blending_station"] = 4;
+
 	std::string stationTextures[5] = {"pot_station","prep_station" ,"panfry_station" ,"cutting_station" ,"blending_station"};
 	initStations(stationTextures, 5);
 
@@ -107,7 +114,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_uiScene->init(_size);
 	_uiScene->setActive(true);
 	
-	_timer = scene2::Label::allocWithText("", _assets->get<Font>(MESSAGE_FONT));
+	_timer = scene2::Label::allocWithText("godfhohofgji", _assets->get<Font>(MESSAGE_FONT));
 
 	_timer->setAnchor(Vec2::ANCHOR_CENTER);
 	_timer->setPosition(_size.width/2, _size.height - _timer->getHeight());
@@ -162,7 +169,6 @@ void MultiScreenScene::readLevel(std::shared_ptr<JsonValue> level) {
 
 void MultiScreenScene::update(float timestep) {
 	
-
 }
 
 void MultiScreenScene::preUpdate(float timestep) {
@@ -175,8 +181,10 @@ void MultiScreenScene::preUpdate(float timestep) {
 
 	
 	if (_orders[_newOrderIndex].getStartTime() >= _currentTime) {
-		//todo send the order to the dollar gesture scene
-		//sendOrder(_orders[_newOrderIndex]);
+		Order upcomingOrder = _orders[_newOrderIndex];
+		int stationIdx = _stationMap[upcomingOrder.getStation()];
+
+		_scenes[stationIdx]->setTargetGestures(upcomingOrder.getGestures());
 	}
 
 	_input->update(timestep);
@@ -285,8 +293,10 @@ void MultiScreenScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
 }
 
 void MultiScreenScene::tempPopulate() {
-	Order order1 = Order("pot", "pigtail", 4.0);
-	Order order2 = Order("panfry", "circle", 6.0);
+	std::vector<std::string> newGests = { "pigtail", "circle", "v" };
+	Order order1 = Order("pot", newGests, 4.0);
+	std::vector<std::string> newGests2 = { "circle", "v", "v" };
+	Order order2 = Order("panfry", newGests, 6.0);
 
 	_orders = { order1, order2 };
 	_newOrderIndex = 0;

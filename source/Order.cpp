@@ -3,11 +3,11 @@
 using namespace cugl;
 
 Order::Order() {
-	Order("", "", 0);
+	Order("", std::vector<std::string>(), 0);
 }
 
-Order::Order(std::string station, std::string gesture, float startTime) {
+Order::Order(std::string station, std::vector<std::string> gestures, float startTime) {
 	_station = station;
-	_gestureName = gesture;
+	_gestureNames = gestures;
 	_startTime = startTime;
 }

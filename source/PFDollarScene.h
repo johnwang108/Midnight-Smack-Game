@@ -65,7 +65,9 @@ protected:
 
     bool _focus;
 
-    std::string _currentTargetGesture;
+    std::vector<std::string> _currentTargetGestures;
+
+   
 
     //Todo: need library of existing predetermined inputs to check against
 
@@ -83,7 +85,11 @@ public:
         return init(assets, input, cugl::Rect(0, 0, 1000, 1000), "panfry_station");
     };
 
-    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture);
+    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture) {
+        return init(assets, input, rect, texture, std::vector<std::string>());
+    }
+
+    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector <std::string> gestures);
 
     void update(float timestep);
 
@@ -92,6 +98,9 @@ public:
     bool isSuccess();
 
     void setFocus(bool focus);
+
+    void setTargetGestures(std::vector<std::string> gestures) { _currentTargetGestures = gestures; }
+
 
     //virtual void draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint);
 
