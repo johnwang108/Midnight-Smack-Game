@@ -154,7 +154,6 @@ bool PlatformInput::init(const Rect bounds) {
     _touchPath = cugl::Path2();
 
     bool contSuccess = Input::activate<GameControllerInput>();
-
     if (contSuccess) {
         GameControllerInput* controller = Input::get<GameControllerInput>();
         std::vector<std::string> deviceUUIDs = controller->devices();
@@ -175,12 +174,8 @@ bool PlatformInput::init(const Rect bounds) {
         CULog("cont failed");
     }
 
-        
-
 #ifndef CU_TOUCH_SCREEN
     success = Input::activate<Keyboard>();
-    _lastGestureSimilarity = -1;
-    _lastGestureString = "No Touchscreen";
     CULog("no touch screen sad");
 
     success = Input::activate<Mouse>();
@@ -212,46 +207,9 @@ bool PlatformInput::init(const Rect bounds) {
     });
 
 #endif
-    _dollarRecog = cugl::GestureRecognizer::alloc();
-
-    if (!_dollarRecog->init()) CULog("Recognizer Init Failed");
-    _dollarRecog->setAlgorithm(cugl::GestureRecognizer::Algorithm::ONEDOLLAR);
-
-
-    std::vector<Vec2> swipeVertices = { Vec2(0,0), Vec2(0,249) };
-    cugl::Path2 swipeGesturePath = cugl::Path2(swipeVertices);
-
-    if (!_dollarRecog->addGesture("vertSwipe", swipeGesturePath, true)) CULog("failed to initialize vertSwipe");
-
-    std::vector<Vec2> hSwipeVertices = { Vec2(0,0), Vec2(249,0) };
-    cugl::Path2 hSwipeGesturePath = cugl::Path2(hSwipeVertices);
-
-    if (!_dollarRecog->addGesture("horizSwipe", hSwipeGesturePath, true)) CULog("failed to initialize horizSwipe");
-
-    std::vector<Vec2> vVertices = { Vec2(89,164),Vec2(90,162),Vec2(92,162),Vec2(94,164),Vec2(95,166),Vec2(96,169),Vec2(97,171),Vec2(99,175),Vec2(101,178),Vec2(103,182),Vec2(106,189),Vec2(108,194),Vec2(111,199),Vec2(114,204),Vec2(117,209),Vec2(119,214),Vec2(122,218),Vec2(124,222),Vec2(126,225),Vec2(128,228),Vec2(130,229),Vec2(133,233),Vec2(134,236),Vec2(136,239),Vec2(138,240),Vec2(139,242),Vec2(140,244),Vec2(142,242),Vec2(142,240),Vec2(142,237),Vec2(143,235),Vec2(143,233),Vec2(145,229),Vec2(146,226),Vec2(148,217),Vec2(149,208),Vec2(149,205),Vec2(151,196),Vec2(151,193),Vec2(153,182),Vec2(155,172),Vec2(157,165),Vec2(159,160),Vec2(162,155),Vec2(164,150),Vec2(165,148),Vec2(166,146) };
-    cugl::Path2 vGesturePath = cugl::Path2(vVertices);
-
-    if (!_dollarRecog->addGesture("v", vGesturePath, true)) CULog("failed to initialize v");
-
-    std::vector<Vec2> circVertices = { Vec2(127,141),Vec2(124,140),Vec2(120,139),Vec2(118,139),Vec2(116,139),Vec2(111,140),Vec2(109,141),Vec2(104,144),Vec2(100,147),Vec2(96,152),Vec2(93,157),Vec2(90,163),Vec2(87,169),Vec2(85,175),Vec2(83,181),Vec2(82,190),Vec2(82,195),Vec2(83,200),Vec2(84,205),Vec2(88,213),Vec2(91,216),Vec2(96,219),Vec2(103,222),Vec2(108,224),Vec2(111,224),Vec2(120,224),Vec2(133,223),Vec2(142,222),Vec2(152,218),Vec2(160,214),Vec2(167,210),Vec2(173,204),Vec2(178,198),Vec2(179,196),Vec2(182,188),Vec2(182,177),Vec2(178,167),Vec2(170,150),Vec2(163,138),Vec2(152,130),Vec2(143,129),Vec2(140,131),Vec2(129,136),Vec2(126,139) };
-    cugl::Path2 circGesturePath = cugl::Path2(circVertices);
-
-    if (!_dollarRecog->addGesture("circle", circGesturePath, true)) CULog("failed to initialize circle");
-
-    std::vector<Vec2> pigtailVert = { Vec2(81,219),Vec2(84,218),Vec2(86,220),Vec2(88,220),Vec2(90,220),Vec2(92,219),Vec2(95,220),Vec2(97,219),Vec2(99,220),Vec2(102,218),Vec2(105,217),Vec2(107,216),Vec2(110,216),Vec2(113,214),Vec2(116,212),Vec2(118,210),Vec2(121,208),Vec2(124,205),Vec2(126,202),Vec2(129,199),Vec2(132,196),Vec2(136,191),Vec2(139,187),Vec2(142,182),Vec2(144,179),Vec2(146,174),Vec2(148,170),Vec2(149,168),Vec2(151,162),Vec2(152,160),Vec2(152,157),Vec2(152,155),Vec2(152,151),Vec2(152,149),Vec2(152,146),Vec2(149,142),Vec2(148,139),Vec2(145,137),Vec2(141,135),Vec2(139,135),Vec2(134,136),Vec2(130,140),Vec2(128,142),Vec2(126,145),Vec2(122,150),Vec2(119,158),Vec2(117,163),Vec2(115,170),Vec2(114,175),Vec2(117,184),Vec2(120,190),Vec2(125,199),Vec2(129,203),Vec2(133,208),Vec2(138,213),Vec2(145,215),Vec2(155,218),Vec2(164,219),Vec2(166,219),Vec2(177,219),Vec2(182,218),Vec2(192,216),Vec2(196,213),Vec2(199,212),Vec2(201,211) };
-    cugl::Path2 pigtailGesturePath = cugl::Path2(pigtailVert);
-
-    if (!_dollarRecog->addGesture("pigtail", pigtailGesturePath, true)) CULog("failed to initialize pigtail");
-
-    CULog("initialized all recognizer stuff");
-    _lastGestureSimilarity = 0;
-    _lastGestureString = "";
-
-
-
+    
 
     bool swipeSuccess = Input::activate<PanGesture>();
-    CULog("%d", swipeSuccess);
     PanGesture* swiper = Input::get<PanGesture>();
     if (CU_PLATFORM == CU_PLATFORM_LINUX) {
         swiper->setTouchScreen(true);
@@ -447,43 +405,6 @@ Vec2 PlatformInput::touch2Screen(const Vec2 pos) const {
     return result;
 }
 
-/**
- * Processes movement for the floating joystick.
- *
- * This will register movement as left or right (or neither).  It
- * will also move the joystick anchor if the touch position moves
- * too far.
- *
- * @param  pos  the current joystick position
- */
-void PlatformInput::processJoystick(const cugl::Vec2 pos) {
-    //Vec2 diff =  _ltouch.position-pos;
-
-    //// Reset the anchor if we drifted too far
-    //if (diff.lengthSquared() > JSTICK_RADIUS*JSTICK_RADIUS) {
-    //    diff.normalize();
-    //    diff *= (JSTICK_RADIUS+JSTICK_DEADZONE)/2;
-    //    _ltouch.position = pos+diff;
-    //}
-    //_ltouch.position.y = pos.y;
-    //_joycenter = touch2Screen(_ltouch.position);
-    //_joycenter.y += JSTICK_OFFSET;
-    //
-    //if (std::fabsf(diff.x) > JSTICK_DEADZONE) {
-    //    _joystick = true;
-    //    if (diff.x > 0) {
-    //        _keyLeft = true;
-    //        _keyRight = false;
-    //    } else {
-    //        _keyLeft = false;
-    //        _keyRight = true;
-    //    }
-    //} else {
-    //    _joystick = false;
-    //    _keyLeft = false;
-    //    _keyRight = false;
-    //}
-}
 
 /**
  * Returns a nonzero value if this is a quick left or right swipe
@@ -512,62 +433,7 @@ int PlatformInput::processSwipe(const Vec2 start, const Vec2 stop, Timestamp cur
 
 #pragma mark -
 #pragma mark Touch and Mouse Callbacks
-/**
- * Callback for the beginning of a touch event
- *
- * @param event The associated event
- * @param focus	Whether the listener currently has focus
- */
-void PlatformInput::touchBeganCB(const TouchEvent& event, bool focus) {
-    CULog("Touch began %lld", event.touch);
-    Vec2 pos = event.position;
 
-    _touchPath = cugl::Path2();
-    _touchPath.push(pos);
-
-}
-
- 
-/**
- * Callback for the end of a touch event
- *
- * @param event The associated event
- * @param focus	Whether the listener currently has focus
- */
-void PlatformInput::touchEndedCB(const TouchEvent& event, bool focus) {
-    // Reset all keys that might have been set
-    Vec2 pos = event.position;
-    _touchPath.push(pos);
-
-    float similarity = -1.0f;
-
-    PathSmoother smoother = PathSmoother();
-    smoother.set(_touchPath);
-    smoother.calculate();
-    _touchPath = smoother.getPath();
-    std::string result = _dollarRecog->match(_touchPath, similarity);
-
-    if (similarity > 0) {
-        _lastGestureString = result;
-        _lastGestureSimilarity = similarity;
-
-        CULog("Gesture Guess: %s, Similarity: %f", result.c_str(), similarity);
-    }
-   
-}
-
-
-/**
- * Callback for a touch moved event.
- *
- * @param event The associated event
- * @param previous The previous position of the touch
- * @param focus	Whether the listener currently has focus
- */
-void PlatformInput::touchesMovedCB(const TouchEvent& event, const Vec2& previous, bool focus) {
-    Vec2 pos = event.position;
-    _touchPath.push(pos);
-}
 
 void PlatformInput::swipeBeganCB(const PanEvent& event, bool focus) {
     CULog("swipe began");
@@ -578,13 +444,7 @@ void PlatformInput::swipeEndedCB(const PanEvent& event, bool focus) {
     CULog("%f, %f", _swipeDelta.x, _swipeDelta.y);
 }
 
-std::string  PlatformInput::getGestureString() {
-    return _lastGestureString;
-}
 
-float PlatformInput::getGestureSim() {
-    return _lastGestureSimilarity;
-}
 
 /** Returns touch path.*/
 cugl::Path2 PlatformInput::getTouchPath() {
@@ -593,56 +453,84 @@ cugl::Path2 PlatformInput::getTouchPath() {
 
 /** Returns touch path and sets it to empty. Also sets complete to false.*/
 cugl::Path2 PlatformInput::popTouchPath() {
-    cugl::Path2 temp = _touchPath;
-    _touchPath = cugl::Path2();
-    _gestureCompleted = false;
-    return temp;
+    if (_gestureCompleted) {
+        cugl::Path2 temp = _touchPath;
+        _touchPath = cugl::Path2();
+        _gestureCompleted = false;
+        return temp;
+    }
+    return Path2();
 }
 
+/**
+ * Callback for the beginning of a touch event
+ *
+ * @param event The associated event
+ * @param focus	Whether the listener currently has focus
+ */
+void PlatformInput::touchBeganCB(const TouchEvent& event, bool focus) {
+    CULog("Touch began %lld", event.touch);
+    Vec2 pos = event.position;
+
+    gestureStartCB(pos, focus);
+}
+
+/**
+ * Callback for a touch moved event.
+ *
+ * @param event The associated event
+ * @param previous The previous position of the touch
+ * @param focus	Whether the listener currently has focus
+ */
+void PlatformInput::touchesMovedCB(const TouchEvent& event, const Vec2& previous, bool focus) {
+    Vec2 pos = event.position;
+    gestureMoveCB(pos, focus);
+}
+/**
+ * Callback for the end of a touch event
+ *
+ * @param event The associated event
+ * @param focus	Whether the listener currently has focus
+ */
+void PlatformInput::touchEndedCB(const TouchEvent& event, bool focus) {
+    // Reset all keys that might have been set
+    Vec2 pos = event.position;
+    gestureEndCB(pos, focus);
+}
 
 void PlatformInput::mousePressCB(const cugl::MouseEvent& event, bool focus) {
     Vec2 pos = event.position;
-    _gestureCompleted = false;
-    _touchPath = cugl::Path2();
-    _touchPath.push(pos);
+    gestureStartCB(pos, focus);
 }
 
 void PlatformInput::mouseDragCB(const cugl::MouseEvent& event, bool focus) {
 	Vec2 pos = event.position;
-    _touchPath.push(pos);
+    gestureMoveCB(pos, focus);
 }
 
 void PlatformInput::mouseReleaseCB(const cugl::MouseEvent& event, bool focus) {
     // Reset all keys that might have been set
     Vec2 pos = event.position;
+    gestureEndCB(pos, focus);
+}
+
+void PlatformInput::gestureStartCB(Vec2 pos, bool focus) {
+    _gestureCompleted = false;
+    _touchPath = cugl::Path2();
     _touchPath.push(pos);
+}
 
+void PlatformInput::gestureMoveCB(Vec2 pos, bool focus) {
+    _touchPath.push(pos);
+}
 
+void PlatformInput::gestureEndCB(Vec2 pos, bool focus) {
+    _touchPath.push(pos);
     float similarity = -1.0f;
-
     PathSmoother smoother = PathSmoother();
     smoother.set(_touchPath);
     smoother.calculate();
     _touchPath = smoother.getPath();
     _gestureCompleted = true;
-
-    if (_touchPath.size() < 3) {
-		_lastGestureSimilarity = -1;
-		_lastGestureString = "No Touchscreen";
-		return;
-    }
-    else {
-        //std::string result = _dollarRecog->match(_touchPath, similarity);
-        //_lastGestureString = result;
-        //_lastGestureSimilarity = similarity;
-        similarity = _dollarRecog->similarity(_targetGesture, _touchPath);
-        if (similarity > 0) {
-            _lastGestureSimilarity = similarity;
-        }
-        else {
-            _lastGestureSimilarity = 0;
-        }
-        _lastGestureString = _targetGesture;
-    }
 }
 

@@ -197,14 +197,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _rightnode->setScale(0.35f);
     _rightnode->setVisible(false);
 
-    _gesturehud = scene2::Label::allocWithText("Gestures, Similarity: t tosdgodfho figjgoj ghkohko ", _assets->get<Font>(SMALL_MSG));
-    _gesturehud->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
-    _gesturehud->setScale(0.7f);
-  //  CULog("%f", _gesturehud->getContentWidth());
-   // CULog("%f", _gesturehud->getWidth());
-    _gesturehud->setPosition(0,50);
-    _gesturehud->setForeground(LOSE_COLOR);
-    _gesturehud->setVisible(true);
 
 
     _slowed = false;
@@ -223,7 +215,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_losenode);
     addChild(_leftnode);
     addChild(_rightnode);
-    addChild(_gesturehud);
     addChild(_dollarnode);
     
 
@@ -409,7 +400,7 @@ void GameScene::preUpdate(float dt) {
             }
             if (minDist < COOKTIME_MAX_DIST) {
                 _slowed = true;
-                _dollarnode->setTargetGesture(_target->getGestureString());
+                _dollarnode->setTargetGestures(std::vector<std::string>{_target->getGestureString()});
             }
 
         }
@@ -603,7 +594,6 @@ void GameScene::postUpdate(float remain) {
         createAttack();
     }
 
-    _gesturehud->setText(getGestureText(_input->getGestureString(), _input->getGestureSim()));
 
 
     //iterate through physics objects and delete any timed-out attacks

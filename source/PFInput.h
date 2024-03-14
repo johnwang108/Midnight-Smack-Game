@@ -62,11 +62,6 @@ private:
 
     bool _keyTransition;
 
-   
-    std::string _lastGestureString;
-    float _lastGestureSimilarity;
-
-    std::string _targetGesture;
 
     //is the current path ready for recog and rendering
     bool _gestureCompleted;
@@ -146,10 +141,7 @@ protected:
 	/** The timestamp for a double tap in the middle */
 	cugl::Timestamp _mtime;
 
-
     cugl::Path2 _touchPath;
-    std::shared_ptr<cugl::GestureRecognizer> _dollarRecog;
-
     cugl::Vec2 _swipeDelta;
 
   
@@ -171,16 +163,7 @@ protected:
      */
     cugl::Vec2 touch2Screen(const cugl::Vec2 pos) const;
 
-    /**
-     * Processes movement for the floating joystick.
-     *
-     * This will register movement as left or right (or neither).  It
-     * will also move the joystick anchor if the touch position moves
-     * too far.
-     *
-     * @param  pos  the current joystick position
-     */
-    void processJoystick(const cugl::Vec2 pos);
+
     
     /**
      * Returns a nonzero value if this is a quick left or right swipe
@@ -326,20 +309,6 @@ public:
 
     bool didTransition() const { return _transitionPressed; }
 
-    /**
-     * Returns true if the virtual joystick is in use (touch only)
-     *
-     * @return true if the virtual joystick is in use (touch only)
-     */
-    //bool withJoystick() const { return _joystick; }
-
-    ///**
-    // * Returns the scene graph position of the virtual joystick
-    // *
-    // * @return the scene graph position of the virtual joystick
-    // */
-    //cugl::Vec2 getJoystick() const { return _joycenter; }
-
 #pragma mark -
 #pragma mark Touch and Mouse Callbacks
     /**
@@ -376,8 +345,7 @@ public:
 
   
 
-    std::string getGestureString();
-    float getGestureSim();
+  
 
     cugl::Path2 getTouchPath();
 
@@ -409,9 +377,13 @@ public:
 
     bool isGestureCompleted() { return _gestureCompleted; };
 
-    void setTargetGesture(std::string gesture) { _targetGesture = gesture; };
 
     cugl::Vec2 getSwipeDelta() { return _swipeDelta; }
+
+    void gestureStartCB(cugl::Vec2 pos, bool focus);
+    void gestureMoveCB(cugl::Vec2 pos, bool focus);
+    void gestureEndCB(cugl::Vec2 pos, bool focus);
+
 };
 
 #endif /* __PF_INPUT_H__ */

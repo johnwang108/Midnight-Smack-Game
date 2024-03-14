@@ -84,6 +84,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	//MULTISCREEN IS RESPONSIBLE FOR INITING THE SHARED INPUT CONTROLLER. TEMPORARY SOLUTION
 	_input = input;
 	_input->init(getBounds());
+
 	//_input = std::make_shared<PlatformInput>();
 	//_input->init(getBounds());
 
@@ -153,7 +154,6 @@ void MultiScreenScene::initStations(std::string textures[], int size) {
 		scene->setPosition(positions[i]);
 		scene->setVisible(true);
 		setScene(i, scene);
-		scene->setTargetGesture(targets[i]);
 	}
 
 	for (int i = 0; i < size; i++) {

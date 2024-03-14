@@ -71,7 +71,6 @@ protected:
     std::shared_ptr<cugl::scene2::PolygonNode> _rightnode;
 
 
-    std::shared_ptr<cugl::scene2::Label> _gesturehud;
 
 
     /** Reference to the quick-time event scene node */

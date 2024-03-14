@@ -46,6 +46,9 @@ protected:
 
     std::shared_ptr<cugl::AssetManager> _assets;
 
+    std::shared_ptr<cugl::GestureRecognizer> _dollarRecog;
+
+
     //Todo: turn these into nodes
     cugl::Path2 _path;
 
@@ -59,6 +62,7 @@ protected:
 
     cugl::SimpleExtruder _se;
 
+  
     //transform for poly
     cugl::Affine2 _trans;
 
@@ -69,11 +73,10 @@ protected:
 
     std::vector<std::string> _currentTargetGestures;
 
-   
-
-    std::string _targetGesture;
-    
+     
     int countdown;
+
+    float _currentSimilarity; 
 
     //Todo: need library of existing predetermined inputs to check against
 
@@ -111,14 +114,14 @@ public:
 
     bool isFocus() { return _focus; };
 
-    //gets what gesture was just matched
-    std::string getGestureString(){ return _input->getGestureString(); };
-
-    void setTargetGesture(std::string gesture);
-
     //virtual void draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint);
 
     bool shouldIDisappear();
+
+    bool initGestureRecognizer();
+
+    void matchWithTouchPath();
+
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */

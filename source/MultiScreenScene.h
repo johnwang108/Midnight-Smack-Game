@@ -20,10 +20,13 @@ private:
 	float _currentTime;
 	std::map<std::string, int> _stationMap;
 	bool _finishedOrders;
+
+
 protected:
 	std::shared_ptr<cugl::AssetManager> _assets;
 
 	std::shared_ptr<PlatformInput> _input;
+
 
 	/** The individual scenes */
 	std::shared_ptr<DollarScene> _scenes[5];
