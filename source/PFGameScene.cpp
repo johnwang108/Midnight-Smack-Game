@@ -275,8 +275,8 @@ void GameScene::dispose() {
  * This method disposes of the world and creates a new one.
  */
 void GameScene::reset() {
-    _world->clear();
     _worldnode->removeAllChildren();
+    _world->clear();
     _debugnode->removeAllChildren();
     _avatar = nullptr;
     _goalDoor = nullptr;
