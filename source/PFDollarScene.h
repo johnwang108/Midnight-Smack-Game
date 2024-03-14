@@ -55,6 +55,8 @@ protected:
 
     std::shared_ptr<cugl::scene2::Label> _header;
 
+    std::shared_ptr<cugl::scene2::Label> _currentGestureLabel;
+
     cugl::SimpleExtruder _se;
 
     //transform for poly

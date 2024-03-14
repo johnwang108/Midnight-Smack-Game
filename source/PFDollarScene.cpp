@@ -84,9 +84,16 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_header->setPosition(cugl::Vec2(0, 0));
 	_header->setForeground(cugl::Color4::RED);
 
+	_currentGestureLabel = scene2::Label::allocWithText("Current Target Gesture: filling out text bc i swear this always breaks", _assets->get<Font>(SMALL_MSG));
+	_currentGestureLabel->setAnchor(Vec2::ANCHOR_TOP_CENTER);
+	_currentGestureLabel->setPosition(cugl::Vec2(0, 100));
+	_currentGestureLabel->setForeground(cugl::Color4::BLACK);
+
 	addChild(_box);
 	addChild(_poly);
 	addChild(_header);
+	addChild(_currentGestureLabel);
+	
 
 	update(0);
 
@@ -120,6 +127,11 @@ void DollarScene::update(float timestep) {
 
 	//_header->setVisible(!isPending() && isSuccess());
 	_header->setText("Target gesture: " + _input->getGestureString() + " | Similarity: " + std::to_string(_input->getGestureSim()));
+
+	if (!_currentTargetGestures.empty()) {
+		_currentGestureLabel->setText("Current Target Gesture: " + _currentTargetGestures.front());
+	}
+	
 };
 
 //is gesture inputting still in progress?

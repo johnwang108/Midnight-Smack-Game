@@ -19,6 +19,7 @@ private:
 	// current time, in seconds with decimals
 	float _currentTime;
 	std::map<std::string, int> _stationMap;
+	bool _finishedOrders;
 protected:
 	std::shared_ptr<cugl::AssetManager> _assets;
 

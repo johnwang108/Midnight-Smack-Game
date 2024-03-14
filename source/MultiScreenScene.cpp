@@ -124,6 +124,8 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 
 	tempPopulate();
 
+	_finishedOrders = false;
+
 	return true;
 
 }
@@ -180,11 +182,16 @@ void MultiScreenScene::preUpdate(float timestep) {
 	_timer->setText(std::to_string((int) _currentTime));
 
 	
-	if (_orders[_newOrderIndex].getStartTime() >= _currentTime) {
+	if (!_finishedOrders && _orders[_newOrderIndex].getStartTime() <= _currentTime) {
+		CULog("found order, %d", _newOrderIndex);
 		Order upcomingOrder = _orders[_newOrderIndex];
 		int stationIdx = _stationMap[upcomingOrder.getStation()];
-
 		_scenes[stationIdx]->setTargetGestures(upcomingOrder.getGestures());
+
+		if (_newOrderIndex < _orders.size() - 1) _newOrderIndex++;
+		else {
+			_finishedOrders = true;
+		}
 	}
 
 	_input->update(timestep);
@@ -296,7 +303,7 @@ void MultiScreenScene::tempPopulate() {
 	std::vector<std::string> newGests = { "pigtail", "circle", "v" };
 	Order order1 = Order("pot", newGests, 4.0);
 	std::vector<std::string> newGests2 = { "circle", "v", "v" };
-	Order order2 = Order("panfry", newGests, 6.0);
+	Order order2 = Order("panfry", newGests2, 6.0);
 
 	_orders = { order1, order2 };
 	_newOrderIndex = 0;
