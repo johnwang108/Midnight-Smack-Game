@@ -61,6 +61,11 @@
             "wrapS": "repeat",
             "wrapT": "repeat"
         },
+        "blending_station": {
+            "file": "textures/Blending_Station.png",
+            "wrapS": "repeat",
+            "wrapT": "repeat"
+        },
         "dpad": {
             "file": "textures/dpad.png",
             "wrapS": "clamp",

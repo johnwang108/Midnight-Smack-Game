@@ -80,7 +80,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_header = scene2::Label::allocWithText("Gestures, Similarity: t tosdgodfho figjgoj ghkohko ", _assets->get<Font>(SMALL_MSG));
 	_header->setAnchor(Vec2::ANCHOR_TOP_CENTER);
 	_header->setScale(1.1f);
-	_header->setPosition(cugl::Vec2(0, 200));
+	_header->setPosition(cugl::Vec2(0, 0));
 	_header->setForeground(cugl::Color4::RED);
 
 	addChild(_box);

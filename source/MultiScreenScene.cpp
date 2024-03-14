@@ -85,7 +85,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	//_input = std::make_shared<PlatformInput>();
 	//_input->init(getBounds());
 
-	std::string stationTextures[5] = {"pot_station","prep_station" ,"panfry_station" ,"cutting_station" ,"panfry_station"};
+	std::string stationTextures[5] = {"pot_station","prep_station" ,"panfry_station" ,"cutting_station" ,"blending_station"};
 	initStations(stationTextures, 5);
 
 
@@ -107,15 +107,16 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_uiScene->init(_size);
 	_uiScene->setActive(true);
 	
-	
-
-	_timer = scene2::Label::allocWithText(WIN_MESSAGE, _assets->get<Font>(MESSAGE_FONT));
+	_timer = scene2::Label::allocWithText("", _assets->get<Font>(MESSAGE_FONT));
 
 	_timer->setAnchor(Vec2::ANCHOR_CENTER);
 	_timer->setPosition(_size.width/2, _size.height - _timer->getHeight());
 	_timer->setForeground(Color4::BLACK);
 
 	_uiScene->addChild(_timer);
+
+	tempPopulate();
+
 	return true;
 
 }
@@ -165,7 +166,18 @@ void MultiScreenScene::update(float timestep) {
 }
 
 void MultiScreenScene::preUpdate(float timestep) {
-	//_scenes[_curr]->update();
+	Timestamp now = Timestamp();
+
+	//CULog("%llu", now.ellapsedMillis(_startTime));
+
+	_currentTime = now.ellapsedMillis(_startTime) / 1000;
+	_timer->setText(std::to_string((int) _currentTime));
+
+	
+	if (_orders[_newOrderIndex].getStartTime() >= _currentTime) {
+		//todo send the order to the dollar gesture scene
+		//sendOrder(_orders[_newOrderIndex]);
+	}
 
 	_input->update(timestep);
 
@@ -236,12 +248,7 @@ void MultiScreenScene::preUpdate(float timestep) {
 		_animating = false;
 	}
 
-	Timestamp now = Timestamp();
 
-	//CULog("%llu", now.ellapsedMillis(_startTime));
-
-	_currentTime = now.ellapsedMillis(_startTime);
-	_timer->setText(std::to_string((int) (_currentTime/1000)));
 
 	
 }
@@ -275,4 +282,14 @@ void MultiScreenScene::transition(bool t) {
 
 void MultiScreenScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
 	_uiScene->render(batch);
+}
+
+void MultiScreenScene::tempPopulate() {
+	Order order1 = Order("pot", "pigtail", 4.0);
+	Order order2 = Order("panfry", "circle", 6.0);
+
+	_orders = { order1, order2 };
+	_newOrderIndex = 0;
+	// TODO: Sort orders by time so we can just keep track of the index we've sent orders up to
+	// i.e. once we've sent an order in update we can update the index to be the next new order
 }

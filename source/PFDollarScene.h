@@ -65,6 +65,8 @@ protected:
 
     bool _focus;
 
+    std::string _currentTargetGesture;
+
     //Todo: need library of existing predetermined inputs to check against
 
 public:

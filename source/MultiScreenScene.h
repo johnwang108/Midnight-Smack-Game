@@ -16,6 +16,7 @@ class MultiScreenScene : public cugl::Scene2 {
 private:
 	cugl::Timestamp _startTime;
 
+	// current time, in seconds with decimals
 	float _currentTime;
 protected:
 	std::shared_ptr<cugl::AssetManager> _assets;
@@ -46,6 +47,8 @@ protected:
 	std::shared_ptr<cugl::scene2::Label> _timer;
 
 	std::vector<Order> _orders; 
+	// the index in the _orders vector where we will find the first new order
+	int _newOrderIndex;
 public:
 	MultiScreenScene();
 
@@ -78,6 +81,8 @@ public:
 	void readLevel(std::shared_ptr<JsonValue> level);
 
 	void renderUI(std::shared_ptr<SpriteBatch> batch);
+
+	void tempPopulate();
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */
