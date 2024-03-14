@@ -1,5 +1,5 @@
 #include "Bull.h"
-
+#include "../PFGameScene.h"
 using namespace cugl;
 
 
@@ -7,7 +7,6 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
     Size scaledSize = size;
     scaledSize.width *= BULL_HSHRINK;
     scaledSize.height *= BULL_VSHRINK;
-    _drawScale = scale;
     if (CapsuleObstacle::init(pos, scaledSize)) {
         _drawScale = scale;
         _isChasing = false;
@@ -15,9 +14,11 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         _lastDirection = _direction;
         _nextChangeTime = 0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 0.5;
         _health = 100.0f;
-        _healthCooldown = 0.2f;
-        _isPreparingSprint = false;
+        _healthCooldown = 0.1f;
+        _angrytime = 0;
         _sprintPrepareTime = 0;
+        _shake = false;
+        _P2start = false;
         setDensity(BULL_DENSITY);
         setFriction(0.0f);
         setFixedRotation(true);
@@ -31,35 +32,50 @@ void BullModel::update(float dt) {
     CapsuleObstacle::update(dt);
     if (_body == nullptr) return;
 
+
+
+    b2Vec2 velocity = _body->GetLinearVelocity();
+    velocity.x = BULL_FORCE * _direction;
+
+    if (_sprintPrepareTime > 0) {
+        _sprintPrepareTime -= dt;
+        velocity.x = 0;
+        if (_sprintPrepareTime <= 0) {
+            if (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) > 5) {
+                _isChasing = true;
+            }
+            else {
+                _shake = true;
+                b2Vec2 impulse = b2Vec2(0, BULL_KNOCKBACK_FORCE_UP * 25);
+                _body->ApplyLinearImpulseToCenter(impulse, true);
+                _knockbackTime = 2;
+            }
+            
+        }
+    }else if (!_isChasing &&  static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < BULL_ATTACK_CHANCE) {
+        _sprintPrepareTime = 2;
+    }
+
     if (_knockbackTime > 0) {
         _knockbackTime -= dt;
         return;
     }
 
-    b2Vec2 velocity = _body->GetLinearVelocity();
-    velocity.x = BULL_FORCE * _direction;
-
-    if (_isPreparingSprint && _sprintPrepareTime > 0) {
-        _sprintPrepareTime -= dt;
-        velocity.x = 0;
-        if (_sprintPrepareTime <= 0) {
-            _isChasing = true;
-            _isPreparingSprint = false;
+    if (_angrytime >= 0) {
+        _angrytime -= dt;
+        _body->SetLinearVelocity(b2Vec2(0, 0));
+        if (_node != nullptr) {
+            _node->setPosition(getPosition() * _drawScale);
+            _node->setAngle(getAngle());
         }
+        return;
     }
-    else if (!_isChasing && !_isPreparingSprint && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < BULL_ATTACK_CHANCE) {
-        _isPreparingSprint = true;
-        _sprintPrepareTime = 3;
-    }
+
     if (_isChasing) {
         velocity.x *= BULL_CHASE_SPEED;
     }
 
 
-    if (_node != nullptr) {
-        _node->setPosition(getPosition() * _drawScale);
-        _node->setAngle(getAngle());
-    }
     if (_direction != _lastDirection) {
         // If direction changed, flip the image
         scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
@@ -71,21 +87,29 @@ void BullModel::update(float dt) {
     _lastDamageTime += dt;
     _nextChangeTime -= dt;
     _body->SetLinearVelocity(velocity);
+
+    if (_node != nullptr) {
+        _node->setPosition(getPosition() * _drawScale);
+        _node->setAngle(getAngle());
+    }
 }
 
-void BullModel::takeDamage(float damage, int attackDirection) {
+void BullModel::takeDamage(float damage, int attackDirection,bool knockback) {
  
     if (_lastDamageTime >= _healthCooldown) {
         _lastDamageTime = 0;
         _health -= damage;
         if (_health <= 0) {
             _health = 0;
-        }
-        else {
-            b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE, BULL_KNOCKBACK_FORCE_UP*25);
+        }else if (knockback) {
+            b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE*10, BULL_KNOCKBACK_FORCE_UP * 25);
+            _body->SetLinearVelocity(b2Vec2(0, 0));
             _body->ApplyLinearImpulseToCenter(impulse, true);
-            b2Vec2 tee=_body->GetLinearVelocity();
-            _knockbackTime = 6;
+            _knockbackTime = 4;
+        }else {
+            b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE*5, 0);
+            _body->ApplyLinearImpulseToCenter(impulse, true);
+            _knockbackTime = 0.5;
         }
     }
 }
@@ -142,5 +166,101 @@ void BullModel::createFixtures() {
 
     _sensorFixture = _body->CreateFixture(&sensorDef);
 
+
+}
+
+void BullModel::createAttack(GameScene& scene) {
+    std::shared_ptr<AssetManager> _assets = scene.getAssets();
+    float _scale = scene.getScale();
+
+    std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE_L);
+    Vec2 pos = getPosition();
+
+    std::shared_ptr<EnemyAttack> attack = EnemyAttack::alloc(pos,
+        cugl::Size(ATTACK_W * image->getSize().width / _scale,
+            ATTACK_H * image->getSize().height / _scale));
+
+    pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
+    pos.y += ATTACK_OFFSET_Y;
+
+
+
+    if (getDirection() > 0) {
+        attack->setFaceRight(true);
+    }
+    attack->setName("enemy_attack");
+    attack->setBullet(true);
+    attack->setGravityScale(0.1);
+    attack->setDebugColor(DEBUG_COLOR);
+    attack->setDrawScale(_scale);
+    attack->setEnabled(true);
+    attack->setrand(true);
+
+
+
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    attack->setSceneNode(sprite);
+    sprite->setPosition(pos);
+
+    scene.addObstacle(attack, sprite, true);
+
+    std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
+    AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);
+
+}
+
+void BullModel::createAttack2(GameScene& scene) {
+    std::shared_ptr<AssetManager> _assets = scene.getAssets();
+    float _scale = scene.getScale();
+
+    std::shared_ptr<Texture> image = _assets->get<Texture>(SHAKE_TEXTURE);
+    Vec2 pos = getPosition();
+    pos.x += ATTACK_OFFSET_X*6;
+    pos.y -= ATTACK_OFFSET_Y * 3;
+    std::shared_ptr<Attack> attack = Attack::alloc(pos,
+        cugl::Size(ATTACK_W * image->getSize().width / _scale,
+            ATTACK_H * image->getSize().height / _scale));
+
+    Vec2 pos2 = pos;
+    pos2.x -= ATTACK_OFFSET_X *12;
+    std::shared_ptr<Attack> attack2 = Attack::alloc(pos2,
+        cugl::Size(ATTACK_W * image->getSize().width / _scale,
+            ATTACK_H * image->getSize().height / _scale));
+
+    attack->setFaceRight(true);
+    attack->setName("shake");
+    attack->setBullet(true);
+    attack->setGravityScale(0);
+    attack->setDebugColor(DEBUG_COLOR);
+    attack->setDrawScale(_scale);
+    attack->setEnabled(false);
+    attack->setGo(true);
+
+    attack2->setFaceRight(false);
+    attack2->setName("shake");
+    attack2->setBullet(true);
+    attack2->setGravityScale(0);
+    attack2->setDebugColor(DEBUG_COLOR);
+    attack2->setDrawScale(_scale);
+    attack2->setEnabled(false);
+    attack2->setGo(true);
+
+
+
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    attack->setSceneNode(sprite);
+    sprite->setPosition(pos);
+
+    scene.addObstacle(attack, sprite, true);
+
+    std::shared_ptr<scene2::PolygonNode> sprite2 = scene2::PolygonNode::allocWithTexture(image);
+    attack2->setSceneNode(sprite2);
+    sprite2->setPosition(pos2);
+    sprite2->flipHorizontal(true);
+
+    scene.addObstacle(attack2, sprite2, true);
+
+    std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
+    AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);
 
 }

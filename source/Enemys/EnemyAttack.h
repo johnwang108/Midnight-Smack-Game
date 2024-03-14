@@ -45,6 +45,8 @@ protected:
 
     bool _shoot;
 
+    bool _rand;
+
     std::string _sensorName;
 
     b2Fixture* _sensorFixture;
@@ -155,6 +157,7 @@ public:
     void releaseFixtures();
     void createFixtures();
     std::string* getSensorName() { return &_sensorName; };
+    void setrand(bool rand=false) { _rand = rand; }
 };
 
 #endif /* __PF_ENEMY_ATTACK_MODEL_H__ */

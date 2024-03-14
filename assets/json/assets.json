@@ -41,6 +41,9 @@
         "bull": {
             "file":      "textures/bull.png"
         },
+        "shake": {
+            "file":      "textures/shake.png"
+        },
         "panfry_station":{
             "file":      "textures/Panfry_Station.png"
         },

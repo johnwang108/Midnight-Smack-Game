@@ -54,7 +54,12 @@ void EnemyAttack::update(float dt) {
 	}
 	if (_shoot) {
 		_shoot = false;
-		_body->ApplyLinearImpulseToCenter(b2Vec2(3* _direction, 6), true);
+		if (_rand) {
+			_body->ApplyLinearImpulseToCenter(b2Vec2(10*static_cast<float>(rand()) / static_cast<float>(RAND_MAX)-5, 15), true);
+		}
+		else {
+			_body->ApplyLinearImpulseToCenter(b2Vec2(3 * _direction, 6), true);
+		}
 	}
 
 	float currentAngle = _body->GetAngle();

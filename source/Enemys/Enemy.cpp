@@ -247,7 +247,7 @@ void EnemyModel::createAttack(GameScene& scene) {
     std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
     AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);
 
-    _attacks.push_back(attack);
+
 }
 
 

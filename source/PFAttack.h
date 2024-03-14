@@ -34,6 +34,10 @@ protected:
     //whether or not attack is marked for deletion
     bool _killme;
 
+    bool _go;
+
+    bool _faceright;
+
     std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
 
 public:
@@ -85,7 +89,7 @@ public:
         //return (result->init(pos, radius) ? result : nullptr);
         return (result->init(pos, size) ? result : nullptr);
     }
-
+    bool init(cugl::Vec2 pos, const cugl::Size& size);
 #pragma mark -
 #pragma mark Animation
     /**
@@ -137,6 +141,8 @@ public:
 	void update(float dt) override;
 
     bool killMe() { return _killme; };
+    void setFaceRight(bool faceRight) { _faceright = faceRight; }
+    void setGo(bool go) { _go = go; }
 
 };
 

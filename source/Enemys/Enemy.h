@@ -90,7 +90,6 @@ protected:
     std::string _gestureName;
 
 
-    std::vector<std::shared_ptr<EnemyAttack>> _attacks;
 
 
 
@@ -152,7 +151,6 @@ public:
 
     float getHealth() { return _health; }
 
-    std::vector<std::shared_ptr<EnemyAttack>> getAttacks() { return _attacks; }
 
     bool getattacktime() { return _attacktime; }
     void setattacktime(bool attacktime) { _attacktime = attacktime; }

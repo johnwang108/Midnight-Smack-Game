@@ -14,13 +14,14 @@ using namespace cugl;
 #define BULL_KNOCKBACK_FORCE 5.0f        // Increased knockback force due to the Bull's strength
 #define BULL_KNOCKBACK_FORCE_UP 15.0f      // Vertical knockback component
 
-#define BULL_VSHRINK    0.8f
-#define BULL_HSHRINK    0.7f
+#define BULL_VSHRINK    0.7f
+#define BULL_HSHRINK    0.5f
 
 #define SENSOR_HEIGHT 0.1f
 
 #define BULL_ATTACK_CHANCE 0.001f
 
+class GameScene;
 class BullModel : public physics2::CapsuleObstacle {
 protected:
     float _drawScale;
@@ -35,8 +36,10 @@ protected:
     std::string _sensorName;
     int _lastDirection;
     float _nextChangeTime;
-    bool _isPreparingSprint;
+    float _angrytime;
     float _sprintPrepareTime;
+    bool _P2start;
+    bool _shake;
 
 public:
     BullModel() : CapsuleObstacle(), _drawScale(1.0f), _health(100.0f), _healthCooldown(0.2f), _lastDamageTime(0), _isChasing(true), _direction(-1) {}
@@ -54,7 +57,7 @@ public:
 
     void update(float dt) override;
 
-    void takeDamage(float damage, int attackDirection);
+    void takeDamage(float damage, int attackDirection, bool knockback);
 
     void setSceneNode(const std::shared_ptr<scene2::SceneNode>& node);
 
@@ -77,6 +80,21 @@ public:
     void setnextchangetime(double nextChangeTime) { _nextChangeTime = nextChangeTime; }
 
     double getnextchangetime() { return _nextChangeTime; }
+
+    void createAttack(GameScene& scene);
+    void createAttack2(GameScene& scene);
+    const std::shared_ptr<cugl::scene2::SceneNode>& getSceneNode() const { return _node; }
+
+    void setangrytime(float time) { _angrytime = time; }
+
+    float getangrytime() { return _angrytime; }
+
+    float getknockbacktime() { return _knockbackTime; }
+
+    bool getshake() { return _shake; }
+
+    void setshake(bool shake) { _shake = shake; }
+
 };
 
 #endif /* __BULL_MODEL_H__ */

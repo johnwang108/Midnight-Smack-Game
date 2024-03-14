@@ -228,7 +228,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
 
     _target = std::make_shared<EnemyModel>();
-    currentLevel = level1;
+    currentLevel = level2;
     loadLevel(currentLevel);
 
     //App class will set active true
@@ -281,6 +281,7 @@ void GameScene::reset() {
     _avatar = nullptr;
     _goalDoor = nullptr;
     _background = nullptr;
+    _sensorFixtures.clear();
 
     _enemies.clear();
     _vulnerables.clear();
@@ -493,6 +494,19 @@ void GameScene::preUpdate(float dt) {
         }
     }
     if (_Bull != nullptr && !_Bull->isRemoved()) {
+        if (_Bull->getHealth() <= 0) {
+            _worldnode->removeChild(_Bull->getSceneNode());
+            _Bull->setDebugScene(nullptr);
+            _Bull->markRemoved(true);
+        }
+        if (_Bull->getangrytime() >0&& _Bull->getknockbacktime()<=0) {
+            if (int(_Bull->getangrytime() * 10) % 2 < 1) {
+                _Bull->createAttack(*this);
+            }
+        }if (_Bull->getshake() && _Bull->getknockbacktime() <= 0) {
+			_Bull->setshake(false);
+			_Bull->createAttack2(*this);
+		}
         if (!_Bull->isChasing()) {
             Vec2 BullPos = _Bull->getPosition();
             float distance = avatarPos.distance(BullPos);
@@ -501,11 +515,8 @@ void GameScene::preUpdate(float dt) {
                 _Bull->setDirection(direction);
                 _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
             }
-            if (_Bull->getHealth() <= 0) {
-                _Bull->markRemoved(true);
-            }
-            _Bull->update(dt);
         }
+        _Bull->update(dt);
     }
 
     //update dollar node
@@ -616,18 +627,6 @@ void GameScene::postUpdate(float remain) {
         }
         else {
             ++it;
-        }
-    }
-    for (auto& enemy : _enemies) {
-        std::vector<std::shared_ptr<EnemyAttack>> attacks=enemy->getAttacks();
-        for (auto it = attacks.begin(); it != attacks.end();) {
-            if ((*it)->killMe()) {
-                removeAttack((*it).get());
-                it = attacks.erase(it);
-            }
-            else {
-                ++it;
-            }
         }
     }
 
@@ -823,14 +822,14 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
         _Bull->setIsChasing(false);
-        _Bull->takeDamage(0, direction);
+        _Bull->takeDamage(0, direction, true);
     }
     else if (_Bull != nullptr && _Bull->isChasing() && bd1->getName() == WALL_NAME && bd2 == _Bull.get()) {
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd1)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
         _Bull->setIsChasing(false);
-        _Bull->takeDamage(0, direction);
+        _Bull->takeDamage(0, direction, true);
     }
     if (_Bull != nullptr && bd1 == _Bull.get() && bd2 == _avatar.get()) {
         Vec2 avatarPos = _avatar->getPosition();
@@ -845,7 +844,30 @@ void GameScene::beginContact(b2Contact* contact) {
         _avatar->takeDamage(34, direction);
     }
 
-
+    if (_Bull != nullptr && bd1->getName() == ATTACK_NAME && bd2->getName() == BULL_TEXTURE && _Bull->getknockbacktime() <= 0) {
+        Vec2 enemyPos = _Bull->getPosition();
+        Vec2 attackerPos = ((Attack*)bd1)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        if (_Bull->getHealth() == 66.0f) {
+            _Bull->takeDamage(17, direction, true);
+            _Bull->setangrytime(4);
+        }else {
+            _Bull->takeDamage(17, direction, false);
+        }
+        CULog("Bull Health: %f", _Bull->getHealth());
+    }else if (_Bull != nullptr && bd2->getName() == ATTACK_NAME && bd1->getName() == BULL_TEXTURE && _Bull->getknockbacktime()<=0) {
+        Vec2 enemyPos = _Bull->getPosition();
+        Vec2 attackerPos = ((Attack*)bd2)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        if (_Bull->getHealth() == 66.0f) {
+            _Bull->takeDamage(17, direction, true);
+            _Bull->setangrytime(4);
+        }else {
+            _Bull->takeDamage(17, direction, false);
+        }
+        CULog("Bull Health: %f", _Bull->getHealth());
+    }
+    
 
     // If we hit the "win" door, we are done
     if (!_failed && ((bd1 == _avatar.get() && bd2 == _goalDoor.get()) ||
@@ -902,7 +924,6 @@ void GameScene::endContact(b2Contact* contact) {
     bool p3 = (_avatar->getSensorName() == fd1);
     bool p4 = (bd2->getName() != WALL_NAME);
     bool p5 = _avatar->contactingWall();
-    //  CULog("5 %d", p5);
     if (!(p1 || p2 || p3) && p4 && p5) {
         _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
         _avatar->setContactingWall(false);
@@ -912,22 +933,21 @@ void GameScene::endContact(b2Contact* contact) {
         Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-        //  removeAttack((Attack*)bd1);
         ((EnemyModel*)bd2)->takeDamage(34, direction);
         if (((EnemyModel*)bd2)->getHealth() <= 50){
             ((EnemyModel*)bd2)->setVulnerable(true);
         }
-    }
-    else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
+    }else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
         Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
         Vec2 attackerPos = ((Attack*)bd2)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-     //   removeAttack((Attack*)bd2);
         ((EnemyModel*)bd1)->takeDamage(34, direction);
         if (((EnemyModel*)bd1)->getHealth() <= 50) {
             ((EnemyModel*)bd1)->setVulnerable(true);
         }
     }
+
+
 
     if (bd1->getName() == "enemy_attack" && bd2 == _avatar.get()) {
         Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
@@ -935,7 +955,6 @@ void GameScene::endContact(b2Contact* contact) {
         int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
         _avatar->takeDamage(34, direction);
         removeAttack((Attack*)bd1);
-        _avatar->takeDamage(34, direction);
     }
     else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
         Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
@@ -943,7 +962,6 @@ void GameScene::endContact(b2Contact* contact) {
         int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
         _avatar->takeDamage(34, direction);
         removeAttack((Attack*)bd2);
-        _avatar->takeDamage(34, direction);
     }
 
     if (bd1->getName() == ENEMY_NAME && bd2 == _avatar.get()) {
