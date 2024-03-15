@@ -98,6 +98,7 @@ void EnemyAttack::update(float dt) {
  * disposed, a Attack may not be used until it is initialized again.
  */
 void EnemyAttack::dispose() {
+	_geometry = nullptr;
 	_node = nullptr;
 }
 
