@@ -102,11 +102,13 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_header->setAnchor(Vec2::ANCHOR_CENTER);
 	_header->setPosition(cugl::Vec2(0, 200));
 	_header->setForeground(cugl::Color4::RED);
+	_header->setVisible(false);
 
 	_currentGestureLabel = scene2::Label::allocWithText("Current Target Gesture: filling out text bc i swear this always breaks", _assets->get<Font>(SMALL_MSG));
 	_currentGestureLabel->setAnchor(Vec2::ANCHOR_TOP_CENTER);
 	_currentGestureLabel->setPosition(cugl::Vec2(0, 100));
 	_currentGestureLabel->setForeground(cugl::Color4::BLACK);
+	_currentGestureLabel->setVisible(false);
 
 	addChild(_box);
 	addChild(_poly);
@@ -174,9 +176,11 @@ void DollarScene::update(float timestep) {
 			}
 			if (!_completed) {
 				_currentGestureLabel->setText("Current Target Gesture: " + _currentTargetGestures[_currentTargetIndex]);
+				_currentGestureLabel->setVisible(true);
 				_header->setText("Similarity: " + std::to_string(_currentSimilarity));
+				_header->setVisible(true);
 			}
-			else _currentGestureLabel->setText("Done!");
+			else _currentGestureLabel->setVisible(false);
 
 		}
 	}

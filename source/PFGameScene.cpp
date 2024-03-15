@@ -53,7 +53,7 @@ using namespace cugl;
 
 #define COOKTIME_MAX_DIST 3.5f
 
-#define FEEDBACK_DURATION 2.0f
+#define FEEDBACK_DURATION 1.2f
 
 
 
@@ -420,6 +420,8 @@ void GameScene::preUpdate(float dt) {
         }
 
     }
+
+
 
     if (!_slowed && (_dollarnode->shouldIDisappear())) {
         _dollarnode->setVisible(false);
