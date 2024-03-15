@@ -91,7 +91,6 @@ enum class modifier {
     none
 };
 
-
 #define BASE_ATTACK_BUFF 20.0f
 #define BASE_HEALTH_BUFF 5.0f
 #define BASE_JUMP_BUFF 10.0f
