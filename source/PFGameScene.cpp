@@ -36,16 +36,20 @@ using namespace cugl;
 #pragma mark Level Geography
 
 /** This is adjusted by screen aspect ratio to get the height */
-#define SCENE_WIDTH 1024
-#define SCENE_HEIGHT 576
+#define SCENE_WIDTH 1280
+#define SCENE_HEIGHT 800
+
+// #define SCENE_WIDTH 1024
+// #define SCENE_HEIGHT 576
 
 /** This is the aspect ratio for physics */
 #define SCENE_ASPECT 10.0/16.0
+// #define SCENE_ASPECT 10.0/16.0
 
 /** Width of the game world in Box2d units */
-#define DEFAULT_WIDTH   32.0f
+#define DEFAULT_WIDTH   50.0f
 /** Height of the game world in Box2d units */
-#define DEFAULT_HEIGHT  18.0f
+#define DEFAULT_HEIGHT  40.0f
 
 #define INCLUDE_ROPE_BRIDGE false
 
@@ -225,7 +229,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     //_dollarnode->setPosition(getSize().getIWidth() / 2.0f, getSize().getIHeight() / 2.0f);
     _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
     _dollarnode->setVisible(false);
-
 
     loadLevel(level1);
 
