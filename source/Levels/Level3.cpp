@@ -56,7 +56,7 @@ static float ALT_PLATFORMS[ALT_PLATFORM_COUNT][ALT_PLATFORM_VERTS] = {
 void Level3::populate(GameScene& scene) {
 	_assets = scene.getAssets();
 	_scale = scene.getScale();
-	_background = scene.getBackground();
+//	_background = scene.getBackground();
 	_avatar = scene.getAvatar();
 	_enemies = scene.getEnemies();
 	_goalDoor = scene.getGoalDoor();
@@ -196,7 +196,7 @@ void Level3::populate(GameScene& scene) {
 
 	scene.setAssets(_assets);
 	scene.setScale(_scale);
-	scene.setBackground(_background);
+//	scene.setBackground(_background);
 	scene.setAvatar(_avatar);
 	scene.setEnemies(_enemies);
 	scene.setGoalDoor(_goalDoor);

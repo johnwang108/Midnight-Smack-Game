@@ -31,24 +31,6 @@ static float WALL[WALL_COUNT][WALL_VERTS] = {
 
 
 /** The outlines of all of the platforms */
-
-float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
-	{ 1.0f, 3.0f, 1.0f, 2.5f, 6.0f, 2.5f, 6.0f, 3.0f},
-	{ 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
-	{23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
-	{26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
-	{29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
-	{24.0f, 8.5f,24.0f, 8.0f,27.0f, 8.0f,27.0f, 8.5f},
-	{29.0f,10.0f,29.0f, 9.5f,31.0f, 9.5f,31.0f,10.0f},
-	{23.0f,11.5f,23.0f,11.0f,27.0f,11.0f,27.0f,11.5f},
-	{19.0f,12.5f,19.0f,12.0f,23.0f,12.0f,23.0f,12.5f},
-	{ 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
-};
-
-
-
-
-/** The outlines of all of the platforms */
 static float ALT_PLATFORMS[ALT_PLATFORM_COUNT][ALT_PLATFORM_VERTS] = {
 	{ 1.0f, .5f, 1.0f, .0f, 33.0f, .0f, 33.0f, .50f}
 };
