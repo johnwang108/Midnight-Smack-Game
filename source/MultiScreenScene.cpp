@@ -311,3 +311,15 @@ void MultiScreenScene::tempPopulate() {
 	// TODO: Sort orders by time so we can just keep track of the index we've sent orders up to
 	// i.e. once we've sent an order in update we can update the index to be the next new order
 }
+
+void MultiScreenScene::unfocusAll() {
+	for (int i = 0; i < 5; i++) {
+		if (_scenes[i] != nullptr) {
+			_scenes[i]->setFocus(false);
+		}
+	}
+}
+
+void MultiScreenScene::focusCurr() {
+	_scenes[_curr]->setFocus(true);
+}

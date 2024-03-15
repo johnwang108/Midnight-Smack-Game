@@ -36,7 +36,10 @@
 
 #define SMALL_MSG "retrosmall"  
 
-#define DOLLAR_THRESHOLD 0.5
+#define DOLLAR_THRESHOLD 0.7
+
+#define GOOD_THRESHOLD 0.7
+#define PERFECT_THRESHOLD 0.85
 
 using namespace cugl;
 
@@ -158,12 +161,12 @@ void DollarScene::update(float timestep) {
 			_path = _input->getTouchPath();
 		}
 		if (!_currentTargetGestures.empty()) {
-			if (matchWithTouchPath() && isSuccess()) {
+			if (matchWithTouchPath()) {
+				_lastResult = gestureResult();
 				if (_currentTargetIndex < _currentTargetGestures.size() - 1) _currentTargetIndex++;
 				else {
 					_completed = true;
 				}
-				CULog("succeed");
 			}
 			if (!_completed) {
 				_currentGestureLabel->setText("Current Target Gesture: " + _currentTargetGestures[_currentTargetIndex]);
@@ -224,9 +227,9 @@ bool DollarScene::matchWithTouchPath() {
 }
 
 //is gesture inputting a success?
-bool DollarScene::isSuccess() {
-	countdown = 60;
-	return _currentSimilarity > DOLLAR_THRESHOLD;
+int DollarScene::gestureResult() {
+	CULog("%d", (int)(_currentSimilarity > GOOD_THRESHOLD) + (int)(_currentSimilarity > PERFECT_THRESHOLD));
+	return (int) (_currentSimilarity > GOOD_THRESHOLD) + (int) (_currentSimilarity > PERFECT_THRESHOLD);
 };
 
 void DollarScene::setFocus(bool focus) {

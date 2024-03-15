@@ -437,10 +437,11 @@ void GameScene::preUpdate(float dt) {
 
         //cooktime handling. Assume that _target not null, if it is null then continue
         if (!_dollarnode->isPending()) {
+            CULog("entered pending");
             if (_target != nullptr) {
                 _slowed = false;
                 std::string s = _target->getGestureString();
-                if (_dollarnode->isSuccess()) {
+                if (_dollarnode->getLastResult() > 0) {
                     CULog("NICE!!!!!!!!!!!!!!");
                     removeEnemy(_target.get());
                 }
