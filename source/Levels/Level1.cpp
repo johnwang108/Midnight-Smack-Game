@@ -81,23 +81,10 @@ void Level1::populate(GameScene& scene) {
 	_enemies = scene.getEnemies();
 	_goalDoor = scene.getGoalDoor();
 
-# pragma mark: Background
-	Vec2 background_pos = BACKGROUND_POS;
-	std::shared_ptr<Texture> image = _assets->get<Texture>("background-1");
-	std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
-	Size background_size(image->getSize().width / _scale, image->getSize().height / _scale);
-	_background = physics2::BoxObstacle::alloc(background_pos, background_size);
-	_background->setName(BACKGROUND_NAME);
-	_background->setBodyType(b2_staticBody);
-	_background->setDensity(0.0f);
-	_background->setFriction(0.0f);
-	_background->setRestitution(0.0f);
-	_background->setEnabled(false);
-	_background->setSensor(true);
-	scene.addObstacle(_background, sprite);
-
 
 #pragma mark : Goal door
+	std::shared_ptr<Texture> image = _assets->get<Texture>("background-1");
+	std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
 	image = _assets->get<Texture>(GOAL_TEXTURE);
 	sprite = scene2::PolygonNode::allocWithTexture(image);
 	std::shared_ptr<scene2::WireNode> draw;
@@ -204,6 +191,7 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
+	_enemy->setGestureString("pigtail");
 
 	//shrimp 2
 	image = _assets->get<Texture>(SHRIMP_TEXTURE);
@@ -234,6 +222,7 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
+	_enemy->setGestureString("circle");
 
 	//rice 2
 	image = _assets->get<Texture>(RICE_TEXTURE);
@@ -264,6 +253,7 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
+	_enemy->setGestureString("pigtail");
 
 	//egg 2
 	image = _assets->get<Texture>(EGG_TEXTURE);
