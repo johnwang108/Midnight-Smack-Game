@@ -70,6 +70,9 @@ protected:
     /** Reference to the right joystick image */
     std::shared_ptr<cugl::scene2::PolygonNode> _rightnode;
 
+    std::shared_ptr<Scene2> _bgScene;
+    std::shared_ptr<Scene2> _uiScene;
+
     std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
 
 
@@ -90,7 +93,7 @@ protected:
     /** Reference to the goalDoor (for collision detection) */
     std::shared_ptr<cugl::physics2::BoxObstacle>    _goalDoor;
 
-    std::shared_ptr<cugl::physics2::BoxObstacle>    _background;
+    std::shared_ptr<cugl::scene2::PolygonNode>    _background;
     /** Reference to the player avatar */
     std::shared_ptr<DudeModel>			  _avatar;
 
@@ -142,6 +145,9 @@ protected:
 
     /** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
     bool _transitionScenes;
+    float healthPercentage;
+    std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
+    std::shared_ptr<cugl::scene2::PolygonNode> _healthBarBackground;
 
     std::vector<std::tuple<std::shared_ptr<cugl::scene2::Label>, cugl::Timestamp>> _popups;
 
@@ -442,7 +448,7 @@ public:
 
     float getScale() const { return _scale; }
 
-    std::shared_ptr<cugl::physics2::BoxObstacle> getBackground() const { return _background; }
+    std::shared_ptr<cugl::scene2::PolygonNode> getBackground() const { return _background; }
 
     void addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj,
         const std::shared_ptr<cugl::scene2::SceneNode>& node,
@@ -461,7 +467,7 @@ public:
 
     void setAssets(const std::shared_ptr<AssetManager>& assets) { _assets = assets; }
     void setScale(float scale) { _scale = scale; }
-    void setBackground(const std::shared_ptr<cugl::physics2::BoxObstacle>& background) { _background = background; }
+    void setBackground(const std::shared_ptr<cugl::scene2::PolygonNode>& background) { _background = background; }
     void setAvatar(const std::shared_ptr<DudeModel>& avatar) { _avatar = avatar; }
     void setEnemies(const std::vector<std::shared_ptr<EnemyModel>>& enemies) { _enemies = enemies; }
     void setGoalDoor(const std::shared_ptr<cugl::physics2::BoxObstacle>& goalDoor) { _goalDoor = goalDoor; }
@@ -474,9 +480,14 @@ public:
 
     void transition(bool t);
 
+    void renderBG(std::shared_ptr<cugl::SpriteBatch> batch);
+
+    void renderUI(std::shared_ptr<cugl::SpriteBatch> batch);
+
     bool transitionedAway() { return _transitionScenes; };
 
     //creates a popup message that dissapates. Position is in word coords, not physics.
     void GameScene::popup(std::string s, Vec2 pos);
   };
+
 #endif /* __PF_GAME_SCENE_H__ */

@@ -65,7 +65,7 @@ void EnemyAttack::update(float dt) {
 			_angle = atan2(_straight.y - getPosition().y, _straight.x - getPosition().x) + M_PI;
 		}
 		else {
-			_body->ApplyLinearImpulseToCenter(b2Vec2(3 * _direction, 6), true);
+			_body->ApplyLinearImpulseToCenter(b2Vec2(2 * _direction, 3), true);
 		}
 	}
 

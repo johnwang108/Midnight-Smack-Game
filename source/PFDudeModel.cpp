@@ -148,7 +148,15 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
     return false;
 }
 
-
+void DudeModel::sethealthbar(std::shared_ptr<cugl::AssetManager> asset) {
+    auto healthBarBackground = scene2::PolygonNode::allocWithTexture(asset->get<Texture>("heartsbroken"));
+    auto healthBarForeground = scene2::PolygonNode::allocWithTexture(asset->get<Texture>("heartsfull"));
+    healthBarBackground->setPosition(Vec2(10, 10));
+    healthBarForeground->setPosition(Vec2(10, 10));
+    _node->addChild(healthBarBackground);
+    _node->addChild(healthBarForeground);
+    _healthBarForeground = healthBarForeground;
+}
 #pragma mark -
 #pragma mark Attribute Properties
 

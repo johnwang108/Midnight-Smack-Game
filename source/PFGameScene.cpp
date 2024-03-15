@@ -55,6 +55,8 @@ using namespace cugl;
 
 #define FEEDBACK_DURATION 1.2f
 
+#define HEALTHBAR_X_OFFSET 15
+
 
 
 #pragma mark -
@@ -211,7 +213,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode->init(_assets, _input, "cooktime");
     _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_BOTTOM_LEFT);
     _dollarnode->setVisible(false);
-    
+
+
     addChild(_worldnode);
     addChild(_debugnode);
     addChild(_winnode);
@@ -220,6 +223,42 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_rightnode);
 
     addChild(_dollarnode);
+   /* addChild(healthBarBackground);
+    addChild(healthBarForeground);*/
+
+#pragma mark: UI
+
+    // ui stuff
+    _uiScene = cugl::Scene2::alloc(dimen);
+    _uiScene->init(dimen);
+    _uiScene->setActive(true);
+
+
+
+    auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
+    auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
+    _healthBarForeground = healthBarForeground;
+    _healthBarBackground = healthBarBackground;
+
+    _healthBarForeground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
+    _healthBarForeground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarBackground->getHeight());
+    _healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
+    _healthBarBackground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarForeground->getHeight());
+
+    _uiScene->addChild(_healthBarBackground);
+    _uiScene->addChild(_healthBarForeground);
+# pragma mark: Background
+
+    _bgScene = cugl::Scene2::alloc(dimen);
+    _bgScene->init(dimen);
+    _bgScene->setActive(true);
+
+    cugl::Rect rectB = cugl::Rect(Vec2::ZERO, computeActiveSize());
+
+    _background = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>("cutting_station"), rectB);
+
+    _bgScene->addChild(_background);
+    
 
     _target = std::make_shared<EnemyModel>();
     currentLevel = level1;
@@ -556,6 +595,8 @@ void GameScene::preUpdate(float dt) {
     //_dollarnode->update(dt);
 }
 
+
+
 /**
  * The method called to provide a deterministic application loop.
  *
@@ -584,6 +625,14 @@ void GameScene::preUpdate(float dt) {
  */
 void GameScene::fixedUpdate(float step) {
     // Turn the physics engine crank.
+    if (_healthBarForeground != nullptr) {
+        healthPercentage = _avatar->getHealth() / 100;
+        float totalWidth = _healthBarForeground->getWidth();
+        float height = _healthBarForeground->getHeight();
+        float clipWidth = totalWidth * healthPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _healthBarForeground->setScissor(scissor);
+    }
     if (_slowed) { 
         step = step / 15;
     }
@@ -591,6 +640,11 @@ void GameScene::fixedUpdate(float step) {
     if (CAMERA_FOLLOWS_PLAYER) {
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
         cugl::Vec3 pos = _camera->getPosition();
+
+        Rect viewport = _camera->getViewport();
+        Vec2 worldPosition = Vec2(pos.x - viewport.size.width / 2 + 140,
+            pos.y + viewport.size.height / 2 - 50);
+
 
         //magic number 0.2 are for smoothness
         //float smooth = std::min(0.2f, (target - pos).length());
@@ -690,6 +744,16 @@ void GameScene::postUpdate(float remain) {
         }
     }
 }
+
+void GameScene::renderBG(std::shared_ptr<cugl::SpriteBatch> batch) {
+    _bgScene->render(batch);
+}
+
+void GameScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
+    _uiScene->render(batch);
+}
+
+
 
 
 /**
@@ -914,7 +978,20 @@ void GameScene::beginContact(b2Contact* contact) {
         int direction = (attackerPos.x < enemyPos.x) ? -1 : 1;
         _avatar->takeDamage(34, direction);
     }
-    
+    if (bd1->getName() == "enemy_attack" && bd2 == _avatar.get()) {
+        Vec2 enemyPos = ((EnemyAttack*)bd1)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+        removeAttack((EnemyAttack*)bd1);
+    }
+    else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
+        Vec2 enemyPos = ((EnemyAttack*)bd2)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+        removeAttack((EnemyAttack*)bd2);
+    }
 
     // If we hit the "win" door, we are done
     if (!_failed && ((bd1 == _avatar.get() && bd2 == _goalDoor.get()) ||
@@ -1002,20 +1079,7 @@ void GameScene::endContact(b2Contact* contact) {
 
 
 
-    if (bd1->getName() == "enemy_attack" && bd2 == _avatar.get()) {
-        Vec2 enemyPos = ((EnemyAttack*)bd1)->getPosition();
-        Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
-        _avatar->takeDamage(34, direction);
-        removeAttack((EnemyAttack*)bd1);
-    }
-    else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
-        Vec2 enemyPos = ((EnemyAttack*)bd2)->getPosition();
-        Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
-        _avatar->takeDamage(34, direction);
-        removeAttack((EnemyAttack*)bd2);
-    }
+
 
 
 
@@ -1061,7 +1125,7 @@ std::string GameScene::getGestureText(std::string gest, float sim) {
 
 void GameScene::zoomCamera(float scale) {
     _camera->setZoom(scale);
-	_camera->update();
+    _camera->update();
 
 }
 
