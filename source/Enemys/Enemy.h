@@ -9,9 +9,9 @@
 
 
 #define ENEMY_SENSOR_NAME     "enemysensor"
-#define SHRIMP_TEXTURE    "shrimp"
-#define EGG_TEXTURE    "egg"
-#define RICE_TEXTURE    "rice"
+#define SHRIMP_TEXTURE    "shrimpBoss"
+#define EGG_TEXTURE    "eggEnemy"
+#define RICE_TEXTURE    "riceEnemy"
 
 #define ENEMY_FORCE      0.75f
 #define ENEMY_DAMPING    5.0f

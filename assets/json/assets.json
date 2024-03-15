@@ -29,20 +29,20 @@
         "goal": {
             "file": "textures/goaldoor.png"
         },
-        "shrimp": {
-            "file": "textures/shrimp.png"
+        "shrimpBoss": {
+            "file": "textures/shrimpBoss.png"
         },
-        "rice": {
-            "file": "textures/rice.png"
+        "riceEnemy": {
+            "file": "textures/riceEnemy.png"
         },
-        "egg": {
-            "file": "textures/egg.png"
+        "eggEnemy": {
+            "file": "textures/eggEnemy.png"
         },
         "bull": {
             "file": "textures/bull.png"
         },
         "shake": {
-            "file":      "textures/shake.png"
+            "file": "textures/shake.png"
         },
         "panfry_station": {
             "file": "textures/Panfry_Station.png",
@@ -69,25 +69,25 @@
             "wrapS": "repeat",
             "wrapT": "repeat"
         },
-        "unball":{
-            "file":      "textures/unball.png"
+        "unball": {
+            "file": "textures/unball.png"
         },
-        "dball":{
-            "file":      "textures/dball.png"
+        "dball": {
+            "file": "textures/dball.png"
         },
-        "P2bull":{
-            "file":      "textures/P2bull.png"
+        "P2bull": {
+            "file": "textures/P2bull.png"
         },
-        "heartsbroken":{
-            "file":      "textures/heartsbroken.png"
+        "heartsbroken": {
+            "file": "textures/heartsbroken.png"
         },
-        "heartsfull":{
-            "file":      "textures/heartsfull.png"
+        "heartsfull": {
+            "file": "textures/heartsfull.png"
         },
-        "cooktime" : {
-            "file":      "textures/cutting_board.png",
-            "wrapS":    "repeat",
-            "wrapT":    "repeat"
+        "cooktime": {
+            "file": "textures/cutting_board.png",
+            "wrapS": "repeat",
+            "wrapT": "repeat"
         },
         "dpad": {
             "file": "textures/dpad.png",
