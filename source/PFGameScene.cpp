@@ -234,6 +234,23 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_dollarnode);
     addChild(healthBarBackground);
     addChild(healthBarForeground);
+
+    // ui stuff
+    _uiScene = cugl::Scene2::alloc(dimen);
+    _uiScene->init(dimen);
+    _uiScene->setActive(true);
+
+# pragma mark: Background
+
+    _bgScene = cugl::Scene2::alloc(dimen);
+    _bgScene->init(dimen);
+    _bgScene->setActive(true);
+
+    cugl::Rect rectB = cugl::Rect(Vec2::ZERO, computeActiveSize());
+
+    _background = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>("cutting_station"), rectB);
+
+    _bgScene->addChild(_background);
     
 
     _target = std::make_shared<EnemyModel>();
@@ -557,7 +574,10 @@ void GameScene::preUpdate(float dt) {
 
     //update dollar node
     _dollarnode->update(dt);
+
 }
+
+
 
 /**
  * The method called to provide a deterministic application loop.
@@ -708,6 +728,16 @@ void GameScene::postUpdate(float remain) {
         }
     }
 }
+
+void GameScene::renderBG(std::shared_ptr<cugl::SpriteBatch> batch) {
+    _bgScene->render(batch);
+}
+
+void GameScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
+    _uiScene->render(batch);
+}
+
+
 
 
 /**

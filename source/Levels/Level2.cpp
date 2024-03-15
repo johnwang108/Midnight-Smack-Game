@@ -62,19 +62,19 @@ void Level2::populate(GameScene& scene) {
 	_goalDoor = scene.getGoalDoor();
 
 # pragma mark: Background
-	Vec2 background_pos = BACKGROUND_POS;
+	//Vec2 background_pos = BACKGROUND_POS;
 	std::shared_ptr<Texture> image = _assets->get<Texture>("background-1");
 	std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
-	Size background_size(image->getSize().width / _scale, image->getSize().height / _scale);
-	_background = physics2::BoxObstacle::alloc(background_pos, background_size);
-	_background->setName(BACKGROUND_NAME);
-	_background->setBodyType(b2_staticBody);
-	_background->setDensity(0.0f);
-	_background->setFriction(0.0f);
-	_background->setRestitution(0.0f);
-	_background->setEnabled(false);
-	_background->setSensor(true);
-	scene.addObstacle(_background, sprite);
+	//Size background_size(image->getSize().width / _scale, image->getSize().height / _scale);
+	//_background = physics2::BoxObstacle::alloc(background_pos, background_size);
+	//_background->setName(BACKGROUND_NAME);
+	//_background->setBodyType(b2_staticBody);
+	//_background->setDensity(0.0f);
+	//_background->setFriction(0.0f);
+	//_background->setRestitution(0.0f);
+	//_background->setEnabled(false);
+	//_background->setSensor(true);
+	//scene.addObstacle(_background, sprite);
 
 
 #pragma mark : Goal door
