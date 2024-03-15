@@ -200,12 +200,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _rightnode->setScale(0.35f);
     _rightnode->setVisible(false);
 
-    _gestureFeedback = scene2::Label::allocWithText("Perfect", _assets->get<Font>(MESSAGE_FONT));
-    _gestureFeedback->setAnchor(Vec2::ANCHOR_TOP_CENTER);
-    _gestureFeedback->setPosition(0, 0);
-    _gestureFeedback->setForeground(Color4::BLACK);
-    _gestureFeedback->setVisible(false);
-
 
 
     _slowed = false;
@@ -224,7 +218,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_losenode);
     addChild(_leftnode);
     addChild(_rightnode);
-    addChild(_gestureFeedback);
 
     addChild(_dollarnode);
 
@@ -473,10 +466,6 @@ void GameScene::preUpdate(float dt) {
 
 
                 popup(message, cugl::Vec2(_target->getPosition().x * _scale, _target->getPosition().y * 1.1 * _scale));
-
-                /*_gestureInitiatedTime = Timestamp();
-                _gestureInitiatedTime.mark();
-                _gestureFeedback->setPosition(_target->getPosition().x * _scale, _target->getPosition().y * 1.1 * _scale);*/
                 
                 _target = nullptr;
             }
@@ -493,7 +482,7 @@ void GameScene::preUpdate(float dt) {
 
         //handle removes. TODO!!!!!!
         if (now.ellapsedMillis(time) / 1000.0f >= FEEDBACK_DURATION) {
-            _gestureFeedback->setText("");
+            popup->setText("");
             popup->setVisible(false);
         } 
         //handle movement
@@ -502,21 +491,6 @@ void GameScene::preUpdate(float dt) {
         }
 
 	}
-
-    /*if (now.ellapsedMillis(_gestureInitiatedTime) / 1000.0f < FEEDBACK_DURATION) {
-        int lastResult = _dollarnode->getLastResult();
-        if (lastResult != -1) {
-            _gestureFeedback->setText(_feedbackMessages[lastResult]);
-            _gestureFeedback->setPositionY(_gestureFeedback->getPositionY() - 1.0f);
-            _gestureFeedback->setVisible(true);
-            CULog(_gestureFeedback->getText().c_str());
-            CULog("___________________");
-        }
-    }
-    else {
-        _gestureFeedback->setText("");
-        _gestureFeedback->setVisible(false);
-    }*/
 
 
     Vec2 avatarPos = _avatar->getPosition();
@@ -1106,23 +1080,6 @@ void GameScene::popup(std::string s, cugl::Vec2 pos) {
     Timestamp now = Timestamp();
     now.mark();
     std::shared_ptr<cugl::scene2::Label> popup = cugl::scene2::Label::allocWithText(pos, s, _assets->get<Font>(MESSAGE_FONT));
-
-    //initTime->setPosition(_target->getPosition().x * _scale, _target->getPosition().y * 1.1 * _scale);
-
-    /*if (now.ellapsedMillis(_gestureInitiatedTime) / 1000.0f < FEEDBACK_DURATION) {
-        int lastResult = _dollarnode->getLastResult();
-        if (lastResult != -1) {
-            _gestureFeedback->setText(_feedbackMessages[lastResult]);
-            _gestureFeedback->setPositionY(_gestureFeedback->getPositionY() - 1.0f);
-            _gestureFeedback->setVisible(true);
-            CULog(_gestureFeedback->getText().c_str());
-            CULog("___________________");
-        }
-    }
-    else {
-        _gestureFeedback->setText("");
-        _gestureFeedback->setVisible(false);
-    }*/
 
     popup = scene2::Label::allocWithText(s, _assets->get<Font>(MESSAGE_FONT));
     popup->setAnchor(Vec2::ANCHOR_TOP_CENTER);

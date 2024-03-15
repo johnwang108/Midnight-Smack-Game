@@ -70,10 +70,6 @@ protected:
     /** Reference to the right joystick image */
     std::shared_ptr<cugl::scene2::PolygonNode> _rightnode;
 
-    std::shared_ptr<cugl::scene2::Label> _gestureFeedback;
-
-    cugl::Timestamp _gestureInitiatedTime;
-
     std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
 
 
