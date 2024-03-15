@@ -887,7 +887,20 @@ void GameScene::beginContact(b2Contact* contact) {
         int direction = (attackerPos.x < enemyPos.x) ? -1 : 1;
         _avatar->takeDamage(34, direction);
     }
-    
+    if (bd1->getName() == "enemy_attack" && bd2 == _avatar.get()) {
+        Vec2 enemyPos = ((EnemyAttack*)bd1)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+        removeAttack((EnemyAttack*)bd1);
+    }
+    else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
+        Vec2 enemyPos = ((EnemyAttack*)bd2)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+        removeAttack((EnemyAttack*)bd2);
+    }
 
     // If we hit the "win" door, we are done
     if (!_failed && ((bd1 == _avatar.get() && bd2 == _goalDoor.get()) ||
@@ -969,20 +982,7 @@ void GameScene::endContact(b2Contact* contact) {
 
 
 
-    if (bd1->getName() == "enemy_attack" && bd2 == _avatar.get()) {
-        Vec2 enemyPos = ((EnemyAttack*)bd1)->getPosition();
-        Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
-        _avatar->takeDamage(34, direction);
-        removeAttack((EnemyAttack*)bd1);
-    }
-    else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
-        Vec2 enemyPos = ((EnemyAttack*)bd2)->getPosition();
-        Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
-        _avatar->takeDamage(34, direction);
-        removeAttack((EnemyAttack*)bd2);
-    }
+
 
 
 
