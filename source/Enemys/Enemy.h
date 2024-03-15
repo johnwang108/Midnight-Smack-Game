@@ -221,6 +221,8 @@ public:
     EnemyType getType() { return _type; }
 
     void setGestureString(std::string gesture) { _gestureName = gesture; };
+
+
     //Dict for enemy type to buff 
     static buff enemyToBuff(EnemyType type) {
         switch (type) {
@@ -228,10 +230,12 @@ public:
             return buff::attack;
         case EnemyType::rice:
             return buff::defense;
+
+            //switch egg and carrot
         case EnemyType::egg:
-            return buff::speed;
-        case EnemyType::carrot:
             return buff::jump;
+        case EnemyType::carrot:
+            return buff::speed;
         case EnemyType::beef:
             return buff::health;
         default:

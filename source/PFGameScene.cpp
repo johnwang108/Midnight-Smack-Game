@@ -58,6 +58,8 @@ using namespace cugl;
 
 #define HEALTHBAR_X_OFFSET 15
 
+#define BUFF_LABEL_OFFSET 15
+
 
 
 #pragma mark -
@@ -246,8 +248,14 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
     _healthBarBackground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarForeground->getHeight());
 
+    _buffLabel = scene2::Label::allocWithText("NO BUFF", _assets->get<Font>(MESSAGE_FONT));
+    _buffLabel->setAnchor(Vec2::ANCHOR_CENTER);
+    _buffLabel->setPosition(dimen.width - _buffLabel->getWidth()/2, dimen.height - _buffLabel->getHeight());
+    
+
     _uiScene->addChild(_healthBarBackground);
     _uiScene->addChild(_healthBarForeground);
+    _uiScene->addChild(_buffLabel);
 
     _uiScene->addChild(_winnode);
     _uiScene->addChild(_losenode);
@@ -493,13 +501,12 @@ void GameScene::preUpdate(float dt) {
                 std::string message = "";
                 if (_dollarnode->getLastResult() > 0) {
                     CULog("NICE!!!!!!!!!!!!!!");
-                    /*removeEnemy(_target.get());*/
                     _target->takeDamage(_avatar->getAttack(), 0);
                     //DEFAULT: APPLY DURATION BUFF 
                     _avatar->applyBuff(EnemyModel::enemyToBuff(_target->getType()), modifier::duration);
-
-                    //gigachad hardcode
-                    //_avatar->applyBuff(buff::defense, modifier::duration);
+                    //set buff label
+                    _buffLabel->setText(DudeModel::getStrForBuff(EnemyModel::enemyToBuff(_target->getType())));
+                    _buffLabel->setVisible(true);
                 }
                 else {
                     CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
@@ -516,6 +523,10 @@ void GameScene::preUpdate(float dt) {
 
             }
         }
+    }
+
+    if (_avatar->getDuration() == 0) {
+		_buffLabel->setVisible(false);
     }
 
     //iterate over popups to update
@@ -925,14 +936,16 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
         _Bull->setIsChasing(false);
-        _Bull->takeDamage(0, direction, true);
+        _Bull->takeDamage(5, direction, true);
+        popup(std::to_string(5), bullPos * _scale);
     }
     else if (_Bull != nullptr && _Bull->isChasing() && bd1->getName() == WALL_NAME && bd2 == _Bull.get()) {
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd1)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
         _Bull->setIsChasing(false);
-        _Bull->takeDamage(0, direction, true);
+        _Bull->takeDamage(5, direction, true);
+        popup(std::to_string(5), bullPos * _scale);
     }
     if (_Bull != nullptr && bd1 == _Bull.get() && bd2 == _avatar.get()) {
         Vec2 avatarPos = _avatar->getPosition();
@@ -957,6 +970,7 @@ void GameScene::beginContact(b2Contact* contact) {
         }else {
             _Bull->takeDamage(_avatar->getAttack()/2, direction, false);
         }
+        popup(std::to_string((int)_avatar->getAttack() / 2), enemyPos * _scale);
         CULog("Bull Health: %f", _Bull->getHealth());
     }else if (_Bull != nullptr && bd2->getName() == ATTACK_NAME && bd1->getName() == BULL_TEXTURE && _Bull->getknockbacktime()<=0) {
         Vec2 enemyPos = _Bull->getPosition();
@@ -968,6 +982,7 @@ void GameScene::beginContact(b2Contact* contact) {
         }else {
             _Bull->takeDamage(_avatar->getAttack() / 2, direction, false);
         }
+        popup(std::to_string((int)_avatar->getAttack() / 2), enemyPos * _scale);
         CULog("Bull Health: %f", _Bull->getHealth());
     }
     if (bd1->getName() == "shake" && bd2 == _avatar.get()) {

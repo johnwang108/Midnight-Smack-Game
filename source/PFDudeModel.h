@@ -91,9 +91,10 @@ enum class modifier {
     none
 };
 
+
 #define BASE_ATTACK_BUFF 20.0f
 #define BASE_HEALTH_BUFF 5.0f
-#define BASE_JUMP_BUFF 5.0f
+#define BASE_JUMP_BUFF 10.0f
 #define BASE_DEFENSE_BUFF 0.5f
 #define BASE_SPEED_BUFF 3.0f
 
@@ -531,16 +532,52 @@ public:
      */
     void applyForce(float h, float v);
 
-    void DudeModel::takeDamage(float damage, const int attackDirection);
+    void takeDamage(float damage, const int attackDirection);
 	
     float getHealth() { return _health; }
 
-    void DudeModel::sethealthbar(std::shared_ptr<cugl::AssetManager> asset);
+    void sethealthbar(std::shared_ptr<cugl::AssetManager> asset);
 
     //Apply buff to Sue with proper modifier.
-    void DudeModel::applyBuff(buff b, modifier m);
+    void applyBuff(buff b, modifier m);
 
     float getAttack() { return _attack + _attackBuff; }
+
+    float getDuration() { return _duration; };
+
+    static char* getStrForBuff(buff enumVal)
+    {
+        switch (enumVal)
+        {
+        case buff::attack:
+            return "attack";
+        case buff::jump:
+            return "jump";
+        case buff::speed:
+            return "speed";
+        case buff::defense:
+            return "defense";
+        case buff::health:
+            return "health";
+        default:
+            return "Not recognized..";
+        }
+    }
+
+    static char* getStrForModifier(modifier enumVal)
+    {
+        switch (enumVal)
+        {
+        case modifier::duration:
+            return "duration";
+        case modifier::effect:
+            return "effect";
+        case modifier::none:
+            return "none";
+        default:
+            return "Not recognized..";
+        }
+    }
 };
 
 #endif /* __PF_DUDE_MODEL_H__ */

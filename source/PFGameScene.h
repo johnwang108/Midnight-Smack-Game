@@ -150,6 +150,8 @@ protected:
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarBackground;
 
+    std::shared_ptr<cugl::scene2::Label> _buffLabel;
+
     std::vector<std::tuple<std::shared_ptr<cugl::scene2::Label>, cugl::Timestamp>> _popups;
 
 #pragma mark Internal Object Management
