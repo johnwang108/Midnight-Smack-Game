@@ -217,9 +217,13 @@ void MultiScreenScene::preUpdate(float timestep) {
 		_gestureFeedback->setPositionY(_size.height - _gestureFeedback->getHeight());
 	}
 	if (now.ellapsedMillis(_gestureInitiatedTime) / 1000.0f < FEEDBACK_DURATION) {
-		_gestureFeedback->setText(_feedbackMessages[_scenes[_curr]->getLastResult()]);
-		_gestureFeedback->setPositionY(_gestureFeedback->getPositionY() - 1.0f);
-		_gestureFeedback->setVisible(true);
+		int lastResult = _scenes[_curr]->getLastResult();
+		if (lastResult != -1) {
+			_gestureFeedback->setText(_feedbackMessages[lastResult]);
+			_gestureFeedback->setPositionY(_gestureFeedback->getPositionY() - 1.0f);
+			_gestureFeedback->setVisible(true);
+		}
+		
 	}
 	else {
 		_gestureFeedback->setText("");
