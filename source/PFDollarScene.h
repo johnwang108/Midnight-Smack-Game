@@ -73,6 +73,11 @@ protected:
 
     std::vector<std::string> _currentTargetGestures;
 
+    int _currentTargetIndex;
+
+    // this is for cook time only
+    bool _completed;
+
      
     int countdown;
 
@@ -109,7 +114,10 @@ public:
 
     void setFocus(bool focus);
 
-    void setTargetGestures(std::vector<std::string> gestures) { _currentTargetGestures = gestures; }
+    void setTargetGestures(std::vector<std::string> gestures) { 
+        _currentTargetGestures = gestures; 
+        _completed = false;
+    }
 
 
     bool isFocus() { return _focus; };

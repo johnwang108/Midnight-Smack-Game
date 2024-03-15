@@ -76,6 +76,8 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_focus = false;
 	countdown = 0;
 	_currentTargetGestures = gestures;
+	_currentTargetIndex = 0;
+	_completed = false;
 	_currentSimilarity = 0;
 	initGestureRecognizer();
 	//reflection across the x axis is necessary for polygon path
@@ -154,6 +156,20 @@ void DollarScene::update(float timestep) {
 		if (!(_input->getTouchPath().empty())) {
 			_path = _input->getTouchPath();
 		}
+		if (!_currentTargetGestures.empty()) {
+			matchWithTouchPath();
+			if (isSuccess()) {
+				_currentSimilarity = 0;
+				if (_currentTargetIndex < _currentTargetGestures.size() - 1) _currentTargetIndex++;
+				else {
+					_completed = true;
+				}
+				CULog("succeed");
+			}
+			if (!_completed) _currentGestureLabel->setText("Current Target Gesture: " + _currentTargetGestures[_currentTargetIndex]);
+			else _currentGestureLabel->setText("Done!");
+
+		}
 	}
 
 	//TODO: handle rendering smarter
@@ -180,13 +196,10 @@ void DollarScene::update(float timestep) {
 	_box->setPosition(cugl::Vec2(0, 0));
 
 
-	if (!_currentTargetGestures.empty()) {
-		matchWithTouchPath();
-		_currentGestureLabel->setText("Current Target Gesture: " + _currentTargetGestures.front());
-	}
+
 
 	//_header->setVisible(!isPending() && isSuccess());
-	_header->setText("Target gesture: " + _currentTargetGestures.front() + " | Similarity: " + std::to_string(_currentSimilarity));
+	_header->setText("Target gesture: " + _currentTargetGestures[_currentTargetIndex] + " | Similarity: " + std::to_string(_currentSimilarity));
 
 	
 };
@@ -200,10 +213,11 @@ bool DollarScene::isPending() {
 
 void DollarScene::matchWithTouchPath() {
 	if (_input->isGestureCompleted()) {
-		Path2 gesture = _input->getTouchPath();
+		Path2 gesture = _input->popTouchPath();
 		if (gesture.size() > 3) {
-			float sim = _dollarRecog->similarity(_currentTargetGestures.front(), gesture);
+			float sim = _dollarRecog->similarity(_currentTargetGestures[_currentTargetIndex], gesture);
 			if (sim >= 0) _currentSimilarity = sim;
+			
 		}
 		
 	}

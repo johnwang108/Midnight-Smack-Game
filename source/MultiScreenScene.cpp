@@ -199,11 +199,9 @@ void MultiScreenScene::preUpdate(float timestep) {
 
 	_input->update(timestep);
 
-	_scenes[0]->update(timestep);
-	_scenes[1]->update(timestep);
-	_scenes[2]->update(timestep);
-	_scenes[3]->update(timestep);
-	_scenes[4]->update(timestep);
+	for (int i = 0; i < 5; i++) {
+		_scenes[i]->update(timestep);
+	}
 
 	if (_input->didExit()) {
 		CULog("Shutting down");
@@ -305,7 +303,7 @@ void MultiScreenScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
 void MultiScreenScene::tempPopulate() {
 	std::vector<std::string> newGests = { "pigtail", "circle", "v" };
 	Order order1 = Order("pot", newGests, 4.0);
-	std::vector<std::string> newGests2 = { "circle", "v", "v" };
+	std::vector<std::string> newGests2 = { "circle", "v", "circle" };
 	Order order2 = Order("panfry", newGests2, 6.0);
 
 	_orders = { order1, order2 };
