@@ -218,12 +218,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     addChild(_worldnode);
     addChild(_debugnode);
-    addChild(_winnode);
-    addChild(_losenode);
     addChild(_leftnode);
     addChild(_rightnode);
 
     addChild(_dollarnode);
+
+
    /* addChild(healthBarBackground);
     addChild(healthBarForeground);*/
 
@@ -248,6 +248,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _uiScene->addChild(_healthBarBackground);
     _uiScene->addChild(_healthBarForeground);
+
+    _uiScene->addChild(_winnode);
+    _uiScene->addChild(_losenode);
 # pragma mark: Background
 
     _bgScene = cugl::Scene2::alloc(dimen);
