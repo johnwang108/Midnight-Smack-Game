@@ -55,6 +55,8 @@ using namespace cugl;
 
 #define FEEDBACK_DURATION 1.2f
 
+#define HEALTHBAR_X_OFFSET 15
+
 
 
 #pragma mark -
@@ -218,10 +220,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_BOTTOM_LEFT);
     _dollarnode->setVisible(false);
 
-    auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
-    auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
-    _healthBarForeground = healthBarForeground;
-    _healthBarBackground = healthBarBackground;
 
     addChild(_worldnode);
     addChild(_debugnode);
@@ -232,14 +230,30 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_gestureFeedback);
 
     addChild(_dollarnode);
-    addChild(healthBarBackground);
-    addChild(healthBarForeground);
+   /* addChild(healthBarBackground);
+    addChild(healthBarForeground);*/
+
+#pragma mark: UI
 
     // ui stuff
     _uiScene = cugl::Scene2::alloc(dimen);
     _uiScene->init(dimen);
     _uiScene->setActive(true);
 
+
+
+    auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
+    auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
+    _healthBarForeground = healthBarForeground;
+    _healthBarBackground = healthBarBackground;
+
+    _healthBarForeground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
+    _healthBarForeground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarBackground->getHeight());
+    _healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
+    _healthBarBackground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarForeground->getHeight());
+
+    _uiScene->addChild(_healthBarBackground);
+    _uiScene->addChild(_healthBarForeground);
 # pragma mark: Background
 
     _bgScene = cugl::Scene2::alloc(dimen);
@@ -627,8 +641,6 @@ void GameScene::fixedUpdate(float step) {
         Vec2 worldPosition = Vec2(pos.x - viewport.size.width / 2 + 140,
             pos.y + viewport.size.height / 2 - 50);
 
-        _healthBarForeground->setPosition(worldPosition);
-        _healthBarBackground->setPosition(worldPosition);
 
         //magic number 0.2 are for smoothness
         //float smooth = std::min(0.2f, (target - pos).length());
