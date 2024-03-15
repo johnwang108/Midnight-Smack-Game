@@ -179,12 +179,15 @@ void DollarScene::update(float timestep) {
 	_poly->setPosition(cugl::Vec2(0,0));
 	_box->setPosition(cugl::Vec2(0, 0));
 
+
+	if (!_currentTargetGestures.empty()) {
+		matchWithTouchPath();
+		_currentGestureLabel->setText("Current Target Gesture: " + _currentTargetGestures.front());
+	}
+
 	//_header->setVisible(!isPending() && isSuccess());
 	_header->setText("Target gesture: " + _currentTargetGestures.front() + " | Similarity: " + std::to_string(_currentSimilarity));
 
-	if (!_currentTargetGestures.empty()) {
-		_currentGestureLabel->setText("Current Target Gesture: " + _currentTargetGestures.front());
-	}
 	
 };
 
@@ -198,8 +201,11 @@ bool DollarScene::isPending() {
 void DollarScene::matchWithTouchPath() {
 	if (_input->isGestureCompleted()) {
 		Path2 gesture = _input->getTouchPath();
-		float sim = _dollarRecog->similarity(_currentTargetGestures.front(), gesture);
-		if (sim >= 0) _currentSimilarity = sim;
+		if (gesture.size() > 3) {
+			float sim = _dollarRecog->similarity(_currentTargetGestures.front(), gesture);
+			if (sim >= 0) _currentSimilarity = sim;
+		}
+		
 	}
 }
 
