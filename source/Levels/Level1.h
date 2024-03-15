@@ -17,6 +17,19 @@ public:
 
     }
 
+    void parseJson(const std::string &json, std::shared_ptr<AssetManager>& assets, GameScene& scene);
+
+    void createGoalDoor(std::string path, std::shared_ptr<AssetManager>& assets,
+        GameScene& scene, int row, int col);
+
+    void createEnemy(std::string path, std::shared_ptr<AssetManager>& assets, GameScene& scene, int row, int col);
+
+    void createDude(std::string path, std::shared_ptr<AssetManager>& assets, GameScene& scene, int row, int col);
+
+    void createBorder(std::string path, std::shared_ptr<AssetManager>& assets, GameScene& scene, int row, int col, int borderNumber);
+
+    void createPlatform(std::string path, std::shared_ptr<AssetManager>& assets, GameScene& scene, int row, int col, int platformNumber);
+
     void populate(GameScene& scene) override;
 };
 
