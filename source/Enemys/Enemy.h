@@ -41,7 +41,9 @@ class GameScene;
 enum class EnemyType {
     shrimp, 
     rice, 
-    egg 
+    egg,
+    carrot,
+    beef
 };
 
 class EnemyModel : public cugl::physics2::CapsuleObstacle {
@@ -225,9 +227,13 @@ public:
         case EnemyType::shrimp:
             return buff::attack;
         case EnemyType::rice:
-            return buff::jump;
+            return buff::defense;
         case EnemyType::egg:
             return buff::speed;
+        case EnemyType::carrot:
+            return buff::jump;
+        case EnemyType::beef:
+            return buff::health;
         default:
             return buff::none;
         }

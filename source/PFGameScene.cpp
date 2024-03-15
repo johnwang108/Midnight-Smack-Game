@@ -219,7 +219,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
 
     _target = std::make_shared<EnemyModel>();
-    currentLevel = level2;
+    currentLevel = level1;
     loadLevel(currentLevel);
 
     //App class will set active true
@@ -443,16 +443,15 @@ void GameScene::preUpdate(float dt) {
             if (_target != nullptr) {
                 _slowed = false;
                 std::string s = _target->getGestureString();
-                if (_dollarnode->isSuccess()) {
-                    CULog("NICE!!!!!!!!!!!!!! APPLYING BUFF");
-                    //removeEnemy(_target.get());
-
-                    _target->takeDamage(_avatar->getAttack(), 0);
-                    //DEFAULT: APPLY DURATION BUFF WHEN 
-                    _avatar->applyBuff(EnemyModel::enemyToBuff(_target->getType()), modifier::duration);
                 if (_dollarnode->getLastResult() > 0) {
                     CULog("NICE!!!!!!!!!!!!!!");
-                    removeEnemy(_target.get());
+                    /*removeEnemy(_target.get());*/
+                    _target->takeDamage(_avatar->getAttack(), 0);
+                    //DEFAULT: APPLY DURATION BUFF 
+                    _avatar->applyBuff(EnemyModel::enemyToBuff(_target->getType()), modifier::duration);
+
+                    //gigachad hardcode
+                    //_avatar->applyBuff(buff::defense, modifier::duration);
                 }
                 else {
                     CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");

@@ -80,7 +80,7 @@ enum class buff{
     attack,
     health,
     jump,
-    dash,
+    defense,
     speed,
     none
 };
@@ -94,7 +94,7 @@ enum class modifier {
 #define BASE_ATTACK_BUFF 20.0f
 #define BASE_HEALTH_BUFF 5.0f
 #define BASE_JUMP_BUFF 5.0f
-#define BASE_DASH_BUFF 5.0f
+#define BASE_DEFENSE_BUFF 0.5f
 #define BASE_SPEED_BUFF 3.0f
 
 #define BASE_DURATION 10.0f
@@ -151,7 +151,7 @@ protected:
     //jump magnitude buff
     float _jumpBuff;
     //dash magnitude buff
-    float _dashBuff;
+    float _defenseBuff;
     //max speed buff
     float _speedBuff;
 

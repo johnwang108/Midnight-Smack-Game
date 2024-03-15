@@ -78,7 +78,7 @@ float floatyFrames = 10;
 /** The impulse for the character jump */
 #define DUDE_JUMP       (sqrt( 3 * 2 * (9.8) * getHeight() * jmpHeight ) * getMass() + _jumpBuff)
 /** The impulse for the character dash */
-#define DUDE_DASH       (DUDE_JUMP * dashModif + _dashBuff)
+#define DUDE_DASH       (DUDE_JUMP * dashModif)
 /** Debug color for the sensor */
 #define DEBUG_COLOR     Color4::RED
 
@@ -136,7 +136,7 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         _attackBuff = 0;
         _healthBuff = 0;
         _jumpBuff = 0;
-        _dashBuff = 0;
+        _defenseBuff = 1;
         _speedBuff = 0;
         _duration = 0;
 
@@ -311,13 +311,18 @@ void DudeModel::update(float dt) {
 		_duration -= dt;
         _duration = std::max(0.0f, _duration);
         //reset buff state if duration is over
-		if (_duration <= 0) {
+		if (_duration == 0) {
 			_attackBuff = 0;
 			_healthBuff = 0;
 			_jumpBuff = 0;
-			_dashBuff = 0;
+			_defenseBuff = 1;
 			_speedBuff = 0;
-		}
+            _node->setColor(Color4::WHITE);
+        }
+        else {
+            _node->setColor(Color4::BLACK);
+        }
+
     }
 
     if (_knockbackTime > 0) {
@@ -404,7 +409,7 @@ void DudeModel::resetDebug() {
 void DudeModel::takeDamage(float damage, const int attackDirection) {
     if (_lastDamageTime >= _healthCooldown) {
         _lastDamageTime = 0;
-        _health -= damage;
+        _health -= damage * _defenseBuff;
         if (_health < 0) {
             _health = 0;
         }
@@ -444,9 +449,9 @@ void DudeModel::applyBuff(const buff b, modifier m) {
             _duration = BASE_DURATION;
         }
         break;
-    case buff::dash:
+    case buff::defense:
         if (m == modifier::duration) {
-            _dashBuff = BASE_DASH_BUFF;
+            _defenseBuff = BASE_DEFENSE_BUFF;
             _duration = BASE_DURATION;
         }
 		break;
