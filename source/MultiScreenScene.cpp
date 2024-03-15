@@ -333,11 +333,14 @@ void MultiScreenScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
 
 void MultiScreenScene::tempPopulate() {
 	std::vector<std::string> newGests = { "pigtail", "circle", "v" };
-	Order order1 = Order("pot", newGests, 4.0);
+	Order order1 = Order("pot", newGests, 4.0f);
 	std::vector<std::string> newGests2 = { "circle", "v", "circle" };
-	Order order2 = Order("panfry", newGests2, 6.0);
+	Order order2 = Order("panfry", newGests2, 6.0f);
 
-	_orders = { order1, order2 };
+	std::vector<std::string> newGests3 = { "v", "pigtail", "pigtail" };
+	Order order3 = Order("cutting", newGests3, 8.0f);
+
+	_orders = { order1, order2, order3};
 	_newOrderIndex = 0;
 	// TODO: Sort orders by time so we can just keep track of the index we've sent orders up to
 	// i.e. once we've sent an order in update we can update the index to be the next new order

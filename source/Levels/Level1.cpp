@@ -202,6 +202,9 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
+	_enemy->setGestureString("pigtail");
+
+
 
 	//shrimp 3
 	image = _assets->get<Texture>(SHRIMP_TEXTURE);
@@ -212,6 +215,7 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
+	_enemy->setGestureString("pigtail");
 
 	Vec2 rice_pos = RICE_POS;
 	image = _assets->get<Texture>(RICE_TEXTURE);
@@ -233,6 +237,7 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
+	_enemy->setGestureString("circle");
 
 	//rice 3
 	image = _assets->get<Texture>(RICE_TEXTURE);
@@ -243,6 +248,8 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
+	_enemy->setGestureString("circle");
+
 
 	Vec2 egg_pos = EGG_POS;
 	image = _assets->get<Texture>(EGG_TEXTURE);
@@ -253,7 +260,7 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
-	_enemy->setGestureString("pigtail");
+	_enemy->setGestureString("v");
 
 	//egg 2
 	image = _assets->get<Texture>(EGG_TEXTURE);
@@ -264,6 +271,7 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
+	_enemy->setGestureString("v");
 
 	//egg 3
 
@@ -275,6 +283,8 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
+	_enemy->setGestureString("v");
+
 
 	scene.setAssets(_assets);
 	scene.setScale(_scale);
