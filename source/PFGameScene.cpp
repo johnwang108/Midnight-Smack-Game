@@ -41,11 +41,12 @@ using namespace cugl;
 
 /** This is the aspect ratio for physics */
 #define SCENE_ASPECT 10.0/16.0
+// #define SCENE_ASPECT 10.0/16.0
 
 /** Width of the game world in Box2d units */
-#define DEFAULT_WIDTH   32.0f
+#define DEFAULT_WIDTH   50.0f
 /** Height of the game world in Box2d units */
-#define DEFAULT_HEIGHT  18.0f
+#define DEFAULT_HEIGHT  40.0f
 
 #define INCLUDE_ROPE_BRIDGE false
 
