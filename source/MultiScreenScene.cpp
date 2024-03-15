@@ -4,6 +4,7 @@
 #include "Levels/Levels.h"
 
 #define CAMERA_MOVE_SPEED 50.0f
+#define FEEDBACK_DURATION 2.0f
 
 using namespace cugl;
 
@@ -123,7 +124,14 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_timer->setPosition(_size.width/2, _size.height - _timer->getHeight());
 	_timer->setForeground(Color4::BLACK);
 
+	_gestureFeedback = scene2::Label::allocWithText("Perfect", _assets->get<Font>(MESSAGE_FONT));
+	_gestureFeedback->setAnchor(Vec2::ANCHOR_TOP_CENTER);
+	_gestureFeedback->setPosition(_size.width / 2, _size.height - _gestureFeedback->getHeight());
+	_gestureFeedback->setForeground(Color4::BLACK);
+	_gestureFeedback->setVisible(false);
+
 	_uiScene->addChild(_timer);
+	_uiScene->addChild(_gestureFeedback);
 
 	tempPopulate();
 
@@ -201,6 +209,25 @@ void MultiScreenScene::preUpdate(float timestep) {
 
 	for (int i = 0; i < 5; i++) {
 		_scenes[i]->update(timestep);
+	}
+
+	if (_scenes[_curr]->getJustCompletedGesture()) {
+		_gestureInitiatedTime = Timestamp();
+		_gestureInitiatedTime.mark();
+		_gestureFeedback->setPositionY(_size.height - _gestureFeedback->getHeight());
+	}
+	if (now.ellapsedMillis(_gestureInitiatedTime) / 1000.0f < FEEDBACK_DURATION) {
+		int lastResult = _scenes[_curr]->getLastResult();
+		if (lastResult != -1) {
+			_gestureFeedback->setText(_feedbackMessages[lastResult]);
+			_gestureFeedback->setPositionY(_gestureFeedback->getPositionY() - 1.0f);
+			_gestureFeedback->setVisible(true);
+		}
+		
+	}
+	else {
+		_gestureFeedback->setText("");
+		_gestureFeedback->setVisible(false);
 	}
 
 	if (_input->didExit()) {
@@ -310,4 +337,16 @@ void MultiScreenScene::tempPopulate() {
 	_newOrderIndex = 0;
 	// TODO: Sort orders by time so we can just keep track of the index we've sent orders up to
 	// i.e. once we've sent an order in update we can update the index to be the next new order
+}
+
+void MultiScreenScene::unfocusAll() {
+	for (int i = 0; i < 5; i++) {
+		if (_scenes[i] != nullptr) {
+			_scenes[i]->setFocus(false);
+		}
+	}
+}
+
+void MultiScreenScene::focusCurr() {
+	_scenes[_curr]->setFocus(true);
 }

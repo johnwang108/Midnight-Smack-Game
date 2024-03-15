@@ -77,6 +77,9 @@ protected:
 
     // this is for cook time only
     bool _completed;
+    int _lastResult;
+
+    bool _justCompletedGesture;
 
      
     int countdown;
@@ -110,7 +113,9 @@ public:
 
     bool isPending();
     
-    bool isSuccess();
+    int gestureResult();
+
+    int getLastResult() { return _lastResult; }
 
     void setFocus(bool focus);
 
@@ -128,8 +133,9 @@ public:
 
     bool initGestureRecognizer();
 
-    void matchWithTouchPath();
+    bool matchWithTouchPath();
 
+    bool getJustCompletedGesture() { return _justCompletedGesture; }
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */

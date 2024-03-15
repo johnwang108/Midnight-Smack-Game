@@ -188,13 +188,17 @@ void PlatformApp::preUpdate(float dt) {
 
         _multiScreen.setActive(true);
         _multiScreen.preUpdate(dt);
+        _multiScreen.focusCurr();
     }
     else if (_multiScreen.transitionedAway()) {
 		_multiScreen.transition(false);
 		_multiScreen.setActive(false);
+        _multiScreen.unfocusAll();
+
 
 		_gameplay.setActive(true);
 		_gameplay.preUpdate(dt);
+       
     }
     else if (_gameplay.isActive()) {
 		_gameplay.preUpdate(dt);

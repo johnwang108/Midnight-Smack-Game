@@ -51,7 +51,13 @@ protected:
 
 	std::shared_ptr<cugl::scene2::Label> _timer;
 
+	std::shared_ptr<cugl::scene2::Label> _gestureFeedback;
+
+	cugl::Timestamp _gestureInitiatedTime;
+
 	std::vector<Order> _orders; 
+
+	std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
 	// the index in the _orders vector where we will find the first new order
 	int _newOrderIndex;
 public:
@@ -88,6 +94,10 @@ public:
 	void renderUI(std::shared_ptr<SpriteBatch> batch);
 
 	void tempPopulate();
+	
+	void unfocusAll();
+
+	void focusCurr();
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */
