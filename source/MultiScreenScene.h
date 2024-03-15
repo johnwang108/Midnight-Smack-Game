@@ -88,6 +88,10 @@ public:
 	void renderUI(std::shared_ptr<SpriteBatch> batch);
 
 	void tempPopulate();
+	
+	void unfocusAll();
+
+	void focusCurr();
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */

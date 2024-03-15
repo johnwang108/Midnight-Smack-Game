@@ -439,6 +439,7 @@ void GameScene::preUpdate(float dt) {
 
         //cooktime handling. Assume that _target not null, if it is null then continue
         if (!_dollarnode->isPending()) {
+            CULog("entered pending");
             if (_target != nullptr) {
                 _slowed = false;
                 std::string s = _target->getGestureString();
@@ -449,6 +450,9 @@ void GameScene::preUpdate(float dt) {
                     _target->takeDamage(_avatar->getAttack(), 0);
                     //DEFAULT: APPLY DURATION BUFF WHEN 
                     _avatar->applyBuff(EnemyModel::enemyToBuff(_target->getType()), modifier::duration);
+                if (_dollarnode->getLastResult() > 0) {
+                    CULog("NICE!!!!!!!!!!!!!!");
+                    removeEnemy(_target.get());
                 }
                 else {
                     CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");

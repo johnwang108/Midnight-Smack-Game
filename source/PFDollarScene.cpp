@@ -36,7 +36,10 @@
 
 #define SMALL_MSG "retrosmall"  
 
-#define DOLLAR_THRESHOLD 0.5
+#define DOLLAR_THRESHOLD 0.7
+
+#define GOOD_THRESHOLD 0.7
+#define PERFECT_THRESHOLD 0.85
 
 using namespace cugl;
 
@@ -91,7 +94,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_box = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>(texture), rect);
 
 	//default pigtail
-	_currentTargetGestures = std::vector <std::string>{ "pigtail" };
+	_currentTargetGestures = gestures;
 
 	_header = scene2::Label::allocWithText("Gestures, Similarity: t tosdgodfho figjgoj ghkohko ", _assets->get<Font>(SMALL_MSG));
 	_header->setAnchor(Vec2::ANCHOR_CENTER);
@@ -154,19 +157,21 @@ void DollarScene::update(float timestep) {
 	//pop new path if this node is focused on and the input controller contains a nonempty path.
 	if (_focus) {
 		if (!(_input->getTouchPath().empty())) {
+			// for spline
 			_path = _input->getTouchPath();
 		}
 		if (!_currentTargetGestures.empty()) {
-			matchWithTouchPath();
-			if (isSuccess()) {
-				_currentSimilarity = 0;
+			if (matchWithTouchPath()) {
+				_lastResult = gestureResult();
 				if (_currentTargetIndex < _currentTargetGestures.size() - 1) _currentTargetIndex++;
 				else {
 					_completed = true;
 				}
-				CULog("succeed");
 			}
-			if (!_completed) _currentGestureLabel->setText("Current Target Gesture: " + _currentTargetGestures[_currentTargetIndex]);
+			if (!_completed) {
+				_currentGestureLabel->setText("Current Target Gesture: " + _currentTargetGestures[_currentTargetIndex]);
+				_header->setText("Similarity: " + std::to_string(_currentSimilarity));
+			}
 			else _currentGestureLabel->setText("Done!");
 
 		}
@@ -199,9 +204,6 @@ void DollarScene::update(float timestep) {
 
 
 	//_header->setVisible(!isPending() && isSuccess());
-	_header->setText("Target gesture: " + _currentTargetGestures[_currentTargetIndex] + " | Similarity: " + std::to_string(_currentSimilarity));
-
-	
 };
 
 //is gesture inputting still in progress?
@@ -211,7 +213,7 @@ bool DollarScene::isPending() {
 };
 
 
-void DollarScene::matchWithTouchPath() {
+bool DollarScene::matchWithTouchPath() {
 	if (_input->isGestureCompleted()) {
 		Path2 gesture = _input->popTouchPath();
 		if (gesture.size() > 3) {
@@ -219,14 +221,15 @@ void DollarScene::matchWithTouchPath() {
 			if (sim >= 0) _currentSimilarity = sim;
 			
 		}
-		
+		return true;
 	}
+	return false;
 }
 
 //is gesture inputting a success?
-bool DollarScene::isSuccess() {
-	countdown = 60;
-	return _currentSimilarity > DOLLAR_THRESHOLD;
+int DollarScene::gestureResult() {
+	CULog("%d", (int)(_currentSimilarity > GOOD_THRESHOLD) + (int)(_currentSimilarity > PERFECT_THRESHOLD));
+	return (int) (_currentSimilarity > GOOD_THRESHOLD) + (int) (_currentSimilarity > PERFECT_THRESHOLD);
 };
 
 void DollarScene::setFocus(bool focus) {
