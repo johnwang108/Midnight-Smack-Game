@@ -143,6 +143,10 @@ void PlatformApp::update(float dt) {
         //MULTISCREEN IS RESPONSIBLE FOR INITING THE INPUT CONTROLLER.  THIS IS A TEMPORARY SOLUTION
         _multiScreen.init(_assets, input);
         _multiScreen.setActive(MULTI_SCREEN);
+        
+        /*_dayUIScene = std::make_shared<cugl::scene2::SceneNode>();
+        _dayUIScene->init();
+        _dayUIScene->setActive(MULTI_SCREEN);*/
 
         _gameplay.init(_assets, input);
         _gameplay.setActive(!MULTI_SCREEN);
@@ -289,6 +293,7 @@ void PlatformApp::draw() {
         }
         else {
             _multiScreen.render(_batch);
+            _multiScreen.renderUI(_batch);
         }
     }
 }

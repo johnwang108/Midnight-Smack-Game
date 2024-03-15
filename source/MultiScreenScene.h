@@ -4,6 +4,7 @@
 #include <cugl/cugl.h>
 #include "PFInput.h"
 #include "PFDollarScene.h"
+#include "Order.h"
 #include <cugl/cugl.h>
 #include <box2d/b2_world_callbacks.h>
 #include <box2d/b2_fixture.h>
@@ -12,13 +13,26 @@
 
 
 class MultiScreenScene : public cugl::Scene2 {
+private:
+	cugl::Timestamp _startTime;
+
+	// current time, in seconds with decimals
+	float _currentTime;
+	std::map<std::string, int> _stationMap;
+	bool _finishedOrders;
+
+
 protected:
 	std::shared_ptr<cugl::AssetManager> _assets;
 
 	std::shared_ptr<PlatformInput> _input;
 
+
 	/** The individual scenes */
 	std::shared_ptr<DollarScene> _scenes[5];
+
+	std::shared_ptr<Scene2> _uiScene;
+
 	///** The textures to display each scene, not sure if needed */
 	//std::shared_ptr<cugl::Texture> _texture[5];
 
@@ -34,6 +48,12 @@ protected:
 
 	/** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
 	bool _transitionScenes;
+
+	std::shared_ptr<cugl::scene2::Label> _timer;
+
+	std::vector<Order> _orders; 
+	// the index in the _orders vector where we will find the first new order
+	int _newOrderIndex;
 public:
 	MultiScreenScene();
 
@@ -60,6 +80,14 @@ public:
 	void transition(bool t);
 
 	bool transitionedAway() { return _transitionScenes; }
+
+	int determineSwipeDirection();
+
+	void readLevel(std::shared_ptr<JsonValue> level);
+
+	void renderUI(std::shared_ptr<SpriteBatch> batch);
+
+	void tempPopulate();
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */

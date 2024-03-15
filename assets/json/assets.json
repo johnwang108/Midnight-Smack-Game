@@ -1,15 +1,15 @@
 {
-	"textures": {
-		"earth": {
-			"file":     "textures/placeholder_block.png",
-            "wrapS":    "repeat",
-            "wrapT":    "repeat"
-		},
+    "textures": {
+        "earth": {
+            "file": "textures/placeholder_block.png",
+            "wrapS": "repeat",
+            "wrapT": "repeat"
+        },
         "dude": {
-            "file":     "textures/dude.png"
+            "file": "textures/dude.png"
         },
         "background-1": {
-            "file":     "textures/background-image-1.png"
+            "file": "textures/background-image-1.png"
         },
         "spinner": {
             "file": "textures/barrier.png"
@@ -30,22 +30,44 @@
             "file": "textures/goaldoor.png"
         },
         "shrimp": {
-            "file":      "textures/shrimp.png"
+            "file": "textures/shrimp.png"
         },
         "rice": {
-            "file":      "textures/rice.png"
+            "file": "textures/rice.png"
         },
         "egg": {
-            "file":      "textures/egg.png"
+            "file": "textures/egg.png"
         },
         "bull": {
-            "file":      "textures/bull.png"
+            "file": "textures/bull.png"
         },
         "shake": {
             "file":      "textures/shake.png"
         },
-        "panfry_station":{
-            "file":      "textures/Panfry_Station.png"
+        "panfry_station": {
+            "file": "textures/Panfry_Station.png",
+            "wrapS": "repeat",
+            "wrapT": "repeat"
+        },
+        "pot_station": {
+            "file": "textures/Pot_Station.png",
+            "wrapS": "repeat",
+            "wrapT": "repeat"
+        },
+        "prep_station": {
+            "file": "textures/PrepSink_Station.png",
+            "wrapS": "repeat",
+            "wrapT": "repeat"
+        },
+        "cutting_station": {
+            "file": "textures/Cutting_Station.png",
+            "wrapS": "repeat",
+            "wrapT": "repeat"
+        },
+        "blending_station": {
+            "file": "textures/Blending_Station.png",
+            "wrapS": "repeat",
+            "wrapT": "repeat"
         },
         "unball":{
             "file":      "textures/unball.png"

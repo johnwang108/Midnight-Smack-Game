@@ -46,6 +46,9 @@ protected:
 
     std::shared_ptr<cugl::AssetManager> _assets;
 
+    std::shared_ptr<cugl::GestureRecognizer> _dollarRecog;
+
+
     //Todo: turn these into nodes
     cugl::Path2 _path;
 
@@ -55,8 +58,11 @@ protected:
 
     std::shared_ptr<cugl::scene2::Label> _header;
 
+    std::shared_ptr<cugl::scene2::Label> _currentGestureLabel;
+
     cugl::SimpleExtruder _se;
 
+  
     //transform for poly
     cugl::Affine2 _trans;
 
@@ -65,9 +71,17 @@ protected:
 
     bool _focus;
 
-    std::string _targetGesture;
-    
+    std::vector<std::string> _currentTargetGestures;
+
+    int _currentTargetIndex;
+
+    // this is for cook time only
+    bool _completed;
+
+     
     int countdown;
+
+    float _currentSimilarity; 
 
     //Todo: need library of existing predetermined inputs to check against
 
@@ -86,8 +100,11 @@ public:
     };
 
     bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::string texture);
+    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture) {
+        return init(assets, input, rect, texture, std::vector<std::string>());
+    }
 
-    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture);
+    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector <std::string> gestures);
 
     void update(float timestep);
 
@@ -97,16 +114,22 @@ public:
 
     void setFocus(bool focus);
 
+    void setTargetGestures(std::vector<std::string> gestures) { 
+        _currentTargetGestures = gestures; 
+        _completed = false;
+    }
+
+
     bool isFocus() { return _focus; };
-
-    //gets what gesture was just matched
-    std::string getGestureString(){ return _input->getGestureString(); };
-
-    void setTargetGesture(std::string gesture);
 
     //virtual void draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint);
 
     bool shouldIDisappear();
+
+    bool initGestureRecognizer();
+
+    void matchWithTouchPath();
+
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */

@@ -1,0 +1,16 @@
+{
+  "events": [
+    {
+      "station": "pot",
+      "time": 2
+    },
+    {
+      "station": "panfry",
+      "time": 4
+    },
+    {
+      "station": "cutting",
+      "time": 6
+    }
+  ]
+}
