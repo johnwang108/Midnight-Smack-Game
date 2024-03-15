@@ -576,6 +576,9 @@ void GameScene::fixedUpdate(float step) {
     if (_avatar->getHealth()<=0) {
         setFailure(true);
 	}
+    if (_Bull!=nullptr && _Bull->getHealth() <= 0) {
+        setComplete(true);
+    }
     _world->update(step);
 }
     
@@ -872,6 +875,18 @@ void GameScene::beginContact(b2Contact* contact) {
         }
         CULog("Bull Health: %f", _Bull->getHealth());
     }
+    if (bd1->getName() == "shake" && bd2 == _avatar.get()) {
+        Vec2 enemyPos = ((Attack*)bd1)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x < enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+    }
+    else if (bd2->getName() == "shake" && bd1 == _avatar.get()) {
+        Vec2 enemyPos = ((Attack*)bd2)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x < enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+    }
     
 
     // If we hit the "win" door, we are done
@@ -969,18 +984,7 @@ void GameScene::endContact(b2Contact* contact) {
         removeAttack((EnemyAttack*)bd2);
     }
 
-    if (bd1->getName() == "shake" && bd2 == _avatar.get()) {
-        Vec2 enemyPos = ((Attack*)bd1)->getPosition();
-        Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
-        _avatar->takeDamage(34, direction);
-    }
-    else if (bd2->getName() == "shake" && bd1 == _avatar.get()) {
-        Vec2 enemyPos = ((Attack*)bd2)->getPosition();
-        Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
-        _avatar->takeDamage(34, direction);
-    }
+
 
     if (bd1->getName() == ENEMY_NAME && bd2 == _avatar.get()) {
         Vec2 enemyPos = ((DudeModel*)bd2)->getPosition();
