@@ -218,7 +218,7 @@ void EnemyModel::createAttack(GameScene& scene) {
     Vec2 pos = getPosition();
 
     std::shared_ptr<EnemyAttack> attack = EnemyAttack::alloc(pos,
-        cugl::Size(ATTACK_W * image->getSize().width / _scale,
+        cugl::Size(image->getSize().width / _scale,
             ATTACK_H * image->getSize().height / _scale));
 
     pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
@@ -231,10 +231,11 @@ void EnemyModel::createAttack(GameScene& scene) {
 	}
     attack->setName("enemy_attack");
     attack->setBullet(true);
-    attack->setGravityScale(0.1);
+    attack->setGravityScale(0.2);
     attack->setDebugColor(DEBUG_COLOR);
     attack->setDrawScale(_scale);
     attack->setEnabled(true);
+    attack->setrand(false);
 
 
 

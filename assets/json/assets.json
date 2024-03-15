@@ -56,6 +56,12 @@
         "P2bull":{
             "file":      "textures/P2bull.png"
         },
+        "heartsbroken":{
+            "file":      "textures/heartsbroken.png"
+        },
+        "heartsfull":{
+            "file":      "textures/heartsfull.png"
+        },
         "cooktime" : {
             "file":      "textures/cutting_board.png",
             "wrapS":    "repeat",

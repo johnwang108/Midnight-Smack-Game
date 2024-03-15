@@ -141,6 +141,9 @@ protected:
 
     /** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
     bool _transitionScenes;
+    float healthPercentage;
+    std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
+    std::shared_ptr<cugl::scene2::PolygonNode> _healthBarBackground;
 
 #pragma mark Internal Object Management
     /**

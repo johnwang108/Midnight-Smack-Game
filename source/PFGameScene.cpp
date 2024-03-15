@@ -216,7 +216,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode->init(_assets, _input, "cooktime");
     _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_BOTTOM_LEFT);
     _dollarnode->setVisible(false);
-    
+
+    auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
+    auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
+    _healthBarForeground = healthBarForeground;
+    _healthBarBackground = healthBarBackground;
+
     addChild(_worldnode);
     addChild(_debugnode);
     addChild(_winnode);
@@ -225,6 +230,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_rightnode);
     addChild(_gesturehud);
     addChild(_dollarnode);
+    addChild(healthBarBackground);
+    addChild(healthBarForeground);
     
 
     _target = std::make_shared<EnemyModel>();
@@ -556,6 +563,14 @@ void GameScene::preUpdate(float dt) {
  */
 void GameScene::fixedUpdate(float step) {
     // Turn the physics engine crank.
+    if (_healthBarForeground != nullptr) {
+        healthPercentage = _avatar->getHealth() / 100;
+        float totalWidth = _healthBarForeground->getWidth();
+        float height = _healthBarForeground->getHeight();
+        float clipWidth = totalWidth * healthPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _healthBarForeground->setScissor(scissor);
+    }
     if (_slowed) { 
         step = step / 15;
     }
@@ -563,6 +578,13 @@ void GameScene::fixedUpdate(float step) {
     if (CAMERA_FOLLOWS_PLAYER) {
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
         cugl::Vec3 pos = _camera->getPosition();
+
+        Rect viewport = _camera->getViewport();
+        Vec2 worldPosition = Vec2(pos.x - viewport.size.width / 2 + 140,
+            pos.y + viewport.size.height / 2 - 50);
+
+        _healthBarForeground->setPosition(worldPosition);
+        _healthBarBackground->setPosition(worldPosition);
 
         //magic number 0.2 are for smoothness
         //float smooth = std::min(0.2f, (target - pos).length());
@@ -1028,7 +1050,7 @@ std::string GameScene::getGestureText(std::string gest, float sim) {
 
 void GameScene::zoomCamera(float scale) {
     _camera->setZoom(scale);
-	_camera->update();
+    _camera->update();
 
 }
 

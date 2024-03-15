@@ -24,18 +24,30 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         setDensity(BULL_DENSITY);
         setFriction(0.0f);
         setFixedRotation(true);
+
         return true;
     }
     return false;
 }
-
+void BullModel::sethealthbar(){
+    auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
+    auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
+    healthBarBackground->setPosition(Vec2(10, 10));
+    healthBarForeground->setPosition(Vec2(10, 10));
+    _node->addChild(healthBarBackground);
+    _node->addChild(healthBarForeground);
+    _healthBarForeground = healthBarForeground;
+}
 void BullModel::update(float dt) {
 
     CapsuleObstacle::update(dt);
     if (_body == nullptr) return;
-
-
-
+    /*
+    if (_healthBarForeground != nullptr) {
+        healthPercentage = _health / 100;
+        _healthBarForeground->setScale(healthPercentage);
+    }
+    */
     b2Vec2 velocity = _body->GetLinearVelocity();
     velocity.x = BULL_FORCE * _direction;
 
@@ -68,16 +80,15 @@ void BullModel::update(float dt) {
         return;
     }
 
-    if (_angrytime >= 0) {
+    if (_angrytime > 0) {
         _angrytime -= dt;
         _body->SetLinearVelocity(b2Vec2(0, 0));
         if (_node != nullptr) {
             scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
-            if (_assets != nullptr) {
-                if (image->getTexture() != _assets->get<Texture>("P2bull")) {
-                    image->setTexture(_assets->get<Texture>("P2bull"));
-                }
+            if (image->getTexture() != _assets->get<Texture>("P2bull")) {
+                image->setTexture(_assets->get<Texture>("P2bull"));
             }
+
             _node->setPosition(getPosition() * _drawScale);
             _node->setAngle(getAngle());
         }
@@ -184,7 +195,7 @@ void BullModel::createFixtures() {
 }
 
 void BullModel::createAttack(GameScene& scene) {
-    _assets = scene.getAssets();
+
     float _scale = scene.getScale();
 
     std::shared_ptr<Texture> image = _assets->get<Texture>("unball");
@@ -224,7 +235,6 @@ void BullModel::createAttack(GameScene& scene) {
 }
 
 void BullModel::createAttack2(GameScene& scene) {
-    _assets = scene.getAssets();
     float _scale = scene.getScale();
 
     std::shared_ptr<Texture> image = _assets->get<Texture>(SHAKE_TEXTURE);
@@ -280,7 +290,7 @@ void BullModel::createAttack2(GameScene& scene) {
 }
 
 void BullModel::createAttack3(GameScene& scene) {
-    _assets = scene.getAssets();
+
     std::shared_ptr<DudeModel> _Su = scene.getAvatar();
     float _scale = scene.getScale();
 
@@ -303,7 +313,7 @@ void BullModel::createAttack3(GameScene& scene) {
     attack->setDrawScale(_scale);
     attack->setEnabled(true);
     attack->setstraight(_Su->getPosition());
-
+    attack->setrand(false);
 
 
     std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
