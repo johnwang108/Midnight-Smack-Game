@@ -217,7 +217,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode->init(_assets, _input, "cooktime");
     _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_BOTTOM_LEFT);
     _dollarnode->setVisible(false);
-    
+
+    auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
+    auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
+    _healthBarForeground = healthBarForeground;
+    _healthBarBackground = healthBarBackground;
+
     addChild(_worldnode);
     addChild(_debugnode);
     addChild(_winnode);
@@ -227,6 +232,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_gestureFeedback);
 
     addChild(_dollarnode);
+    addChild(healthBarBackground);
+    addChild(healthBarForeground);
     
 
     _target = std::make_shared<EnemyModel>();
@@ -580,6 +587,14 @@ void GameScene::preUpdate(float dt) {
  */
 void GameScene::fixedUpdate(float step) {
     // Turn the physics engine crank.
+    if (_healthBarForeground != nullptr) {
+        healthPercentage = _avatar->getHealth() / 100;
+        float totalWidth = _healthBarForeground->getWidth();
+        float height = _healthBarForeground->getHeight();
+        float clipWidth = totalWidth * healthPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _healthBarForeground->setScissor(scissor);
+    }
     if (_slowed) { 
         step = step / 15;
     }
@@ -587,6 +602,13 @@ void GameScene::fixedUpdate(float step) {
     if (CAMERA_FOLLOWS_PLAYER) {
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
         cugl::Vec3 pos = _camera->getPosition();
+
+        Rect viewport = _camera->getViewport();
+        Vec2 worldPosition = Vec2(pos.x - viewport.size.width / 2 + 140,
+            pos.y + viewport.size.height / 2 - 50);
+
+        _healthBarForeground->setPosition(worldPosition);
+        _healthBarBackground->setPosition(worldPosition);
 
         //magic number 0.2 are for smoothness
         //float smooth = std::min(0.2f, (target - pos).length());
@@ -910,7 +932,20 @@ void GameScene::beginContact(b2Contact* contact) {
         int direction = (attackerPos.x < enemyPos.x) ? -1 : 1;
         _avatar->takeDamage(34, direction);
     }
-    
+    if (bd1->getName() == "enemy_attack" && bd2 == _avatar.get()) {
+        Vec2 enemyPos = ((EnemyAttack*)bd1)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+        removeAttack((EnemyAttack*)bd1);
+    }
+    else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
+        Vec2 enemyPos = ((EnemyAttack*)bd2)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+        removeAttack((EnemyAttack*)bd2);
+    }
 
     // If we hit the "win" door, we are done
     if (!_failed && ((bd1 == _avatar.get() && bd2 == _goalDoor.get()) ||
@@ -992,20 +1027,7 @@ void GameScene::endContact(b2Contact* contact) {
 
 
 
-    if (bd1->getName() == "enemy_attack" && bd2 == _avatar.get()) {
-        Vec2 enemyPos = ((EnemyAttack*)bd1)->getPosition();
-        Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
-        _avatar->takeDamage(34, direction);
-        removeAttack((EnemyAttack*)bd1);
-    }
-    else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
-        Vec2 enemyPos = ((EnemyAttack*)bd2)->getPosition();
-        Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
-        _avatar->takeDamage(34, direction);
-        removeAttack((EnemyAttack*)bd2);
-    }
+
 
 
 
@@ -1051,7 +1073,7 @@ std::string GameScene::getGestureText(std::string gest, float sim) {
 
 void GameScene::zoomCamera(float scale) {
     _camera->setZoom(scale);
-	_camera->update();
+    _camera->update();
 
 }
 

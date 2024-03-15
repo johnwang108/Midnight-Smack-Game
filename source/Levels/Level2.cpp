@@ -180,6 +180,7 @@ void Level2::populate(GameScene& scene) {
 	_bull->setSceneNode(sprite);
 	_bull->setName(BULL_TEXTURE);
 	_bull->setDebugColor(DEBUG_COLOR);
+	_bull->setassets(_assets);
 	scene.addObstacle(_bull, sprite);
 	/*
 	Vec2 egg_pos = EGG_POS;

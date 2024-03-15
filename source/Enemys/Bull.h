@@ -44,6 +44,8 @@ protected:
     float _bull_attack_chance;
     std::shared_ptr<AssetManager> _assets;
     bool _shoot;
+    float healthPercentage;
+    std::shared_ptr<scene2::PolygonNode> _healthBarForeground;
 
 public:
     BullModel() : CapsuleObstacle(), _drawScale(1.0f), _health(100.0f), _healthCooldown(0.2f), _lastDamageTime(0), _isChasing(true), _direction(-1) {}
@@ -101,7 +103,8 @@ public:
     void createAttack3(GameScene& scene);
     bool getshoot() { return _shoot; }
     void setshoot(bool shoot) { _shoot = shoot; }
-
+    void setassets(std::shared_ptr<AssetManager> assets) { _assets = assets; }
+    void sethealthbar();
 };
 
 #endif /* __BULL_MODEL_H__ */
