@@ -291,8 +291,8 @@ void BullModel::createAttack3(GameScene& scene) {
         cugl::Size(0.8 * image->getSize().width / _scale,
             0.8 * image->getSize().height / _scale) * 1.3);
 
-    pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
-    pos.y += ATTACK_OFFSET_Y;
+    //pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
+    //pos.y += ATTACK_OFFSET_Y;
 
 
 
@@ -303,7 +303,7 @@ void BullModel::createAttack3(GameScene& scene) {
     attack->setDrawScale(_scale);
     attack->setEnabled(true);
     attack->setstraight(_Su->getPosition());
-
+    attack->setrand(false);
 
 
     std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);

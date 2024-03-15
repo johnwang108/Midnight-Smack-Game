@@ -4,6 +4,7 @@
 #include <cugl/physics2/CUBoxObstacle.h>
 #include <cugl/physics2/CUCapsuleObstacle.h>
 #include "EnemyAttack.h"
+#include "../PFDudeModel.h"
 
 
 
@@ -214,8 +215,23 @@ public:
     bool isVulnerable() {return _vulnerable; }
 
     std::string getGestureString() { return _gestureName; }
-    
+
+    EnemyType getType() { return _type; }
+
     void setGestureString(std::string gesture) { _gestureName = gesture; };
+    //Dict for enemy type to buff 
+    static buff enemyToBuff(EnemyType type) {
+        switch (type) {
+        case EnemyType::shrimp:
+            return buff::attack;
+        case EnemyType::rice:
+            return buff::jump;
+        case EnemyType::egg:
+            return buff::speed;
+        default:
+            return buff::none;
+        }
+    }
 
 };
 

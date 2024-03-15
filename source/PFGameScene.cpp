@@ -276,7 +276,7 @@ void GameScene::reset() {
 
     _enemies.clear();
     _vulnerables.clear();
-    _Bull= nullptr;
+    _Bull = nullptr;
 
     setFailure(false);
     setComplete(false);
@@ -443,8 +443,12 @@ void GameScene::preUpdate(float dt) {
                 _slowed = false;
                 std::string s = _target->getGestureString();
                 if (_dollarnode->isSuccess()) {
-                    CULog("NICE!!!!!!!!!!!!!!");
-                    removeEnemy(_target.get());
+                    CULog("NICE!!!!!!!!!!!!!! APPLYING BUFF");
+                    //removeEnemy(_target.get());
+
+                    _target->takeDamage(_avatar->getAttack(), 0);
+                    //DEFAULT: APPLY DURATION BUFF WHEN 
+                    _avatar->applyBuff(EnemyModel::enemyToBuff(_target->getType()), modifier::duration);
                 }
                 else {
                     CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
@@ -847,10 +851,10 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         if (_Bull->getHealth() == 66.0f) {
-            _Bull->takeDamage(17, direction, true);
+            _Bull->takeDamage(_avatar->getAttack()/2, direction, true);
             _Bull->setangrytime(4);
         }else {
-            _Bull->takeDamage(17, direction, false);
+            _Bull->takeDamage(_avatar->getAttack()/2, direction, false);
         }
         CULog("Bull Health: %f", _Bull->getHealth());
     }else if (_Bull != nullptr && bd2->getName() == ATTACK_NAME && bd1->getName() == BULL_TEXTURE && _Bull->getknockbacktime()<=0) {
@@ -858,10 +862,10 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 attackerPos = ((Attack*)bd2)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         if (_Bull->getHealth() == 66.0f) {
-            _Bull->takeDamage(17, direction, true);
+            _Bull->takeDamage(_avatar->getAttack() / 2, direction, true);
             _Bull->setangrytime(4);
         }else {
-            _Bull->takeDamage(17, direction, false);
+            _Bull->takeDamage(_avatar->getAttack() / 2, direction, false);
         }
         CULog("Bull Health: %f", _Bull->getHealth());
     }
@@ -943,7 +947,7 @@ void GameScene::endContact(b2Contact* contact) {
         Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-        ((EnemyModel*)bd2)->takeDamage(34, direction);
+        ((EnemyModel*)bd2)->takeDamage(_avatar->getAttack(), direction);
         if (((EnemyModel*)bd2)->getHealth() <= 50){
             ((EnemyModel*)bd2)->setVulnerable(true);
         }
@@ -951,7 +955,7 @@ void GameScene::endContact(b2Contact* contact) {
         Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
         Vec2 attackerPos = ((Attack*)bd2)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-        ((EnemyModel*)bd1)->takeDamage(34, direction);
+        ((EnemyModel*)bd1)->takeDamage(_avatar->getAttack(), direction);
         if (((EnemyModel*)bd1)->getHealth() <= 50) {
             ((EnemyModel*)bd1)->setVulnerable(true);
         }

@@ -76,9 +76,9 @@ float floatyFrames = 10;
 /** The density of the character */
 #define DUDE_DENSITY    1.0f
 /** The impulse for the character jump */
-#define DUDE_JUMP       sqrt( 3 * 2 * (9.8) * getHeight() * jmpHeight ) * getMass()
+#define DUDE_JUMP       (sqrt( 3 * 2 * (9.8) * getHeight() * jmpHeight ) * getMass() + _jumpBuff)
 /** The impulse for the character dash */
-#define DUDE_DASH       DUDE_JUMP * dashModif
+#define DUDE_DASH       (DUDE_JUMP * dashModif + _dashBuff)
 /** Debug color for the sensor */
 #define DEBUG_COLOR     Color4::RED
 
@@ -132,6 +132,16 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         _healthCooldown=0.2;
         _lastDamageTime=0;
         _knockbackTime = 0;
+
+        _attackBuff = 0;
+        _healthBuff = 0;
+        _jumpBuff = 0;
+        _dashBuff = 0;
+        _speedBuff = 0;
+        _duration = 0;
+
+        //default hardcode
+        _attack = 34;
 
         return true;
     }
@@ -264,6 +274,7 @@ void DudeModel::applyForce(float h, float v) {
 
 
     // Jump!
+
     if (isJumping() && isGrounded()) {
         setVY(0);
         b2Vec2 force(0, DUDE_JUMP);
@@ -271,7 +282,7 @@ void DudeModel::applyForce(float h, float v) {
     }
     else if (isJumping() && contactingWall() && !isGrounded()) {
         setVY(0);
-        b2Vec2 force(4 * DUDE_JUMP*5* (isFacingRight() ? 1: -1), DUDE_JUMP * 1.2);
+        b2Vec2 force(4 * DUDE_JUMP *5* (isFacingRight() ? 1: -1), DUDE_JUMP * 1.2);
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
     }
     if (canDash() && getDashNum()>0) {
@@ -293,6 +304,21 @@ void DudeModel::applyForce(float h, float v) {
 void DudeModel::update(float dt) {
 
     CapsuleObstacle::update(dt);
+
+    if (_duration > 0) {
+        CULog("BUFFed!");
+        CULog("%f", _duration);
+		_duration -= dt;
+        _duration = std::max(0.0f, _duration);
+        //reset buff state if duration is over
+		if (_duration <= 0) {
+			_attackBuff = 0;
+			_healthBuff = 0;
+			_jumpBuff = 0;
+			_dashBuff = 0;
+			_speedBuff = 0;
+		}
+    }
 
     if (_knockbackTime > 0) {
         if (int(_knockbackTime*10) % 2 <1) {
@@ -390,3 +416,41 @@ void DudeModel::takeDamage(float damage, const int attackDirection) {
     }
 }
 
+
+void DudeModel::applyBuff(const buff b, modifier m) {
+    switch (b) {
+    case buff::attack:
+        if (m == modifier::duration) {
+            _attackBuff = BASE_ATTACK_BUFF;
+            _duration = BASE_DURATION;
+        } 
+        // code block
+        break;
+    case buff::health:
+        if (m == modifier::duration) {
+            _healthBuff = BASE_HEALTH_BUFF;
+            _duration = BASE_DURATION;
+        }
+        break;
+    case buff::jump:
+        if (m == modifier::duration) {
+            _jumpBuff = BASE_JUMP_BUFF;
+            _duration = BASE_DURATION;
+        }
+        break;
+    case buff::speed:
+        if (m == modifier::duration) {
+            _speedBuff = BASE_SPEED_BUFF;
+            _duration = BASE_DURATION;
+        }
+        break;
+    case buff::dash:
+        if (m == modifier::duration) {
+            _dashBuff = BASE_DASH_BUFF;
+            _duration = BASE_DURATION;
+        }
+		break;
+    default:
+        CULog("NULL BUFF APPLIED");
+    }
+}

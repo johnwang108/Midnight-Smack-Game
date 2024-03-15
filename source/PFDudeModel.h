@@ -75,6 +75,30 @@
 * experience, using a rectangular shape for a character will regularly snag
 * on a platform.  The round shapes on the end caps lead to smoother movement.
 */
+
+enum class buff{
+    attack,
+    health,
+    jump,
+    dash,
+    speed,
+    none
+};
+
+enum class modifier {
+    duration,
+    effect,
+    none
+};
+
+#define BASE_ATTACK_BUFF 20.0f
+#define BASE_HEALTH_BUFF 5.0f
+#define BASE_JUMP_BUFF 5.0f
+#define BASE_DASH_BUFF 5.0f
+#define BASE_SPEED_BUFF 3.0f
+
+#define BASE_DURATION 10.0f
+
 class DudeModel : public cugl::physics2::CapsuleObstacle {
 private:
 	/** This macro disables the copy constructor (not allowed on physics objects) */
@@ -117,6 +141,21 @@ protected:
     float _healthCooldown;
     float _knockbackTime;
     float _lastDamageTime;
+
+    float _attack;
+
+    //attack damage buff
+    float _attackBuff;
+    //health buff
+    float _healthBuff;
+    //jump magnitude buff
+    float _jumpBuff;
+    //dash magnitude buff
+    float _dashBuff;
+    //max speed buff
+    float _speedBuff;
+
+    float _duration;
 
 	/**
 	* Redraws the outline of the physics fixtures to the debug node
@@ -418,7 +457,7 @@ public:
      *
      * @return how much force to apply to get the dude moving
      */
-    float getForce() const { return DUDE_FORCE; }
+    float getForce() const { return DUDE_FORCE + _speedBuff; }
     
     /**
      * Returns ow hard the brakes are applied to get a dude to stop moving
@@ -434,7 +473,7 @@ public:
      *
      * @return the upper limit on dude left-right movement.
      */
-    float getMaxSpeed() const { return DUDE_MANUEL_MAXSPEED; }
+    float getMaxSpeed() const { return DUDE_MANUEL_MAXSPEED + _speedBuff; }
     
     /**
      * Returns the name of the ground sensor
@@ -492,6 +531,11 @@ public:
     void DudeModel::takeDamage(float damage, const int attackDirection);
 	
     float getHealth() { return _health; }
+
+    //Apply buff to Sue with proper modifier.
+    void DudeModel::applyBuff(buff b, modifier m);
+
+    float getAttack() { return _attack + _attackBuff; }
 };
 
 #endif /* __PF_DUDE_MODEL_H__ */

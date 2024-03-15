@@ -54,11 +54,12 @@ void EnemyAttack::update(float dt) {
 		_faceright = false;
 	}
 	if (_shoot) {
+		CULog("Shooting");
 		_shoot = false;
 		if (_rand) {
 			_body->ApplyLinearImpulseToCenter(b2Vec2(10*static_cast<float>(rand()) / static_cast<float>(RAND_MAX)-5, 15), true);
 		}
-		else if (_straight!= Vec2(-87, -87)) {
+		else if (_straight != Vec2(-87, -87)) {
 			b2Vec2 targetDirection = b2Vec2(_straight.x - getPosition().x, _straight.y - getPosition().y);
 			targetDirection.Normalize();
 			_body->ApplyLinearImpulseToCenter(b2Vec2(targetDirection.x * 30, targetDirection.y * 30), true);
