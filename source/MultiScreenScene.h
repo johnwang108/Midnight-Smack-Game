@@ -98,6 +98,8 @@ public:
 	void unfocusAll();
 
 	void focusCurr();
+
+	void reset();
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */

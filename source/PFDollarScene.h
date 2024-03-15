@@ -136,6 +136,8 @@ public:
     bool matchWithTouchPath();
 
     bool getJustCompletedGesture() { return _justCompletedGesture; }
+
+    void reset();
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */

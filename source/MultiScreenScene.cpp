@@ -235,6 +235,10 @@ void MultiScreenScene::preUpdate(float timestep) {
 		Application::get()->quit();
 	}
 
+	if (_input->didReset()) {
+		reset();
+	}
+
 	if (_input->didTransition()) {
 		transition(true);
 		CULog("______________________________________________________________________________________________________");
@@ -349,4 +353,21 @@ void MultiScreenScene::unfocusAll() {
 
 void MultiScreenScene::focusCurr() {
 	_scenes[_curr]->setFocus(true);
+}
+
+void MultiScreenScene::reset() {
+
+	_camera->setPosition(Vec2(0, 0));
+	_camera->update();
+	_startTime = Timestamp();
+	_finishedOrders = false;
+	tempPopulate();
+	_curr = 2;
+
+	for (int i = 0; i < 5; i++) {
+		_scenes[i]->reset();
+	}
+
+	_scenes[2]->setFocus(true);
+
 }

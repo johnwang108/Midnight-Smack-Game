@@ -252,6 +252,20 @@ bool DollarScene::shouldIDisappear() {
 	return countdown == 0;
 }
 
+void DollarScene::reset() {
+	_currentTargetIndex = 0;
+	_header->setVisible(false);
+	_header->setText("");
+	_currentGestureLabel->setVisible(false);
+	_currentGestureLabel->setText("");
+	_currentSimilarity = 0;
+	_justCompletedGesture = 0;
+	_currentTargetGestures = {};
+	_focus = false;
+	_completed = false;
+	_lastResult = -1;
+}
+
 
 //draws a boundary rectangle
 //void DollarScene::draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint) {
