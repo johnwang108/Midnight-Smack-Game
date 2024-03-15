@@ -53,6 +53,9 @@ using namespace cugl;
 
 #define COOKTIME_MAX_DIST 3.5f
 
+#define FEEDBACK_DURATION 1.2f
+
+
 
 #pragma mark -
 #pragma mark Constructors
@@ -197,6 +200,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _rightnode->setScale(0.35f);
     _rightnode->setVisible(false);
 
+    _gestureFeedback = scene2::Label::allocWithText("Perfect", _assets->get<Font>(MESSAGE_FONT));
+    _gestureFeedback->setAnchor(Vec2::ANCHOR_TOP_CENTER);
+    _gestureFeedback->setPosition(0, 0);
+    _gestureFeedback->setForeground(Color4::BLACK);
+    _gestureFeedback->setVisible(false);
+
 
 
     _slowed = false;
@@ -215,6 +224,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_losenode);
     addChild(_leftnode);
     addChild(_rightnode);
+    addChild(_gestureFeedback);
+
     addChild(_dollarnode);
     
 
@@ -365,6 +376,7 @@ void GameScene::addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj
  * @param dt    The amount of time (in seconds) since the last frame
  */
 void GameScene::preUpdate(float dt) {
+    Timestamp now = Timestamp();
     _input->update(dt);
 
     // Process the toggled key commands
@@ -409,6 +421,8 @@ void GameScene::preUpdate(float dt) {
 
     }
 
+
+
     if (!_slowed && (_dollarnode->shouldIDisappear())) {
         _dollarnode->setVisible(false);
         if (_dollarnode->isFocus()) {
@@ -439,10 +453,8 @@ void GameScene::preUpdate(float dt) {
 
         //cooktime handling. Assume that _target not null, if it is null then continue
         if (!_dollarnode->isPending()) {
-            CULog("entered pending");
             if (_target != nullptr) {
                 _slowed = false;
-                std::string s = _target->getGestureString();
                 if (_dollarnode->getLastResult() > 0) {
                     CULog("NICE!!!!!!!!!!!!!!");
                     /*removeEnemy(_target.get());*/
@@ -456,6 +468,11 @@ void GameScene::preUpdate(float dt) {
                 else {
                     CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
                 }
+
+                _gestureInitiatedTime = Timestamp();
+                _gestureInitiatedTime.mark();
+                _gestureFeedback->setPosition(_target->getPosition().x * _scale, _target->getPosition().y * 1.1 * _scale);
+                
                 _target = nullptr;
             }
             else {
@@ -463,6 +480,21 @@ void GameScene::preUpdate(float dt) {
             }
         }
     }
+
+    if (now.ellapsedMillis(_gestureInitiatedTime) / 1000.0f < FEEDBACK_DURATION) {
+        int lastResult = _dollarnode->getLastResult();
+        if (lastResult != -1) {
+            _gestureFeedback->setText(_feedbackMessages[lastResult]);
+            _gestureFeedback->setPositionY(_gestureFeedback->getPositionY() - 1.0f);
+            _gestureFeedback->setVisible(true);
+        }
+    }
+    else {
+        _gestureFeedback->setText("");
+        _gestureFeedback->setVisible(false);
+    }
+
+
     Vec2 avatarPos = _avatar->getPosition();
     for (auto& enemy : _enemies) {
         if (enemy != nullptr && !enemy->isRemoved()) {

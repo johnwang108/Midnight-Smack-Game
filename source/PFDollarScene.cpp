@@ -82,6 +82,8 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_currentTargetIndex = 0;
 	_completed = false;
 	_currentSimilarity = 0;
+	_lastResult = -1;
+	_justCompletedGesture = false;
 	initGestureRecognizer();
 	//reflection across the x axis is necessary for polygon path
 	/**
@@ -100,11 +102,13 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_header->setAnchor(Vec2::ANCHOR_CENTER);
 	_header->setPosition(cugl::Vec2(0, 200));
 	_header->setForeground(cugl::Color4::RED);
+	_header->setVisible(false);
 
 	_currentGestureLabel = scene2::Label::allocWithText("Current Target Gesture: filling out text bc i swear this always breaks", _assets->get<Font>(SMALL_MSG));
 	_currentGestureLabel->setAnchor(Vec2::ANCHOR_TOP_CENTER);
 	_currentGestureLabel->setPosition(cugl::Vec2(0, 100));
 	_currentGestureLabel->setForeground(cugl::Color4::BLACK);
+	_currentGestureLabel->setVisible(false);
 
 	addChild(_box);
 	addChild(_poly);
@@ -155,6 +159,7 @@ bool DollarScene::initGestureRecognizer() {
 //re-extrudes the path and updates the polygon node
 void DollarScene::update(float timestep) {
 	//pop new path if this node is focused on and the input controller contains a nonempty path.
+	_justCompletedGesture = false;
 	if (_focus) {
 		if (!(_input->getTouchPath().empty())) {
 			// for spline
@@ -163,6 +168,7 @@ void DollarScene::update(float timestep) {
 		if (!_currentTargetGestures.empty()) {
 			if (matchWithTouchPath()) {
 				_lastResult = gestureResult();
+				_justCompletedGesture = true;
 				if (_currentTargetIndex < _currentTargetGestures.size() - 1) _currentTargetIndex++;
 				else {
 					_completed = true;
@@ -170,9 +176,11 @@ void DollarScene::update(float timestep) {
 			}
 			if (!_completed) {
 				_currentGestureLabel->setText("Current Target Gesture: " + _currentTargetGestures[_currentTargetIndex]);
+				_currentGestureLabel->setVisible(true);
 				_header->setText("Similarity: " + std::to_string(_currentSimilarity));
+				_header->setVisible(true);
 			}
-			else _currentGestureLabel->setText("Done!");
+			else _currentGestureLabel->setVisible(false);
 
 		}
 	}
@@ -228,7 +236,7 @@ bool DollarScene::matchWithTouchPath() {
 
 //is gesture inputting a success?
 int DollarScene::gestureResult() {
-	CULog("%d", (int)(_currentSimilarity > GOOD_THRESHOLD) + (int)(_currentSimilarity > PERFECT_THRESHOLD));
+	//CULog("%d", (int)(_currentSimilarity > GOOD_THRESHOLD) + (int)(_currentSimilarity > PERFECT_THRESHOLD));
 	return (int) (_currentSimilarity > GOOD_THRESHOLD) + (int) (_currentSimilarity > PERFECT_THRESHOLD);
 };
 
@@ -242,6 +250,7 @@ void DollarScene::setFocus(bool focus) {
 bool DollarScene::shouldIDisappear() {
 	return countdown == 0;
 }
+
 
 //draws a boundary rectangle
 //void DollarScene::draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint) {

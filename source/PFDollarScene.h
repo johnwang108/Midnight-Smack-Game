@@ -79,6 +79,8 @@ protected:
     bool _completed;
     int _lastResult;
 
+    bool _justCompletedGesture;
+
      
     int countdown;
 
@@ -133,6 +135,7 @@ public:
 
     bool matchWithTouchPath();
 
+    bool getJustCompletedGesture() { return _justCompletedGesture; }
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */
