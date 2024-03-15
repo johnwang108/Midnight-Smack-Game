@@ -525,6 +525,7 @@ void PlatformInput::gestureMoveCB(Vec2 pos, bool focus) {
 }
 
 void PlatformInput::gestureEndCB(Vec2 pos, bool focus) {
+    CULog("Completed cb");
     _touchPath.push(pos);
     float similarity = -1.0f;
     PathSmoother smoother = PathSmoother();

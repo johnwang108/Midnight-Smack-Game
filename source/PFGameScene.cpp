@@ -227,7 +227,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_gestureFeedback);
 
     addChild(_dollarnode);
-    
 
     _target = std::make_shared<EnemyModel>();
     currentLevel = level1;
@@ -421,7 +420,7 @@ void GameScene::preUpdate(float dt) {
 
     }
 
-
+    _dollarnode->update(dt);
 
     if (!_slowed && (_dollarnode->shouldIDisappear())) {
         _dollarnode->setVisible(false);
@@ -455,6 +454,7 @@ void GameScene::preUpdate(float dt) {
         if (!_dollarnode->isPending()) {
             if (_target != nullptr) {
                 _slowed = false;
+                std::string message = "";
                 if (_dollarnode->getLastResult() > 0) {
                     CULog("NICE!!!!!!!!!!!!!!");
                     /*removeEnemy(_target.get());*/
@@ -467,11 +467,16 @@ void GameScene::preUpdate(float dt) {
                 }
                 else {
                     CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
+                    
                 }
+                message = _feedbackMessages[_dollarnode->getLastResult()];
 
-                _gestureInitiatedTime = Timestamp();
+
+                popup(message, cugl::Vec2(_target->getPosition().x * _scale, _target->getPosition().y * 1.1 * _scale));
+
+                /*_gestureInitiatedTime = Timestamp();
                 _gestureInitiatedTime.mark();
-                _gestureFeedback->setPosition(_target->getPosition().x * _scale, _target->getPosition().y * 1.1 * _scale);
+                _gestureFeedback->setPosition(_target->getPosition().x * _scale, _target->getPosition().y * 1.1 * _scale);*/
                 
                 _target = nullptr;
             }
@@ -481,18 +486,37 @@ void GameScene::preUpdate(float dt) {
         }
     }
 
-    if (now.ellapsedMillis(_gestureInitiatedTime) / 1000.0f < FEEDBACK_DURATION) {
+    //iterate over popups to update
+    for (auto& tpl : _popups) {
+        std::shared_ptr<scene2::Label> popup = std::get<0>(tpl);
+        Timestamp time = std::get<1>(tpl);
+
+        //handle removes. TODO!!!!!!
+        if (now.ellapsedMillis(time) / 1000.0f >= FEEDBACK_DURATION) {
+            _gestureFeedback->setText("");
+            popup->setVisible(false);
+        } 
+        //handle movement
+        else {
+            popup->setPositionY(popup->getPositionY() - 1.0f);
+        }
+
+	}
+
+    /*if (now.ellapsedMillis(_gestureInitiatedTime) / 1000.0f < FEEDBACK_DURATION) {
         int lastResult = _dollarnode->getLastResult();
         if (lastResult != -1) {
             _gestureFeedback->setText(_feedbackMessages[lastResult]);
             _gestureFeedback->setPositionY(_gestureFeedback->getPositionY() - 1.0f);
             _gestureFeedback->setVisible(true);
+            CULog(_gestureFeedback->getText().c_str());
+            CULog("___________________");
         }
     }
     else {
         _gestureFeedback->setText("");
         _gestureFeedback->setVisible(false);
-    }
+    }*/
 
 
     Vec2 avatarPos = _avatar->getPosition();
@@ -555,7 +579,7 @@ void GameScene::preUpdate(float dt) {
     }
 
     //update dollar node
-    _dollarnode->update(dt);
+    //_dollarnode->update(dt);
 }
 
 /**
@@ -982,7 +1006,10 @@ void GameScene::endContact(b2Contact* contact) {
         Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        int damage = ((EnemyModel*)bd2)->getHealth();
         ((EnemyModel*)bd2)->takeDamage(_avatar->getAttack(), direction);
+        damage -= ((EnemyModel*)bd2)->getHealth();
+        if (damage > 0) popup(std::to_string((int) _avatar->getAttack()), enemyPos * _scale);
         if (((EnemyModel*)bd2)->getHealth() <= 50){
             ((EnemyModel*)bd2)->setVulnerable(true);
         }
@@ -990,7 +1017,10 @@ void GameScene::endContact(b2Contact* contact) {
         Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
         Vec2 attackerPos = ((Attack*)bd2)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        int damage = ((EnemyModel*)bd1)->getHealth();
         ((EnemyModel*)bd1)->takeDamage(_avatar->getAttack(), direction);
+        damage -= ((EnemyModel*)bd1)->getHealth();
+        if (damage > 0) popup(std::to_string((int)_avatar->getAttack()), enemyPos * _scale);
         if (((EnemyModel*)bd1)->getHealth() <= 50) {
             ((EnemyModel*)bd1)->setVulnerable(true);
         }
@@ -1070,4 +1100,41 @@ void GameScene::unzoomCamera() {
 //Marks transitioning between cooking and platforming. Call this method with t = true when you want to transition away from this scene
 void GameScene::transition(bool t) {
     _transitionScenes = t;
+}
+
+void GameScene::popup(std::string s, cugl::Vec2 pos) {
+    Timestamp now = Timestamp();
+    now.mark();
+    std::shared_ptr<cugl::scene2::Label> popup = cugl::scene2::Label::allocWithText(pos, s, _assets->get<Font>(MESSAGE_FONT));
+
+    //initTime->setPosition(_target->getPosition().x * _scale, _target->getPosition().y * 1.1 * _scale);
+
+    /*if (now.ellapsedMillis(_gestureInitiatedTime) / 1000.0f < FEEDBACK_DURATION) {
+        int lastResult = _dollarnode->getLastResult();
+        if (lastResult != -1) {
+            _gestureFeedback->setText(_feedbackMessages[lastResult]);
+            _gestureFeedback->setPositionY(_gestureFeedback->getPositionY() - 1.0f);
+            _gestureFeedback->setVisible(true);
+            CULog(_gestureFeedback->getText().c_str());
+            CULog("___________________");
+        }
+    }
+    else {
+        _gestureFeedback->setText("");
+        _gestureFeedback->setVisible(false);
+    }*/
+
+    popup = scene2::Label::allocWithText(s, _assets->get<Font>(MESSAGE_FONT));
+    popup->setAnchor(Vec2::ANCHOR_TOP_CENTER);
+    popup->setForeground(Color4::BLACK);
+    popup->setVisible(true);
+    popup->setPosition(pos);
+
+    CULog(s.c_str());
+    CULog("%f", pos.x);
+    CULog("%f", pos.y);
+
+    addChild(popup);
+
+    _popups.push_back(std::make_tuple(popup, now));
 }

@@ -217,10 +217,11 @@ void DollarScene::update(float timestep) {
 //is gesture inputting still in progress?
 bool DollarScene::isPending() {
 	//TODO
-	return !_input->isGestureCompleted();
+	//return !_input->isGestureCompleted();
+	return !_completed;
 };
 
-
+//if gesture is completed. pop gesture and calculate similarity
 bool DollarScene::matchWithTouchPath() {
 	if (_input->isGestureCompleted()) {
 		Path2 gesture = _input->popTouchPath();

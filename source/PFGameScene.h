@@ -147,6 +147,8 @@ protected:
     /** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
     bool _transitionScenes;
 
+    std::vector<std::tuple<std::shared_ptr<cugl::scene2::Label>, cugl::Timestamp>> _popups;
+
 #pragma mark Internal Object Management
     /**
      * Lays out the game geography.
@@ -476,6 +478,9 @@ public:
 
     void transition(bool t);
 
-    bool transitionedAway() { return _transitionScenes; }
+    bool transitionedAway() { return _transitionScenes; };
+
+    //creates a popup message that dissapates. Position is in word coords, not physics.
+    void GameScene::popup(std::string s, Vec2 pos);
   };
 #endif /* __PF_GAME_SCENE_H__ */

@@ -54,7 +54,6 @@ void EnemyAttack::update(float dt) {
 		_faceright = false;
 	}
 	if (_shoot) {
-		CULog("Shooting");
 		_shoot = false;
 		if (_rand) {
 			_body->ApplyLinearImpulseToCenter(b2Vec2(10*static_cast<float>(rand()) / static_cast<float>(RAND_MAX)-5, 15), true);

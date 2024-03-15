@@ -306,8 +306,6 @@ void DudeModel::update(float dt) {
     CapsuleObstacle::update(dt);
 
     if (_duration > 0) {
-        CULog("BUFFed!");
-        CULog("%f", _duration);
 		_duration -= dt;
         _duration = std::max(0.0f, _duration);
         //reset buff state if duration is over
