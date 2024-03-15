@@ -128,7 +128,7 @@ public:
 
     bool initGestureRecognizer();
 
-    void matchWithTouchPath();
+    bool matchWithTouchPath();
 
 };
 
