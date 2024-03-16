@@ -294,7 +294,17 @@ void DudeModel::applyForce(float h, float v) {
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
     }
     if (canDash() && getDashNum()>0) {
-        b2Vec2 force(DUDE_DASH*SIGNUM(h), DUDE_DASH * SIGNUM(v) * .8);
+        float tempH = SIGNUM(h);
+        float tempV = SIGNUM(v);
+        int sum = tempH + tempV;
+        if (tempH == 0 && tempV == 0) {
+            tempH = isFacingRight() ? 1 : -1;
+        }
+        else if (sum == 0 || abs(sum) == 2) {
+            tempH *= sqrt(.5);
+            tempV *= sqrt(.5);
+        }
+        b2Vec2 force(DUDE_DASH * SIGNUM(tempH), DUDE_DASH * SIGNUM(tempV) * .8);
         setVY(0);
         setVX(0);
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
