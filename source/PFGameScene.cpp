@@ -654,6 +654,9 @@ void GameScene::fixedUpdate(float step) {
     //camera logic
     if (CAMERA_FOLLOWS_PLAYER) {
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
+        cugl::Vec3 mapMin = Vec3(SCENE_WIDTH / 2, SCENE_HEIGHT / 2, 0);
+        cugl::Vec3 mapMax = Vec3(1400 - SCENE_WIDTH / 2, 900 - SCENE_HEIGHT / 2, 0); //replace magic numbers
+        target.clamp(mapMin, mapMax);
         cugl::Vec3 pos = _camera->getPosition();
 
         Rect viewport = _camera->getViewport();
