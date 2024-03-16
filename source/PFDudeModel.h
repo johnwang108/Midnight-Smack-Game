@@ -59,11 +59,11 @@
 #pragma mark -
 #pragma mark Physics Constants
 /** The factor to multiply by the input */
-#define DUDE_FORCE      sqrt(2 * (9.8) * getHeight() * 1 ) * getMass()
+#define DUDE_FORCE      sqrt(2 * (9.8) * getHeight() * 30 ) * getMass()
 /** The amount to slow the character down */
-#define DUDE_DAMPING    5.0f
+#define DUDE_DAMPING    10.0f
 /** The maximum character speed */
-#define DUDE_MANUEL_MAXSPEED   7.0f
+#define DUDE_MANUEL_MAXSPEED   5.0f
 
 
 #pragma mark -
@@ -75,6 +75,30 @@
 * experience, using a rectangular shape for a character will regularly snag
 * on a platform.  The round shapes on the end caps lead to smoother movement.
 */
+
+enum class buff{
+    attack,
+    health,
+    jump,
+    defense,
+    speed,
+    none
+};
+
+enum class modifier {
+    duration,
+    effect,
+    none
+};
+
+#define BASE_ATTACK_BUFF 20.0f
+#define BASE_HEALTH_BUFF 5.0f
+#define BASE_JUMP_BUFF 10.0f
+#define BASE_DEFENSE_BUFF 0.5f
+#define BASE_SPEED_BUFF 3.0f
+
+#define BASE_DURATION 10.0f
+
 class DudeModel : public cugl::physics2::CapsuleObstacle {
 private:
 	/** This macro disables the copy constructor (not allowed on physics objects) */
@@ -111,6 +135,30 @@ protected:
     int _dashNum;
     float _dashCooldown;
     bool _contactingWall;
+
+    float _health;
+
+    float _healthCooldown;
+    float _knockbackTime;
+    float _lastDamageTime;
+
+    float healthPercentage;
+    std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
+
+    float _attack;
+
+    //attack damage buff
+    float _attackBuff;
+    //health buff
+    float _healthBuff;
+    //jump magnitude buff
+    float _jumpBuff;
+    //dash magnitude buff
+    float _defenseBuff;
+    //max speed buff
+    float _speedBuff;
+
+    float _duration;
 
 	/**
 	* Redraws the outline of the physics fixtures to the debug node
@@ -412,7 +460,7 @@ public:
      *
      * @return how much force to apply to get the dude moving
      */
-    float getForce() const { return DUDE_FORCE; }
+    float getForce() const { return DUDE_FORCE + _speedBuff; }
     
     /**
      * Returns ow hard the brakes are applied to get a dude to stop moving
@@ -428,7 +476,7 @@ public:
      *
      * @return the upper limit on dude left-right movement.
      */
-    float getMaxSpeed() const { return DUDE_MANUEL_MAXSPEED; }
+    float getMaxSpeed() const { return DUDE_MANUEL_MAXSPEED + _speedBuff; }
     
     /**
      * Returns the name of the ground sensor
@@ -483,8 +531,52 @@ public:
      */
     void applyForce(float h, float v);
 
-
+    void takeDamage(float damage, const int attackDirection);
 	
+    float getHealth() { return _health; }
+
+    void sethealthbar(std::shared_ptr<cugl::AssetManager> asset);
+
+    //Apply buff to Sue with proper modifier.
+    void applyBuff(buff b, modifier m);
+
+    float getAttack() { return _attack + _attackBuff; }
+
+    float getDuration() { return _duration; };
+
+    static char* getStrForBuff(buff enumVal)
+    {
+        switch (enumVal)
+        {
+        case buff::attack:
+            return "attack";
+        case buff::jump:
+            return "jump";
+        case buff::speed:
+            return "speed";
+        case buff::defense:
+            return "defense";
+        case buff::health:
+            return "health";
+        default:
+            return "Not recognized..";
+        }
+    }
+
+    static char* getStrForModifier(modifier enumVal)
+    {
+        switch (enumVal)
+        {
+        case modifier::duration:
+            return "duration";
+        case modifier::effect:
+            return "effect";
+        case modifier::none:
+            return "none";
+        default:
+            return "Not recognized..";
+        }
+    }
 };
 
 #endif /* __PF_DUDE_MODEL_H__ */

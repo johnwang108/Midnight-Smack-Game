@@ -1,26 +1,29 @@
-//
-//  PFAttack.h
-//  PlatformDemo
-//
-//  This class is a simple extension of WheelObstacle in order to simplify the process of adding and removing Attacks
-//  from the game world, as well as for drawing the sprite of the attack.
-//
-//  Author: Walker White and Anthony Perello
-//  Version:  2/9/17
-//
-#ifndef __PF_ATTACK_MODEL_H__
-#define __PF_ATTACK_MODEL_H__
+
+#ifndef __PF_ENEMY_ATTACK_MODEL_H__
+#define __PF_ENEMY_ATTACK_MODEL_H__
 #include <cugl/cugl.h>
 #include <cugl/physics2/CUBoxObstacle.h>
 #include <cugl/scene2/graph/CUWireNode.h>
-#define ATTACK_LIFETIME  5
+
+#define EA_SENSOR_NAME     "easensor" // If the Bull requires a unique sensor
+#define EA_CHASE_SPEED     3.0f         // Using the CHASE_SPEED for consistency
+#define EA_DENSITY         2.0f         // Assuming the Bull is heavier than a regular enemy
+#define EA_FORCE           1.0f         // Force specific to the Bull's movement, potentially stronger
+#define EA_MAXSPEED        5.0f         // A reasonable max speed for the Bull, ensuring it's fast but manageable
+#define EA_KNOCKBACK_FORCE 5.0f        // Increased knockback force due to the Bull's strength
+#define EA_KNOCKBACK_FORCE_UP 15.0f      // Vertical knockback component
+
+#define EA_VSHRINK    0.8f
+#define EA_HSHRINK    0.7f
+#define SENSOR_HEIGHT 0.1f
+
 
 #pragma mark -
 #pragma mark Attack Model
-class Attack : public cugl::physics2::BoxObstacle {
+class EnemyAttack : public cugl::physics2::BoxObstacle {
 private:
 	/** This macro disables the copy constructor (not allowed on physics objects) */
-	CU_DISALLOW_COPY_AND_ASSIGN(Attack);
+	CU_DISALLOW_COPY_AND_ASSIGN(EnemyAttack);
 
 protected:
 	/** The scene graph node for the Attack. */
@@ -34,11 +37,22 @@ protected:
     //whether or not attack is marked for deletion
     bool _killme;
 
-    bool _go;
-
     bool _faceright;
 
     std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
+
+    int _direction;
+
+    bool _shoot;
+
+    bool _rand;
+
+    std::string _sensorName;
+
+    b2Fixture* _sensorFixture;
+    cugl::Vec2 _straight;
+
+    float _angle;
 
 public:
 #pragma mark Constructors
@@ -48,16 +62,14 @@ public:
      * This constructor does not initialize any of the Attack values beyond
      * the defaults.  To use a Attack, you must call init().
      */
-    Attack() : BoxObstacle() {
+    EnemyAttack() : BoxObstacle() {
         setSensor(true);
-        _lifetime = ATTACK_LIFETIME;
-        _killme = false;
     }
     
     /**
      * Destroys this Attack, releasing all resources.
      */
-    virtual ~Attack(void) { dispose(); }
+    virtual ~EnemyAttack(void) { dispose(); }
     
     /**
      * Disposes all resources and assets of this Attack
@@ -84,11 +96,12 @@ public:
      *
      * @return  A newly allocated Attack at the given position, with the given radius
      */
-    static std::shared_ptr<Attack> alloc(cugl::Vec2 pos, const cugl::Size& size) {
-        std::shared_ptr<Attack> result = std::make_shared<Attack>();
+    static std::shared_ptr<EnemyAttack> alloc(cugl::Vec2 pos, const cugl::Size& size) {
+        std::shared_ptr<EnemyAttack> result = std::make_shared<EnemyAttack>();
         //return (result->init(pos, radius) ? result : nullptr);
         return (result->init(pos, size) ? result : nullptr);
     }
+
     bool init(cugl::Vec2 pos, const cugl::Size& size);
 #pragma mark -
 #pragma mark Animation
@@ -141,9 +154,14 @@ public:
 	void update(float dt) override;
 
     bool killMe() { return _killme; };
-    void setFaceRight(bool faceRight) { _faceright = faceRight; }
-    void setGo(bool go) { _go = go; }
 
+    void setFaceRight(bool faceRight) { _faceright = faceRight; }
+
+    void releaseFixtures();
+    void createFixtures();
+    std::string* getSensorName() { return &_sensorName; };
+    void setrand(bool rand=false) { _rand = rand; }
+    void setstraight(cugl::Vec2 straight) { _straight = straight; }
 };
 
-#endif /* __PF_ATTACK_MODEL_H__ */
+#endif /* __PF_ENEMY_ATTACK_MODEL_H__ */

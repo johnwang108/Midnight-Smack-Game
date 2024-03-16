@@ -3,6 +3,11 @@
 #include <cugl/cugl.h>
 #include <cugl/physics2/CUBoxObstacle.h>
 #include <cugl/physics2/CUCapsuleObstacle.h>
+#include "EnemyAttack.h"
+#include "../PFDudeModel.h"
+
+
+
 
 #define ENEMY_SENSOR_NAME     "enemysensor"
 #define SHRIMP_TEXTURE    "shrimp"
@@ -21,6 +26,14 @@
 
 #define CHASE_THRESHOLD 10.0f  
 #define CHASE_SPEED 2.0f
+
+#define ATTACK_OFFSET_X 0.5f
+#define ATTACK_OFFSET_Y 0.5f
+
+#define ENEMY_ATTACK_CHANCE 0.001f
+
+class GameScene;
+
 /**
  * Enum for enemy types.
  * Add additional enemy types as needed.
@@ -28,7 +41,9 @@
 enum class EnemyType {
     shrimp, 
     rice, 
-    egg 
+    egg,
+    carrot,
+    beef
 };
 
 class EnemyModel : public cugl::physics2::CapsuleObstacle {
@@ -59,6 +74,25 @@ protected:
 
     float _changeDirectionInterval; 
     float _nextChangeTime;
+
+    float _health;
+
+    float _healthCooldown;
+    float _lastDamageTime;
+
+    float _knockbackTime;
+
+    bool _attacktime;
+    float _preparetime;
+    bool _shooted;
+
+    //true if quick time can be initiated
+    bool _vulnerable;
+
+    //placeholder, name of the gesture to input for this enemy
+    std::string _gestureName;
+
+
 
 
 
@@ -112,6 +146,19 @@ public:
 
     bool isChasing() const { return _isChasing; }
 
+    void setnextchangetime(double nextChangeTime) { _nextChangeTime = nextChangeTime; }
+
+    double getnextchangetime() { return _nextChangeTime; }
+
+    void takeDamage(float damage, const int attackDirection);
+
+    float getHealth() { return _health; }
+
+
+    bool getattacktime() { return _attacktime; }
+    void setattacktime(bool attacktime) { _attacktime = attacktime; }
+    void setshooted(bool shooted) { _shooted = shooted; }
+
 
 #pragma mark -
 #pragma mark Physics Methods
@@ -162,7 +209,39 @@ public:
      */
     void dispose();
 
+    void createAttack(GameScene& scene);
 
+
+    void setVulnerable(bool vulnerable) { _vulnerable = vulnerable; }
+
+    bool isVulnerable() {return _vulnerable; }
+
+    std::string getGestureString() { return _gestureName; }
+
+    EnemyType getType() { return _type; }
+
+    void setGestureString(std::string gesture) { _gestureName = gesture; };
+
+
+    //Dict for enemy type to buff 
+    static buff enemyToBuff(EnemyType type) {
+        switch (type) {
+        case EnemyType::shrimp:
+            return buff::attack;
+        case EnemyType::rice:
+            return buff::defense;
+
+            //switch egg and carrot
+        case EnemyType::egg:
+            return buff::jump;
+        case EnemyType::carrot:
+            return buff::speed;
+        case EnemyType::beef:
+            return buff::health;
+        default:
+            return buff::none;
+        }
+    }
 
 };
 

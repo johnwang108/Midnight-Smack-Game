@@ -59,16 +59,21 @@ private:
     bool  _keyRight;
     /** Whether the slow key is down */
     bool _keySlow;
-  
 
-    std::string _lastGestureString;
-    float _lastGestureSimilarity;
+    bool _keyTransition;
+
+
+    //is the current path ready for recog and rendering
+    bool _gestureCompleted;
   
     bool  _keyDown;
     bool  _keyUp;
     bool _dashKey;
    
     std::shared_ptr<cugl::GameController> _gameCont;
+
+
+
     
   
 protected:
@@ -89,6 +94,11 @@ protected:
     float _horizontal;
     float _vertical;
     bool _dashPressed;
+
+    bool _transitionPressed;
+
+    bool _zoomIn;
+    bool _zoomOut;
 
     //axes positions for joystick
     float _xAxis;
@@ -131,9 +141,8 @@ protected:
 	/** The timestamp for a double tap in the middle */
 	cugl::Timestamp _mtime;
 
-
     cugl::Path2 _touchPath;
-    std::shared_ptr<cugl::GestureRecognizer> _dollarRecog;
+    cugl::Vec2 _swipeDelta;
 
   
     /**
@@ -154,16 +163,7 @@ protected:
      */
     cugl::Vec2 touch2Screen(const cugl::Vec2 pos) const;
 
-    /**
-     * Processes movement for the floating joystick.
-     *
-     * This will register movement as left or right (or neither).  It
-     * will also move the joystick anchor if the touch position moves
-     * too far.
-     *
-     * @param  pos  the current joystick position
-     */
-    void processJoystick(const cugl::Vec2 pos);
+
     
     /**
      * Returns a nonzero value if this is a quick left or right swipe
@@ -181,6 +181,12 @@ protected:
 public:
 #pragma mark -
 #pragma mark Constructors
+
+
+    float id;
+
+
+
     /**
      * Creates a new input controller.
      *
@@ -294,24 +300,14 @@ public:
 	 * @return true if the exit button was pressed.
 	 */
 	bool didExit() const { return _exitPressed; }
-    bool didSlow() const { return _slowPressed; }
+    bool didSlow() const { 
+            return _slowPressed; 
+    }
 
 
     bool didDash() const { return _dashPressed; }
 
-    /**
-     * Returns true if the virtual joystick is in use (touch only)
-     *
-     * @return true if the virtual joystick is in use (touch only)
-     */
-    //bool withJoystick() const { return _joystick; }
-
-    ///**
-    // * Returns the scene graph position of the virtual joystick
-    // *
-    // * @return the scene graph position of the virtual joystick
-    // */
-    //cugl::Vec2 getJoystick() const { return _joycenter; }
+    bool didTransition() const { return _transitionPressed; }
 
 #pragma mark -
 #pragma mark Touch and Mouse Callbacks
@@ -341,14 +337,53 @@ public:
      */
     void touchesMovedCB(const cugl::TouchEvent& event, const cugl::Vec2& previous, bool focus);
 
-    void getAxisAngle(const cugl::GameControllerAxisEvent& eventm, bool focus);
+    void swipeBeganCB(const cugl::PanEvent& event, bool focus);
+
+
+    void swipeEndedCB(const cugl::PanEvent& event, bool focus);
+
 
   
 
-    std::string getGestureString();
-    float getGestureSim();
+  
 
     cugl::Path2 getTouchPath();
+
+    cugl::Path2 popTouchPath();
+
+    /**
+     * Callback for the beginning of a mouse press event
+     *
+     * @param event The associated event
+     * @param focus	Whether the listener currently has focus
+     */
+    void mousePressCB(const cugl::MouseEvent& event, bool focus);
+
+    /**
+     * Callback for the beginning of a mouse move event
+     *
+     * @param event The associated event
+     * @param focus	Whether the listener currently has focus
+     */
+    void mouseDragCB(const cugl::MouseEvent& event, bool focus);
+
+    /**
+     * Callback for the beginning of a mouse release event
+     *
+     * @param event The associated event
+     * @param focus	Whether the listener currently has focus
+     */
+    void mouseReleaseCB(const cugl::MouseEvent& event, bool focus);
+
+    bool isGestureCompleted() { return _gestureCompleted; };
+
+
+    cugl::Vec2 getSwipeDelta() { return _swipeDelta; }
+
+    void gestureStartCB(cugl::Vec2 pos, bool focus);
+    void gestureMoveCB(cugl::Vec2 pos, bool focus);
+    void gestureEndCB(cugl::Vec2 pos, bool focus);
+
 };
 
 #endif /* __PF_INPUT_H__ */

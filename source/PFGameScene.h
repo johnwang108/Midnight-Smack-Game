@@ -36,7 +36,10 @@
 #include "PFRopeBridge.h"
 #include "PFSpinner.h"
 #include "PFDollarScene.h"
-#include "Enemy.h"
+#include "Levels/Level1.h"
+#include "Levels/Level2.h"
+// #include "Levels/Level3.h"
+
 
 /**
  * This class is the primary gameplay constroller for the demo.
@@ -68,8 +71,12 @@ protected:
     /** Reference to the right joystick image */
     std::shared_ptr<cugl::scene2::PolygonNode> _rightnode;
 
+    std::shared_ptr<Scene2> _bgScene;
+    std::shared_ptr<Scene2> _uiScene;
 
-    std::shared_ptr<cugl::scene2::Label> _gesturehud;
+    std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
+
+
 
 
     /** Reference to the quick-time event scene node */
@@ -87,11 +94,20 @@ protected:
     /** Reference to the goalDoor (for collision detection) */
     std::shared_ptr<cugl::physics2::BoxObstacle>    _goalDoor;
 
-    std::shared_ptr<cugl::physics2::BoxObstacle>    _background;
+    std::shared_ptr<cugl::scene2::PolygonNode>    _background;
     /** Reference to the player avatar */
     std::shared_ptr<DudeModel>			  _avatar;
 
     std::vector<std::shared_ptr<EnemyModel>> _enemies;
+
+
+    //Valid targets for cook-time
+    std::vector<std::shared_ptr<EnemyModel>> _vulnerables;
+
+    //Current target for cook-time
+    std::shared_ptr<EnemyModel> _target;
+
+
     /** Reference to the spinning barrier */
     std::shared_ptr<Spinner>			  _spinner;
     /** Reference to the rope bridge */
@@ -109,9 +125,34 @@ protected:
     bool _failed;
     /** Countdown active for winning or losing */
     int _countdown;
+
+    //camera
+    //std::shared_ptr<cugl::OrthographicCamera> _camera;
+    cugl::Vec3 _cameraOffset = Vec3::ZERO;
+    float _smoothTime = 0.25f;
+    cugl::Vec3 _velocity = Vec3::ZERO;
+
       
     /** Mark set to handle more sophisticated collision callbacks */
     std::unordered_set<b2Fixture*> _sensorFixtures;
+
+    std::shared_ptr<Levels> currentLevel;
+
+    std::shared_ptr<BullModel>			  _Bull;
+
+    std::shared_ptr<Level2> level2 = std::make_shared<Level2>();
+
+    std::shared_ptr<Level1> level1 = std::make_shared<Level1>();
+
+    /** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
+    bool _transitionScenes;
+    float healthPercentage;
+    std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
+    std::shared_ptr<cugl::scene2::PolygonNode> _healthBarBackground;
+
+    std::shared_ptr<cugl::scene2::Label> _buffLabel;
+
+    std::vector<std::tuple<std::shared_ptr<cugl::scene2::Label>, cugl::Timestamp>> _popups;
 
 #pragma mark Internal Object Management
     /**
@@ -125,7 +166,7 @@ protected:
      * This method is really, really long.  In practice, you would replace this
      * with your serialization loader, which would process a level file.
      */
-    void populate();
+  //  void populate();
     
     /**
      * Adds the physics object to the physics world and loosely couples it to the scene graph
@@ -139,9 +180,6 @@ protected:
      * @param node   The scene graph node to attach it to
      * @param useObjPosition  Whether to update the node's position to be at the object's position
      */
-    void addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj,
-                     const std::shared_ptr<cugl::scene2::SceneNode>& node,
-                     bool useObjPosition=true);
 
     /**
      * Returns the active screen size of this scene.
@@ -191,7 +229,7 @@ public:
      *
      * @return true if the controller is initialized properly, false otherwise.
      */
-    bool init(const std::shared_ptr<cugl::AssetManager>& assets);
+    bool init(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input);
 
     /**
      * Initializes the controller contents, and starts the game
@@ -210,7 +248,7 @@ public:
      * @return  true if the controller is initialized properly, false otherwise.
      */
     bool init(const std::shared_ptr<cugl::AssetManager>& assets, 
-              const cugl::Rect& rect);
+              const cugl::Rect& rect, std::shared_ptr<PlatformInput> input);
     
     /**
      * Initializes the controller contents, and starts the game
@@ -230,7 +268,7 @@ public:
      * @return  true if the controller is initialized properly, false otherwise.
      */
     bool init(const std::shared_ptr<cugl::AssetManager>& assets, 
-              const cugl::Rect& rect, const cugl::Vec2& gravity);
+              const cugl::Rect& rect, const cugl::Vec2& gravity, std::shared_ptr<PlatformInput> input);
     
     
 #pragma mark -
@@ -404,10 +442,55 @@ public:
     *
     * @param  bullet   the bullet to remove
     */
-    void removeAttack(Attack* attack);
+    template<typename T>
+    void removeAttack(T* attack);
 
-    void GameScene::removeEnemy(EnemyModel* enemy);
+    void removeEnemy(EnemyModel* enemy);
 
+    std::shared_ptr<AssetManager> getAssets() const { return _assets; }
+
+    float getScale() const { return _scale; }
+
+    std::shared_ptr<cugl::scene2::PolygonNode> getBackground() const { return _background; }
+
+    void addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj,
+        const std::shared_ptr<cugl::scene2::SceneNode>& node,
+        bool useObjPosition = true);
+
+    std::shared_ptr<cugl::physics2::BoxObstacle> getGoalDoor() const { return _goalDoor; }
+
+    std::shared_ptr<DudeModel> getAvatar() const { return _avatar; }
+
+    std::vector<std::shared_ptr<EnemyModel>> getEnemies() const { return _enemies; }
+
+    void loadLevel(std::shared_ptr<Levels> level) {
+        level->populate(*this);
+        currentLevel = level;
+    }
+
+    void setAssets(const std::shared_ptr<AssetManager>& assets) { _assets = assets; }
+    void setScale(float scale) { _scale = scale; }
+    void setBackground(const std::shared_ptr<cugl::scene2::PolygonNode>& background) { _background = background; }
+    void setAvatar(const std::shared_ptr<DudeModel>& avatar) { _avatar = avatar; }
+    void setEnemies(const std::vector<std::shared_ptr<EnemyModel>>& enemies) { _enemies = enemies; }
+    void setGoalDoor(const std::shared_ptr<cugl::physics2::BoxObstacle>& goalDoor) { _goalDoor = goalDoor; }
+
+    void unzoomCamera();
+    void zoomCamera(float scale);
+
+    std::shared_ptr<BullModel> getBull() const { return _Bull; }
+    void setBull(const std::shared_ptr<BullModel>& bull) { _Bull = bull; }
+
+    void transition(bool t);
+
+    void renderBG(std::shared_ptr<cugl::SpriteBatch> batch);
+
+    void renderUI(std::shared_ptr<cugl::SpriteBatch> batch);
+
+    bool transitionedAway() { return _transitionScenes; };
+
+    //creates a popup message that dissapates. Position is in word coords, not physics.
+    void GameScene::popup(std::string s, Vec2 pos);
   };
 
 #endif /* __PF_GAME_SCENE_H__ */

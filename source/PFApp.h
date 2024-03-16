@@ -16,6 +16,7 @@
 #include <cugl/cugl.h>
 #include "PFGameScene.h"
 #include "PFLoadingScene.h"
+#include "MultiScreenScene.h"
 
 /**
  * This class represents the application root for the platform demo.
@@ -30,6 +31,11 @@ protected:
     // Player modes
     /** The primary controller for the game world */
     GameScene _gameplay;
+
+    /** Primary controller for cooking */
+    MultiScreenScene _multiScreen;
+
+    int _currentlyFocused;
     /** The controller for the loading screen */
     LoadingScene _loading;
     

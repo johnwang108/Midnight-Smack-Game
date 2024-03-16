@@ -76,9 +76,9 @@ float floatyFrames = 10;
 /** The density of the character */
 #define DUDE_DENSITY    1.0f
 /** The impulse for the character jump */
-#define DUDE_JUMP       sqrt( 3 * 2 * (9.8) * getHeight() * jmpHeight ) * getMass()
+#define DUDE_JUMP       (sqrt( 3 * 2 * (9.8) * getHeight() * jmpHeight ) * getMass() + _jumpBuff)
 /** The impulse for the character dash */
-#define DUDE_DASH       DUDE_JUMP * dashModif
+#define DUDE_DASH       (DUDE_JUMP * dashModif)
 /** Debug color for the sensor */
 #define DEBUG_COLOR     Color4::RED
 
@@ -114,7 +114,6 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         setDensity(DUDE_DENSITY);
         setFriction(0.0f);      // HE WILL STICK TO WALLS IF YOU FORGET
         setFixedRotation(true); // OTHERWISE, HE IS A WEEBLE WOBBLE
-        
         // Gameplay attributes
         _isGrounded = false;
         _isShooting = false;
@@ -127,12 +126,37 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         _shootCooldown = 0;
         _jumpCooldown  = 0;
         _dashNum = 1;
+
+        _health=100;
+
+        _healthCooldown=0.2;
+        _lastDamageTime=0;
+        _knockbackTime = 0;
+
+        _attackBuff = 0;
+        _healthBuff = 0;
+        _jumpBuff = 0;
+        _defenseBuff = 1;
+        _speedBuff = 0;
+        _duration = 0;
+
+        //default hardcode
+        _attack = 34;
+
         return true;
     }
     return false;
 }
 
-
+void DudeModel::sethealthbar(std::shared_ptr<cugl::AssetManager> asset) {
+    auto healthBarBackground = scene2::PolygonNode::allocWithTexture(asset->get<Texture>("heartsbroken"));
+    auto healthBarForeground = scene2::PolygonNode::allocWithTexture(asset->get<Texture>("heartsfull"));
+    healthBarBackground->setPosition(Vec2(10, 10));
+    healthBarForeground->setPosition(Vec2(10, 10));
+    _node->addChild(healthBarBackground);
+    _node->addChild(healthBarForeground);
+    _healthBarForeground = healthBarForeground;
+}
 #pragma mark -
 #pragma mark Attribute Properties
 
@@ -258,6 +282,7 @@ void DudeModel::applyForce(float h, float v) {
 
 
     // Jump!
+
     if (isJumping() && isGrounded()) {
         setVY(0);
         b2Vec2 force(0, DUDE_JUMP);
@@ -265,7 +290,7 @@ void DudeModel::applyForce(float h, float v) {
     }
     else if (isJumping() && contactingWall() && !isGrounded()) {
         setVY(0);
-        b2Vec2 force(DUDE_JUMP*3* (isFacingRight() ? 1: -1), DUDE_JUMP * .8);
+        b2Vec2 force(4 * DUDE_JUMP *5* (isFacingRight() ? 1: -1), DUDE_JUMP * 1.2);
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
     }
     if (canDash() && getDashNum()>0) {
@@ -285,6 +310,45 @@ void DudeModel::applyForce(float h, float v) {
  * @param delta Number of seconds since last animation frame
  */
 void DudeModel::update(float dt) {
+
+    CapsuleObstacle::update(dt);
+
+    if (_duration > 0) {
+		_duration -= dt;
+        _duration = std::max(0.0f, _duration);
+        //reset buff state if duration is over
+		if (_duration == 0) {
+			_attackBuff = 0;
+			_healthBuff = 0;
+			_jumpBuff = 0;
+			_defenseBuff = 1;
+			_speedBuff = 0;
+            _node->setColor(Color4::WHITE);
+        }
+        else {
+            _node->setColor(Color4::BLACK);
+        }
+
+    }
+
+    if (_knockbackTime > 0) {
+        if (int(_knockbackTime*10) % 2 <1) {
+			_node->setVisible(true);
+		}
+        else {
+			_node->setVisible(false);
+		}
+		_knockbackTime -= dt;
+        if (_node != nullptr) {
+            _node->setPosition(getPosition() * _drawScale);
+            _node->setAngle(getAngle());
+        }
+        //return;
+	}
+    else {
+        _lastDamageTime += dt;
+	}
+
     if (_dashCooldown > DASH_COOLDOWN - floatyFrames) {
         setGravityScale(0);
     }
@@ -317,7 +381,7 @@ void DudeModel::update(float dt) {
         }
     }
     
-    CapsuleObstacle::update(dt);
+
     
     if (_node != nullptr) {
         _node->setPosition(getPosition()*_drawScale);
@@ -348,5 +412,56 @@ void DudeModel::resetDebug() {
 }
 
 
+void DudeModel::takeDamage(float damage, const int attackDirection) {
+    if (_lastDamageTime >= _healthCooldown) {
+        _lastDamageTime = 0;
+        _health -= damage * _defenseBuff;
+        if (_health < 0) {
+            _health = 0;
+        }
+        else {
+            b2Vec2 impulse = b2Vec2(attackDirection * 15, 10);
+            _body->ApplyLinearImpulseToCenter(impulse, true);
+            _knockbackTime = 2;
+        }
+    }
+}
 
 
+void DudeModel::applyBuff(const buff b, modifier m) {
+    switch (b) {
+    case buff::attack:
+        if (m == modifier::duration) {
+            _attackBuff = BASE_ATTACK_BUFF;
+            _duration = BASE_DURATION;
+        } 
+        // code block
+        break;
+    case buff::health:
+        if (m == modifier::duration) {
+            _healthBuff = BASE_HEALTH_BUFF;
+            _duration = BASE_DURATION;
+        }
+        break;
+    case buff::jump:
+        if (m == modifier::duration) {
+            _jumpBuff = BASE_JUMP_BUFF;
+            _duration = BASE_DURATION;
+        }
+        break;
+    case buff::speed:
+        if (m == modifier::duration) {
+            _speedBuff = BASE_SPEED_BUFF;
+            _duration = BASE_DURATION;
+        }
+        break;
+    case buff::defense:
+        if (m == modifier::duration) {
+            _defenseBuff = BASE_DEFENSE_BUFF;
+            _duration = BASE_DURATION;
+        }
+		break;
+    default:
+        CULog("NULL BUFF APPLIED");
+    }
+}

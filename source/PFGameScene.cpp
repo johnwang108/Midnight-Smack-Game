@@ -23,10 +23,6 @@
 #include <box2d/b2_world.h>
 #include <box2d/b2_contact.h>
 #include <box2d/b2_collision.h>
-#include "PFDudeModel.h"
-#include "PFSpinner.h"
-#include "PFRopeBridge.h"
-#include "PFAttack.h"
 
 #include <ctime>
 #include <string>
@@ -40,183 +36,30 @@ using namespace cugl;
 #pragma mark Level Geography
 
 /** This is adjusted by screen aspect ratio to get the height */
-#define SCENE_WIDTH 1024
-#define SCENE_HEIGHT 576
+#define SCENE_WIDTH 1280
+#define SCENE_HEIGHT 800
 
 /** This is the aspect ratio for physics */
 #define SCENE_ASPECT 10.0/16.0
+// #define SCENE_ASPECT 10.0/16.0
 
 /** Width of the game world in Box2d units */
-#define DEFAULT_WIDTH   32.0f
+#define DEFAULT_WIDTH   50.0f
 /** Height of the game world in Box2d units */
-#define DEFAULT_HEIGHT  18.0f
+#define DEFAULT_HEIGHT  40.0f
 
 #define INCLUDE_ROPE_BRIDGE false
 
-// Since these appear only once, we do not care about the magic numbers.
-// In an actual game, this information would go in a data file.
-// IMPORTANT: Note that Box2D units do not equal drawing units
-/** The wall vertices */
-#define WALL_VERTS 12
-#define WALL_COUNT  2
+#define CAMERA_FOLLOWS_PLAYER true
 
-float WALL[WALL_COUNT][WALL_VERTS] = {
-    {16.0f, 20.0f,  0.0f, 20.0f,  0.0f,  0.0f,
-      1.0f,  0.0f,  1.0f, 19.5f, 16.0f, 19.5f },
-    {32.0f, 20.0f, 16.0f, 20.0f, 16.0f, 19.5f,
-     31.0f, 19.5f, 31.0f,  0.0f, 32.0f,  0.0f }
-};
+#define COOKTIME_MAX_DIST 3.5f
 
-/** The number of platforms */
-#define PLATFORM_VERTS  8
-#define PLATFORM_COUNT  10
+#define FEEDBACK_DURATION 1.2f
 
-/** The outlines of all of the platforms */
+#define HEALTHBAR_X_OFFSET 15
 
-//float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
-//	{ 1.0f, 3.0f, 1.0f, 2.5f, 6.0f, 2.5f, 6.0f, 3.0f},
-//	{ 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
-//	{23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
-//	{26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
-//	{29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
-//	{24.0f, 8.5f,24.0f, 8.0f,27.0f, 8.0f,27.0f, 8.5f},
-//	{29.0f,10.0f,29.0f, 9.5f,31.0f, 9.5f,31.0f,10.0f},
-//	{23.0f,11.5f,23.0f,11.0f,27.0f,11.0f,27.0f,11.5f},
-//	{19.0f,12.5f,19.0f,12.0f,23.0f,12.0f,23.0f,12.5f},
-//	{ 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
-//};
+#define BUFF_LABEL_OFFSET 15
 
-float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
-    {1.0f, 4.0f, 1.0f, 2.0f, 4.0f, 2.0f, 4.0f, 4.0f},
-    { 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
-    {9.5f, 6.0f, 9.5f, 5.0f, 12.5f, 5.0f, 12.5f, 6.0f},
-    {15.0f, 8.5f, 15.0f, 7.0f, 20.0f, 4.5f, 20.0f, 6.0f},
-    {23.0f, 4.0f, 23.0f, 3.0f, 27.0f, 3.0f, 27.0f, 4.0f},
-    {28.0f, 5.0f, 28.0f, 4.0f, 30.0f, 8.0f, 30.0f, 9.0f},
-    {23.0f, 10.0f, 23.0f, 9.f, 27.0f, 9.f, 27.0f, 10.f},
-    {16.0f, 12.f, 16.0f, 10.0f, 22.0f, 12.0f, 22.0f, 10.f},
-    {6.0f, 15.0f, 6.0f, 14.5f, 14.0f, 12.5f, 14.0f, 13.0f},
-    { 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
-};
-
-/** The number of platforms */
-#define ALT_PLATFORM_VERTS  8
-#define ALT_PLATFORM_COUNT  1
-
-/** The outlines of all of the platforms */
-float ALT_PLATFORMS[ALT_PLATFORM_COUNT][ALT_PLATFORM_VERTS] = {
-    { 1.0f, .5f, 1.0f, .0f, 33.0f, .0f, 33.0f, .50f}
-};
-
-
-/** The goal door position */
-float GOAL_POS[] = { 4.0f,14.0f};
-// float GOAL_POS[] = { 6.0f, 5.0f };
-/** The position of the spinning barrier */
-float SPIN_POS[] = {13.0f,12.5f};
-/** The initial position of the dude */
-float DUDE_POS[] = { 2.5f, 5.0f};
-/** The position of the rope bridge */
-float BRIDGE_POS[] = {9.0f, 3.8f};
-
-float SHRIMP_POS[] = { 22.0f, 16.0f };
-
-float EGG_POS[] = { 14.0f, 18.0f };
-
-float RICE_POS[] = { 25.0f, 14.0f };
-
-float BACKGROUND_POS[] = { 16.0f, 10.0f };
-
-boolean isLevel1 = true;
-
-#pragma mark -
-#pragma mark Physics Constants
-/** The new heavier gravity for this world (so it is not so floaty) */
-#define DEFAULT_GRAVITY -28.9f
-/** The density for most physics objects */
-#define BASIC_DENSITY   0.0f
-/** The density for a bullet */
-#define HEAVY_DENSITY   10.0f
-/** Friction of most platforms */
-#define BASIC_FRICTION  0.4f
-/** The restitution for all physics objects */
-#define BASIC_RESTITUTION   0.1f
-/** The width of the rope bridge */
-#define BRIDGE_WIDTH    14.0f
-/** Offset for bullet when firing */
-#define BULLET_OFFSET   0.5f
-/** Offset for attack when firing, hacky */
-#define ATTACK_OFFSET_H   1.0f
-/** Offset for attack when firing, hacky*/
-#define ATTACK_OFFSET_V   0.0f
-/**Scalar for width of a box attack, hacky*/
-#define ATTACK_W        2.0f
-/**Scalar for height of a box attack, hacky*/
-#define ATTACK_H        0.5f
-/** The speed of the bullet after firing */
-#define BULLET_SPEED   20.0f
-/** The number of frame to wait before reinitializing the game */
-#define EXIT_COUNT      240
-
-
-#pragma mark -
-#pragma mark Asset Constants
-/** The key for the earth texture in the asset manager */
-#define EARTH_TEXTURE   "earth"
-/** The key for the win door texture in the asset manager */
-#define GOAL_TEXTURE    "goal"
-/** The key for the win door texture in the asset manager */
-#define BULLET_TEXTURE  "bullet"
-/** The keys for the attack texture in asset manager*/
-#define ATTACK_TEXTURE_R  "attack_r"
-#define ATTACK_TEXTURE_L  "attack_l"
-/** The name of a bullet (for object identification) */
-#define ATTACK_NAME     "attack"
-/** The name of a wall (for object identification) */
-#define WALL_NAME       "wall"
-/** The name of an enemy for object id */
-#define ENEMY_NAME	    "enemy"
-/** The name of a platform (for object identification) */
-#define PLATFORM_NAME   "platform"
-
-#define BACKGROUND_NAME "background"
-/** The font for victory/failure messages */
-#define MESSAGE_FONT    "retro"
-
-#define SMALL_MSG "retrosmall"  
-/** The message for winning the game */
-#define WIN_MESSAGE     "VICTORY!"
-/** The color of the win message */
-#define WIN_COLOR       Color4::YELLOW
-/** The message for losing the game */
-#define LOSE_MESSAGE    "FAILURE!"
-/** The color of the lose message */
-#define LOSE_COLOR      Color4::RED
-/** The key the basic game music */
-#define GAME_MUSIC      "game"
-/** The key the victory game music */
-#define WIN_MUSIC       "win"
-/** The key the failure game music */
-#define LOSE_MUSIC      "lose"
-/** The sound effect for firing a bullet */
-#define PEW_EFFECT      "pew"
-/** The sound effect for a bullet collision */
-#define POP_EFFECT      "pop"
-/** The sound effect for jumping */
-#define JUMP_EFFECT     "jump"
-/** The volume for the music */
-#define MUSIC_VOLUME    0.7f
-/** The volume for sound effects */
-#define EFFECT_VOLUME   0.8f
-/** The image for the left dpad/joystick */
-#define LEFT_IMAGE      "dpad_left"
-/** The image for the right dpad/joystick */
-#define RIGHT_IMAGE     "dpad_right"
-
-/** Color to outline the physics nodes */
-#define DEBUG_COLOR     Color4::YELLOW
-/** Opacity of the physics outlines */
-#define DEBUG_OPACITY   192
 
 
 #pragma mark -
@@ -251,8 +94,8 @@ GameScene::GameScene() : Scene2(),
  *
  * @return true if the controller is initialized properly, false otherwise.
  */
-bool GameScene::init(const std::shared_ptr<AssetManager>& assets) {
-    return init(assets,Rect(0,0,DEFAULT_WIDTH,DEFAULT_HEIGHT),Vec2(0,DEFAULT_GRAVITY));
+bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
+    return init(assets,Rect(0,0,DEFAULT_WIDTH,DEFAULT_HEIGHT),Vec2(0,DEFAULT_GRAVITY), input);
 }
 
 /**
@@ -271,8 +114,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets) {
  *
  * @return  true if the controller is initialized properly, false otherwise.
  */
-bool GameScene::init(const std::shared_ptr<AssetManager>& assets, const Rect& rect) {
-    return init(assets,rect,Vec2(0,DEFAULT_GRAVITY));
+bool GameScene::init(const std::shared_ptr<AssetManager>& assets, const Rect& rect, std::shared_ptr<PlatformInput> input) {
+    return init(assets,rect,Vec2(0,DEFAULT_GRAVITY), input);
 }
 
 /**
@@ -293,7 +136,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets, const Rect& re
  * @return  true if the controller is initialized properly, false otherwise.
  */
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets, 
-                     const Rect& rect, const Vec2& gravity) {
+                     const Rect& rect, const Vec2& gravity, std::shared_ptr<PlatformInput> input) {
     // Initialize the scene to a locked height (iPhone X is narrow, but wide)
     Size dimen = computeActiveSize();
     SDL_ShowCursor(SDL_DISABLE);
@@ -306,8 +149,11 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     // Start up the input handler
     _assets = assets;
-    _input = std::make_shared<PlatformInput>();
+
+    _input = input;
     _input->init(getBounds());
+    /*_input = std::make_shared<PlatformInput>();
+    _input->init(getBounds());*/
     
     // Create the world and attach the listeners.
     _world = physics2::ObstacleWorld::alloc(rect,gravity);
@@ -359,37 +205,80 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _rightnode->setScale(0.35f);
     _rightnode->setVisible(false);
 
-    _gesturehud = scene2::Label::allocWithText("Gestures, Similarity: t tosdgodfho figjgoj ghkohko ", _assets->get<Font>(SMALL_MSG));
-    _gesturehud->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
-    _gesturehud->setScale(0.7f);
-    CULog("%f", _gesturehud->getContentWidth());
-    CULog("%f", _gesturehud->getWidth());
-    _gesturehud->setPosition(0,50);
-    _gesturehud->setForeground(LOSE_COLOR);
-    _gesturehud->setVisible(true);
 
 
     _slowed = false;
     _attacks = std::vector<std::shared_ptr<Attack>>();
 
-   // _dollarnode = std::make_shared<DollarScene>();
     
+    _dollarnode = std::make_shared<DollarScene>();
+    //_dollarnode->init(_assets, _input, cugl::Rect(Vec2::ZERO, computeActiveSize()/2), "cooktime");
+    _dollarnode->init(_assets, _input, "cooktime");
+    _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_BOTTOM_LEFT);
+    _dollarnode->setVisible(false);
+
+
     addChild(_worldnode);
     addChild(_debugnode);
-    addChild(_winnode);
-    addChild(_losenode);
     addChild(_leftnode);
     addChild(_rightnode);
-    addChild(_gesturehud);
-//    addChild(_dollarnode);
-  //  _dollarnode->init(_assets, _input);
-    //_dollarnode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
-  //  _dollarnode->setPosition(getSize().getIWidth() / 2.0f, getSize().getIHeight() / 2.0f);
-    //_dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
-  //  _dollarnode->setVisible(false);
+
+    addChild(_dollarnode);
 
 
-    populate();
+   /* addChild(healthBarBackground);
+    addChild(healthBarForeground);*/
+
+#pragma mark: UI
+
+    // ui stuff
+    _uiScene = cugl::Scene2::alloc(dimen);
+    _uiScene->init(dimen);
+    _uiScene->setActive(true);
+
+
+
+    auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
+    auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
+    _healthBarForeground = healthBarForeground;
+    _healthBarBackground = healthBarBackground;
+
+    _healthBarForeground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
+    _healthBarForeground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarBackground->getHeight());
+    _healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
+    _healthBarBackground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarForeground->getHeight());
+
+    _buffLabel = scene2::Label::allocWithText("NO BUFF", _assets->get<Font>(MESSAGE_FONT));
+    _buffLabel->setAnchor(Vec2::ANCHOR_CENTER);
+    _buffLabel->setPosition(dimen.width - _buffLabel->getWidth()/2, dimen.height - _buffLabel->getHeight());
+    
+
+    _uiScene->addChild(_healthBarBackground);
+    _uiScene->addChild(_healthBarForeground);
+    _uiScene->addChild(_buffLabel);
+
+    _uiScene->addChild(_winnode);
+    _uiScene->addChild(_losenode);
+# pragma mark: Background
+
+    _bgScene = cugl::Scene2::alloc(dimen);
+    _bgScene->init(dimen);
+    _bgScene->setActive(true);
+
+    cugl::Rect rectB = cugl::Rect(Vec2::ZERO, computeActiveSize());
+
+    _background = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>("cutting_station"), rectB);
+
+    _bgScene->addChild(_background);
+    
+
+    _target = std::make_shared<EnemyModel>();
+    currentLevel = level1;
+    loadLevel(currentLevel);
+
+    //App class will set active true
+    setActive(false);
+    transition(false);
     _active = true;
     _complete = false;
     setDebug(false);
@@ -431,21 +320,22 @@ void GameScene::dispose() {
  * This method disposes of the world and creates a new one.
  */
 void GameScene::reset() {
-    _world->clear();
     _worldnode->removeAllChildren();
+    _world->clear();
     _debugnode->removeAllChildren();
     _avatar = nullptr;
     _goalDoor = nullptr;
     _background = nullptr;
-    //I CHANGED THIS
-    // _spinner = nullptr;
-    // _ropebridge = nullptr;
+    _sensorFixtures.clear();
 
     _enemies.clear();
+    _vulnerables.clear();
+    _Bull = nullptr;
 
     setFailure(false);
     setComplete(false);
-    populate();
+
+    loadLevel(currentLevel);
 }
 
 /**
@@ -459,192 +349,11 @@ void GameScene::reset() {
  * This method is really, really long.  In practice, you would replace this
  * with your serialization loader, which would process a level file.
  */
-void GameScene::populate() {
 
-# pragma mark: Background
-    Vec2 background_pos = BACKGROUND_POS;
-    std::shared_ptr<Texture> image = _assets->get<Texture>("background-1");
-    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
-    Size background_size(image->getSize().width / _scale, image->getSize().height / _scale);
-    _background = physics2::BoxObstacle::alloc(background_pos, background_size);
-    _background->setName(BACKGROUND_NAME);
-    _background->setBodyType(b2_staticBody);
-    _background->setDensity(0.0f);
-    _background->setFriction(0.0f);
-    _background->setRestitution(0.0f);
-    _background->setEnabled(false);
-    _background->setSensor(true);
-    addObstacle(_background, sprite);
-    
-    
-#pragma mark : Goal door
-	image = _assets->get<Texture>(GOAL_TEXTURE);
-    sprite = scene2::PolygonNode::allocWithTexture(image);
-	std::shared_ptr<scene2::WireNode> draw;
-
-	// Create obstacle
-	Vec2 goalPos = GOAL_POS;
-	Size goalSize(image->getSize().width/_scale,
-	image->getSize().height/_scale);
-	_goalDoor = physics2::BoxObstacle::alloc(goalPos,goalSize);
-	
-	// Set the physics attributes
-	_goalDoor->setBodyType(b2_staticBody);
-	_goalDoor->setDensity(0.0f);
-	_goalDoor->setFriction(0.0f);
-	_goalDoor->setRestitution(0.0f);
-	_goalDoor->setSensor(true);
-    // _goalDoor->setEnabled
-
-	// Add the scene graph nodes to this object
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_goalDoor->setDebugColor(DEBUG_COLOR);
-	addObstacle(_goalDoor, sprite);
-
-#pragma mark : Walls
-	// All walls and platforms share the same texture
-	image  = _assets->get<Texture>(EARTH_TEXTURE);
-	std::string wname = "wall";
-	for (int ii = 0; ii < WALL_COUNT; ii++) {
-		std::shared_ptr<physics2::PolygonObstacle> wallobj;
-
-		Poly2 wall(reinterpret_cast<Vec2*>(WALL[ii]),WALL_VERTS/2);
-		// Call this on a polygon to get a solid shape
-		EarclipTriangulator triangulator;
-		triangulator.set(wall.vertices);
-		triangulator.calculate();
-		wall.setIndices(triangulator.getTriangulation());
-        triangulator.clear();
-
-		wallobj = physics2::PolygonObstacle::allocWithAnchor(wall,Vec2::ANCHOR_CENTER);
-		// You cannot add constant "".  Must stringify
-		wallobj->setName(std::string(WALL_NAME)+cugl::strtool::to_string(ii));
-		wallobj->setName(wname);
-
-		// Set the physics attributes
-		wallobj->setBodyType(b2_staticBody);
-		wallobj->setDensity(BASIC_DENSITY);
-		wallobj->setFriction(BASIC_FRICTION);
-		wallobj->setRestitution(BASIC_RESTITUTION);
-		wallobj->setDebugColor(DEBUG_COLOR);
-
-		wall *= _scale;
-		sprite = scene2::PolygonNode::allocWithTexture(image,wall);
-		addObstacle(wallobj,sprite,1);  // All walls share the same texture
-	}
-
-#pragma mark : Platforms
-	for (int ii = 0; ii < PLATFORM_COUNT; ii++) {
-		std::shared_ptr<physics2::PolygonObstacle> platobj;
-		Poly2 platform(reinterpret_cast<Vec2*>(PLATFORMS[ii]),sizeof(PLATFORMS[ii]) / sizeof(float) / 2);
-
-		EarclipTriangulator triangulator;
-		triangulator.set(platform.vertices);
-		triangulator.calculate();
-		platform.setIndices(triangulator.getTriangulation());
-        triangulator.clear();
-
-        platobj = physics2::PolygonObstacle::allocWithAnchor(platform,Vec2::ANCHOR_CENTER);
-		// You cannot add constant "".  Must stringify
-		platobj->setName(std::string(PLATFORM_NAME)+cugl::strtool::to_string(ii));
-
-		// Set the physics attributes
-		platobj->setBodyType(b2_staticBody);
-		platobj->setDensity(BASIC_DENSITY);
-		platobj->setFriction(BASIC_FRICTION);
-		platobj->setRestitution(BASIC_RESTITUTION);
-		platobj->setDebugColor(DEBUG_COLOR);
-
-		platform *= _scale;
-		sprite = scene2::PolygonNode::allocWithTexture(image,platform);
-		addObstacle(platobj,sprite,1);
-	}
-
-// I CHANGED THIS
-
-//#pragma mark : Spinner
-//	Vec2 spinPos = SPIN_POS;
-//    image = _assets->get<Texture>(SPINNER_TEXTURE);
-//	_spinner = Spinner::alloc(spinPos,image->getSize()/_scale,_scale);
-//    _spinner->setTexture(image);
-//	std::shared_ptr<scene2::SceneNode> node = scene2::SceneNode::alloc();
-//    
-//    // With refactor, must be added manually
-//    // Add the node to the world before calling setSceneNode,
-//    _worldnode->addChild(node);
-//    _spinner->setSceneNode(node);
-//
-//    _spinner->setDrawScale(_scale);
-//    _spinner->setDebugColor(DEBUG_COLOR);
-//    _spinner->setDebugScene(_debugnode);
-//    _spinner->activate(_world);
-
-//#pragma mark : Rope Bridge
-//	Vec2 bridgeStart = BRIDGE_POS;
-//	Vec2 bridgeEnd   = bridgeStart;
-//	bridgeEnd.x += BRIDGE_WIDTH;
-//    image = _assets->get<Texture>(BRIDGE_TEXTURE);
-//    
-//	_ropebridge = RopeBridge::alloc(bridgeStart,bridgeEnd,image->getSize()/_scale,_scale);
-//    _ropebridge->setTexture(image);
-//	node = scene2::SceneNode::alloc();
-//
-//    // With refactor, must be added manually
-//    // Add the node to the world before calling setSceneNode,
-//    _worldnode->addChild(node);
-//    _ropebridge->setSceneNode(node);
-//    
-//    _ropebridge->setDrawScale(_scale);
-//    _ropebridge->setDebugColor(DEBUG_COLOR);
-//    _ropebridge->setDebugScene(_debugnode);
-//    _ropebridge->activate(_world);
-
-#pragma mark : Dude
-	Vec2 dudePos = DUDE_POS;
-	// node = scene2::SceneNode::alloc();
-    image = _assets->get<Texture>(DUDE_TEXTURE);
-	_avatar = DudeModel::alloc(dudePos,image->getSize()/(2+_scale),_scale);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_avatar->setSceneNode(sprite);
-	_avatar->setDebugColor(DEBUG_COLOR);
-	addObstacle(_avatar,sprite); // Put this at the very front
-
-	// Play the background music on a loop.
-	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
-    AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
+//void GameScene::populate() {
 
 
-    Vec2 shrimp_pos = SHRIMP_POS;
-    image = _assets->get<Texture>(SHRIMP_TEXTURE);
-    std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
-    sprite = scene2::PolygonNode::allocWithTexture(image);
-    _enemy->setSceneNode(sprite);
-    _enemy->setName(ENEMY_NAME);
-    _enemy->setDebugColor(DEBUG_COLOR);
-    addObstacle(_enemy, sprite);
-    _enemies.push_back(_enemy);
-
-    Vec2 rice_pos = RICE_POS;
-    image = _assets->get<Texture>(RICE_TEXTURE);
-    _enemy = EnemyModel::alloc(rice_pos, image->getSize() / _scale, _scale, EnemyType::rice);
-    sprite = scene2::PolygonNode::allocWithTexture(image);
-    _enemy->setSceneNode(sprite);
-    _enemy->setName(ENEMY_NAME);
-    _enemy->setDebugColor(DEBUG_COLOR);
-    addObstacle(_enemy, sprite);
-    _enemies.push_back(_enemy);
-
-    Vec2 egg_pos = EGG_POS;
-    image = _assets->get<Texture>(EGG_TEXTURE);
-    _enemy = EnemyModel::alloc(egg_pos, image->getSize() / (_scale), _scale, EnemyType::egg);
-    sprite = scene2::PolygonNode::allocWithTexture(image);
-    _enemy->setSceneNode(sprite);
-    _enemy->setName(ENEMY_NAME);
-    _enemy->setDebugColor(DEBUG_COLOR);
-    addObstacle(_enemy, sprite);
-    _enemies.push_back(_enemy);
-
-}
+//}
 
 /**
  * Adds the physics object to the physics world and loosely couples it to the scene graph
@@ -662,6 +371,11 @@ void GameScene::populate() {
 void GameScene::addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj,
                             const std::shared_ptr<cugl::scene2::SceneNode>& node,
                             bool useObjPosition) {
+    // Don't add out of bounds obstacles
+    if (!(_world->inBounds(obj.get()))) {
+        return;
+    }
+
     _world->addObstacle(obj);
     obj->setDebugScene(_debugnode);
     
@@ -705,6 +419,7 @@ void GameScene::addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj
  * @param dt    The amount of time (in seconds) since the last frame
  */
 void GameScene::preUpdate(float dt) {
+    Timestamp now = Timestamp();
     _input->update(dt);
 
     // Process the toggled key commands
@@ -715,49 +430,187 @@ void GameScene::preUpdate(float dt) {
         Application::get()->quit();
     }
 
-    //_slowed = _input->didSlow();
-    if (_input->didSlow()) {
-        _slowed = !_slowed;
+    if (_input->didTransition()) {
+        transition(true);
+        CULog("TTTTTTTTTTT");
+        return;
     }
-    if (!_slowed) {
-    //    _dollarnode->setVisible(false);
+
+    //TODO handle vulnerables smarter
+    if (_input->didSlow()) {
+        if (_slowed) {
+            //_slowed = !_slowed;
+            //_target = nullptr;
+        }
+        //activate cooktime
+        else {
+            CULog("Activate!");
+            float minDist = FLT_MAX;
+            for (auto& e : _enemies) {
+                if (e->isRemoved() || !(e->isVulnerable())) {
+                    continue;
+                }
+                if ((e->getPosition() - _avatar->getPosition()).length() < minDist) {
+                    _target = e;
+                    minDist = (e->getPosition() - _avatar->getPosition()).length();
+                }
+            }
+            if (minDist < COOKTIME_MAX_DIST) {
+                _slowed = true;
+                _dollarnode->setTargetGestures(std::vector<std::string>{_target->getGestureString()});
+            }
+
+        }
+
+    }
+
+    _dollarnode->update(dt);
+
+    if (!_slowed && (_dollarnode->shouldIDisappear())) {
+        _dollarnode->setVisible(false);
+        if (_dollarnode->isFocus()) {
+            _dollarnode->setFocus(false);
+        }
 
         _avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
         _avatar->setJumping(_input->didJump());
         _avatar->setDash(_input->didDash());
         _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
-
         if (_avatar->isJumping() && _avatar->isGrounded()) {
             std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
             AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
         }
     }
     else {
+        _dollarnode->setVisible(true);
+        if (!(_dollarnode->isFocus())) {
+            _dollarnode->setFocus(true);
+        }
 
         _avatar->setMovement(0);
-        _avatar->setJumping(_input->didJump());
-        _avatar->setDash(_input->didDash());
+        //_avatar->setJumping(_input->didJump());
+        _avatar->setJumping(false);
+        //_avatar->setDash(_input->didDash());
+        _avatar->setDash(false);
         _avatar->applyForce(0, 0);
+
+        //cooktime handling. Assume that _target not null, if it is null then continue
+        if (!_dollarnode->isPending()) {
+            if (_target != nullptr) {
+                _slowed = false;
+                std::string message = "";
+                if (_dollarnode->getLastResult() > 0) {
+                    CULog("NICE!!!!!!!!!!!!!!");
+                    _target->takeDamage(_avatar->getAttack(), 0);
+                    //DEFAULT: APPLY DURATION BUFF 
+                    _avatar->applyBuff(EnemyModel::enemyToBuff(_target->getType()), modifier::duration);
+                    //set buff label
+                    _buffLabel->setText(DudeModel::getStrForBuff(EnemyModel::enemyToBuff(_target->getType())));
+                    _buffLabel->setVisible(true);
+                }
+                else {
+                    CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
+                    
+                }
+                message = _feedbackMessages[_dollarnode->getLastResult()];
+
+
+                popup(message, cugl::Vec2(_target->getPosition().x * _scale, _target->getPosition().y * 1.1 * _scale));
+                
+                _target = nullptr;
+            }
+            else {
+
+            }
+        }
     }
 
+    if (_avatar->getDuration() == 0) {
+		_buffLabel->setVisible(false);
+    }
+
+    //iterate over popups to update
+    for (auto& tpl : _popups) {
+        std::shared_ptr<scene2::Label> popup = std::get<0>(tpl);
+        Timestamp time = std::get<1>(tpl);
+
+        //handle removes. TODO!!!!!!
+        if (now.ellapsedMillis(time) / 1000.0f >= FEEDBACK_DURATION) {
+            popup->setText("");
+            popup->setVisible(false);
+        } 
+        //handle movement
+        else {
+            popup->setPositionY(popup->getPositionY() - 1.0f);
+        }
+
+	}
+
+
+    Vec2 avatarPos = _avatar->getPosition();
     for (auto& enemy : _enemies) {
         if (enemy != nullptr && !enemy->isRemoved()) {
-            Vec2 avatarPos = _avatar->getPosition();
             Vec2 enemyPos = enemy->getPosition();
             float distance = avatarPos.distance(enemyPos);
 
             if (distance < CHASE_THRESHOLD) {
                 enemy->setIsChasing(true);
-                int direction = (avatarPos.x > enemyPos.x) ? 1 : -1;
-                enemy->setDirection(direction);
+                if (enemy->getnextchangetime() < 0) {
+                    int direction = (avatarPos.x > enemyPos.x) ? 1 : -1;
+                    enemy->setDirection(direction);
+                    enemy->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+                }
+                if (enemy->getattacktime()) {
+                    enemy->createAttack(*this);
+                    enemy->setattacktime(false);
+                    enemy->setshooted(false);
+                }
             }
             else if (distance >= CHASE_THRESHOLD && enemy->isChasing()) {
                 enemy->setIsChasing(false);
             }
+            if (enemy->getHealth() <= 0) {
+                removeEnemy(enemy.get());
+            }
             enemy->update(dt);
         }
     }
+    if (_Bull != nullptr && !_Bull->isRemoved()) {
+        if (_Bull->getHealth() <= 0) {
+            _worldnode->removeChild(_Bull->getSceneNode());
+            _Bull->setDebugScene(nullptr);
+            _Bull->markRemoved(true);
+        }
+        if (_Bull->getangrytime() >0&& _Bull->getknockbacktime()<=0) {
+            if (int(_Bull->getangrytime() * 10) % 2 < 1) {
+                _Bull->createAttack(*this);
+            }
+        }
+        if (_Bull->getshake() && _Bull->getknockbacktime() <= 0) {
+			_Bull->setshake(false);
+			_Bull->createAttack2(*this);
+		}
+        if (_Bull->getshoot()) {
+            _Bull->setshoot(false);
+            _Bull->createAttack3(*this);
+        }
+        if (!_Bull->isChasing()) {
+            Vec2 BullPos = _Bull->getPosition();
+            float distance = avatarPos.distance(BullPos);
+            if (_Bull->getnextchangetime() < 0) {
+                int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
+                _Bull->setDirection(direction);
+                _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+            }
+        }
+        _Bull->update(dt);
+    }
+
+    //update dollar node
+    //_dollarnode->update(dt);
 }
+
+
 
 /**
  * The method called to provide a deterministic application loop.
@@ -787,8 +640,41 @@ void GameScene::preUpdate(float dt) {
  */
 void GameScene::fixedUpdate(float step) {
     // Turn the physics engine crank.
+    if (_healthBarForeground != nullptr) {
+        healthPercentage = _avatar->getHealth() / 100;
+        float totalWidth = _healthBarForeground->getWidth();
+        float height = _healthBarForeground->getHeight();
+        float clipWidth = totalWidth * healthPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _healthBarForeground->setScissor(scissor);
+    }
     if (_slowed) { 
-        step = step / 5;
+        step = step / 15;
+    }
+    //camera logic
+    if (CAMERA_FOLLOWS_PLAYER) {
+        cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
+        cugl::Vec3 pos = _camera->getPosition();
+
+        Rect viewport = _camera->getViewport();
+        Vec2 worldPosition = Vec2(pos.x - viewport.size.width / 2 + 140,
+            pos.y + viewport.size.height / 2 - 50);
+
+
+        //magic number 0.2 are for smoothness
+        //float smooth = std::min(0.2f, (target - pos).length());
+        float smooth = 0.2;
+        pos.smooth(target, step, smooth);
+        //cugl::Vec3 pos = _avatar->getPosition() * _scale;
+        _camera->setPosition(pos);
+		_camera->update();
+        _dollarnode->setPosition(pos);
+    }
+    if (_avatar->getHealth()<=0) {
+        setFailure(true);
+	}
+    if (_Bull!=nullptr && _Bull->getHealth() <= 0) {
+        setComplete(true);
     }
     _world->update(step);
 }
@@ -834,7 +720,6 @@ void GameScene::postUpdate(float remain) {
         createAttack();
     }
 
-    _gesturehud->setText(getGestureText(_input->getGestureString(), _input->getGestureSim()));
 
 
     //iterate through physics objects and delete any timed-out attacks
@@ -854,57 +739,36 @@ void GameScene::postUpdate(float remain) {
         setFailure(true);
     }
 
-    // Reset the game if we win or lose.
-    if (_countdown > 0) {
+     //Reset the game if we win or lose.
+   if (_countdown > 0) {
         _countdown--;
     } else if (_countdown == 0) {
-        if (_failed == false && isLevel1) {
-            isLevel1 = false;
-            float x = 0.0f;
-            float y = 0.0f;
-            for (int i = 0; i < 8; ++i) {
-                PLATFORMS[i][0] = 1.0f + x;
-                PLATFORMS[i][1] = 4.0f + y;
-                PLATFORMS[i][2] = 1.0f + x;
-                PLATFORMS[i][3] = 2.5f + y;
-                PLATFORMS[i][4] = 4.5f + x;
-                PLATFORMS[i][5] = 2.5f + y;
-                PLATFORMS[i][6] = 4.5f + x;
-                PLATFORMS[i][7] = 4.0f + y;
-                x = x + 3.5f;
-                y = y + 1.5f;
+        if (_failed == false) {
+           
+            if (currentLevel == level1) {
+                loadLevel(level2);
+                reset();
             }
-            PLATFORMS[8][0] = 29.0f;
-            PLATFORMS[8][1] = 14.5f;
-            PLATFORMS[8][2] = 29.0f;
-            PLATFORMS[8][3] = 13.0f;
-            PLATFORMS[8][4] = 31.0f;
-            PLATFORMS[8][5] = 13.0f;
-            PLATFORMS[8][6] = 31.0f;
-            PLATFORMS[8][7] = 14.5f;
-            PLATFORMS[9][0] = 0.0f;
-            PLATFORMS[9][1] = 1.0f;
-            PLATFORMS[9][2] = 0.0f;
-            PLATFORMS[9][3] = 0.0f;
-            PLATFORMS[9][4] = 1.0f;
-            PLATFORMS[9][5] = 0.0f;
-            PLATFORMS[9][6] = 1.0f;
-            PLATFORMS[9][7] = 1.0f;
-            GOAL_POS[0] = 29.0f;
-            GOAL_POS[1] = 16.0f;
-            SHRIMP_POS[0] = 14.0f,
-            SHRIMP_POS[1] = 16.0f;
-            RICE_POS[0] = 21.0f;
-            RICE_POS[1] = 14.0f;
-            EGG_POS[0] = 10.0f;
-            EGG_POS[1] = 12.0f;
+            else {
+                loadLevel(level1);
+                reset();
+            }
         }
-        else if(_failed == false && !isLevel1) {
-            //close game somehow
+        else if(_failed) {
+            reset();
         }
-        reset();
     }
 }
+
+void GameScene::renderBG(std::shared_ptr<cugl::SpriteBatch> batch) {
+    _bgScene->render(batch);
+}
+
+void GameScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
+    _uiScene->render(batch);
+}
+
+
 
 
 /**
@@ -965,23 +829,8 @@ void GameScene::createAttack() {
     }
 
 
-    std::vector<Vec2> verts = std::vector<Vec2>();
-
-    //JOHN: CAN"T GET COLLISION TO WORK WITH POLYGON OBSTACLES. 
-    // FOR NOW AM JUST GONNA STICK WITH BOX OBSTACLES BUT NEEDS TO BE ADDRESSED
-
-    /*verts.push_back(cugl::Vec2(0, 0));
-    verts.push_back(cugl::Vec2(50, 0));
-    verts.push_back(cugl::Vec2(50, 50));
-    verts.push_back(cugl::Vec2(0, 50));*/
-    /*verts.push_back(cugl::Vec2(0, 50));
-    verts.push_back(cugl::Vec2(50, 50));
-    verts.push_back(cugl::Vec2(50, 0));
-    verts.push_back(cugl::Vec2(0, 0));*/
-    //cugl::Poly2 attack_poly = cugl::Poly2(verts);
-	//std::shared_ptr<Attack> attack = Attack::alloc(attack_poly, pos);
 	std::shared_ptr<Attack> attack = Attack::alloc(pos, 
-        cugl::Size(ATTACK_W * image->getSize().width / _scale, 
+        cugl::Size(0.6*ATTACK_W * image->getSize().width / _scale, 
         ATTACK_H * image->getSize().height / _scale));
 	attack->setName(ATTACK_NAME);
     attack->setDensity(HEAVY_DENSITY);
@@ -989,7 +838,8 @@ void GameScene::createAttack() {
     attack->setGravityScale(0);
     attack->setDebugColor(DEBUG_COLOR);
     attack->setDrawScale(_scale);
-    
+
+
 
 	std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
     attack->setSceneNode(sprite);
@@ -1009,7 +859,8 @@ void GameScene::createAttack() {
  *
  * @param  bullet   the bullet to remove
  */
-void GameScene::removeAttack(Attack* attack) {
+template<typename T>
+void GameScene::removeAttack(T* attack) {
   // do not attempt to remove a bullet that has already been removed
 	if (attack->isRemoved()) {
 		return;
@@ -1061,15 +912,7 @@ void GameScene::beginContact(b2Contact* contact) {
         _avatar->setVX(0);
     }
 
-    // Test bullet collision with enemy
-    if (bd1->getName() == ATTACK_NAME && bd2->getName() == ENEMY_NAME) {
-        removeAttack((Attack*)bd1);
-        removeEnemy((EnemyModel*)bd2);
-    }
-    else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
-        removeAttack((Attack*)bd2);
-        removeEnemy((EnemyModel*)bd1);
-    }
+
 
     // See if we have landed on the ground.
     if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
@@ -1079,46 +922,99 @@ void GameScene::beginContact(b2Contact* contact) {
         _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
     }
 
-    //See if the player collided with an enemy.
-
-    if ((_avatar.get() == bd1 && bd2->getName() == ENEMY_NAME) ||
-        (_avatar.get() == bd2 && bd1->getName() == ENEMY_NAME)) {
-
-        setFailure(true);
-    }
-
     for (auto& _enemy : _enemies) {
         if (!_enemy->isRemoved()) {
             if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
                 (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
-                _enemy->setGrounded(true);
+                    _enemy->setGrounded(true);
             }
-
-            // if (bd1 == _avatar.get() && bd2 == _enemy.get()
-            //     || (bd2 == _avatar.get() && bd1 == _enemy.get())) {
-            //     _enemy->setDebugScene(nullptr);
-            //     _worldnode->removeChild(_enemy->getSceneNode());
-            //     _enemy->markRemoved(true);
-            ////     _enemy->removeFromGame();
-            // }
-
-             ////temp code for attack collision
-             //if (bd1->getName() == ATTACK_NAME && bd2 == _enemy.get()
-             //    || (bd2->getName() == ATTACK_NAME && bd1 == _enemy.get())) {
-             //    _enemy->setDebugScene(nullptr);
-             //    _worldnode->removeChild(_enemy->getSceneNode());
-             //    _enemy->markRemoved(true);
-             //    //     _enemy->removeFromGame();
-             //}
-
 
         }
     }
+    if (_Bull != nullptr && _Bull->isChasing() && bd1 == _Bull.get() && bd2->getName() == WALL_NAME) {
+        Vec2 wallPos = ((physics2::PolygonObstacle*)bd2)->getPosition();
+        Vec2 bullPos = _Bull->getPosition();
+        int direction = (wallPos.x > bullPos.x) ? 1 : -1;
+        _Bull->setIsChasing(false);
+        _Bull->takeDamage(5, direction, true);
+        popup(std::to_string(5), bullPos * _scale);
+    }
+    else if (_Bull != nullptr && _Bull->isChasing() && bd1->getName() == WALL_NAME && bd2 == _Bull.get()) {
+        Vec2 wallPos = ((physics2::PolygonObstacle*)bd1)->getPosition();
+        Vec2 bullPos = _Bull->getPosition();
+        int direction = (wallPos.x > bullPos.x) ? 1 : -1;
+        _Bull->setIsChasing(false);
+        _Bull->takeDamage(5, direction, true);
+        popup(std::to_string(5), bullPos * _scale);
+    }
+    if (_Bull != nullptr && bd1 == _Bull.get() && bd2 == _avatar.get()) {
+        Vec2 avatarPos = _avatar->getPosition();
+        Vec2 bullPos = _Bull->getPosition();
+        int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
+        _avatar->takeDamage(34, direction);
+    }
+    else if (_Bull != nullptr && bd1 == _avatar.get() && bd2 == _Bull.get()) {
+        Vec2 avatarPos = _avatar->getPosition();
+        Vec2 bullPos = _Bull->getPosition();
+        int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
+        _avatar->takeDamage(34, direction);
+    }
 
+    if (_Bull != nullptr && bd1->getName() == ATTACK_NAME && bd2->getName() == BULL_TEXTURE && _Bull->getknockbacktime() <= 0) {
+        Vec2 enemyPos = _Bull->getPosition();
+        Vec2 attackerPos = ((Attack*)bd1)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        if (_Bull->getHealth() == 66.0f) {
+            _Bull->takeDamage(_avatar->getAttack()/2, direction, true);
+            _Bull->setangrytime(4);
+        }else {
+            _Bull->takeDamage(_avatar->getAttack()/2, direction, false);
+        }
+        popup(std::to_string((int)_avatar->getAttack() / 2), enemyPos * _scale);
+        CULog("Bull Health: %f", _Bull->getHealth());
+    }else if (_Bull != nullptr && bd2->getName() == ATTACK_NAME && bd1->getName() == BULL_TEXTURE && _Bull->getknockbacktime()<=0) {
+        Vec2 enemyPos = _Bull->getPosition();
+        Vec2 attackerPos = ((Attack*)bd2)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        if (_Bull->getHealth() == 66.0f) {
+            _Bull->takeDamage(_avatar->getAttack() / 2, direction, true);
+            _Bull->setangrytime(4);
+        }else {
+            _Bull->takeDamage(_avatar->getAttack() / 2, direction, false);
+        }
+        popup(std::to_string((int)_avatar->getAttack() / 2), enemyPos * _scale);
+        CULog("Bull Health: %f", _Bull->getHealth());
+    }
+    if (bd1->getName() == "shake" && bd2 == _avatar.get()) {
+        Vec2 enemyPos = ((Attack*)bd1)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x < enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+    }
+    else if (bd2->getName() == "shake" && bd1 == _avatar.get()) {
+        Vec2 enemyPos = ((Attack*)bd2)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x < enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+    }
+    if (bd1->getName() == "enemy_attack" && bd2 == _avatar.get()) {
+        Vec2 enemyPos = ((EnemyAttack*)bd1)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+        removeAttack((EnemyAttack*)bd1);
+    }
+    else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
+        Vec2 enemyPos = ((EnemyAttack*)bd2)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+        removeAttack((EnemyAttack*)bd2);
+    }
 
     // If we hit the "win" door, we are done
-    if ((bd1 == _avatar.get() && bd2 == _goalDoor.get()) ||
-        (bd1 == _goalDoor.get() && bd2 == _avatar.get())) {
+    if (!_failed && ((bd1 == _avatar.get() && bd2 == _goalDoor.get()) ||
+        (bd1 == _goalDoor.get() && bd2 == _avatar.get()))) {
         setComplete(true);
     }
 }
@@ -1144,6 +1040,7 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
  * is to determine when the characer is NOT on the ground.  This is how we prevent
  * double jumping.
  */
+
 void GameScene::endContact(b2Contact* contact) {
     b2Fixture* fix1 = contact->GetFixtureA();
     b2Fixture* fix2 = contact->GetFixtureB();
@@ -1170,10 +1067,52 @@ void GameScene::endContact(b2Contact* contact) {
     bool p3 = (_avatar->getSensorName() == fd1);
     bool p4 = (bd2->getName() != WALL_NAME);
     bool p5 = _avatar->contactingWall();
-    CULog("5 %d", p5);
     if (!(p1 || p2 || p3) && p4 && p5) {
         _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
         _avatar->setContactingWall(false);
+    }
+    // Test bullet collision with enemy
+    if (bd1->getName() == ATTACK_NAME && bd2->getName() == ENEMY_NAME) {
+        Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
+        Vec2 attackerPos = ((Attack*)bd1)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        int damage = ((EnemyModel*)bd2)->getHealth();
+        ((EnemyModel*)bd2)->takeDamage(_avatar->getAttack(), direction);
+        damage -= ((EnemyModel*)bd2)->getHealth();
+        if (damage > 0) popup(std::to_string((int) _avatar->getAttack()), enemyPos * _scale);
+        if (((EnemyModel*)bd2)->getHealth() <= 50){
+            ((EnemyModel*)bd2)->setVulnerable(true);
+        }
+    }else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
+        Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
+        Vec2 attackerPos = ((Attack*)bd2)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        int damage = ((EnemyModel*)bd1)->getHealth();
+        ((EnemyModel*)bd1)->takeDamage(_avatar->getAttack(), direction);
+        damage -= ((EnemyModel*)bd1)->getHealth();
+        if (damage > 0) popup(std::to_string((int)_avatar->getAttack()), enemyPos * _scale);
+        if (((EnemyModel*)bd1)->getHealth() <= 50) {
+            ((EnemyModel*)bd1)->setVulnerable(true);
+        }
+    }
+
+
+
+
+
+
+
+    if (bd1->getName() == ENEMY_NAME && bd2 == _avatar.get()) {
+        Vec2 enemyPos = ((DudeModel*)bd2)->getPosition();
+        Vec2 attackerPos = ((EnemyModel*)bd1)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+    }
+    else if (bd2->getName() == ENEMY_NAME && bd1 == _avatar.get()) {
+        Vec2 enemyPos = ((DudeModel*)bd1)->getPosition();
+        Vec2 attackerPos = ((EnemyModel*)bd2)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
     }
 
 }
@@ -1201,4 +1140,41 @@ std::string GameScene::getGestureText(std::string gest, float sim) {
     std::stringstream ss;
     ss << "Gesture: " << gest << ", " << "Similarity: " << sim;
     return ss.str();
+}
+
+void GameScene::zoomCamera(float scale) {
+    _camera->setZoom(scale);
+    _camera->update();
+
+}
+
+void GameScene::unzoomCamera() {
+    _camera->setZoom(1);
+    _camera->update();
+}
+
+
+//Marks transitioning between cooking and platforming. Call this method with t = true when you want to transition away from this scene
+void GameScene::transition(bool t) {
+    _transitionScenes = t;
+}
+
+void GameScene::popup(std::string s, cugl::Vec2 pos) {
+    Timestamp now = Timestamp();
+    now.mark();
+    std::shared_ptr<cugl::scene2::Label> popup = cugl::scene2::Label::allocWithText(pos, s, _assets->get<Font>(MESSAGE_FONT));
+
+    popup = scene2::Label::allocWithText(s, _assets->get<Font>(MESSAGE_FONT));
+    popup->setAnchor(Vec2::ANCHOR_TOP_CENTER);
+    popup->setForeground(Color4::BLACK);
+    popup->setVisible(true);
+    popup->setPosition(pos);
+
+    CULog(s.c_str());
+    CULog("%f", pos.x);
+    CULog("%f", pos.y);
+
+    addChild(popup);
+
+    _popups.push_back(std::make_tuple(popup, now));
 }

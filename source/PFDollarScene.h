@@ -46,6 +46,9 @@ protected:
 
     std::shared_ptr<cugl::AssetManager> _assets;
 
+    std::shared_ptr<cugl::GestureRecognizer> _dollarRecog;
+
+
     //Todo: turn these into nodes
     cugl::Path2 _path;
 
@@ -55,11 +58,33 @@ protected:
 
     std::shared_ptr<cugl::scene2::Label> _header;
 
+    std::shared_ptr<cugl::scene2::Label> _currentGestureLabel;
+
     cugl::SimpleExtruder _se;
+
+  
+    //transform for poly
+    cugl::Affine2 _trans;
 
     //temp
     cugl::Spline2 _spline;
-    cugl::SplinePather sp;
+
+    bool _focus;
+
+    std::vector<std::string> _currentTargetGestures;
+
+    int _currentTargetIndex;
+
+    // this is for cook time only
+    bool _completed;
+    int _lastResult;
+
+    bool _justCompletedGesture;
+
+     
+    int countdown;
+
+    float _currentSimilarity; 
 
     //Todo: need library of existing predetermined inputs to check against
 
@@ -73,16 +98,46 @@ public:
 
     void dispose();
 
-    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input);
+    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
+        return init(assets, input, cugl::Rect(0, 0, 1000, 1000), "panfry_station");
+    };
 
-    void update();
+    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::string texture);
+    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture) {
+        return init(assets, input, rect, texture, std::vector<std::string>());
+    }
+
+    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector <std::string> gestures);
+
+    void update(float timestep);
 
     bool isPending();
     
-    bool isSuccess();
+    int gestureResult();
+
+    int getLastResult() { return _lastResult; }
+
+    void setFocus(bool focus);
+
+    void setTargetGestures(std::vector<std::string> gestures) { 
+        _currentTargetGestures = gestures; 
+        _completed = false;
+    }
+
+
+    bool isFocus() { return _focus; };
 
     //virtual void draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint);
 
+    bool shouldIDisappear();
+
+    bool initGestureRecognizer();
+
+    bool matchWithTouchPath();
+
+    bool getJustCompletedGesture() { return _justCompletedGesture; }
+
+    void reset();
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */
