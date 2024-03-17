@@ -544,6 +544,8 @@ public:
 
     float getDuration() { return _duration; };
 
+    void DudeModel::resetBuff();
+
     static char* getStrForBuff(buff enumVal)
     {
         switch (enumVal)

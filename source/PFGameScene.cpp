@@ -44,6 +44,7 @@ using namespace cugl;
 // #define SCENE_ASPECT 10.0/16.0
 
 /** Width of the game world in Box2d units */
+//32 and 18 is for boss
 #define DEFAULT_WIDTH   50.0f
 /** Height of the game world in Box2d units */
 #define DEFAULT_HEIGHT  40.0f
@@ -965,24 +966,24 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         if (_Bull->getHealth() == 66.0f) {
-            _Bull->takeDamage(_avatar->getAttack()/2, direction, true);
+            _Bull->takeDamage(_avatar->getAttack()/4, direction, true);
             _Bull->setangrytime(4);
         }else {
-            _Bull->takeDamage(_avatar->getAttack()/2, direction, false);
+            _Bull->takeDamage(_avatar->getAttack()/4, direction, false);
         }
-        popup(std::to_string((int)_avatar->getAttack() / 2), enemyPos * _scale);
+        popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
         CULog("Bull Health: %f", _Bull->getHealth());
     }else if (_Bull != nullptr && bd2->getName() == ATTACK_NAME && bd1->getName() == BULL_TEXTURE && _Bull->getknockbacktime()<=0) {
         Vec2 enemyPos = _Bull->getPosition();
         Vec2 attackerPos = ((Attack*)bd2)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         if (_Bull->getHealth() == 66.0f) {
-            _Bull->takeDamage(_avatar->getAttack() / 2, direction, true);
+            _Bull->takeDamage(_avatar->getAttack() / 4, direction, true);
             _Bull->setangrytime(4);
         }else {
-            _Bull->takeDamage(_avatar->getAttack() / 2, direction, false);
+            _Bull->takeDamage(_avatar->getAttack() / 4, direction, false);
         }
-        popup(std::to_string((int)_avatar->getAttack() / 2), enemyPos * _scale);
+        popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
         CULog("Bull Health: %f", _Bull->getHealth());
     }
     if (bd1->getName() == "shake" && bd2 == _avatar.get()) {

@@ -29,7 +29,6 @@ bool Attack::init(cugl::Vec2 pos, const cugl::Size& size) {
 		setDensity(1);
 		_killme = false;
 		_lifetime = 3;
-		_faceright = false;
 		_go = false;
 		_faceright = false;
 
@@ -45,14 +44,15 @@ bool Attack::init(cugl::Vec2 pos, const cugl::Size& size) {
  *
  * @param delta Number of seconds since last animation frame
  */
+//magic numbers! 16 is the speed of the attack
 void Attack::update(float dt) {
 	BoxObstacle::update(dt);
 	if (_go) {
 		if (_faceright) {
-			_body->SetLinearVelocity(b2Vec2(8, 0));
+			_body->SetLinearVelocity(b2Vec2(16, 0));
 		}
 		else {
-			_body->SetLinearVelocity(b2Vec2(-8, 0));
+			_body->SetLinearVelocity(b2Vec2(-16, 0));
 		}
 	}
 	else {
