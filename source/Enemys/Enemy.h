@@ -3,7 +3,7 @@
 #include <cugl/cugl.h>
 #include <cugl/physics2/CUBoxObstacle.h>
 #include <cugl/physics2/CUCapsuleObstacle.h>
-#include "Attack.h"
+#include "../Attack.h"
 #include "../PFDudeModel.h"
 
 
