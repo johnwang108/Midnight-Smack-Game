@@ -289,10 +289,11 @@ void DudeModel::applyForce(float h, float v) {
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
     }
     if (canDash() && getDashNum()>0) {
-        b2Vec2 force(DUDE_DASH*SIGNUM(h), DUDE_DASH * SIGNUM(v) * .8);
+        //b2Vec2 force(DUDE_DASH*SIGNUM(h), DUDE_DASH * SIGNUM(v) * .8);
+        b2Vec2 force(SIGNUM(h), SIGNUM(v) * .8);
         setVY(0);
         setVX(0);
-        _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
+        _body->ApplyLinearImpulse(DUDE_DASH * force, _body->GetPosition(), true);
         //deltaDashNum(-1);
     }
 }

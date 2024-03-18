@@ -102,7 +102,7 @@ enum class modifier {
 
 #define SUPER_ATTACK_BUFF 3.0f
 #define SUPER_HEALTH_BUFF 5.0f
-#define SUPER_JUMP_BUFF 5.0f
+#define SUPER_JUMP_BUFF 3.0f
 #define SUPER_DEFENSE_BUFF 0.0f
 #define SUPER_SPEED_BUFF 5.0f
 
