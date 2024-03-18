@@ -22,10 +22,10 @@ static float BACKGROUND_POS[] = { 16.0f, 10.0f };
 /** The wall vertices */
 
 static float WALL[WALL_COUNT][WALL_VERTS] = {
-	{16.0f, 20.0f,  0.0f, 20.0f,  0.0f,  0.0f,
-	  1.0f,  0.0f,  1.0f, 19.5f, 16.0f, 19.5f },
-	{32.0f, 20.0f, 16.0f, 20.0f, 16.0f, 19.5f,
-	 31.0f, 19.5f, 31.0f,  0.0f, 32.0f,  0.0f }
+	{16.0f, 40.0f,  0.0f, 40.0f,  0.0f,  0.0f,
+	  1.0f,  0.0f,  1.0f, 39.5f, 16.0f, 39.5f },
+	{50.0f, 40.0f, 16.0f, 40.0f, 16.0f, 39.5f,
+	 49.0f, 39.5f, 49.0f,  0.0f, 50.0f,  0.0f }
 };
 
 
@@ -50,7 +50,7 @@ float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
 
 /** The outlines of all of the platforms */
 static float ALT_PLATFORMS[ALT_PLATFORM_COUNT][ALT_PLATFORM_VERTS] = {
-	{ 1.0f, .5f, 1.0f, .0f, 33.0f, .0f, 33.0f, .50f}
+	{ 1.0f, .5f, 1.0f, .0f, 50.0f, .0f, 50.0f, .50f}
 };
 
 void Level2::populate(GameScene& scene) {

@@ -318,12 +318,7 @@ void DudeModel::update(float dt) {
         _duration = std::max(0.0f, _duration);
         //reset buff state if duration is over
 		if (_duration == 0) {
-			_attackBuff = 0;
-			_healthBuff = 0;
-			_jumpBuff = 0;
-			_defenseBuff = 1;
-			_speedBuff = 0;
-            _node->setColor(Color4::WHITE);
+            resetBuff();
         }
         else {
             _node->setColor(Color4::BLACK);
@@ -429,6 +424,7 @@ void DudeModel::takeDamage(float damage, const int attackDirection) {
 
 
 void DudeModel::applyBuff(const buff b, modifier m) {
+    resetBuff();
     switch (b) {
     case buff::attack:
         if (m == modifier::duration) {
@@ -464,4 +460,14 @@ void DudeModel::applyBuff(const buff b, modifier m) {
     default:
         CULog("NULL BUFF APPLIED");
     }
+}
+
+void DudeModel::resetBuff() {
+	_attackBuff = 0;
+	_healthBuff = 0;
+	_jumpBuff = 0;
+	_defenseBuff = 1;
+	_speedBuff = 0;
+	_duration = 0;
+    _node->setColor(Color4::WHITE);
 }
