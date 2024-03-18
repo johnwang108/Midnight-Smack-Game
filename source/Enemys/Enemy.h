@@ -90,7 +90,9 @@ protected:
     bool _vulnerable;
 
     //placeholder, name of the gesture to input for this enemy
-    std::string _gestureName;
+    std::vector<std::string> _gestureSeq1;
+
+    std::vector<std::string> _gestureSeq2;
 
 
 
@@ -99,6 +101,7 @@ protected:
 
 public:
     EnemyModel() : CapsuleObstacle(), _sensorName(ENEMY_SENSOR_NAME) { }
+
     /**
      * Initializes a new enemy at the given position with the specified size and type.
      *
@@ -109,7 +112,12 @@ public:
      *
      * @return true if the enemy is initialized properly, false otherwise.
      */
+
+    /** default constructor, sets both gesture sequences to the default for that enemy type*/
     virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type);
+
+    /**init with gesture sequences*/
+    virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type, std::vector<std::string> seq1, std::vector<std::string> seq2);
 
     /**
      * Creates and returns a new enemy at the given position with the specified size and type.
@@ -216,11 +224,14 @@ public:
 
     bool isVulnerable() {return _vulnerable; }
 
-    std::string getGestureString() { return _gestureName; }
+    std::vector<std::string> getGestureSeq1() { return _gestureSeq1; }
+    std::vector<std::string> getGestureSeq2() { return _gestureSeq2; }
+
+    void setGestureSeq1(std::vector<std::string> gestures) { _gestureSeq1 = gestures; };
+    void setGestureSeq2(std::vector<std::string> gestures) { _gestureSeq2 = gestures; };
 
     EnemyType getType() { return _type; }
 
-    void setGestureString(std::string gesture) { _gestureName = gesture; };
 
 
     //Dict for enemy type to buff 
@@ -242,6 +253,26 @@ public:
             return buff::none;
         }
     }
+
+    /**
+    Gives the default sequence of gestures for each enemy type. 
+    */
+    static std::vector <std::string> defaultSeq(EnemyType type) {
+		switch (type) {
+		case EnemyType::shrimp:
+			return { "pigtail", "v", "circle"};
+		case EnemyType::rice:
+			return { "circle", "circle", "pigtail"};
+		case EnemyType::egg:
+			return { "v", "v", "v", };
+		case EnemyType::carrot:
+			return { "horizswipe", "vertswipe", "horizswipe" };
+		case EnemyType::beef:
+			return { "v", "circle", "pigtail" };
+		default:
+			return {};
+		}
+	}
 
 };
 

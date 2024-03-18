@@ -458,7 +458,7 @@ void GameScene::preUpdate(float dt) {
             }
             if (minDist < COOKTIME_MAX_DIST) {
                 _slowed = true;
-                _dollarnode->setTargetGestures(std::vector<std::string>{_target->getGestureString()});
+                _dollarnode->setTargetGestures(_target->getGestureSeq1());
             }
 
         }
@@ -503,8 +503,9 @@ void GameScene::preUpdate(float dt) {
                 if (_dollarnode->getLastResult() > 0) {
                     CULog("NICE!!!!!!!!!!!!!!");
                     _target->takeDamage(_avatar->getAttack(), 0);
+
                     //DEFAULT: APPLY DURATION BUFF 
-                    _avatar->applyBuff(EnemyModel::enemyToBuff(_target->getType()), modifier::duration);
+                    _avatar->applyBuff(EnemyModel::enemyToBuff(_target->getType()), modifier::effect);
                     //set buff label
                     _buffLabel->setText(DudeModel::getStrForBuff(EnemyModel::enemyToBuff(_target->getType())));
                     _buffLabel->setVisible(true);
@@ -1080,7 +1081,7 @@ void GameScene::endContact(b2Contact* contact) {
         int damage = ((EnemyModel*)bd2)->getHealth();
         ((EnemyModel*)bd2)->takeDamage(_avatar->getAttack(), direction);
         damage -= ((EnemyModel*)bd2)->getHealth();
-        if (damage > 0) popup(std::to_string((int) _avatar->getAttack()), enemyPos * _scale);
+        if (damage > 0) popup(std::to_string((int)damage), enemyPos * _scale);
         if (((EnemyModel*)bd2)->getHealth() <= 50){
             ((EnemyModel*)bd2)->setVulnerable(true);
         }
@@ -1091,7 +1092,7 @@ void GameScene::endContact(b2Contact* contact) {
         int damage = ((EnemyModel*)bd1)->getHealth();
         ((EnemyModel*)bd1)->takeDamage(_avatar->getAttack(), direction);
         damage -= ((EnemyModel*)bd1)->getHealth();
-        if (damage > 0) popup(std::to_string((int)_avatar->getAttack()), enemyPos * _scale);
+        if (damage > 0) popup(std::to_string((int)damage), enemyPos * _scale);
         if (((EnemyModel*)bd1)->getHealth() <= 50) {
             ((EnemyModel*)bd1)->setVulnerable(true);
         }

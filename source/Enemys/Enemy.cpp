@@ -16,7 +16,11 @@ using namespace cugl;
 #pragma mark -
 #pragma mark Constructors
 
-bool EnemyModel::init(const Vec2& pos, const Size& size, float scale, EnemyType type) {
+bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type) {
+    return init(pos, size, scale, type, EnemyModel::defaultSeq(type), EnemyModel::defaultSeq(type));
+}
+
+bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type, std::vector<std::string> seq1, std::vector<std::string> seq2) {
     Size scaledSize = size;
     scaledSize.width *= ENEMY_HSHRINK;
     scaledSize.height *= ENEMY_VSHRINK;
@@ -41,7 +45,8 @@ bool EnemyModel::init(const Vec2& pos, const Size& size, float scale, EnemyType 
         _preparetime= 0;
         _shooted = false;
         _vulnerable = false;
-
+        setGestureSeq1(seq1);
+        setGestureSeq2(seq2);
         return true;
     }
 

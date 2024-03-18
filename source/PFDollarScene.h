@@ -121,13 +121,12 @@ public:
 
     void setTargetGestures(std::vector<std::string> gestures) { 
         _currentTargetGestures = gestures; 
+        _currentTargetIndex = 0;
         _completed = false;
     }
 
 
     bool isFocus() { return _focus; };
-
-    //virtual void draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint);
 
     bool shouldIDisappear();
 
