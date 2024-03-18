@@ -201,7 +201,7 @@ void BullModel::createAttack(GameScene& scene) {
     std::shared_ptr<Texture> image = _assets->get<Texture>("unball");
     Vec2 pos = getPosition();
 
-    std::shared_ptr<EnemyAttack> attack = EnemyAttack::alloc(pos,
+    std::shared_ptr<Attack> attack = Attack::alloc(pos,
         cugl::Size(0.8*image->getSize().width / _scale,
               0.8*image->getSize().height / _scale)*1.3);
 
@@ -297,7 +297,7 @@ void BullModel::createAttack3(GameScene& scene) {
     std::shared_ptr<Texture> image = _assets->get<Texture>("dball");
     Vec2 pos = getPosition();
 
-    std::shared_ptr<EnemyAttack> attack = EnemyAttack::alloc(pos,
+    std::shared_ptr<Attack> attack = Attack::alloc(pos,
         cugl::Size(0.8 * image->getSize().width / _scale,
             0.8 * image->getSize().height / _scale) * 1.3);
 

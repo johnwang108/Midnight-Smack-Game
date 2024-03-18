@@ -1,5 +1,5 @@
 
-#include "EnemyAttack.h"
+#include "Attack.h"
 #include <cugl/scene2/graph/CUPolygonNode.h>
 #include <cugl/scene2/graph/CUTexturedNode.h>
 #include <cugl/assets/CUAssetManager.h>
@@ -11,7 +11,7 @@ using namespace cugl;
 
 //lifetime in frames
 
-bool EnemyAttack::init(cugl::Vec2 pos, const cugl::Size& size) {
+bool Attack::init(cugl::Vec2 pos, const cugl::Size& size) {
 
 
     if (BoxObstacle::init(pos, size)) {
@@ -19,9 +19,11 @@ bool EnemyAttack::init(cugl::Vec2 pos, const cugl::Size& size) {
 		_killme = false;
 		_lifetime = 3;
 		_faceright = false;
+		_facerightog = false;
 		_direction = -1;
 		_shoot = true;
 		_straight = Vec2(-87,-87);
+		_go = false;
 
         return true;
     }
@@ -35,9 +37,17 @@ bool EnemyAttack::init(cugl::Vec2 pos, const cugl::Size& size) {
  *
  * @param delta Number of seconds since last animation frame
  */
-void EnemyAttack::update(float dt) {
+void Attack::update(float dt) {
 	BoxObstacle::update(dt);
-	if (_lifetime) {
+	if (_go) {
+		if (_facerightog) {
+			_body->SetLinearVelocity(b2Vec2(8, 0));
+		}
+		else {
+			_body->SetLinearVelocity(b2Vec2(-8, 0));
+		}
+	}
+	else {
 		if (_lifetime == 0) {
 			_killme = true;
 		}
@@ -45,6 +55,8 @@ void EnemyAttack::update(float dt) {
 			_lifetime = (_lifetime > 0 ? _lifetime - 1 : 0);
 		}
 	}
+
+
 	if (_faceright) {
 		scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
 		if (image != nullptr) {
@@ -97,12 +109,12 @@ void EnemyAttack::update(float dt) {
  * Any assets owned by this object will be immediately released.  Once
  * disposed, a Attack may not be used until it is initialized again.
  */
-void EnemyAttack::dispose() {
+void Attack::dispose() {
 	_geometry = nullptr;
 	_node = nullptr;
 }
 
-void EnemyAttack::releaseFixtures() {
+void Attack::releaseFixtures() {
 	if (_body != nullptr) {
 		return;
 	}
@@ -115,7 +127,7 @@ void EnemyAttack::releaseFixtures() {
 
 }
 
-void EnemyAttack::createFixtures() {
+void Attack::createFixtures() {
 	if (_body == nullptr) {
 		return;
 	}
