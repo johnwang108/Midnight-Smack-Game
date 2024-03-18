@@ -31,7 +31,6 @@
 #include <unordered_set>
 #include <vector>
 #include "PFInput.h"
-#include "PFAttack.h"
 #include "PFDudeModel.h"
 #include "PFRopeBridge.h"
 #include "PFSpinner.h"

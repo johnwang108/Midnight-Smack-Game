@@ -222,7 +222,7 @@ void EnemyModel::createAttack(GameScene& scene) {
     image = _assets->get<Texture>(ATTACK_TEXTURE_L);
     Vec2 pos = getPosition();
 
-    std::shared_ptr<EnemyAttack> attack = EnemyAttack::alloc(pos,
+    std::shared_ptr<Attack> attack = Attack::alloc(pos,
         cugl::Size(image->getSize().width / _scale,
             ATTACK_H * image->getSize().height / _scale));
 
