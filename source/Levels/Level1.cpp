@@ -55,7 +55,7 @@ static float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
 	// {1.0f, 4.0f, 1.0f, 2.0f, 4.0f, 2.0f, 4.0f, 4.0f},
 	{1.0f, 4.0f, 1.0f, 0.0f, 55.0f, 0.0f, 55.0f, 4.0f},
 	{42.5f, 8.0f, 42.5f, 7.0f, 47.5f, 7.0f, 47.5f, 8.0f},
-	{42.5f, 15.0f, 42.5f, 14.0f, 47.5f, 14.0f, 47.5f, 15.0f},
+	{42.5f, 18.0f, 42.5f, 17.0f, 47.5f, 17.0f, 47.5f, 18.0f},
 	{30.0f, 11.0f, 30.0f, 10.5f, 40.0f, 10.5f, 40.0f, 11.0f},
 	{15.0f, 15.0f, 15.0f, 14.5f, 29.0f, 14.5f, 29.0f, 15.0f},
 	{13.0f, 20.0f, 13.0f, 19.0f, 20.0f, 19.0f, 20.0f, 20.0f},
@@ -191,7 +191,6 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
-	_enemy->setGestureString("pigtail");
 
 	//shrimp 2
 	image = _assets->get<Texture>(SHRIMP_TEXTURE);
@@ -202,7 +201,6 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
-	_enemy->setGestureString("pigtail");
 
 
 
@@ -215,7 +213,6 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
-	_enemy->setGestureString("pigtail");
 
 	Vec2 rice_pos = RICE_POS;
 	image = _assets->get<Texture>(RICE_TEXTURE);
@@ -226,7 +223,6 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
-	_enemy->setGestureString("circle");
 
 	//rice 2
 	image = _assets->get<Texture>(RICE_TEXTURE);
@@ -237,7 +233,6 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
-	_enemy->setGestureString("circle");
 
 	//rice 3
 	image = _assets->get<Texture>(RICE_TEXTURE);
@@ -248,7 +243,6 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
-	_enemy->setGestureString("circle");
 
 
 	Vec2 egg_pos = EGG_POS;
@@ -260,7 +254,6 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
-	_enemy->setGestureString("v");
 
 	//egg 2
 	image = _assets->get<Texture>(EGG_TEXTURE);
@@ -271,7 +264,6 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
-	_enemy->setGestureString("v");
 
 	//egg 3
 
@@ -283,7 +275,6 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
-	_enemy->setGestureString("v");
 
 
 	scene.setAssets(_assets);

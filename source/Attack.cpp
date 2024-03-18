@@ -68,7 +68,7 @@ void Attack::update(float dt) {
 	if (_shoot) {
 		_shoot = false;
 		if (_rand) {
-			_body->ApplyLinearImpulseToCenter(b2Vec2(10*static_cast<float>(rand()) / static_cast<float>(RAND_MAX)-5, 15), true);
+			_body->ApplyLinearImpulseToCenter(b2Vec2(20*static_cast<float>(rand()) / static_cast<float>(RAND_MAX)-5, 45), true);
 		}
 		else if (_straight != Vec2(-87, -87)) {
 			b2Vec2 targetDirection = b2Vec2(_straight.x - getPosition().x, _straight.y - getPosition().y);
