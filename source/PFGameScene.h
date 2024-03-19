@@ -490,7 +490,7 @@ public:
     bool transitionedAway() { return _transitionScenes; };
 
     //creates a popup message that dissapates. Position is in word coords, not physics.
-    void GameScene::popup(std::string s, Vec2 pos);
+    void popup(std::string s, Vec2 pos);
   };
 
 #endif /* __PF_GAME_SCENE_H__ */

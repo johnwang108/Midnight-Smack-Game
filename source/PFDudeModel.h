@@ -558,7 +558,7 @@ public:
 
     float getDuration() { return _duration; };
 
-    void DudeModel::resetBuff();
+    void resetBuff();
 
     float getAttackBuff() {
         if (_duration > 0) {
