@@ -44,6 +44,7 @@ using namespace cugl;
 // #define SCENE_ASPECT 10.0/16.0
 
 /** Width of the game world in Box2d units */
+//32 and 18 is for boss
 #define DEFAULT_WIDTH   50.0f
 /** Height of the game world in Box2d units */
 #define DEFAULT_HEIGHT  40.0f
@@ -457,7 +458,7 @@ void GameScene::preUpdate(float dt) {
             }
             if (minDist < COOKTIME_MAX_DIST) {
                 _slowed = true;
-                _dollarnode->setTargetGestures(std::vector<std::string>{_target->getGestureString()});
+                _dollarnode->setTargetGestures(_target->getGestureSeq1());
             }
 
         }
@@ -502,8 +503,9 @@ void GameScene::preUpdate(float dt) {
                 if (_dollarnode->getLastResult() > 0) {
                     CULog("NICE!!!!!!!!!!!!!!");
                     _target->takeDamage(_avatar->getAttack(), 0);
+
                     //DEFAULT: APPLY DURATION BUFF 
-                    _avatar->applyBuff(EnemyModel::enemyToBuff(_target->getType()), modifier::duration);
+                    _avatar->applyBuff(EnemyModel::enemyToBuff(_target->getType()), modifier::effect);
                     //set buff label
                     _buffLabel->setText(DudeModel::getStrForBuff(EnemyModel::enemyToBuff(_target->getType())));
                     _buffLabel->setVisible(true);
@@ -965,24 +967,24 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         if (_Bull->getHealth() == 66.0f) {
-            _Bull->takeDamage(_avatar->getAttack()/2, direction, true);
+            _Bull->takeDamage(_avatar->getAttack()/4, direction, true);
             _Bull->setangrytime(4);
         }else {
-            _Bull->takeDamage(_avatar->getAttack()/2, direction, false);
+            _Bull->takeDamage(_avatar->getAttack()/4, direction, false);
         }
-        popup(std::to_string((int)_avatar->getAttack() / 2), enemyPos * _scale);
+        popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
         CULog("Bull Health: %f", _Bull->getHealth());
     }else if (_Bull != nullptr && bd2->getName() == ATTACK_NAME && bd1->getName() == BULL_TEXTURE && _Bull->getknockbacktime()<=0) {
         Vec2 enemyPos = _Bull->getPosition();
         Vec2 attackerPos = ((Attack*)bd2)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         if (_Bull->getHealth() == 66.0f) {
-            _Bull->takeDamage(_avatar->getAttack() / 2, direction, true);
+            _Bull->takeDamage(_avatar->getAttack() / 4, direction, true);
             _Bull->setangrytime(4);
         }else {
-            _Bull->takeDamage(_avatar->getAttack() / 2, direction, false);
+            _Bull->takeDamage(_avatar->getAttack() / 4, direction, false);
         }
-        popup(std::to_string((int)_avatar->getAttack() / 2), enemyPos * _scale);
+        popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
         CULog("Bull Health: %f", _Bull->getHealth());
     }
     if (bd1->getName() == "shake" && bd2 == _avatar.get()) {
@@ -1079,7 +1081,7 @@ void GameScene::endContact(b2Contact* contact) {
         int damage = ((EnemyModel*)bd2)->getHealth();
         ((EnemyModel*)bd2)->takeDamage(_avatar->getAttack(), direction);
         damage -= ((EnemyModel*)bd2)->getHealth();
-        if (damage > 0) popup(std::to_string((int) _avatar->getAttack()), enemyPos * _scale);
+        if (damage > 0) popup(std::to_string((int)damage), enemyPos * _scale);
         if (((EnemyModel*)bd2)->getHealth() <= 50){
             ((EnemyModel*)bd2)->setVulnerable(true);
         }
@@ -1090,7 +1092,7 @@ void GameScene::endContact(b2Contact* contact) {
         int damage = ((EnemyModel*)bd1)->getHealth();
         ((EnemyModel*)bd1)->takeDamage(_avatar->getAttack(), direction);
         damage -= ((EnemyModel*)bd1)->getHealth();
-        if (damage > 0) popup(std::to_string((int)_avatar->getAttack()), enemyPos * _scale);
+        if (damage > 0) popup(std::to_string((int)damage), enemyPos * _scale);
         if (((EnemyModel*)bd1)->getHealth() <= 50) {
             ((EnemyModel*)bd1)->setVulnerable(true);
         }

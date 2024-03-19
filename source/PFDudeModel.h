@@ -91,11 +91,20 @@ enum class modifier {
     none
 };
 
-#define BASE_ATTACK_BUFF 20.0f
+#define DEFAULT_BUFF 1.0f
+
+#define BASE_ATTACK_BUFF 1.5f
 #define BASE_HEALTH_BUFF 5.0f
-#define BASE_JUMP_BUFF 10.0f
+#define BASE_JUMP_BUFF 1.5f
+//defense <1 because damage multiplied by defense
 #define BASE_DEFENSE_BUFF 0.5f
-#define BASE_SPEED_BUFF 3.0f
+#define BASE_SPEED_BUFF 2.0f
+
+#define SUPER_ATTACK_BUFF 3.0f
+#define SUPER_HEALTH_BUFF 5.0f
+#define SUPER_JUMP_BUFF 5.0f
+#define SUPER_DEFENSE_BUFF 0.0f
+#define SUPER_SPEED_BUFF 5.0f
 
 #define BASE_DURATION 10.0f
 
@@ -158,7 +167,11 @@ protected:
     //max speed buff
     float _speedBuff;
 
+
+    //duration of buff, 0 if one-time buff
     float _duration;
+
+    bool _hasSuper;
 
 	/**
 	* Redraws the outline of the physics fixtures to the debug node
@@ -460,7 +473,7 @@ public:
      *
      * @return how much force to apply to get the dude moving
      */
-    float getForce() const { return DUDE_FORCE + _speedBuff; }
+    float getForce() const { return DUDE_FORCE; }
     
     /**
      * Returns ow hard the brakes are applied to get a dude to stop moving
@@ -476,7 +489,7 @@ public:
      *
      * @return the upper limit on dude left-right movement.
      */
-    float getMaxSpeed() const { return DUDE_MANUEL_MAXSPEED + _speedBuff; }
+    float getMaxSpeed() { return DUDE_MANUEL_MAXSPEED * getSpeedBuff(); }
     
     /**
      * Returns the name of the ground sensor
@@ -540,9 +553,59 @@ public:
     //Apply buff to Sue with proper modifier.
     void applyBuff(buff b, modifier m);
 
-    float getAttack() { return _attack + _attackBuff; }
+    /**This function gets the attack, and resets the attack buff if it is super*/
+    float getAttack() { return _attack * getAttackBuff(); }
 
     float getDuration() { return _duration; };
+
+    void DudeModel::resetBuff();
+
+    float getAttackBuff() {
+        if (_duration > 0) {
+            return _attackBuff;
+        }
+        if (_hasSuper && (_attackBuff != DEFAULT_BUFF)) {
+            _hasSuper = false;
+            return _attackBuff;
+        }
+        return DEFAULT_BUFF;
+    };
+
+    float getDefenseBuff() {
+        if (_duration > 0) {
+            return _defenseBuff;
+        }
+        if (_hasSuper && (_defenseBuff != DEFAULT_BUFF)) {
+            _hasSuper = false;
+            return _defenseBuff;
+        }
+        return DEFAULT_BUFF;
+    }
+
+    float getJumpBuff() {
+        if (_duration > 0) {
+            return _jumpBuff;
+        }
+        if (_hasSuper && (_jumpBuff != DEFAULT_BUFF)) {
+            _hasSuper = false;
+            return _jumpBuff;
+        }
+        return DEFAULT_BUFF;
+    }
+
+    float getSpeedBuff() {
+        if (_duration > 0) {
+            return _speedBuff;
+        }
+        if (_hasSuper && (_speedBuff != DEFAULT_BUFF)) {
+            _hasSuper = false;
+            return _speedBuff;
+        }
+        return DEFAULT_BUFF;
+    }
+
+    //maybe not needed
+    float getHealthBuff() { return 0.0f; };
 
     static char* getStrForBuff(buff enumVal)
     {
