@@ -3,7 +3,7 @@
 
 #include <cugl/cugl.h>
 #include "../PFInput.h"
-#include "../Enemys/Attack.h"
+#include "../Attack.h"
 #include "../PFDudeModel.h"
 #include "../Enemys/Enemy.h"
 #include "../Enemys/Bull.h"
