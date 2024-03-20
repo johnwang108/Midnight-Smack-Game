@@ -35,9 +35,10 @@
 #include "PFRopeBridge.h"
 #include "PFSpinner.h"
 
-/**Todo: Implement a basic dollar gesture input scene that can be represented as 
-a child node of GameScene and has a basic rectangle that waits for input from a 
-Input Controller and renders something in response to anything received.
+/**
+* 
+* 
+* 
  */
 class DollarScene : public cugl::scene2::SceneNode {
 protected:
@@ -124,10 +125,7 @@ public:
         _completed = false;
     }
 
-
     bool isFocus() { return _focus; };
-
-    bool shouldIDisappear();
 
     bool initGestureRecognizer();
 

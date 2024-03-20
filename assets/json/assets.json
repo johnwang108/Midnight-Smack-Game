@@ -8,6 +8,9 @@
         "dude": {
             "file": "textures/dude.png"
         },
+        "dude_sheet": {
+            "file": "textures/su_attack_test_sheet.png"
+        },
         "background-1": {
             "file": "textures/background-image-1.png"
         },

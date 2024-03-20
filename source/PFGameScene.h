@@ -107,12 +107,6 @@ protected:
     //Current target for cook-time
     std::shared_ptr<EnemyModel> _target;
 
-
-    /** Reference to the spinning barrier */
-    std::shared_ptr<Spinner>			  _spinner;
-    /** Reference to the rope bridge */
-    std::shared_ptr<RopeBridge>			  _ropebridge;
-
     //temp bad code
     std::vector<std::shared_ptr<Attack>>  _attacks;
     time_t start;
@@ -153,6 +147,10 @@ protected:
     std::shared_ptr<cugl::scene2::Label> _buffLabel;
 
     std::vector<std::tuple<std::shared_ptr<cugl::scene2::Label>, cugl::Timestamp>> _popups;
+
+    std::shared_ptr<cugl::scene2::ActionManager> _actionManager;
+
+    std::shared_ptr<cugl::scene2::Animate> _attackAction;
 
 #pragma mark Internal Object Management
     /**
@@ -490,7 +488,9 @@ public:
     bool transitionedAway() { return _transitionScenes; };
 
     //creates a popup message that dissapates. Position is in word coords, not physics.
-    void GameScene::popup(std::string s, Vec2 pos);
+    void popup(std::string s, Vec2 pos);
+
+    void animate(std::shared_ptr<cugl::scene2::Animate>& animation, std::shared_ptr<cugl::scene2::Action>& action, std::shared_ptr<cugl::scene2::SpriteNode>& target);
   };
 
 #endif /* __PF_GAME_SCENE_H__ */

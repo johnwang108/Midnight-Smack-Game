@@ -136,7 +136,7 @@ protected:
 	std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
 
 	/** The scene graph node for the Dude. */
-	std::shared_ptr<cugl::scene2::SceneNode> _node;
+	std::shared_ptr<cugl::scene2::SpriteNode> _node;
 	/** The scale between the physics world and the screen (MUST BE UNIFORM) */
 	float _drawScale;
 
@@ -366,7 +366,7 @@ public:
      *
      * @return the scene graph node representing this DudeModel.
      */
-	const std::shared_ptr<cugl::scene2::SceneNode>& getSceneNode() const { return _node; }
+	const std::shared_ptr<cugl::scene2::SceneNode> getSceneNode() { return _node; }
 
     /**
      * Sets the scene graph node representing this DudeModel.
@@ -386,7 +386,7 @@ public:
      *
      * @param node  The scene graph node representing this DudeModel, which has been added to the world node already.
      */
-	void setSceneNode(const std::shared_ptr<cugl::scene2::SceneNode>& node) {
+	void setSceneNode(const std::shared_ptr<cugl::scene2::SpriteNode> node) {
         _node = node;
         _node->setPosition(getPosition() * _drawScale);
     }
@@ -557,6 +557,8 @@ public:
     float getAttack() { return _attack * getAttackBuff(); }
 
     float getDuration() { return _duration; };
+
+    bool hasSuper() { return _hasSuper; };
 
     void DudeModel::resetBuff();
 

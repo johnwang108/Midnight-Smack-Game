@@ -277,6 +277,17 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     currentLevel = level1;
     loadLevel(currentLevel);
 
+    _actionManager = cugl::scene2::ActionManager::alloc();
+
+    //15 frame attack animation
+
+    std::vector<int> forward;
+    for (int ii = 0; ii < 15; ii++) {
+        forward.push_back(ii);
+    }
+
+    _attackAction = cugl::scene2::Animate::alloc(forward, 1.0f);
+
     //App class will set active true
     setActive(false);
     transition(false);
@@ -465,9 +476,11 @@ void GameScene::preUpdate(float dt) {
 
     }
 
+    _actionManager->update(dt);
+
     _dollarnode->update(dt);
 
-    if (!_slowed && (_dollarnode->shouldIDisappear())) {
+    if (!_slowed) {
         _dollarnode->setVisible(false);
         if (_dollarnode->isFocus()) {
             _dollarnode->setFocus(false);
@@ -527,7 +540,7 @@ void GameScene::preUpdate(float dt) {
         }
     }
 
-    if (_avatar->getDuration() == 0) {
+    if (_avatar->getDuration() == 0 && !_avatar->hasSuper()) {
 		_buffLabel->setVisible(false);
     }
 
@@ -720,6 +733,7 @@ void GameScene::postUpdate(float remain) {
     _avatar->setShooting(_input->didFire());
     if (_avatar->isShooting()) {
         createAttack();
+        _actionManager->activate("ATTACK_KEY", _attackAction, _avatar->getSceneNode());
     }
 
 
@@ -1179,4 +1193,10 @@ void GameScene::popup(std::string s, cugl::Vec2 pos) {
     addChild(popup);
 
     _popups.push_back(std::make_tuple(popup, now));
+}
+
+void GameScene::animate(std::shared_ptr<cugl::scene2::Animate>& animation, std::shared_ptr<cugl::scene2::Action>& action, std::shared_ptr<cugl::scene2::SpriteNode>& target){
+    
+
+
 }

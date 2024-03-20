@@ -185,15 +185,6 @@ void DollarScene::update(float timestep) {
 		}
 	}
 
-	//TODO: handle rendering smarter
-	if (countdown > 0) {
-		countdown--;
-	}
-	else {
-		countdown = 0;
-	}
-
-
 	//re-extrude path
 	_se.set(_path);
 	_se.calculate(WIDTH);
@@ -207,11 +198,6 @@ void DollarScene::update(float timestep) {
 	//GET RID OF HARDCODE JOHN TODO
 	_poly->setPosition(cugl::Vec2(0,0));
 	_box->setPosition(cugl::Vec2(0, 0));
-
-
-
-
-	//_header->setVisible(!isPending() && isSuccess());
 };
 
 //is gesture inputting still in progress?
@@ -248,10 +234,6 @@ void DollarScene::setFocus(bool focus) {
 	}
 }
 
-bool DollarScene::shouldIDisappear() {
-	return countdown == 0;
-}
-
 void DollarScene::reset() {
 	_currentTargetIndex = 0;
 	_header->setVisible(false);
@@ -265,19 +247,3 @@ void DollarScene::reset() {
 	_completed = false;
 	_lastResult = -1;
 }
-
-
-//draws a boundary rectangle
-//void DollarScene::draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint) {
-//
-//	batch->begin();
-//
-//	batch->setColor(tint);
-//
-//	cugl::Vec2* verts = reinterpret_cast<Vec2*>(SHAPE);
-//	cugl::Poly2 poly = cugl::Poly2(verts, sizeof(SHAPE) / sizeof(float) / 2);
-//
-//	batch->fill(poly, cugl::Vec2(0,0), transform);
-//
-//	//batch->end();
-//};

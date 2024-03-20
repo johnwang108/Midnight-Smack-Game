@@ -170,12 +170,15 @@ void Level1::populate(GameScene& scene) {
 #pragma mark : Dude
 	Vec2 dudePos = DUDE_POS;
 	// node = scene2::SceneNode::alloc();
-	image = _assets->get<Texture>(DUDE_TEXTURE);
-	_avatar = DudeModel::alloc(dudePos, image->getSize() / (2 + _scale), _scale);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_avatar->setSceneNode(sprite);
+	image = _assets->get<Texture>("dude_sheet");
+
+	//hardcoded size
+	cugl::Size s = PLAYER_SIZE_DEFAULT;
+	_avatar = DudeModel::alloc(dudePos, s, _scale);
+	std::shared_ptr<cugl::scene2::SpriteNode> spritenode = cugl::scene2::SpriteNode::allocWithSheet(image, 4, 4, 15);
+	_avatar->setSceneNode(spritenode);
 	_avatar->setDebugColor(DEBUG_COLOR);
-	scene.addObstacle(_avatar, sprite); // Put this at the very front
+	scene.addObstacle(_avatar, spritenode); // Put this at the very front
 
 	// Play the background music on a loop.
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
