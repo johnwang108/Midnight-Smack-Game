@@ -172,10 +172,15 @@ void Level1::populate(GameScene& scene) {
 	// node = scene2::SceneNode::alloc();
 	image = _assets->get<Texture>("dude_sheet");
 
-	//hardcoded size
+	//hardcoded player size
 	cugl::Size s = PLAYER_SIZE_DEFAULT;
 	_avatar = DudeModel::alloc(dudePos, s, _scale);
 	std::shared_ptr<cugl::scene2::SpriteNode> spritenode = cugl::scene2::SpriteNode::allocWithSheet(image, 4, 4, 15);
+	//CALCULATE sue sprite size from sue obstacle size. Goal: su's feet line up with foot sensor, and head (not hat) with top of obstacle. 
+	//float scalar = (s.width *_scale) / spritenode->getSize().width;
+	float scalar = 0.35f;
+	spritenode->setScale(scalar);
+	spritenode->setAnchor(Vec2(0.5, 0.35));
 	_avatar->setSceneNode(spritenode);
 	_avatar->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_avatar, spritenode); // Put this at the very front

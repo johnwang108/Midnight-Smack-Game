@@ -731,8 +731,8 @@ void GameScene::postUpdate(float remain) {
     // Add a bullet AFTER physics allows it to hang in front
     // Otherwise, it looks like bullet appears far away
     _avatar->setShooting(_input->didFire());
-    if (_avatar->isShooting()) {
-        createAttack();
+    if (_avatar->isShooting() && !_actionManager->isActive("ATTACK_KEY")) {
+        createAttack(false);
         _actionManager->activate("ATTACK_KEY", _attackAction, _avatar->getSceneNode());
     }
 
@@ -832,7 +832,7 @@ void GameScene::setFailure(bool value) {
 /**
  * Add a new bullet to the world and send it in the right direction.
  */
-void GameScene::createAttack() {
+void GameScene::createAttack(bool display) {
 	Vec2 pos = _avatar->getPosition();
 	pos.x += (_avatar->isFacingRight() ? ATTACK_OFFSET_H : -ATTACK_OFFSET_H);
     pos.y += ATTACK_OFFSET_V;
@@ -859,7 +859,7 @@ void GameScene::createAttack() {
 
 	std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
     attack->setSceneNode(sprite);
-    sprite->setVisible(true);
+    sprite->setVisible(display);
     sprite->setPosition(pos);
 
 	addObstacle(attack, sprite, true);

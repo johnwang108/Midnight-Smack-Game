@@ -70,7 +70,7 @@ float floatyFrames = 10;
 /** The amount to shrink the body fixture (horizontally) relative to the image */
 #define DUDE_HSHRINK  0.7f
 /** The amount to shrink the sensor fixture (horizontally) relative to the image */
-#define DUDE_SSHRINK  0.6f
+#define DUDE_SSHRINK  0.7f
 /** Height of the sensor attached to the player's feet */
 #define SENSOR_HEIGHT   0.1f
 /** The density of the character */
@@ -106,8 +106,8 @@ using namespace cugl;
  */
 bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale) {
     Size nsize = size;
-    nsize.width  *= DUDE_HSHRINK;
-    nsize.height *= DUDE_VSHRINK;
+    //nsize.width  *= DUDE_HSHRINK;
+    //nsize.height *= DUDE_VSHRINK;
     _drawScale = scale;
     
     if (CapsuleObstacle::init(pos,nsize)) {

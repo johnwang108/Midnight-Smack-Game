@@ -433,7 +433,7 @@ public:
     /**
     * Adds a new bullet to the world and sends it in the right direction.
     */
-    void createAttack();
+    void createAttack(bool display = true);
 
     /**
     * Removes the input Bullet from the world.
