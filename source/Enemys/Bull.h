@@ -19,7 +19,7 @@ using namespace cugl;
 
 #define SENSOR_HEIGHT 0.1f
 
-#define BULL_ATTACK_CHANCE 0.001f
+#define BULL_ATTACK_CHANCE 0.002f
 
 class GameScene;
 class BullModel : public physics2::CapsuleObstacle {

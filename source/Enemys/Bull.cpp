@@ -240,7 +240,7 @@ void BullModel::createAttack2(GameScene& scene) {
     std::shared_ptr<Texture> image = _assets->get<Texture>(SHAKE_TEXTURE);
     Vec2 pos = getPosition();
     pos.x += ATTACK_OFFSET_X*6;
-    pos.y -= ATTACK_OFFSET_Y * 3;
+    pos.y -= ATTACK_OFFSET_Y * 4.5;
     std::shared_ptr<Attack> attack = Attack::alloc(pos,
         cugl::Size(0.9*image->getSize().width / _scale,
             ATTACK_H * image->getSize().height / _scale));
@@ -259,6 +259,7 @@ void BullModel::createAttack2(GameScene& scene) {
     attack->setDrawScale(_scale);
     attack->setEnabled(false);
     attack->setGo(true);
+    attack->setnorotate(true);
 
     attack2->setFaceRight(false);
     attack2->setName("shake");
@@ -268,6 +269,8 @@ void BullModel::createAttack2(GameScene& scene) {
     attack2->setDrawScale(_scale);
     attack2->setEnabled(false);
     attack2->setGo(true);
+    attack2->setnorotate(true);
+    
 
 
 
@@ -280,7 +283,6 @@ void BullModel::createAttack2(GameScene& scene) {
     std::shared_ptr<scene2::PolygonNode> sprite2 = scene2::PolygonNode::allocWithTexture(image);
     attack2->setSceneNode(sprite2);
     sprite2->setPosition(pos2);
-    sprite2->flipHorizontal(true);
 
     scene.addObstacle(attack2, sprite2, true);
 
@@ -300,10 +302,6 @@ void BullModel::createAttack3(GameScene& scene) {
     std::shared_ptr<Attack> attack = Attack::alloc(pos,
         cugl::Size(0.8 * image->getSize().width / _scale,
             0.8 * image->getSize().height / _scale) * 1.3);
-
-    //pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
-    //pos.y += ATTACK_OFFSET_Y;
-
 
 
     attack->setName("enemy_attack");
