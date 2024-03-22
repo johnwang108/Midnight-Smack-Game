@@ -47,6 +47,7 @@
 #include <cugl/physics2/CUBoxObstacle.h>
 #include <cugl/physics2/CUCapsuleObstacle.h>
 #include <cugl/scene2/graph/CUWireNode.h>
+#include "EntitySpriteNode.h"
 
 #pragma mark -
 #pragma mark Drawing Constants
@@ -136,7 +137,7 @@ protected:
 	std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
 
 	/** The scene graph node for the Dude. */
-	std::shared_ptr<cugl::scene2::SpriteNode> _node;
+	std::shared_ptr<EntitySpriteNode> _node;
 	/** The scale between the physics world and the screen (MUST BE UNIFORM) */
 	float _drawScale;
 
@@ -172,6 +173,18 @@ protected:
     float _duration;
 
     bool _hasSuper;
+
+
+    std::unordered_map<std::string, std::shared_ptr<cugl::scene2::Animate>> _actions;
+
+    //unordered map of strings -> sprite sheets for the corresponding action
+    std::unordered_map<std::string, std::shared_ptr<cugl::Texture>> _sheets;
+
+    //info about each action's sheet: rows, cols, size, duration
+    std::unordered_map<std::string, std::tuple<int,int,int,float,bool>> _info;
+
+    //the last action that was animated
+    std::string _activeAction;
 
 	/**
 	* Redraws the outline of the physics fixtures to the debug node
@@ -386,10 +399,22 @@ public:
      *
      * @param node  The scene graph node representing this DudeModel, which has been added to the world node already.
      */
-	void setSceneNode(const std::shared_ptr<cugl::scene2::SpriteNode> node) {
+	void setSceneNode(const std::shared_ptr<EntitySpriteNode> node) {
         _node = node;
         _node->setPosition(getPosition() * _drawScale);
     }
+
+    void addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool isPassive = true);
+
+    void animate(std::string action_name);
+
+    void changeSheet(std::string action_name);
+
+    std::shared_ptr<cugl::scene2::Animate> getAction(std::string action_name) { return _actions[action_name]; };
+
+    void getInfo(std::string action_name) {};
+
+    std::string getActiveAction() { return _activeAction; };
 
     
 #pragma mark -

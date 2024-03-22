@@ -8,8 +8,21 @@
         "dude": {
             "file": "textures/dude.png"
         },
-        "dude_sheet": {
+        "su_attack_sheet": {
             "file": "textures/su_attack_test_sheet.png"
+        },
+
+        "su_idle_blink": {
+            "file": "textures/su_idle_blink.png"
+        },
+        "su_idle": {
+            "file": "textures/su_idle.png"
+        },
+        "su_idle_blink_straight": {
+            "file": "textures/su_idle_blink_straight.png"
+        },
+        "su_idle_straight": {
+            "file": "textures/su_idle_straight.png"
         },
         "background-1": {
             "file": "textures/background-image-1.png"

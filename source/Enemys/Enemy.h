@@ -6,13 +6,12 @@
 #include "../Attack.h"
 #include "../PFDudeModel.h"
 
-
-
-
 #define ENEMY_SENSOR_NAME     "enemysensor"
 #define SHRIMP_TEXTURE    "shrimp"
 #define EGG_TEXTURE    "egg"
 #define RICE_TEXTURE    "rice"
+#define BEEF_TEXTURE    "beef"
+#define CARROT_TEXTURE    "carrot"
 
 #define ENEMY_FORCE      0.75f
 #define ENEMY_DAMPING    5.0f
@@ -37,6 +36,11 @@ class GameScene;
 /**
  * Enum for enemy types.
  * Add additional enemy types as needed.
+ * Shrimp: rolling enemy, fast and can jump but telegraphed in building up speed
+ * Rice: default aggressive walking enemy, can jump on top of each other. Probably needs to be a box because of this
+ * Beef: mole enemy, can jump and attack. Individually dangerous
+ * Carrots: fast enemy, low detection range
+ * Egg: tall enemy. dangerous at range, easier to kill up close
  */
 enum class EnemyType {
     shrimp, 
@@ -93,6 +97,8 @@ protected:
     std::vector<std::string> _gestureSeq1;
 
     std::vector<std::string> _gestureSeq2;
+
+    int _state;
 
 
 
@@ -231,6 +237,8 @@ public:
     void setGestureSeq2(std::vector<std::string> gestures) { _gestureSeq2 = gestures; };
 
     EnemyType getType() { return _type; }
+
+    void handleMovement();
 
 
 

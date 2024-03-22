@@ -143,9 +143,9 @@ void Level2::populate(GameScene& scene) {
 #pragma mark : Dude
 	Vec2 dudePos = DUDE_POS;
 	// node = scene2::SceneNode::alloc();
-	image = _assets->get<Texture>("dude_sheet");
+	image = _assets->get<Texture>("su_attack_sheet");
 	_avatar = DudeModel::alloc(dudePos, image->getSize() / (2 + _scale), _scale);
-	std::shared_ptr<cugl::scene2::SpriteNode> spritenode = scene2::SpriteNode::allocWithSheet(image, 4, 4);
+	std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4,15);
 	_avatar->setSceneNode(spritenode);
 	_avatar->setDebugColor(DEBUG_COLOR);
 	_avatar->setName(DUDE_TEXTURE);

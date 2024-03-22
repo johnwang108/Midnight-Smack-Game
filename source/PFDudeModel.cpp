@@ -49,6 +49,10 @@
 
 #define SIGNUM(x)  ((x > 0) - (x < 0))
 
+#define PASSIVE_KEY "passive_action"
+
+#define ACTIVE_KEY "active_action"
+
 
 /**Modif for the max height jump in ~(Sues +1)*/
 float jmpHeight = 1;
@@ -81,6 +85,9 @@ float floatyFrames = 10;
 #define DUDE_DASH       (DUDE_JUMP * dashModif)
 /** Debug color for the sensor */
 #define DEBUG_COLOR     Color4::RED
+
+//placeholder.  Will be replaced by a json file. action string name maps to action info.
+#define ACTIONS_INFO {}
 
 
 using namespace cugl;
@@ -138,9 +145,56 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         //default hardcode
         _attack = 34;
 
+        //animation inits
+        //_actionManager = cugl::scene2::ActionManager::alloc();
+        _actions = std::unordered_map<std::string, std::shared_ptr<cugl::scene2::Animate>>();
+        _sheets = std::unordered_map<std::string, std::shared_ptr<cugl::Texture>>();
+        _info = std::unordered_map<std::string, std::tuple<int,int,int,float,bool>>();
+        _activeAction = "";
+
         return true;
     }
     return false;
+}
+
+/** Register a new animation in the dict*/
+void DudeModel::addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool isPassive) {
+    std::vector<int> forward;
+    for (int ii = 0; ii < size; ii++) {
+        forward.push_back(ii);
+    }
+    _actions[action_name] = cugl::scene2::Animate::alloc(forward, duration);
+    _sheets[action_name] = sheet;
+    _info[action_name] = std::make_tuple(rows, cols, size, duration, isPassive);
+}
+
+/**Unsure if override needed. Begins an animation.*/
+void DudeModel::animate(std::string action_name) {
+    CULog("activating");
+    //first, switch the sheet
+    changeSheet(action_name);
+    if (action_name == "idle") {
+        _node->setScale(0.35/4);
+    }
+    else {
+        _node->setScale(0.35);
+    }
+    _activeAction = action_name;
+
+    //info = {int rows, int cols, int size, float duration, bool isPassive}
+    auto info = _info[action_name];
+}
+
+void DudeModel::changeSheet(std::string action_name) {
+    //info = {int rows, int cols, int size, float duration, bool isPassive}
+    try {
+        auto info = _info[action_name];
+        _node->changeSheet(_sheets[action_name], std::get<0>(info), std::get<1>(info), std::get<2>(info));
+    }
+    catch (int e) {
+        CULog("Error changing sheets. Is the action registered?");
+    }
+    
 }
 
 void DudeModel::sethealthbar(std::shared_ptr<cugl::AssetManager> asset) {

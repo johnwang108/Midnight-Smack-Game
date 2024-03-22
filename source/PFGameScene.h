@@ -150,8 +150,6 @@ protected:
 
     std::shared_ptr<cugl::scene2::ActionManager> _actionManager;
 
-    std::shared_ptr<cugl::scene2::Animate> _attackAction;
-
 #pragma mark Internal Object Management
     /**
      * Lays out the game geography.
@@ -491,6 +489,8 @@ public:
     void popup(std::string s, Vec2 pos);
 
     void animate(std::shared_ptr<cugl::scene2::Animate>& animation, std::shared_ptr<cugl::scene2::Action>& action, std::shared_ptr<cugl::scene2::SpriteNode>& target);
-  };
+  
+    std::shared_ptr<cugl::scene2::ActionManager> getActionManager() { return _actionManager; };
+};
 
 #endif /* __PF_GAME_SCENE_H__ */

@@ -281,12 +281,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     //15 frame attack animation
 
-    std::vector<int> forward;
-    for (int ii = 0; ii < 15; ii++) {
-        forward.push_back(ii);
-    }
-
-    _attackAction = cugl::scene2::Animate::alloc(forward, 1.0f);
 
     //App class will set active true
     setActive(false);
@@ -476,7 +470,14 @@ void GameScene::preUpdate(float dt) {
 
     }
 
+    //handle animations
     _actionManager->update(dt);
+    //activate idle animation if no active animation
+    if (!_actionManager->isActive(_avatar->getActiveAction())) {
+        _avatar->animate("idle");
+        auto idleAction = _avatar->getAction("idle");
+        _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
+	}
 
     _dollarnode->update(dt);
 
@@ -620,9 +621,6 @@ void GameScene::preUpdate(float dt) {
         }
         _Bull->update(dt);
     }
-
-    //update dollar node
-    //_dollarnode->update(dt);
 }
 
 
@@ -720,20 +718,15 @@ void GameScene::postUpdate(float remain) {
     // Since items may be deleted, garbage collect
     _world->garbageCollect();
 
-    // TODO: Update this demo to support interpolation
-    // We can interpolate the rope bridge and spinner as we have the data structures
-    
-    // I CHANGED THIS
-    // _spinner->update(remain);
-    // _ropebridge->update(remain);
-
-
     // Add a bullet AFTER physics allows it to hang in front
     // Otherwise, it looks like bullet appears far away
     _avatar->setShooting(_input->didFire());
-    if (_avatar->isShooting() && !_actionManager->isActive("ATTACK_KEY")) {
+    if (_avatar->isShooting() && !_actionManager->isActive("attack")) {
         createAttack(false);
-        _actionManager->activate("ATTACK_KEY", _attackAction, _avatar->getSceneNode());
+        auto attackAction = _avatar->getAction("attack");
+        _avatar->animate("attack");
+        _actionManager->clearAllActions(_avatar->getSceneNode());
+        _actionManager->activate("attack", attackAction, _avatar->getSceneNode());
     }
 
 
