@@ -18,12 +18,6 @@
         "su_idle": {
             "file": "textures/su_idle.png"
         },
-        "su_idle_blink_straight": {
-            "file": "textures/su_idle_blink_straight.png"
-        },
-        "su_idle_straight": {
-            "file": "textures/su_idle_straight.png"
-        },
         "background-1": {
             "file": "textures/background-image-1.png"
         },
@@ -94,12 +88,6 @@
         "P2bull":{
             "file":      "textures/P2bull.png"
         },
-        "heartsbroken":{
-            "file":      "textures/heartsbroken.png"
-        },
-        "heartsfull":{
-            "file":      "textures/heartsfull.png"
-        },
         "cooktime" : {
             "file":      "textures/cutting_board.png",
             "wrapS":    "repeat",
@@ -135,6 +123,33 @@
                     255
                 ]
             }
+        },
+        "MYbackgroundbig": {
+            "file": "textures/UI/MYbackgroundbig.png"
+        },
+        "MYmenuboard": {
+            "file": "textures/UI/MYmenu.png"
+        },
+        "Language": {
+            "file": "textures/UI/Language.png"
+        },
+        "Credits": {
+            "file": "textures/UI/Credits.png"
+        },
+        "metalbutton": {
+            "file": "textures/UI/metalnine.png"
+        },
+        "textfieldarea": {
+            "file": "textures/UI/textfieldarea.png"
+        },
+        "GameTitle": {
+            "file": "textures/UI/GameTitle.png"
+        },
+        "heartsbroken":{
+            "file":      "textures/UI/heartsbroken.png"
+        },
+        "heartsfull":{
+            "file":      "textures/UI/heartsfull.png"
         }
     },
     "sounds": {
@@ -180,6 +195,33 @@
         "retrosmall": {
             "file": "fonts/RetroGame.ttf",
             "size": 16
+        },
+
+        "winter drinkRegular40": {
+            "file": "fonts/WinterDrink.ttf",
+            "size": 38
+        },
+        "winter drinkRegular25": {
+            "file": "fonts/WinterDrink.ttf",
+            "size": 25
+        }
+    },
+
+    "widgets" : {
+        "mylabscene": "widgets/mylabscene.json",
+        "mymenubutton": "widgets/mymenubutton.json"
+	},
+
+    "scene2s" : {
+        "menu" : {
+            "type"      : "Widget",
+            "comment"   : "This is the root node of the scene for the lab",
+            "format"    : {
+                "type" : "Anchored"
+            },
+            "data":{
+                "key": "mylabscene"
+            }
         }
     }
 }

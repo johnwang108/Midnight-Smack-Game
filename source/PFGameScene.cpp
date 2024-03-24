@@ -77,7 +77,8 @@ GameScene::GameScene() : Scene2(),
 	_world(nullptr),
 	_avatar(nullptr),
 	_complete(false),
-	_debug(false)
+	_debug(false),
+    _flag(0.0f)
 {    
 }
 
@@ -139,6 +140,10 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets, const Rect& re
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets, 
                      const Rect& rect, const Vec2& gravity, std::shared_ptr<PlatformInput> input) {
     // Initialize the scene to a locked height (iPhone X is narrow, but wide)
+    if (_flag < 0) {
+        reset();
+        return true;
+    }
     Size dimen = computeActiveSize();
     SDL_ShowCursor(SDL_DISABLE);
 
@@ -252,8 +257,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _buffLabel = scene2::Label::allocWithText("NO BUFF", _assets->get<Font>(MESSAGE_FONT));
     _buffLabel->setAnchor(Vec2::ANCHOR_CENTER);
     _buffLabel->setPosition(dimen.width - _buffLabel->getWidth()/2, dimen.height - _buffLabel->getHeight());
-    
 
+    /*_pauseButton = std::dynamic_pointer_cast<scene2::Button>(_assets->get<scene2::SceneNode>("mymenubutton"));*/
+
+    _paused = false;
+    
+    //_uiScene->addChild(_pauseButton);
     _uiScene->addChild(_healthBarBackground);
     _uiScene->addChild(_healthBarForeground);
     _uiScene->addChild(_buffLabel);
@@ -285,8 +294,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     //App class will set active true
     setActive(false);
     transition(false);
-    _active = true;
     _complete = false;
+    _flag = -1;
     setDebug(false);
     
     // XNA nostalgia
@@ -432,8 +441,8 @@ void GameScene::preUpdate(float dt) {
     if (_input->didDebug()) { setDebug(!isDebug()); }
     if (_input->didReset()) { reset(); }
     if (_input->didExit()) {
-        CULog("Shutting down");
-        Application::get()->quit();
+        setActive(false);
+        return;
     }
 
     if (_input->didTransition()) {
@@ -653,6 +662,10 @@ void GameScene::preUpdate(float dt) {
  */
 void GameScene::fixedUpdate(float step) {
     // Turn the physics engine crank.
+    if (getPaused()) {
+        //nothing happens if paused
+        return;
+    }
     if (_healthBarForeground != nullptr) {
         healthPercentage = _avatar->getHealth() / 100;
         float totalWidth = _healthBarForeground->getWidth();

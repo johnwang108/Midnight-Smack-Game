@@ -45,12 +45,18 @@ void PlatformApp::onStartup() {
 
     _assets->attach<Font>(FontLoader::alloc()->getHook());
     _assets->attach<Texture>(TextureLoader::alloc()->getHook());
+    _assets->attach<JsonValue>(JsonLoader::alloc()->getHook());
     _assets->attach<Sound>(SoundLoader::alloc()->getHook());
     _assets->attach<scene2::SceneNode>(Scene2Loader::alloc()->getHook());
+    _assets->attach<WidgetValue>(WidgetLoader::alloc()->getHook());
 
     // Create a "loading" screen
     _loaded = false;
-    _loading.init(_assets);
+    //_loading.init(_assets);
+
+    std::shared_ptr<PlatformInput> input = std::make_shared<PlatformInput>();
+
+    _menu.init(_assets, "menu");
     
     // Que up the other assets
     AudioEngine::start();
@@ -133,25 +139,23 @@ void PlatformApp::onResume() {
  * @param dt    The amount of time (in seconds) since the last frame
  */
 void PlatformApp::update(float dt) {
-    if (!_loaded && _loading.isActive()) {
-        _loading.update(0.01f);
+    if (!_loaded && _menu.isActive()) {//!_loaded && _loading.isActive()) {
+        //_loading.update(0.01f);
+        _menu.update(0.01f);
     } else if (!_loaded) {
         _loading.dispose(); // Disables the input listeners in this mode
 
         std::shared_ptr<PlatformInput> input = std::make_shared<PlatformInput>();
 
-        //MULTISCREEN IS RESPONSIBLE FOR INITING THE INPUT CONTROLLER.  THIS IS A TEMPORARY SOLUTION
         _multiScreen.init(_assets, input);
-        _multiScreen.setActive(MULTI_SCREEN);
+        _multiScreen.setActive(false);
         
         /*_dayUIScene = std::make_shared<cugl::scene2::SceneNode>();
         _dayUIScene->init();
         _dayUIScene->setActive(MULTI_SCREEN);*/
 
         _gameplay.init(_assets, input);
-        _gameplay.setActive(!MULTI_SCREEN);
-
-
+        _gameplay.setActive(false);
 
         _loaded = true;
         
@@ -182,7 +186,9 @@ void PlatformApp::update(float dt) {
  */
 void PlatformApp::preUpdate(float dt) {
 
-    if (_gameplay.transitionedAway()) {
+    if (_gameplay.didTransition()) {
+
+        CULog("1");
         _gameplay.setActive(false);
         _gameplay.transition(false);
 
@@ -190,7 +196,8 @@ void PlatformApp::preUpdate(float dt) {
         _multiScreen.preUpdate(dt);
         _multiScreen.focusCurr();
     }
-    else if (_multiScreen.transitionedAway()) {
+    else if (_multiScreen.didTransition()) {
+        CULog("2");
 		_multiScreen.transition(false);
 		_multiScreen.setActive(false);
         _multiScreen.unfocusAll();
@@ -201,13 +208,17 @@ void PlatformApp::preUpdate(float dt) {
        
     }
     else if (_gameplay.isActive()) {
+        CULog("3");
 		_gameplay.preUpdate(dt);
     }
-    else if (_multiScreen.isActive()) {
+    else if (_multiScreen.isActive() || _menu.started()) {
+        CULog("4");
 		_multiScreen.preUpdate(dt);
     }
     else {
-		CULog("ERROR ERROR ERROR");
+        _menu.setStarted(false);
+        _menu.setActive(true);
+        _menu.update(dt);
 	}
 }
 
@@ -289,8 +300,9 @@ void PlatformApp::postUpdate(float dt) {
  * at all. The default implmentation does nothing.
  */
 void PlatformApp::draw() {
-    if (!_loaded) {
-        _loading.render(_batch);
+    if (_menu.isActive()) {
+        //_loading.render(_batch);
+        _menu.render(_batch);
     } else {
         if (_gameplay.isActive()) {
             _gameplay.renderBG(_batch);
@@ -303,4 +315,3 @@ void PlatformApp::draw() {
         }
     }
 }
-

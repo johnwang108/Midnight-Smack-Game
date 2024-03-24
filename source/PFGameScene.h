@@ -33,8 +33,6 @@
 #include "PFInput.h"
 #include "Attack.h"
 #include "PFDudeModel.h"
-#include "PFRopeBridge.h"
-#include "PFSpinner.h"
 #include "PFDollarScene.h"
 #include "Levels/Level1.h"
 #include "Levels/Level2.h"
@@ -140,6 +138,7 @@ protected:
 
     /** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
     bool _transitionScenes;
+    std::string _targetScene;
     float healthPercentage;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarBackground;
@@ -149,6 +148,12 @@ protected:
     std::vector<std::tuple<std::shared_ptr<cugl::scene2::Label>, cugl::Timestamp>> _popups;
 
     std::shared_ptr<cugl::scene2::ActionManager> _actionManager;
+
+    std::shared_ptr<cugl::scene2::Button> _pauseButton;
+
+    bool _paused;
+
+    float _flag;
 
 #pragma mark Internal Object Management
     /**
@@ -483,7 +488,7 @@ public:
 
     void renderUI(std::shared_ptr<cugl::SpriteBatch> batch);
 
-    bool transitionedAway() { return _transitionScenes; };
+    bool didTransition() { return _transitionScenes; };
 
     //creates a popup message that dissapates. Position is in word coords, not physics.
     void popup(std::string s, Vec2 pos);
@@ -491,6 +496,12 @@ public:
     void animate(std::shared_ptr<cugl::scene2::Animate>& animation, std::shared_ptr<cugl::scene2::Action>& action, std::shared_ptr<cugl::scene2::SpriteNode>& target);
   
     std::shared_ptr<cugl::scene2::ActionManager> getActionManager() { return _actionManager; };
+
+    void setPaused(bool paused) { _paused = paused; };
+
+    bool getPaused() { return _paused; };
+
+    std::string getTargetScene() { return _targetScene; };
 };
 
 #endif /* __PF_GAME_SCENE_H__ */

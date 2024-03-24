@@ -50,17 +50,14 @@ MultiScreenScene::MultiScreenScene() : Scene2(),
 	_size(0, 0),
 	_zoom(1.0f),
 	_animating(false),
-	_curr(0) {
+	_curr(0),
+	_flag(0.0f){
 }
 
 void MultiScreenScene::dispose() {
 	_assets = nullptr;
 	_input = nullptr;
 	_camera = nullptr;
-	//_texture[0] = nullptr;
-	//_texture[1] = nullptr;
-	//_texture[2] = nullptr;
-	//_texture[3] = nullptr;
 	_scenes[0] = nullptr;
 	_scenes[1] = nullptr;
 	_scenes[2] = nullptr;
@@ -69,6 +66,10 @@ void MultiScreenScene::dispose() {
 }
 
 bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
+	if (_flag < 0) {
+		reset();
+		return true;
+	}
 	_size = Application::get()->getDisplaySize();
 	if (assets == nullptr) {
 		return false;
@@ -106,6 +107,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	//init inactive
 	setActive(false);
 	_transitionScenes = false;
+	_targetScene = "";
 	
 	_curr = 2;
 	_animating = false;
@@ -136,6 +138,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	tempPopulate();
 
 	_finishedOrders = false;
+	_flag = -1;
 
 	return true;
 
@@ -232,7 +235,7 @@ void MultiScreenScene::preUpdate(float timestep) {
 
 	if (_input->didExit()) {
 		CULog("Shutting down");
-		Application::get()->quit();
+		setActive(false);
 	}
 
 	if (_input->didReset()) {
@@ -240,8 +243,7 @@ void MultiScreenScene::preUpdate(float timestep) {
 	}
 
 	if (_input->didTransition()) {
-		transition(true);
-		CULog("______________________________________________________________________________________________________");
+		transition("day");
 		return;
 	}
 

@@ -3,6 +3,7 @@
 
 #include <cugl/cugl.h>
 
+//This class is almost exactly the same as cugl::scene2::SpriteNode, but it has a changeSheet method that allows you to change the texture of the sprite
 class EntitySpriteNode : public cugl::scene2::SpriteNode {
 protected:
 private:
