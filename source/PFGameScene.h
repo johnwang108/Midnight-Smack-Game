@@ -488,8 +488,6 @@ public:
 
     void renderUI(std::shared_ptr<cugl::SpriteBatch> batch);
 
-    bool didTransition() { return _transitionScenes; };
-
     //creates a popup message that dissapates. Position is in word coords, not physics.
     void popup(std::string s, Vec2 pos);
 
@@ -502,6 +500,14 @@ public:
     bool getPaused() { return _paused; };
 
     std::string getTargetScene() { return _targetScene; };
+
+    bool didTransition() { return _transitionScenes; };
+
+    void setTransition(bool b) { _transitionScenes = b; };
+
+    std::string getTarget() { return _targetScene; };
+
+    void setTarget(std::string s) { _targetScene = s; };
 };
 
 #endif /* __PF_GAME_SCENE_H__ */

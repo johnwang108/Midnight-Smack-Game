@@ -19,6 +19,12 @@ protected:
 
     bool _started;
 
+    bool _transitionScenes;
+
+    std::string _targetScene;
+
+    std::vector<std::shared_ptr<cugl::scene2::Button>> _buttons;
+
 private:
 
 public:
@@ -36,6 +42,16 @@ public:
     bool started() { return _started; };
 
     void setStarted(bool b) { _started = b; };
+
+    bool didTransition() { return _transitionScenes; };
+
+    void setTransition(bool b) { _transitionScenes = b; };
+
+    std::string getTarget() { return _targetScene; };
+
+    void setTarget(std::string s) { _targetScene = s; };
+
+    void setActive(bool b);
 };
 
 #endif /* __MENU_SCENE__ */

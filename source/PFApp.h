@@ -218,6 +218,6 @@ public:
      */
     virtual void draw() override;
 
-    void transitionScenes(Scene2 source, Scene2 target);
+    void transitionScenes();
 };
 #endif /* __PF_APP_H__ */

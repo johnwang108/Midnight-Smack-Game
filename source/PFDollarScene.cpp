@@ -210,6 +210,7 @@ bool DollarScene::isPending() {
 //if gesture is completed. pop gesture and calculate similarity
 bool DollarScene::matchWithTouchPath() {
 	if (_input->isGestureCompleted()) {
+		CULog("COMPLETED GESTURE");
 		Path2 gesture = _input->popTouchPath();
 		if (gesture.size() > 3) {
 			float sim = _dollarRecog->similarity(_currentTargetGestures[_currentTargetIndex], gesture);

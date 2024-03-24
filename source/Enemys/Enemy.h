@@ -24,7 +24,7 @@
 #define SENSOR_HEIGHT 0.1f
 
 #define CHASE_THRESHOLD 10.0f  
-#define CHASE_SPEED 2.0f
+#define CHASE_SPEED 0.03f
 
 #define ATTACK_OFFSET_X 0.5f
 #define ATTACK_OFFSET_Y 0.5f
@@ -63,8 +63,10 @@ protected:
     /** Whether the enemy is currently on the ground */
     bool _isGrounded;
     /** The node for visual representation of the enemy */
-    bool _isChasing;
     std::shared_ptr<cugl::scene2::SceneNode> _node;
+    /** Whether the enemy is aggroed*/
+    bool _isChasing;
+
     /** The node for debugging the sensor */
  //   std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
     /** The scale between the physics world and the screen (MUST BE UNIFORM) */

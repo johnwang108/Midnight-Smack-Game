@@ -170,7 +170,6 @@ void DudeModel::addActionAnimation(std::string action_name, std::shared_ptr<cugl
 
 /**Unsure if override needed. Begins an animation.*/
 void DudeModel::animate(std::string action_name) {
-    CULog("activating");
     //first, switch the sheet
     changeSheet(action_name);
     if (action_name == "idle") {

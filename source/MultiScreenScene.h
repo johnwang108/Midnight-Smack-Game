@@ -89,8 +89,6 @@ public:
 
 	void transition(bool t);
 
-	bool didTransition() { return _transitionScenes; }
-
 	int determineSwipeDirection();
 
 	void readLevel(std::shared_ptr<cugl::JsonValue> level);
@@ -104,6 +102,14 @@ public:
 	void focusCurr();
 
 	void reset();
+
+	bool didTransition() { return _transitionScenes; };
+
+	void setTransition(bool b) { _transitionScenes = b; };
+
+	std::string getTarget() { return _targetScene; };
+
+	void setTarget(std::string s) { _targetScene = s; };
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */

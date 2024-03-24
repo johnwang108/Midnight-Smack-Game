@@ -60,14 +60,17 @@ bool MenuScene::init(const std::shared_ptr<cugl::AssetManager>& assets, std::str
 	_started = false;
 	
 
+	_buttons = std::vector<std::shared_ptr<scene2::Button>>();
 	std::shared_ptr<scene2::SceneNode> menu = _rootNode->getChildByName("startmenu")->getChildByName("menu");
 
 	std::shared_ptr<scene2::Button> b = std::dynamic_pointer_cast<scene2::Button>(menu->getChildByName("start_button"));
 	b->addListener([=](const std::string& name, bool down) {
 		this->_active = false;
-		this->_started = true;
+		this->setTransition(true);
+		this->setTarget("day");
 		});
 	b->activate();
+	_buttons.push_back(b);
 
 	b = std::dynamic_pointer_cast<scene2::Button>(menu->getChildByName("exit_button"));
 	b->addListener([=](const std::string& name, bool down) {
@@ -76,6 +79,7 @@ bool MenuScene::init(const std::shared_ptr<cugl::AssetManager>& assets, std::str
 		}
 		});
 	b->activate();
+	_buttons.push_back(b);
 
     switch (strToMenuType(id)) {
         case MenuType::MAIN_MENU:
@@ -97,10 +101,27 @@ bool MenuScene::init(const std::shared_ptr<cugl::AssetManager>& assets, std::str
     addChild(_rootNode);
 
 	this->setActive(true);
+
+	setName("main_menu");
+	setTransition(false);
+	setTarget("");
     return true;
 }
 
-void MenuScene::update(float timestep) {
+void MenuScene::setActive(bool b) {
+	_active = b;
+	for (auto it = _buttons.begin(); it != _buttons.end(); ++it) {
+		auto button = *it;
+		if (b) {
+			button->activate();
+		}
+		else {
+			button->deactivate();
+		}
+	}
+}
+
+void MenuScene::update(float dt) {
 
 }
 

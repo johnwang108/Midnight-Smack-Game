@@ -52,15 +52,14 @@ void PlatformApp::onStartup() {
 
     // Create a "loading" screen
     _loaded = false;
-    //_loading.init(_assets);
+    _loading.init(_assets);
 
     std::shared_ptr<PlatformInput> input = std::make_shared<PlatformInput>();
-
-    _menu.init(_assets, "menu");
     
     // Que up the other assets
     AudioEngine::start();
     _assets->loadDirectoryAsync("json/assets.json",nullptr);
+    _currentScene = "";
     
 
     Application::onStartup(); // YOU MUST END with call to parent
@@ -139,11 +138,16 @@ void PlatformApp::onResume() {
  * @param dt    The amount of time (in seconds) since the last frame
  */
 void PlatformApp::update(float dt) {
-    if (!_loaded && _menu.isActive()) {//!_loaded && _loading.isActive()) {
-        //_loading.update(0.01f);
-        _menu.update(0.01f);
+    if (!_loaded && _loading.isActive()) {//!_loaded && _loading.isActive()) {
+        _loading.update(0.01f);
     } else if (!_loaded) {
         _loading.dispose(); // Disables the input listeners in this mode
+
+        _menu.update(0.01f);
+        _menu.init(_assets, "menu");
+        _menu.setActive(true);
+        _currentScene = "main_menu";
+        CULog("asdf");
 
         std::shared_ptr<PlatformInput> input = std::make_shared<PlatformInput>();
 
@@ -185,41 +189,53 @@ void PlatformApp::update(float dt) {
  * @param dt    The amount of time (in seconds) since the last frame
  */
 void PlatformApp::preUpdate(float dt) {
-
-    if (_gameplay.didTransition()) {
-
-        CULog("1");
-        _gameplay.setActive(false);
-        _gameplay.transition(false);
-
-        _multiScreen.setActive(true);
+    transitionScenes();
+    if (_currentScene == "main_menu") {
+        _menu.update(dt);
+    }
+    else if (_currentScene == "night") {
+        _gameplay.preUpdate(dt);
+    }
+    else if (_currentScene == "day") {
         _multiScreen.preUpdate(dt);
-        _multiScreen.focusCurr();
-    }
-    else if (_multiScreen.didTransition()) {
-        CULog("2");
-		_multiScreen.transition(false);
-		_multiScreen.setActive(false);
-        _multiScreen.unfocusAll();
-
-
-		_gameplay.setActive(true);
-		_gameplay.preUpdate(dt);
-       
-    }
-    else if (_gameplay.isActive()) {
-        CULog("3");
-		_gameplay.preUpdate(dt);
-    }
-    else if (_multiScreen.isActive() || _menu.started()) {
-        CULog("4");
-		_multiScreen.preUpdate(dt);
     }
     else {
-        _menu.setStarted(false);
-        _menu.setActive(true);
-        _menu.update(dt);
-	}
+
+    }
+ //   if (_gameplay.didTransition()) {
+
+ //       CULog("1");
+ //       _gameplay.setActive(false);
+ //       _gameplay.transition(false);
+
+ //       _multiScreen.setActive(true);
+ //       _multiScreen.preUpdate(dt);
+ //       _multiScreen.focusCurr();
+ //   }
+ //   else if (_multiScreen.didTransition()) {
+ //       CULog("2");
+	//	_multiScreen.transition(false);
+	//	_multiScreen.setActive(false);
+ //       _multiScreen.unfocusAll();
+
+
+	//	_gameplay.setActive(true);
+	//	_gameplay.preUpdate(dt);
+ //      
+ //   }
+ //   else if (_gameplay.isActive()) {
+ //       CULog("3");
+	//	_gameplay.preUpdate(dt);
+ //   }
+ //   else if (_multiScreen.isActive() || _menu.started()) {
+ //       CULog("4");
+	//	_multiScreen.preUpdate(dt);
+ //   }
+ //   else {
+ //       _menu.setStarted(false);
+ //       _menu.setActive(true);
+ //       _menu.update(dt);
+	//}
 }
 
 /**
@@ -246,10 +262,10 @@ void PlatformApp::preUpdate(float dt) {
 void PlatformApp::fixedUpdate() {
     // Compute time to report to game scene version of fixedUpdate
     float time = getFixedStep()/1000000.0f;
-    if (_gameplay.isActive()) {
+    if (_currentScene == "night") {
         _gameplay.fixedUpdate(time);
     }
-    else {
+    else if (_currentScene == "day"){
         _multiScreen.fixedUpdate(time);
     }
     
@@ -282,10 +298,10 @@ void PlatformApp::fixedUpdate() {
 void PlatformApp::postUpdate(float dt) {
     // Compute time to report to game scene version of postUpdate
     float time = getFixedRemainder()/1000000.0f;
-    if (_gameplay.isActive()) {
+    if (_currentScene == "night") {
 		_gameplay.postUpdate(time);
 	}
-    else {
+    else if (_currentScene == "day"){
 		_multiScreen.postUpdate(time);
 	}
 }
@@ -300,18 +316,91 @@ void PlatformApp::postUpdate(float dt) {
  * at all. The default implmentation does nothing.
  */
 void PlatformApp::draw() {
-    if (_menu.isActive()) {
-        //_loading.render(_batch);
+    if (!_loaded && _loading.isActive()) {
+        _loading.render(_batch);
+    }
+    if (_currentScene == "main_menu") {
         _menu.render(_batch);
-    } else {
-        if (_gameplay.isActive()) {
-            _gameplay.renderBG(_batch);
-            _gameplay.render(_batch);
-            _gameplay.renderUI(_batch);
+    }
+    else if (_currentScene == "night") {
+        _gameplay.renderBG(_batch);
+        _gameplay.render(_batch);
+        _gameplay.renderUI(_batch);
+    }
+    else if (_currentScene == "day") {
+        _multiScreen.render(_batch);
+        _multiScreen.renderUI(_batch);
+    }
+    else {
+
+    }
+    //if (_menu.isActive()) {
+    //    //_loading.render(_batch);
+    //    _menu.render(_batch);
+    //} else {
+    //    if (_gameplay.isActive()) {
+    //        _gameplay.renderBG(_batch);
+    //        _gameplay.render(_batch);
+    //        _gameplay.renderUI(_batch);
+    //    }
+    //    else {
+    //        _multiScreen.render(_batch);
+    //        _multiScreen.renderUI(_batch);
+    //    }
+    //}
+}
+
+
+void PlatformApp::transitionScenes() {
+    if (_gameplay.didTransition()) {
+		_gameplay.setActive(false);
+		_gameplay.transition(false);
+
+		_currentScene = _gameplay.getTarget();
+        _gameplay.setTarget("");
+        if(_currentScene == "day") {
+			_multiScreen.setActive(true);
+			_multiScreen.focusCurr();
         }
-        else {
-            _multiScreen.render(_batch);
-            _multiScreen.renderUI(_batch);
+        else if (_currentScene == "main_menu"){
+			_menu.setActive(true);
         }
+        CULog("Transed");
+        CULog("From gameplay");
+	}
+	else if (_multiScreen.didTransition()) {
+		_multiScreen.transition(false);
+		_multiScreen.setActive(false);
+		_multiScreen.unfocusAll();
+
+		_currentScene = _multiScreen.getTarget();
+        _multiScreen.setTarget("");
+        if (_currentScene == "night") {
+            _gameplay.setActive(true);
+        }
+        else if (_currentScene == "main_menu") {
+            _menu.setActive(true);
+        }
+
+        CULog("Transed");
+        CULog("From Multi");
+    }
+    else if (_menu.didTransition()) {
+        _menu.setActive(false);
+        _menu.setTransition(false);
+
+        _currentScene = _menu.getTarget();  
+        _menu.setTarget("");
+		if (_currentScene == "night") {
+			_gameplay.setActive(true);
+            
+		}
+		else if (_currentScene == "day") {
+			_multiScreen.setActive(true);
+			_multiScreen.focusCurr();
+		}
+
+        CULog("Transed");
+        CULog("From menu");
     }
 }

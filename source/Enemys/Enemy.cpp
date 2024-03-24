@@ -152,11 +152,29 @@ void EnemyModel::update(float dt) {
         return;
 	}
 
+    b2Vec2 velocity = _body->GetLinearVelocity();
+    if (_isChasing) {
+        _node->setColor(Color4::BLACK);
+    }
+    else {
+        _node->setColor(Color4::WHITE);
+    }
     //handle type specific behavior
     switch (getType()) {
+        //rolling shrimp
     case EnemyType::shrimp:
+        if (_isChasing) {
+			velocity.x = velocity.x + CHASE_SPEED * _direction;
+        }
+        else {
+            velocity.x = ENEMY_FORCE * _direction;
+        }
+        if (velocity.x > ENEMY_MAXSPEED) {
+            velocity.x = ENEMY_MAXSPEED;
+        } else if (velocity.x < -ENEMY_MAXSPEED) {
+            velocity.x = -ENEMY_MAXSPEED;
+        }
         handleMovement();
-        
         break;
     case EnemyType::rice:
         handleMovement();
@@ -171,6 +189,8 @@ void EnemyModel::update(float dt) {
         handleMovement();
         break;
     }
+    //velocity.x *= _direction;
+    _body->SetLinearVelocity(velocity);
 
     //if (_isGrounded) {
     //    b2Vec2 velocity = _body->GetLinearVelocity();
@@ -227,19 +247,6 @@ void EnemyModel::update(float dt) {
 /**This function handles movement and behavior that are generic across enemy types. These are independent of dt*/
 void EnemyModel::handleMovement() {
     if (_isGrounded) {
-        b2Vec2 velocity = _body->GetLinearVelocity();
-        velocity.x = ENEMY_FORCE;
-
-        // Reverse direction at edges or obstacles, TODO
-        if (velocity.x > ENEMY_MAXSPEED) {
-            velocity.x = ENEMY_MAXSPEED;
-            _direction = -_direction;
-        }
-        else if (velocity.x < -ENEMY_MAXSPEED) {
-            velocity.x = -ENEMY_MAXSPEED;
-            _direction = -_direction;
-        }
-
         if (_direction != _lastDirection) {
             // If direction changed, flip the image
             scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
@@ -248,11 +255,6 @@ void EnemyModel::handleMovement() {
             }
         }
         _lastDirection = _direction; // Update last direction
-
-        //velocity.x *= _direction;
-
-
-        //_body->SetLinearVelocity(velocity);
     }
 }
 

@@ -140,6 +140,11 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_finishedOrders = false;
 	_flag = -1;
 
+	setName("night");
+
+	transition(false);
+	setTarget("");
+
 	return true;
 
 }
@@ -235,7 +240,8 @@ void MultiScreenScene::preUpdate(float timestep) {
 
 	if (_input->didExit()) {
 		CULog("Shutting down");
-		setActive(false);
+		transition(true);
+		setTarget("main_menu");
 	}
 
 	if (_input->didReset()) {
@@ -243,7 +249,8 @@ void MultiScreenScene::preUpdate(float timestep) {
 	}
 
 	if (_input->didTransition()) {
-		transition("day");
+		transition(true);
+		setTarget("night");
 		return;
 	}
 

@@ -294,12 +294,15 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     //App class will set active true
     setActive(false);
     transition(false);
+    setTarget("");
     _complete = false;
     _flag = -1;
     setDebug(false);
     
     // XNA nostalgia
     // Application::get()->setClearColor(Color4f::CORNFLOWER);
+
+    setName("day");
     Application::get()->setClearColor(Color4::YELLOW);
     return true;
 }
@@ -441,13 +444,14 @@ void GameScene::preUpdate(float dt) {
     if (_input->didDebug()) { setDebug(!isDebug()); }
     if (_input->didReset()) { reset(); }
     if (_input->didExit()) {
-        setActive(false);
+        transition(true);
+        setTarget("main_menu");
         return;
     }
 
     if (_input->didTransition()) {
         transition(true);
-        CULog("TTTTTTTTTTT");
+        setTarget("day");
         return;
     }
 
@@ -580,9 +584,9 @@ void GameScene::preUpdate(float dt) {
 
             if (distance < CHASE_THRESHOLD) {
                 enemy->setIsChasing(true);
+                int direction = (avatarPos.x > enemyPos.x) ? 1 : -1;
+                enemy->setDirection(direction);
                 if (enemy->getnextchangetime() < 0) {
-                    int direction = (avatarPos.x > enemyPos.x) ? 1 : -1;
-                    enemy->setDirection(direction);
                     enemy->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
                 }
                 if (enemy->getattacktime()) {
@@ -591,7 +595,7 @@ void GameScene::preUpdate(float dt) {
                     enemy->setshooted(false);
                 }
             }
-            else if (distance >= CHASE_THRESHOLD && enemy->isChasing()) {
+            else if (distance >= CHASE_THRESHOLD * 3 && enemy->isChasing()) {
                 enemy->setIsChasing(false);
             }
             if (enemy->getHealth() <= 0) {
@@ -1191,10 +1195,6 @@ void GameScene::popup(std::string s, cugl::Vec2 pos) {
     popup->setForeground(Color4::BLACK);
     popup->setVisible(true);
     popup->setPosition(pos);
-
-    CULog(s.c_str());
-    CULog("%f", pos.x);
-    CULog("%f", pos.y);
 
     addChild(popup);
 
