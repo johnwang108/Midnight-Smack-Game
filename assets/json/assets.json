@@ -119,6 +119,66 @@
                     255
                 ]
             }
+        },
+        "background": {
+            "file": "textures/background.png"
+        },
+        "NotepadBar": {
+            "file": "textures/notepad.png"
+        },
+        "ConveyorBelt": {
+            "file": "textures/ConveyorBelt.png"
+        },
+        "RecipeBook": {
+            "file": "textures/RecipeBook.png"
+        },
+        "CookTimer": {
+            "file": "textures/CookTimer.png"
+        },
+        "Gesture": {
+            "file": "textures/Gesture.png"
+        },
+        "Shrimp": {
+            "file": "textures/Shrimp.png"
+        },
+        "Rice": {
+            "file": "textures/Rice.png"
+        },
+        "Egg": {
+            "file": "textures/Egg.png"
+        },
+        "Carrot": {
+            "file": "textures/Carrot.png"
+        },
+        "Steak": {
+            "file": "textures/Steak.png"
+        },
+        "Minimap": {
+            "file": "textures/Minimap.png"
+        },
+        "Pot": {
+            "file": "textures/Pot.png"
+        },
+        "Sink": {
+            "file": "textures/Sink.png"
+        },
+        "Knife": {
+            "file": "textures/Knife.png"
+        },
+        "Pan": {
+            "file": "textures/Pan.png"
+        },
+        "Mixer": {
+            "file": "textures/Mixer.png"
+        },
+        "Status": {
+            "file": "textures/Status.png"
+        },
+        "Sun": {
+            "file": "textures/Daytime.png"
+        },
+        "TextBack": {
+            "file": "textures/TextBack.png"
         }
     },
     "sounds": {
@@ -164,6 +224,29 @@
         "retrosmall": {
             "file": "fonts/RetroGame.ttf",
             "size": 16
+        },
+        "winter drinkRegular20": {
+            "file": "fonts/WinterDrink.ttf",
+            "size": 20
+        },
+        "winter drinkRegular25": {
+            "file": "fonts/WinterDrink.ttf",
+            "size": 25
+        }
+    },
+    "widgets": {
+        "labscene": "widgets/labscene.json"
+    },
+    "scene2s": {
+        "lab": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "labscene"
+            }
         }
     }
 }

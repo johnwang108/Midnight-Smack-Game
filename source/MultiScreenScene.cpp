@@ -82,6 +82,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 
 	_assets = assets;
 
+
 	//MULTISCREEN IS RESPONSIBLE FOR INITING THE SHARED INPUT CONTROLLER. TEMPORARY SOLUTION
 	_input = input;
 	_input->init(getBounds());
@@ -117,6 +118,13 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_uiScene = cugl::Scene2::alloc(_size);
 	_uiScene->init(_size);
 	_uiScene->setActive(true);
+
+	_uiNode = _assets->get<scene2::SceneNode>("lab");
+	_uiNode->setContentSize(_size);
+	_uiNode->doLayout();
+
+
+
 	
 	_timer = scene2::Label::allocWithText("godfhohofgji", _assets->get<Font>(MESSAGE_FONT));
 
@@ -132,6 +140,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 
 	_uiScene->addChild(_timer);
 	_uiScene->addChild(_gestureFeedback);
+	_uiScene->addChild(_uiNode);
 
 	tempPopulate();
 
