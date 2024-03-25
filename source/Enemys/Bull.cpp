@@ -21,6 +21,7 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         _bull_attack_chance= BULL_ATTACK_CHANCE;
         _P2start = false;
         _shoot = false;
+        _summoned = false;
         setDensity(BULL_DENSITY);
         setFriction(0.0f);
         setFixedRotation(true);
@@ -323,4 +324,27 @@ void BullModel::createAttack3(GameScene& scene) {
     std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
     AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);
 
+}
+void BullModel::Summon(GameScene& scene) {
+
+    std::vector<std::shared_ptr<EnemyModel>> Enemies=scene.getEnemies();
+    std::shared_ptr<Texture> image = _assets->get<Texture>(SHRIMP_TEXTURE);
+    std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc({ getPosition() + Vec2(5.0f, 10.0f) }, image->getSize() / scene.getScale(), scene.getScale(), EnemyType::shrimp);
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    _enemy->setSceneNode(sprite);
+    _enemy->setName(ENEMY_NAME);
+    _enemy->setDebugColor(DEBUG_COLOR);
+    scene.addObstacle(_enemy, sprite);
+    Enemies.push_back(_enemy);
+
+    image = _assets->get<Texture>(SHRIMP_TEXTURE);
+    _enemy = EnemyModel::alloc({ getPosition() + Vec2(-5.0f, 10.0f) }, image->getSize() / scene.getScale(), scene.getScale(), EnemyType::shrimp);
+    sprite = scene2::PolygonNode::allocWithTexture(image);
+    _enemy->setSceneNode(sprite);
+    _enemy->setName(ENEMY_NAME);
+    _enemy->setDebugColor(DEBUG_COLOR);
+    scene.addObstacle(_enemy, sprite);
+    Enemies.push_back(_enemy);
+
+    scene.setEnemies(Enemies);
 }

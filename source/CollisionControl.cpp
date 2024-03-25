@@ -93,6 +93,7 @@ void GameScene::beginContact(b2Contact* contact) {
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         if (_Bull->getHealth() == 66.0f) {
             _Bull->takeDamage(_avatar->getAttack()/4, direction, true);
+            _Bull->setsummoned(true);
             _Bull->setangrytime(4);
         }else {
             _Bull->takeDamage(_avatar->getAttack()/4, direction, false);
@@ -147,18 +148,7 @@ void GameScene::beginContact(b2Contact* contact) {
 }
 
 
-//Basically the same as removeAttack, can refactor
-void GameScene::removeEnemy(EnemyModel* enemy) {
-    if (enemy->isRemoved()) {
-        return;
-    }
-    _worldnode->removeChild(enemy->getSceneNode());
-    enemy->setDebugScene(nullptr);
-    enemy->markRemoved(true);
 
-    std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
-    AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
-}
 
 /**
  * Callback method for the start of a collision

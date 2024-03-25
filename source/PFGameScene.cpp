@@ -20,9 +20,6 @@
 //  Version:  2/9/24
 //
 #include "PFGameScene.h"
-#include <box2d/b2_world.h>
-#include <box2d/b2_contact.h>
-#include <box2d/b2_collision.h>
 
 #include <ctime>
 #include <string>
@@ -274,7 +271,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
 
     _target = std::make_shared<EnemyModel>();
-    currentLevel = level1;
+    currentLevel = level2;
     loadLevel(currentLevel);
 
     //App class will set active true
@@ -596,6 +593,10 @@ void GameScene::preUpdate(float dt) {
             _Bull->setshoot(false);
             _Bull->createAttack3(*this);
         }
+        if (_Bull->getsummoned()&& _Bull->getangrytime() <= 0) {
+            _Bull->setsummoned(false);
+            _Bull->Summon(*this);
+        }
         if (!_Bull->isChasing()) {
             Vec2 BullPos = _Bull->getPosition();
             float distance = avatarPos.distance(BullPos);
@@ -854,6 +855,19 @@ void GameScene::createAttack() {
 	AudioEngine::get()->play(PEW_EFFECT,source, false, EFFECT_VOLUME, true);
 
     _attacks.push_back(attack);
+}
+
+//Basically the same as removeAttack, can refactor
+void GameScene::removeEnemy(EnemyModel* enemy) {
+    if (enemy->isRemoved()) {
+        return;
+    }
+    _worldnode->removeChild(enemy->getSceneNode());
+    enemy->setDebugScene(nullptr);
+    enemy->markRemoved(true);
+
+    std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
+    AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
 }
 
 /**
