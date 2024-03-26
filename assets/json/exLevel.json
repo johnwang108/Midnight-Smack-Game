@@ -2,14 +2,29 @@
   "events": [
     {
       "station": "pot",
+      "gestures": [
+        "circle",
+        "v",
+        "pigtail"
+      ],
       "time": 2
     },
     {
       "station": "panfry",
+      "gestures": [
+        "circle",
+        "circle",
+        "pigtail"
+      ],
       "time": 4
     },
     {
       "station": "cutting",
+      "gestures": [
+        "v",
+        "v",
+        "pigtail"
+      ],
       "time": 6
     }
   ]

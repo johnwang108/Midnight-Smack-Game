@@ -93,7 +93,7 @@ public:
 
 	int determineSwipeDirection();
 
-	void readLevel(std::shared_ptr<JsonValue> level);
+	void readLevel(std::shared_ptr<JsonValue>& level);
 
 	void renderUI(std::shared_ptr<SpriteBatch> batch);
 

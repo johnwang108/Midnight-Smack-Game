@@ -20,9 +20,17 @@ public:
 	
 	float getStartTime() { return _startTime; }
 
+	void setStartTime(float time) { _startTime = time; };
+
+
 	std::string getStation() { return _station + "_station"; }
+
+	void setStation(std::string station) { _station = station; };
+
 	
 	std::vector<std::string> getGestures() { return _gestureNames; }
+
+	void setGestures(std::vector<std::string> gestures) {_gestureNames = gestures;};
 };
 
 #endif // __ORDER_H__

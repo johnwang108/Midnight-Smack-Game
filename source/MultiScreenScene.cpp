@@ -82,7 +82,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 
 	_assets = assets;
 
-
+		
 	//MULTISCREEN IS RESPONSIBLE FOR INITING THE SHARED INPUT CONTROLLER. TEMPORARY SOLUTION
 	_input = input;
 	_input->init(getBounds());
@@ -123,9 +123,6 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_uiNode->setContentSize(_size);
 	_uiNode->doLayout();
 
-
-
-	
 	_timer = scene2::Label::allocWithText("godfhohofgji", _assets->get<Font>(MESSAGE_FONT));
 
 	_timer->setAnchor(Vec2::ANCHOR_CENTER);
@@ -142,7 +139,10 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_uiScene->addChild(_gestureFeedback);
 	_uiScene->addChild(_uiNode);
 
-	tempPopulate();
+	//std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("exLevel");
+	std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("json/exLevel.json");
+	readLevel(reader->readJson());
+	
 
 	_finishedOrders = false;
 
@@ -178,13 +178,34 @@ void MultiScreenScene::initStations(std::string textures[], int size) {
 	}
 }
 
-void MultiScreenScene::readLevel(std::shared_ptr<JsonValue> level) {
-	std::shared_ptr<JsonValue> events = level->get("events");
+void MultiScreenScene::readLevel(std::shared_ptr<JsonValue>& leveljson) {
+	_newOrderIndex = 0;
+	std::shared_ptr<JsonValue> events = leveljson->get("events");
 	if (events->type() == JsonValue::Type::ArrayType) {
 		for (int i = 0; i < events->size(); i++) {
 			std::shared_ptr<JsonValue> item = events->get(i);
-			
+			if (item != nullptr) {
+				Order newOrder = Order();
+				newOrder.setStartTime(item->get("time")->asFloat());
+				newOrder.setStation(item->get("station")->asString());
+				std::vector<std::string> gestures = {};
+				std::shared_ptr<JsonValue> jGests = item->get("gestures");
+				if (jGests->type() == JsonValue::Type::ArrayType) {
+					for (int j = 0; j < jGests->size(); j++) {
+						gestures.push_back(jGests->get(j)->asString());
+					}
+				}
+				else {
+					CULogError("Gestures is not an array type");
+				}
+
+				newOrder.setGestures(gestures);
+				_orders.push_back(newOrder);
+			}
 		}
+	}
+	else {
+		CULogError("Events is not an array type");
 	}
 }
  
