@@ -22,6 +22,9 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         _P2start = false;
         _shoot = false;
         _summoned = false;
+        _running = false;
+        _CA=0;
+        _CAcount = 0;
         setDensity(BULL_DENSITY);
         setFriction(0.0f);
         setFixedRotation(true);
@@ -97,8 +100,27 @@ void BullModel::update(float dt) {
         return;
     }
 
+    if (_running) {
+        _running = false;
+        _node->setVisible(true);
+        _body->SetEnabled(true);
+        setPosition(getPosition() + -_direction * Vec2(40, 0));
+    }
+
     if (_isChasing) {
         velocity.x *= BULL_CHASE_SPEED;
+        if (_CAcount > 0) {
+            velocity.x *= _CAcount/1.5;
+        }
+        if (_CA > 0) {
+			_CA -= dt;
+            _node->setVisible(false);
+            _body->SetEnabled(false);
+            if (_CA <= 0) {
+                _running = true;
+            }
+            return;
+		}
     }
 
 
@@ -347,4 +369,8 @@ void BullModel::Summon(GameScene& scene) {
     Enemies.push_back(_enemy);
 
     scene.setEnemies(Enemies);
+}
+
+void BullModel::circleattack(GameScene& scene) {
+    _CA = 5;
 }

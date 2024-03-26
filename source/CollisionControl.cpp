@@ -62,17 +62,39 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd2)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
-        _Bull->setIsChasing(false);
-        _Bull->takeDamage(5, direction, true);
-        popup(std::to_string(5), bullPos * _scale);
+        if (_Bull->getCAcount() == 5 && _Bull->getCA() <= 0) {
+            _Bull->setCAcount(0);
+            _Bull->setIsChasing(false);
+
+        }
+        else if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0) {
+            _Bull->setCAcount(_Bull->getCAcount() + 1);
+            _Bull->circleattack(*this);
+        }
+        else {
+            _Bull->setIsChasing(false);
+            _Bull->takeDamage(0, direction, true);
+        }
+       // popup(std::to_string(5), bullPos * _scale);
     }
     else if (_Bull != nullptr && _Bull->isChasing() && bd1->getName() == WALL_NAME && bd2 == _Bull.get()) {
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd1)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
-        _Bull->setIsChasing(false);
-        _Bull->takeDamage(5, direction, true);
-        popup(std::to_string(5), bullPos * _scale);
+        if (_Bull->getCAcount() == 4 && _Bull->getCA() <= 0) {
+            _Bull->setCAcount(0);
+            _Bull->setIsChasing(false);
+
+        }
+        else if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0) {
+            _Bull->setCAcount(_Bull->getCAcount() + 1);
+            _Bull->circleattack(*this);
+        }
+        else {
+            _Bull->setIsChasing(false);
+            _Bull->takeDamage(0, direction, true);
+        }
+      //  popup(std::to_string(5), bullPos * _scale);
     }
     if (_Bull != nullptr && bd1 == _Bull.get() && bd2 == _avatar.get()) {
         Vec2 avatarPos = _avatar->getPosition();
@@ -91,12 +113,19 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 enemyPos = _Bull->getPosition();
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-        if (_Bull->getHealth() == 66.0f) {
-            _Bull->takeDamage(_avatar->getAttack()/4, direction, true);
-            _Bull->setsummoned(true);
+        if (_Bull->getHealth() == 74.5f) {
+            _Bull->takeDamage(_avatar->getAttack() / 4, direction, true);
             _Bull->setangrytime(4);
-        }else {
-            _Bull->takeDamage(_avatar->getAttack()/4, direction, false);
+        }
+        else if (_Bull->getHealth() == 40.5f) {
+            _Bull->setsprintpreparetime(2);
+            _Bull->setIsChasing(true);
+            _Bull->setCAcount(2);
+            _Bull->takeDamage(_avatar->getAttack() / 4, direction, false);
+        }
+        else
+        {
+            _Bull->takeDamage(_avatar->getAttack() / 4, direction, false);
         }
         popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
         CULog("Bull Health: %f", _Bull->getHealth());
@@ -104,12 +133,21 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 enemyPos = _Bull->getPosition();
         Vec2 attackerPos = ((Attack*)bd2)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-        if (_Bull->getHealth() == 66.0f) {
+        if (_Bull->getHealth() == 74.5f) {
             _Bull->takeDamage(_avatar->getAttack() / 4, direction, true);
             _Bull->setangrytime(4);
-        }else {
+        }
+        else if (_Bull->getHealth() == 40.5f) {
+            _Bull->setsprintpreparetime(2);
+            _Bull->setIsChasing(true);
+            _Bull->setCAcount(2);
             _Bull->takeDamage(_avatar->getAttack() / 4, direction, false);
         }
+        else
+        {
+            _Bull->takeDamage(_avatar->getAttack() / 4, direction, false);
+        }
+   
         popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
         CULog("Bull Health: %f", _Bull->getHealth());
     }

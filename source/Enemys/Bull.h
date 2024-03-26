@@ -47,6 +47,9 @@ protected:
     float healthPercentage;
     std::shared_ptr<scene2::PolygonNode> _healthBarForeground;
     bool _summoned;
+    float _CA;
+    int _CAcount;
+    bool _running;
 
 public:
     BullModel() : CapsuleObstacle(), _drawScale(1.0f), _health(100.0f), _healthCooldown(0.2f), _lastDamageTime(0), _isChasing(true), _direction(-1) {}
@@ -106,9 +109,15 @@ public:
     void setshoot(bool shoot) { _shoot = shoot; }
     void setassets(std::shared_ptr<AssetManager> assets) { _assets = assets; }
     void sethealthbar();
-    void BullModel::Summon(GameScene& scene);
+    void Summon(GameScene& scene);
     void setsummoned(bool summoned) { _summoned = summoned; };
     bool getsummoned() { return _summoned; };
+    void setsprintpreparetime(float time) { _sprintPrepareTime = time; }
+    void setCAcount(int time) { _CAcount = time; }
+    void setCA(float time) { _CA = time; }
+    int getCAcount() { return _CAcount; }
+    float getCA() { return _CA; }
+    void circleattack(GameScene& scene);
 };
 
 #endif /* __BULL_MODEL_H__ */
