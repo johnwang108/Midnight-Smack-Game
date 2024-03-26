@@ -121,6 +121,7 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         _faceRight  = true;
         _dash = true;
         _contactingWall = false;
+        _isOnDangerousGround = false;
 
         _dashCooldown = 0;
         _shootCooldown = 0;

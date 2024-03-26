@@ -1,6 +1,7 @@
 #ifndef __LEVEL1_H__
 #define __LEVEL1_H__
 #include "Levels.h"
+#include "../NightLevelObjects/Wall.h"
 
 
 class Level1 : public Levels {

@@ -21,7 +21,7 @@ using namespace cugl;
 /** The key to use for reseting the game */
 #define RESET_KEY KeyCode::R
 /** The key for toggling the debug display */
-#define DEBUG_KEY KeyCode::Q
+//#define DEBUG_KEY KeyCode::Q
 /** The key for exitting the game */
 #define EXIT_KEY  KeyCode::ESCAPE
 /** The key for firing a bullet */
@@ -87,7 +87,7 @@ using namespace cugl;
 PlatformInput::PlatformInput() :
 _active(false),
 _resetPressed(false),
-_debugPressed(false),
+//_debugPressed(false),
 _exitPressed(false),
 _firePressed(false),
 _jumpPressed(false),
@@ -95,7 +95,7 @@ _slowPressed(false),
 _keyJump(false),
 _keyFire(false),
 _keyReset(false),
-_keyDebug(false),
+//_keyDebug(false),
 _keyExit(false),
 _keyLeft(false),
 _keyRight(false),
@@ -249,7 +249,7 @@ void PlatformInput::update(float dt) {
     if (!_gameCont) {
         // Map "keyboard" events to the current frame boundary
         _keyReset = keys->keyPressed(RESET_KEY);
-        _keyDebug = keys->keyPressed(DEBUG_KEY);
+        //_keyDebug = keys->keyPressed(DEBUG_KEY);
         _keyExit = keys->keyPressed(EXIT_KEY);
         _keyFire = keys->keyPressed(FIRE_KEY);
         _keyJump = keys->keyPressed(JUMP_KEY);
@@ -267,7 +267,7 @@ void PlatformInput::update(float dt) {
     }
     else {
         _keyJump = _gameCont->isButtonPressed(GameController::Button::A);
-        _keyDebug = _gameCont->isButtonPressed(GameController::Button::B);
+        //_keyDebug = _gameCont->isButtonPressed(GameController::Button::B);
         _keySlow = _gameCont->isButtonPressed(GameController::Button::X);
         _keyReset = _gameCont->isButtonPressed(GameController::Button::LEFT_SHOULDER);
         _keyExit = _gameCont->isButtonPressed(GameController::Button::RIGHT_SHOULDER);
@@ -284,13 +284,13 @@ void PlatformInput::update(float dt) {
         _xAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_X);
         _yAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_Y);
 
-        _keyDebug = _gameCont->isButtonPressed(9);
+        //_keyDebug = _gameCont->isButtonPressed(9);
     }
 
 
 #else 
     _keyJump = _gameCont->isButtonPressed(GameController::Button::A);
-    _keyDebug = _gameCont->isButtonPressed(GameController::Button::B);
+    //_keyDebug = _gameCont->isButtonPressed(GameController::Button::B);
     _keySlow = _gameCont->isButtonPressed(GameController::Button::X);
     _keyReset = _gameCont->isButtonPressed(GameController::Button::LEFT_SHOULDER);
     _keyExit = _gameCont->isButtonPressed(GameController::Button::RIGHT_SHOULDER);
@@ -312,7 +312,7 @@ void PlatformInput::update(float dt) {
    
 
     _resetPressed = _keyReset;
-    _debugPressed = _keyDebug;
+    //_debugPressed = _keyDebug;
     _exitPressed = _keyExit;
     _firePressed = _keyFire;
     _jumpPressed = _keyJump;

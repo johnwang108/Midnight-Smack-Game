@@ -7,7 +7,7 @@
 #include "../PFDudeModel.h"
 #include "../Enemys/Enemy.h"
 #include "../Enemys/Bull.h"
-
+#include "../NightLevelObjects/Wall.h"
 
 
 #pragma mark -

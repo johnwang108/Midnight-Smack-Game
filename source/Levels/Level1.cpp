@@ -101,7 +101,7 @@ void Level1::populate(GameScene& scene) {
 	_goalDoor->setFriction(0.0f);
 	_goalDoor->setRestitution(0.0f);
 	_goalDoor->setSensor(true);
-	// _goalDoor->setEnabled
+	// _goalDoor->setEnabledf
 
 	// Add the scene graph nodes to this object
 	sprite = scene2::PolygonNode::allocWithTexture(image);
@@ -113,58 +113,15 @@ void Level1::populate(GameScene& scene) {
 	image = _assets->get<Texture>(EARTH_TEXTURE);
 	std::string wname = "wall";
 	for (int ii = 0; ii < WALL_COUNT; ii++) {
-		std::shared_ptr<physics2::PolygonObstacle> wallobj;
-
-		Poly2 wall(reinterpret_cast<Vec2*>(WALL[ii]), WALL_VERTS / 2);
-		// Call this on a polygon to get a solid shape
-		EarclipTriangulator triangulator;
-		triangulator.set(wall.vertices);
-		triangulator.calculate();
-		wall.setIndices(triangulator.getTriangulation());
-		triangulator.clear();
-
-		wallobj = physics2::PolygonObstacle::allocWithAnchor(wall, Vec2::ANCHOR_CENTER);
-		// You cannot add constant "".  Must stringify
-		wallobj->setName(std::string(WALL_NAME) + cugl::strtool::to_string(ii));
-		wallobj->setName(wname);
-
-		// Set the physics attributes
-		wallobj->setBodyType(b2_staticBody);
-		wallobj->setDensity(BASIC_DENSITY);
-		wallobj->setFriction(BASIC_FRICTION);
-		wallobj->setRestitution(BASIC_RESTITUTION);
-		wallobj->setDebugColor(DEBUG_COLOR);
-
-		wall *= _scale;
-		sprite = scene2::PolygonNode::allocWithTexture(image, wall);
-		scene.addObstacle(wallobj, sprite, 1);  // All walls share the same texture
+		std::shared_ptr<Wall> wallobj = Wall::alloc(image, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, DEBUG_COLOR, reinterpret_cast<Vec2*>(WALL[ii]), WALL_VERTS, wname);
+		scene.addObstacle(wallobj->getObj(), wallobj->getSprite(), 1);  // All walls share the same texture
 	}
 
 #pragma mark : Platforms
 	for (int ii = 0; ii < PLATFORM_COUNT; ii++) {
-		std::shared_ptr<physics2::PolygonObstacle> platobj;
-		Poly2 platform(reinterpret_cast<Vec2*>(PLATFORMS[ii]), sizeof(PLATFORMS[ii]) / sizeof(float) / 2);
-
-		EarclipTriangulator triangulator;
-		triangulator.set(platform.vertices);
-		triangulator.calculate();
-		platform.setIndices(triangulator.getTriangulation());
-		triangulator.clear();
-
-		platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_CENTER);
-		// You cannot add constant "".  Must stringify
-		platobj->setName(std::string(PLATFORM_NAME) + cugl::strtool::to_string(ii));
-
-		// Set the physics attributes
-		platobj->setBodyType(b2_staticBody);
-		platobj->setDensity(BASIC_DENSITY);
-		platobj->setFriction(BASIC_FRICTION);
-		platobj->setRestitution(BASIC_RESTITUTION);
-		platobj->setDebugColor(DEBUG_COLOR);
-
-		platform *= _scale;
-		sprite = scene2::PolygonNode::allocWithTexture(image, platform);
-		scene.addObstacle(platobj, sprite, 1);
+		std::shared_ptr<Wall> platObj = Wall::alloc(image, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, Color4::BLUE,
+			reinterpret_cast<Vec2*>(PLATFORMS[ii]), PLATFORM_VERTS, std::string(PLATFORM_NAME) + cugl::strtool::to_string(ii), 0, true);
+		scene.addObstacle(platObj->getObj(), platObj->getSprite(), 1);
 	}
 
 #pragma mark : Dude

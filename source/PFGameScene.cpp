@@ -476,6 +476,9 @@ void GameScene::preUpdate(float dt) {
         _avatar->setJumping(_input->didJump());
         _avatar->setDash(_input->didDash());
         _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
+        if (_avatar->getIsOnDangerousGround()) {
+            _avatar->takeDamage(20, 0);
+        }
         if (_avatar->isJumping() && _avatar->isGrounded()) {
             std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
             AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
@@ -915,7 +918,12 @@ void GameScene::beginContact(b2Contact* contact) {
         _avatar->setVX(0);
     }
 
+    CULog(bd1->getName().c_str());
 
+    if ((bd1 == _avatar.get() && bd2->getName().find("dd") != std::string::npos) ||
+        (bd2 == _avatar.get() && bd1->getName().find("dd") != std::string::npos)) {
+        _avatar->getIsOnDangerousGround(true);
+    }
 
     // See if we have landed on the ground.
     if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
@@ -1062,6 +1070,7 @@ void GameScene::endContact(b2Contact* contact) {
         _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
         if (_sensorFixtures.empty()) {
             _avatar->setGrounded(false);
+            _avatar->getIsOnDangerousGround(false);
         }
     }
     // Check if the player is no longer in contact with any walls

@@ -32,7 +32,6 @@ bool Attack::init(cugl::Vec2 pos, const cugl::Size& size) {
 		_faceright = false;
 		_go = false;
 		_faceright = false;
-
 		return true;
 	}
 
