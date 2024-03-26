@@ -145,7 +145,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
         return true;
     }
     Size dimen = computeActiveSize();
-    SDL_ShowCursor(SDL_DISABLE);
+    //SDL_ShowCursor(SDL_DISABLE);
 
     if (assets == nullptr) {
         return false;
@@ -164,6 +164,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     // Create the world and attach the listeners.
     _world = physics2::ObstacleWorld::alloc(rect,gravity);
     _world->activateCollisionCallbacks(true);
+    b2Filter* filter = new b2Filter();
     _world->onBeginContact = [this](b2Contact* contact) {
       beginContact(contact);
     };
@@ -283,8 +284,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
 
     _target = std::make_shared<EnemyModel>();
-    currentLevel = level1;
-    loadLevel(currentLevel);
+
+    loadSave();
 
     _actionManager = cugl::scene2::ActionManager::alloc();
 
@@ -584,13 +585,15 @@ void GameScene::preUpdate(float dt) {
 
             if (distance < CHASE_THRESHOLD) {
                 enemy->setIsChasing(true);
+                enemy->updatePlayerDistance(_avatar->getPosition());
                 int direction = (avatarPos.x > enemyPos.x) ? 1 : -1;
                 enemy->setDirection(direction);
                 if (enemy->getnextchangetime() < 0) {
                     enemy->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
                 }
                 if (enemy->getattacktime()) {
-                    enemy->createAttack(*this);
+                    auto res = enemy->createAttack(_assets, _scale);
+                    addObstacle(std::get<0>(res), std::get<1>(res));
                     enemy->setattacktime(false);
                     enemy->setshooted(false);
                 }
@@ -690,6 +693,10 @@ void GameScene::fixedUpdate(float step) {
         Vec2 worldPosition = Vec2(pos.x - viewport.size.width / 2 + 140,
             pos.y + viewport.size.height / 2 - 50);
 
+
+        cugl::Vec3 mapMin = Vec3(SCENE_WIDTH / 2, SCENE_HEIGHT / 2, 0);
+        cugl::Vec3 mapMax = Vec3(1400 - SCENE_WIDTH / 2, 900 - SCENE_HEIGHT / 2, 0); //replace magic numbers
+        target.clamp(mapMin, mapMax);
 
         //magic number 0.2 are for smoothness
         //float smooth = std::min(0.2f, (target - pos).length());
@@ -826,6 +833,9 @@ void GameScene::setComplete(bool value) {
  * @param value whether the level is failed.
  */
 void GameScene::setFailure(bool value) {
+    if (_failed == value) {
+		return;
+	}
 	_failed = value;
 	if (value) {
 		std::shared_ptr<Sound> source = _assets->get<Sound>(LOSE_MUSIC);
@@ -840,7 +850,7 @@ void GameScene::setFailure(bool value) {
 
 
 /**
- * Add a new bullet to the world and send it in the right direction.
+ * Scuffed attack for the player.
  */
 void GameScene::createAttack(bool display) {
 	Vec2 pos = _avatar->getPosition();
@@ -928,6 +938,10 @@ void GameScene::beginContact(b2Contact* contact) {
 
 
     if (bd1->getName() == BACKGROUND_NAME || bd2->getName() == BACKGROUND_NAME) {
+        return;
+    }
+
+    if (bd1->getName() == "enemy" && bd2->getName() == "enemy") {
         return;
     }
 
@@ -1043,6 +1057,23 @@ void GameScene::beginContact(b2Contact* contact) {
         (bd1 == _goalDoor.get() && bd2 == _avatar.get()))) {
         setComplete(true);
     }
+
+    if (_avatar->getBodySensorName() == fd1 && bd2->getName() == "enemy") {
+        Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+
+        _avatar->addTouching();
+        _avatar->takeDamage(34, direction);
+    }
+    else if (_avatar->getBodySensorName() == fd2 && bd1->getName() == "enemy") {
+        Vec2 enemyPos = _avatar->getPosition();
+        Vec2 attackerPos = ((EnemyModel*)bd1)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+
+        _avatar->addTouching();
+        _avatar->takeDamage(34, direction);
+    }
 }
 
 
@@ -1128,17 +1159,32 @@ void GameScene::endContact(b2Contact* contact) {
 
 
 
-    if (bd1->getName() == ENEMY_NAME && bd2 == _avatar.get()) {
-        Vec2 enemyPos = ((DudeModel*)bd2)->getPosition();
-        Vec2 attackerPos = ((EnemyModel*)bd1)->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
-        _avatar->takeDamage(34, direction);
+    //if (bd1->getName() == ENEMY_NAME && bd2 == _avatar.get()) {
+    //    Vec2 enemyPos = ((DudeModel*)bd2)->getPosition();
+    //    Vec2 attackerPos = ((EnemyModel*)bd1)->getPosition();
+    //    int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+    //    _avatar->takeDamage(34, direction);
+    //}
+    //else if (bd2->getName() == ENEMY_NAME && bd1 == _avatar.get()) {
+    //    Vec2 enemyPos = ((DudeModel*)bd1)->getPosition();
+    //    Vec2 attackerPos = ((EnemyModel*)bd2)->getPosition();
+    //    int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+    //    _avatar->takeDamage(34, direction);
+    //}
+
+    if (_avatar->getBodySensorName() == fd1 && bd2->getName() == "enemy") {
+        Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
+        Vec2 attackerPos = _avatar->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+
+        _avatar->removeTouching();
     }
-    else if (bd2->getName() == ENEMY_NAME && bd1 == _avatar.get()) {
-        Vec2 enemyPos = ((DudeModel*)bd1)->getPosition();
-        Vec2 attackerPos = ((EnemyModel*)bd2)->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
-        _avatar->takeDamage(34, direction);
+    else if (_avatar->getBodySensorName() == fd2 && bd1->getName() == "enemy") {
+        Vec2 enemyPos = _avatar->getPosition();
+        Vec2 attackerPos = ((EnemyModel*)bd1)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+
+        _avatar->addTouching();
     }
 
 }
@@ -1204,5 +1250,87 @@ void GameScene::popup(std::string s, cugl::Vec2 pos) {
 void GameScene::animate(std::shared_ptr<cugl::scene2::Animate>& animation, std::shared_ptr<cugl::scene2::Action>& action, std::shared_ptr<cugl::scene2::SpriteNode>& target){
     
 
+
+}
+
+void GameScene::save() {
+    /*std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });*/
+
+    //Should only change nighttime save data unless level was completed, in which case change level/chapter accordingly.
+    auto reader = JsonReader::alloc("./save.json");
+    auto writer = JsonWriter::alloc("./save.json");
+
+    std::shared_ptr<JsonValue> json = JsonValue::allocObject();
+
+    //write basic info.
+    //placeholders
+
+
+    json->appendValue("chapter", 1.0f);
+    json->appendValue("level", 1.0f);
+    
+
+    std::shared_ptr<JsonValue> night = JsonValue::allocObject();
+    
+    night->appendValue("location_x_player", _avatar->getPosition().x);
+    night->appendValue("location_y_player", _avatar->getPosition().y);
+    night->appendValue("health_player", _avatar->getHealth());
+    //Todo:: save buff, enemy status
+
+   /* for (auto& e : _enemies) {
+        if (e->isRemoved()) {
+			continue;
+		}
+		std::shared_ptr<JsonValue> enemy = JsonValue::allocObject();
+		enemy->appendValue("location_x_enemy", e->getPosition().x);
+		enemy->appendValue("location_y_enemy", e->getPosition().y);
+		enemy->appendValue("health_enemy", e->getHealth());
+        night->appendChild(enemy);
+	}*/
+
+
+    json->appendChild("night", night);
+
+    writer->writeJson(json);
+
+
+}
+
+void GameScene::loadSave() {
+	/*std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });*/
+
+
+    //CULog("PATH");
+    //CULog(path.c_str());
+
+    auto reader = JsonReader::alloc("./save.json");
+
+    std::shared_ptr<JsonValue> loaded_json = reader->readJson();
+
+    //Todo:: load enemies separately from level.
+
+    int chapter = loaded_json->getInt("chapter");
+    int level = loaded_json->getInt("level");
+
+    loadLevel(chapter, level);
+
+    
+}
+
+//load level with int specifiers
+void GameScene::loadLevel(int chapter, int level) {
+    std::shared_ptr<Levels> level_obj = nullptr;
+    if (chapter == 1) {
+        if (level == 1) {
+            level_obj = level1;
+        }
+        else if (level == 2) {
+            level_obj = level2;
+        }
+    }
+
+    loadLevel(level_obj);
 
 }

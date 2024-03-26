@@ -56,6 +56,8 @@
 /** Identifier to allow us to track the sensor in ContactListener */
 #define SENSOR_NAME     "dudesensor"
 
+#define BODY_SENSOR_NAME "dudebodysensor"
+
 
 #pragma mark -
 #pragma mark Physics Constants
@@ -133,8 +135,14 @@ protected:
 	b2Fixture*  _sensorFixture;
 	/** Reference to the sensor name (since a constant cannot have a pointer) */
 	std::string _sensorName;
+
+    b2Fixture* _bodySensorFixture;
+
+    std::string _bodySensorName;
 	/** The node for debugging the sensor */
 	std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
+
+    std::shared_ptr<cugl::scene2::WireNode> _bodySensorNode;
 
 	/** The scene graph node for the Dude. */
 	std::shared_ptr<EntitySpriteNode> _node;
@@ -174,6 +182,8 @@ protected:
 
     bool _hasSuper;
 
+    float _numberOfTouchingEnemies;
+
 
     std::unordered_map<std::string, std::shared_ptr<cugl::scene2::Animate>> _actions;
 
@@ -204,7 +214,7 @@ public:
      * This constructor does not initialize any of the dude values beyond
      * the defaults.  To use a DudeModel, you must call init().
      */
-    DudeModel() : CapsuleObstacle(), _sensorName(SENSOR_NAME) { }
+    DudeModel() : CapsuleObstacle(), _sensorName(SENSOR_NAME), _bodySensorName(BODY_SENSOR_NAME) { }
     
     /**
      * Destroys this DudeModel, releasing all resources.
@@ -524,6 +534,8 @@ public:
      * @return the name of the ground sensor
      */
     std::string* getSensorName() { return &_sensorName; }
+
+    std::string* getBodySensorName() { return &_bodySensorName; }
     
     /**
      * Returns true if this character is facing right
@@ -586,6 +598,10 @@ public:
     bool hasSuper() { return _hasSuper; };
 
     void DudeModel::resetBuff();
+
+    void addTouching() { _numberOfTouchingEnemies++; };
+
+    void removeTouching() { _numberOfTouchingEnemies--; };
 
     float getAttackBuff() {
         if (_duration > 0) {

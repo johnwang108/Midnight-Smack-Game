@@ -176,7 +176,7 @@ void Level1::populate(GameScene& scene) {
 	//hardcoded player size
 	cugl::Size s = PLAYER_SIZE_DEFAULT;
 	_avatar = DudeModel::alloc(dudePos, s, _scale);
-	std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 5,18);
+	std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4,16);
 
 	//CALCULATE sue sprite size from sue obstacle size. Goal: su's feet line up with foot sensor, and head (not hat) with top of obstacle. Todo still
 	//float scalar = (s.width *_scale) / spritenode->getSize().width;
@@ -184,7 +184,7 @@ void Level1::populate(GameScene& scene) {
 	spritenode->setPosition(dudePos);
 	_avatar->setSceneNode(spritenode);
 	_avatar->setDebugColor(DEBUG_COLOR);
-	_avatar->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 5, 18, 2.0f, true);
+	_avatar->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 4, 16, 2.0f, true);
 	_avatar->addActionAnimation("idle_blink", _assets->get<Texture>("su_idle_blink"), 4, 5, 18, 2.0f, true);
 	_avatar->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 4, 15, 1.0f, true);
 	//CULog(scene.getActionManager()->isActive("") ? "active" : "inactive");
@@ -205,27 +205,27 @@ void Level1::populate(GameScene& scene) {
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
 
-	//shrimp 2
-	image = _assets->get<Texture>(SHRIMP_TEXTURE);
-	_enemy = EnemyModel::alloc({30.0f, 6.0f}, image->getSize() / _scale, _scale, EnemyType::shrimp);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_enemy->setSceneNode(sprite);
-	_enemy->setName(ENEMY_NAME);
-	_enemy->setDebugColor(DEBUG_COLOR);
-	scene.addObstacle(_enemy, sprite);
-	_enemies.push_back(_enemy);
+	////shrimp 2
+	//image = _assets->get<Texture>(SHRIMP_TEXTURE);
+	//_enemy = EnemyModel::alloc({30.0f, 6.0f}, image->getSize() / _scale, _scale, EnemyType::shrimp);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
 
 
 
-	//shrimp 3
-	image = _assets->get<Texture>(SHRIMP_TEXTURE);
-	_enemy = EnemyModel::alloc({25.0f, 18.0f}, image->getSize() / _scale, _scale, EnemyType::shrimp);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_enemy->setSceneNode(sprite);
-	_enemy->setName(ENEMY_NAME);
-	_enemy->setDebugColor(DEBUG_COLOR);
-	scene.addObstacle(_enemy, sprite);
-	_enemies.push_back(_enemy);
+	////shrimp 3
+	//image = _assets->get<Texture>(SHRIMP_TEXTURE);
+	//_enemy = EnemyModel::alloc({25.0f, 18.0f}, image->getSize() / _scale, _scale, EnemyType::shrimp);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
 
 	Vec2 rice_pos = RICE_POS;
 	image = _assets->get<Texture>(RICE_TEXTURE);
@@ -237,25 +237,26 @@ void Level1::populate(GameScene& scene) {
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
 
-	//rice 2
-	image = _assets->get<Texture>(RICE_TEXTURE);
-	_enemy = EnemyModel::alloc({ 27.0f, 28.0f }, image->getSize() / _scale, _scale, EnemyType::rice);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_enemy->setSceneNode(sprite);
-	_enemy->setName(ENEMY_NAME);
-	_enemy->setDebugColor(DEBUG_COLOR);
-	scene.addObstacle(_enemy, sprite);
-	_enemies.push_back(_enemy);
+	////rice 2
+	//image = _assets->get<Texture>(RICE_TEXTURE);
+	//_enemy = EnemyModel::alloc({ 27.0f, 28.0f }, image->getSize() / _scale, _scale, EnemyType::rice);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
 
-	//rice 3
-	image = _assets->get<Texture>(RICE_TEXTURE);
-	_enemy = EnemyModel::alloc({ 35.0f, 30.0f }, image->getSize() / _scale, _scale, EnemyType::rice);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_enemy->setSceneNode(sprite);
-	_enemy->setName(ENEMY_NAME);
-	_enemy->setDebugColor(DEBUG_COLOR);
-	scene.addObstacle(_enemy, sprite);
-	_enemies.push_back(_enemy);
+	////rice 3
+	//image = _assets->get<Texture>(RICE_TEXTURE);
+	//_enemy = EnemyModel::alloc({ 35.0f, 30.0f }, image->getSize() / _scale, _scale, EnemyType::rice);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
+
 
 
 	Vec2 egg_pos = EGG_POS;
@@ -268,26 +269,26 @@ void Level1::populate(GameScene& scene) {
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
 
-	//egg 2
-	image = _assets->get<Texture>(EGG_TEXTURE);
-	_enemy = EnemyModel::alloc({25.0f, 28.0f}, image->getSize() / (_scale), _scale, EnemyType::egg);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_enemy->setSceneNode(sprite);
-	_enemy->setName(ENEMY_NAME);
-	_enemy->setDebugColor(DEBUG_COLOR);
-	scene.addObstacle(_enemy, sprite);
-	_enemies.push_back(_enemy);
+	////egg 2
+	//image = _assets->get<Texture>(EGG_TEXTURE);
+	//_enemy = EnemyModel::alloc({25.0f, 28.0f}, image->getSize() / (_scale), _scale, EnemyType::egg);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
 
-	//egg 3
+	////egg 3
 
-	image = _assets->get<Texture>(EGG_TEXTURE);
-	_enemy = EnemyModel::alloc({30.0f, 30.0f}, image->getSize() / (_scale), _scale, EnemyType::egg);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_enemy->setSceneNode(sprite);
-	_enemy->setName(ENEMY_NAME);
-	_enemy->setDebugColor(DEBUG_COLOR);
-	scene.addObstacle(_enemy, sprite);
-	_enemies.push_back(_enemy);
+	//image = _assets->get<Texture>(EGG_TEXTURE);
+	//_enemy = EnemyModel::alloc({30.0f, 30.0f}, image->getSize() / (_scale), _scale, EnemyType::egg);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
 
 
 	scene.setAssets(_assets);

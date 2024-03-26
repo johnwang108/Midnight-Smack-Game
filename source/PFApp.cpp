@@ -77,6 +77,10 @@ void PlatformApp::onStartup() {
  * causing the application to be deleted.
  */
 void PlatformApp::onShutdown() {
+    //_gameplay.save();
+
+    _menu.dispose();
+    _multiScreen.dispose();
     _loading.dispose();
     _gameplay.dispose();
     _assets = nullptr;
@@ -143,17 +147,11 @@ void PlatformApp::update(float dt) {
     } else if (!_loaded) {
         _loading.dispose(); // Disables the input listeners in this mode
 
-        _menu.update(0.01f);
-        _menu.init(_assets, "menu");
-        _menu.setActive(true);
-        _currentScene = "main_menu";
-        CULog("asdf");
-
         std::shared_ptr<PlatformInput> input = std::make_shared<PlatformInput>();
 
         _multiScreen.init(_assets, input);
         _multiScreen.setActive(false);
-        
+
         /*_dayUIScene = std::make_shared<cugl::scene2::SceneNode>();
         _dayUIScene->init();
         _dayUIScene->setActive(MULTI_SCREEN);*/
@@ -161,8 +159,12 @@ void PlatformApp::update(float dt) {
         _gameplay.init(_assets, input);
         _gameplay.setActive(false);
 
+        _menu.init(_assets, "menu");
+        _menu.setActive(true);
+        _currentScene = "main_menu";
+
         _loaded = true;
-        
+
         // Switch to deterministic mode
         setDeterministic(true);
     }
@@ -190,13 +192,13 @@ void PlatformApp::update(float dt) {
  */
 void PlatformApp::preUpdate(float dt) {
     transitionScenes();
-    if (_currentScene == "main_menu") {
+    if (_menu.isActive()) {
         _menu.update(dt);
     }
-    else if (_currentScene == "night") {
+    else if (_gameplay.isActive()) {
         _gameplay.preUpdate(dt);
     }
-    else if (_currentScene == "day") {
+    else if (_multiScreen.isActive()) {
         _multiScreen.preUpdate(dt);
     }
     else {
@@ -262,10 +264,10 @@ void PlatformApp::preUpdate(float dt) {
 void PlatformApp::fixedUpdate() {
     // Compute time to report to game scene version of fixedUpdate
     float time = getFixedStep()/1000000.0f;
-    if (_currentScene == "night") {
+    if (_gameplay.isActive()) {
         _gameplay.fixedUpdate(time);
     }
-    else if (_currentScene == "day"){
+    else if (_multiScreen.isActive()){
         _multiScreen.fixedUpdate(time);
     }
     
@@ -298,10 +300,10 @@ void PlatformApp::fixedUpdate() {
 void PlatformApp::postUpdate(float dt) {
     // Compute time to report to game scene version of postUpdate
     float time = getFixedRemainder()/1000000.0f;
-    if (_currentScene == "night") {
+    if (_gameplay.isActive()) {
 		_gameplay.postUpdate(time);
 	}
-    else if (_currentScene == "day"){
+    else if (_multiScreen.isActive()){
 		_multiScreen.postUpdate(time);
 	}
 }
@@ -319,15 +321,15 @@ void PlatformApp::draw() {
     if (!_loaded && _loading.isActive()) {
         _loading.render(_batch);
     }
-    if (_currentScene == "main_menu") {
+    if (_menu.isActive()) {
         _menu.render(_batch);
     }
-    else if (_currentScene == "night") {
+    else if (_gameplay.isActive()) {
         _gameplay.renderBG(_batch);
         _gameplay.render(_batch);
         _gameplay.renderUI(_batch);
     }
-    else if (_currentScene == "day") {
+    else if (_multiScreen.isActive()) {
         _multiScreen.render(_batch);
         _multiScreen.renderUI(_batch);
     }

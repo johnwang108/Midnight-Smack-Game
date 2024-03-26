@@ -383,3 +383,25 @@ void MultiScreenScene::reset() {
 	_scenes[2]->setFocus(true);
 
 }
+
+void MultiScreenScene::save() {
+	//save the current state of the game
+	//should only change daytime and persistent save data
+	auto reader = JsonReader::alloc("./save.json");
+	auto writer = JsonWriter::alloc("./save.json");
+
+	std::shared_ptr<JsonValue> json = JsonValue::allocObject();
+
+	//placeholder values
+	json->appendValue("chapter", 1.0f);
+	json->appendValue("level", 1.0f);
+
+	std::shared_ptr<JsonValue> day = JsonValue::allocArray();
+
+	json->appendChild("day", day);
+
+}
+
+void MultiScreenScene::loadSave() {
+	auto reader = JsonReader::alloc("./save.json");
+}

@@ -469,6 +469,8 @@ public:
         currentLevel = level;
     }
 
+    void loadLevel(int chapter, int level);
+
     void setAssets(const std::shared_ptr<AssetManager>& assets) { _assets = assets; }
     void setScale(float scale) { _scale = scale; }
     void setBackground(const std::shared_ptr<cugl::scene2::PolygonNode>& background) { _background = background; }
@@ -508,6 +510,9 @@ public:
     std::string getTarget() { return _targetScene; };
 
     void setTarget(std::string s) { _targetScene = s; };
+
+    void save();
+    void loadSave();
 };
 
 #endif /* __PF_GAME_SCENE_H__ */

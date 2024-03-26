@@ -31,6 +31,8 @@
 
 #define ENEMY_ATTACK_CHANCE 0.001f
 
+#define SIGNUM(x)  ((x > 0) - (x < 0))
+
 class GameScene;
 
 /**
@@ -67,6 +69,9 @@ protected:
     /** Whether the enemy is aggroed*/
     bool _isChasing;
 
+    /** Enemy state*/
+    std::string _state;
+
     /** The node for debugging the sensor */
  //   std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
     /** The scale between the physics world and the screen (MUST BE UNIFORM) */
@@ -100,7 +105,12 @@ protected:
 
     std::vector<std::string> _gestureSeq2;
 
-    int _state;
+    float _behaviorCounter;
+
+    //distance to player = player position - enemy position
+    cugl::Vec2 _distanceToPlayer;
+
+
 
 
 
@@ -158,7 +168,9 @@ public:
 
     const std::shared_ptr<cugl::scene2::SceneNode>& getSceneNode() const { return _node; }
 
-    void setIsChasing(bool isChasing) { _isChasing = isChasing; }
+    void setIsChasing(bool isChasing);
+
+    void updatePlayerDistance(cugl::Vec2 playerPosition);
 
     bool isChasing() const { return _isChasing; }
 
@@ -225,7 +237,9 @@ public:
      */
     void dispose();
 
-    void createAttack(GameScene& scene);
+    bool didAttack();
+
+    std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> EnemyModel::createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale);
 
 
     void setVulnerable(bool vulnerable) { _vulnerable = vulnerable; }
@@ -240,9 +254,11 @@ public:
 
     EnemyType getType() { return _type; }
 
-    void handleMovement();
+    b2Vec2 handleMovement(b2Vec2 velocity);
 
+    void setState(std::string state);
 
+    std::string EnemyModel::getNextState(std::string state);
 
     //Dict for enemy type to buff 
     static buff enemyToBuff(EnemyType type) {

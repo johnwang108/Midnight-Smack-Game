@@ -151,6 +151,11 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         _sheets = std::unordered_map<std::string, std::shared_ptr<cugl::Texture>>();
         _info = std::unordered_map<std::string, std::tuple<int,int,int,float,bool>>();
         _activeAction = "";
+        _numberOfTouchingEnemies = 0;
+
+        b2Filter filter = getFilterData();
+        filter.groupIndex = -1;
+        setFilterData(filter);
 
         return true;
     }
@@ -173,10 +178,10 @@ void DudeModel::animate(std::string action_name) {
     //first, switch the sheet
     changeSheet(action_name);
     if (action_name == "idle") {
-        _node->setScale(0.35/4);
+        _node->setScale(0.45/4);
     }
     else {
-        _node->setScale(0.35);
+        _node->setScale(0.45);
     }
     _activeAction = action_name;
 
@@ -264,6 +269,28 @@ void DudeModel::createFixtures() {
     sensorDef.shape = &sensorShape;
     sensorDef.userData.pointer = reinterpret_cast<uintptr_t>(getSensorName());
     _sensorFixture = _body->CreateFixture(&sensorDef);
+    b2Filter filter = getFilterData();
+    filter.groupIndex = -1;
+    _sensorFixture->SetFilterData(filter);
+
+
+
+    corners[0].x = -getWidth() / 2.0f;
+    corners[0].y = getHeight()/ 2.0f;
+    corners[1].x = -getWidth() / 2.0f;
+    corners[1].y = -getHeight()/ 2.0f;
+    corners[2].x = getWidth() / 2.0f;
+    corners[2].y = -getHeight() /2.0f;
+    corners[3].x = getWidth() / 2.0f;
+    corners[3].y = getHeight() / 2.0f;
+
+    sensorShape.Set(corners, 4);
+    sensorDef.shape = &sensorShape;
+    sensorDef.userData.pointer = reinterpret_cast<uintptr_t>(getBodySensorName());
+    sensorDef.isSensor = true;
+    _bodySensorFixture = _body->CreateFixture(&sensorDef);
+
+
 }
 
 /**
@@ -379,6 +406,12 @@ void DudeModel::update(float dt) {
 		_node->setColor(Color4::WHITE);
 	}
 
+
+    CULog("Number of touching enemies: %d", _numberOfTouchingEnemies);
+    if (_numberOfTouchingEnemies > 0) {
+        takeDamage(34, 0);
+    }
+
     if (_knockbackTime > 0) {
         if (int(_knockbackTime*10) % 2 <1) {
 			_node->setVisible(true);
@@ -456,7 +489,6 @@ void DudeModel::resetDebug() {
     _sensorNode = scene2::WireNode::allocWithTraversal(poly, poly2::Traversal::INTERIOR);
     _sensorNode->setColor(DEBUG_COLOR);
     _sensorNode->setPosition(Vec2(_debug->getContentSize().width/2.0f, 0.0f));
-    _debug->addChild(_sensorNode);
 }
 
 
@@ -469,7 +501,8 @@ void DudeModel::takeDamage(float damage, const int attackDirection) {
         }
         else {
             b2Vec2 impulse = b2Vec2(attackDirection * 15, 10);
-            _body->ApplyLinearImpulseToCenter(impulse, true);
+            /*_body->ApplyLinearImpulseToCenter(impulse, true);*/
+            _body->SetLinearVelocity(impulse);
             _knockbackTime = 2;
         }
     }

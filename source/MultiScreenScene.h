@@ -110,6 +110,9 @@ public:
 	std::string getTarget() { return _targetScene; };
 
 	void setTarget(std::string s) { _targetScene = s; };
+
+	void save();
+	void loadSave();
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */
