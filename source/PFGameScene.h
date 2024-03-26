@@ -494,6 +494,10 @@ public:
 
     //creates a popup message that dissapates. Position is in word coords, not physics.
     void popup(std::string s, Vec2 pos);
+
+    std::shared_ptr<Scene2> getuiScene() { return _uiScene; }
+    void setuiScene(std::shared_ptr<Scene2> scene) { _uiScene = scene; }
+
   };
 
 #endif /* __PF_GAME_SCENE_H__ */

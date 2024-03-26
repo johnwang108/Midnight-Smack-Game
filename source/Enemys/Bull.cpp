@@ -33,25 +33,33 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
     }
     return false;
 }
-void BullModel::sethealthbar(){
+void BullModel::sethealthbar(GameScene& scene){
+    std::shared_ptr<Scene2> UI=scene.getuiScene();
     auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
     auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
-    healthBarBackground->setPosition(Vec2(10, 10));
-    healthBarForeground->setPosition(Vec2(10, 10));
-    _node->addChild(healthBarBackground);
-    _node->addChild(healthBarForeground);
+    healthBarForeground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
+    healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
+    healthBarBackground->setPosition(Vec2(80, 120));
+    healthBarForeground->setPosition(Vec2(80, 120));
+    UI->addChild(healthBarBackground);
+    UI->addChild(healthBarForeground);
     _healthBarForeground = healthBarForeground;
+    scene.setuiScene(UI);
 }
 void BullModel::update(float dt) {
 
     CapsuleObstacle::update(dt);
     if (_body == nullptr) return;
-    /*
+    
     if (_healthBarForeground != nullptr) {
         healthPercentage = _health / 100;
-        _healthBarForeground->setScale(healthPercentage);
+        float totalWidth = _healthBarForeground->getWidth();
+        float height = _healthBarForeground->getHeight();
+        float clipWidth = totalWidth * healthPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _healthBarForeground->setScissor(scissor);
     }
-    */
+    
     b2Vec2 velocity = _body->GetLinearVelocity();
     velocity.x = BULL_FORCE * _direction;
 

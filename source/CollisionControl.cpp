@@ -81,7 +81,7 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd1)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
-        if (_Bull->getCAcount() == 4 && _Bull->getCA() <= 0) {
+        if (_Bull->getCAcount() == 5 && _Bull->getCA() <= 0) {
             _Bull->setCAcount(0);
             _Bull->setIsChasing(false);
 
@@ -115,6 +115,7 @@ void GameScene::beginContact(b2Contact* contact) {
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         if (_Bull->getHealth() == 74.5f) {
             _Bull->takeDamage(_avatar->getAttack() / 4, direction, true);
+            _Bull->setsummoned(true);
             _Bull->setangrytime(4);
         }
         else if (_Bull->getHealth() == 40.5f) {
@@ -135,6 +136,7 @@ void GameScene::beginContact(b2Contact* contact) {
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         if (_Bull->getHealth() == 74.5f) {
             _Bull->takeDamage(_avatar->getAttack() / 4, direction, true);
+            _Bull->setsummoned(true);
             _Bull->setangrytime(4);
         }
         else if (_Bull->getHealth() == 40.5f) {

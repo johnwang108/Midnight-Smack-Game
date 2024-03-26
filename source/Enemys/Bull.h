@@ -108,7 +108,7 @@ public:
     bool getshoot() { return _shoot; }
     void setshoot(bool shoot) { _shoot = shoot; }
     void setassets(std::shared_ptr<AssetManager> assets) { _assets = assets; }
-    void sethealthbar();
+    void sethealthbar(GameScene& scene);
     void Summon(GameScene& scene);
     void setsummoned(bool summoned) { _summoned = summoned; };
     bool getsummoned() { return _summoned; };
