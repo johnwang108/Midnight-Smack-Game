@@ -25,6 +25,9 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         _running = false;
         _CA=0;
         _CAcount = 0;
+        b2Filter filter = getFilterData();
+        filter.groupIndex = -1;
+        setFilterData(filter);
         setDensity(BULL_DENSITY);
         setFriction(0.0f);
         setFixedRotation(true);
@@ -39,8 +42,8 @@ void BullModel::sethealthbar(GameScene& scene){
     auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
     healthBarForeground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
     healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
-    healthBarBackground->setPosition(Vec2(80, 120));
-    healthBarForeground->setPosition(Vec2(80, 120));
+    healthBarBackground->setPosition(Vec2(500, 750));
+    healthBarForeground->setPosition(Vec2(500, 750));
     UI->addChild(healthBarBackground);
     UI->addChild(healthBarForeground);
     _healthBarForeground = healthBarForeground;
@@ -104,7 +107,7 @@ void BullModel::update(float dt) {
             _node->setPosition(getPosition() * _drawScale);
             _node->setAngle(getAngle());
         }
-        _bull_attack_chance = BULL_ATTACK_CHANCE*2;
+
         return;
     }
 
@@ -119,6 +122,7 @@ void BullModel::update(float dt) {
         velocity.x *= BULL_CHASE_SPEED;
         if (_CAcount > 0) {
             velocity.x *= _CAcount/1.5;
+            _bull_attack_chance = BULL_ATTACK_CHANCE*2;
         }
         if (_CA > 0) {
 			_CA -= dt;
