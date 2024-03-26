@@ -143,10 +143,10 @@ void Level2::populate(GameScene& scene) {
 #pragma mark : Dude
 	Vec2 dudePos = DUDE_POS;
 	// node = scene2::SceneNode::alloc();
-	image = _assets->get<Texture>(DUDE_TEXTURE);
+	image = _assets->get<Texture>("su_attack_sheet");
 	_avatar = DudeModel::alloc(dudePos, image->getSize() / (2 + _scale), _scale);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_avatar->setSceneNode(sprite);
+	std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4,15);
+	_avatar->setSceneNode(spritenode);
 	_avatar->setDebugColor(DEBUG_COLOR);
 	_avatar->setName(DUDE_TEXTURE);
 	scene.addObstacle(_avatar, sprite); // Put this at the very front

@@ -49,6 +49,8 @@ protected:
 	/** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
 	bool _transitionScenes;
 
+	std::string _targetScene;
+
 	std::shared_ptr<cugl::scene2::Label> _timer;
 
 	std::shared_ptr<cugl::scene2::Label> _gestureFeedback;
@@ -60,6 +62,8 @@ protected:
 	std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
 	// the index in the _orders vector where we will find the first new order
 	int _newOrderIndex;
+
+	float _flag;
 public:
 	MultiScreenScene();
 
@@ -85,13 +89,11 @@ public:
 
 	void transition(bool t);
 
-	bool transitionedAway() { return _transitionScenes; }
-
 	int determineSwipeDirection();
 
-	void readLevel(std::shared_ptr<JsonValue> level);
+	void readLevel(std::shared_ptr<cugl::JsonValue> level);
 
-	void renderUI(std::shared_ptr<SpriteBatch> batch);
+	void renderUI(std::shared_ptr<cugl::SpriteBatch> batch);
 
 	void tempPopulate();
 	
@@ -100,6 +102,17 @@ public:
 	void focusCurr();
 
 	void reset();
+
+	bool didTransition() { return _transitionScenes; };
+
+	void setTransition(bool b) { _transitionScenes = b; };
+
+	std::string getTarget() { return _targetScene; };
+
+	void setTarget(std::string s) { _targetScene = s; };
+
+	void save();
+	void loadSave();
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */

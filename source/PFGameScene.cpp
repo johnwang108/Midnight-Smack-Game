@@ -74,7 +74,8 @@ GameScene::GameScene() : Scene2(),
 	_world(nullptr),
 	_avatar(nullptr),
 	_complete(false),
-	_debug(false)
+	_debug(false),
+    _flag(0.0f)
 {    
 }
 
@@ -136,8 +137,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets, const Rect& re
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets, 
                      const Rect& rect, const Vec2& gravity, std::shared_ptr<PlatformInput> input) {
     // Initialize the scene to a locked height (iPhone X is narrow, but wide)
+    if (_flag < 0) {
+        reset();
+        return true;
+    }
     Size dimen = computeActiveSize();
-    SDL_ShowCursor(SDL_DISABLE);
+    //SDL_ShowCursor(SDL_DISABLE);
 
     if (assets == nullptr) {
         return false;
@@ -156,6 +161,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     // Create the world and attach the listeners.
     _world = physics2::ObstacleWorld::alloc(rect,gravity);
     _world->activateCollisionCallbacks(true);
+    b2Filter* filter = new b2Filter();
     _world->onBeginContact = [this](b2Contact* contact) {
       beginContact(contact);
     };
@@ -249,8 +255,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _buffLabel = scene2::Label::allocWithText("NO BUFF", _assets->get<Font>(MESSAGE_FONT));
     _buffLabel->setAnchor(Vec2::ANCHOR_CENTER);
     _buffLabel->setPosition(dimen.width - _buffLabel->getWidth()/2, dimen.height - _buffLabel->getHeight());
-    
 
+    /*_pauseButton = std::dynamic_pointer_cast<scene2::Button>(_assets->get<scene2::SceneNode>("mymenubutton"));*/
+
+    _paused = false;
+    
+    //_uiScene->addChild(_pauseButton);
     _uiScene->addChild(_healthBarBackground);
     _uiScene->addChild(_healthBarForeground);
     _uiScene->addChild(_buffLabel);
@@ -271,18 +281,29 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
 
     _target = std::make_shared<EnemyModel>();
-    currentLevel = level2;
+
+    currentLevel = level1;
     loadLevel(currentLevel);
+
+    loadSave();
+
+    _actionManager = cugl::scene2::ActionManager::alloc();
+
+    //15 frame attack animation
+
 
     //App class will set active true
     setActive(false);
     transition(false);
-    _active = true;
+    setTarget("");
     _complete = false;
+    _flag = -1;
     setDebug(false);
     
     // XNA nostalgia
     // Application::get()->setClearColor(Color4f::CORNFLOWER);
+
+    setName("day");
     Application::get()->setClearColor(Color4::YELLOW);
     return true;
 }
@@ -424,13 +445,14 @@ void GameScene::preUpdate(float dt) {
     if (_input->didDebug()) { setDebug(!isDebug()); }
     if (_input->didReset()) { reset(); }
     if (_input->didExit()) {
-        CULog("Shutting down");
-        Application::get()->quit();
+        transition(true);
+        setTarget("main_menu");
+        return;
     }
 
     if (_input->didTransition()) {
         transition(true);
-        CULog("TTTTTTTTTTT");
+        setTarget("day");
         return;
     }
 
@@ -462,9 +484,18 @@ void GameScene::preUpdate(float dt) {
 
     }
 
+    //handle animations
+    _actionManager->update(dt);
+    //activate idle animation if no active animation
+    if (!_actionManager->isActive(_avatar->getActiveAction())) {
+        _avatar->animate("idle");
+        auto idleAction = _avatar->getAction("idle");
+        _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
+	}
+
     _dollarnode->update(dt);
 
-    if (!_slowed && (_dollarnode->shouldIDisappear())) {
+    if (!_slowed) {
         _dollarnode->setVisible(false);
         if (_dollarnode->isFocus()) {
             _dollarnode->setFocus(false);
@@ -524,7 +555,7 @@ void GameScene::preUpdate(float dt) {
         }
     }
 
-    if (_avatar->getDuration() == 0) {
+    if (_avatar->getDuration() == 0 && !_avatar->hasSuper()) {
 		_buffLabel->setVisible(false);
     }
 
@@ -554,18 +585,20 @@ void GameScene::preUpdate(float dt) {
 
             if (distance < CHASE_THRESHOLD) {
                 enemy->setIsChasing(true);
+                enemy->updatePlayerDistance(_avatar->getPosition());
+                int direction = (avatarPos.x > enemyPos.x) ? 1 : -1;
+                enemy->setDirection(direction);
                 if (enemy->getnextchangetime() < 0) {
-                    int direction = (avatarPos.x > enemyPos.x) ? 1 : -1;
-                    enemy->setDirection(direction);
                     enemy->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
                 }
                 if (enemy->getattacktime()) {
-                    enemy->createAttack(*this);
+                    auto res = enemy->createAttack(_assets, _scale);
+                    addObstacle(std::get<0>(res), std::get<1>(res));
                     enemy->setattacktime(false);
                     enemy->setshooted(false);
                 }
             }
-            else if (distance >= CHASE_THRESHOLD && enemy->isChasing()) {
+            else if (distance >= CHASE_THRESHOLD * 3 && enemy->isChasing()) {
                 enemy->setIsChasing(false);
             }
             if (enemy->getHealth() <= 0) {
@@ -608,9 +641,6 @@ void GameScene::preUpdate(float dt) {
         }
         _Bull->update(dt);
     }
-
-    //update dollar node
-    //_dollarnode->update(dt);
 }
 
 
@@ -643,6 +673,10 @@ void GameScene::preUpdate(float dt) {
  */
 void GameScene::fixedUpdate(float step) {
     // Turn the physics engine crank.
+    if (getPaused()) {
+        //nothing happens if paused
+        return;
+    }
     if (_healthBarForeground != nullptr) {
         healthPercentage = _avatar->getHealth() / 100;
         float totalWidth = _healthBarForeground->getWidth();
@@ -663,6 +697,10 @@ void GameScene::fixedUpdate(float step) {
         Vec2 worldPosition = Vec2(pos.x - viewport.size.width / 2 + 140,
             pos.y + viewport.size.height / 2 - 50);
 
+
+        cugl::Vec3 mapMin = Vec3(SCENE_WIDTH / 2, SCENE_HEIGHT / 2, 0);
+        cugl::Vec3 mapMax = Vec3(1400 - SCENE_WIDTH / 2, 900 - SCENE_HEIGHT / 2, 0); //replace magic numbers
+        target.clamp(mapMin, mapMax);
 
         //magic number 0.2 are for smoothness
         //float smooth = std::min(0.2f, (target - pos).length());
@@ -708,19 +746,15 @@ void GameScene::postUpdate(float remain) {
     // Since items may be deleted, garbage collect
     _world->garbageCollect();
 
-    // TODO: Update this demo to support interpolation
-    // We can interpolate the rope bridge and spinner as we have the data structures
-    
-    // I CHANGED THIS
-    // _spinner->update(remain);
-    // _ropebridge->update(remain);
-
-
     // Add a bullet AFTER physics allows it to hang in front
     // Otherwise, it looks like bullet appears far away
     _avatar->setShooting(_input->didFire());
-    if (_avatar->isShooting()) {
-        createAttack();
+    if (_avatar->isShooting() && !_actionManager->isActive("attack")) {
+        createAttack(false);
+        auto attackAction = _avatar->getAction("attack");
+        _avatar->animate("attack");
+        _actionManager->clearAllActions(_avatar->getSceneNode());
+        _actionManager->activate("attack", attackAction, _avatar->getSceneNode());
     }
 
 
@@ -803,6 +837,9 @@ void GameScene::setComplete(bool value) {
  * @param value whether the level is failed.
  */
 void GameScene::setFailure(bool value) {
+    if (_failed == value) {
+		return;
+	}
 	_failed = value;
 	if (value) {
 		std::shared_ptr<Sound> source = _assets->get<Sound>(LOSE_MUSIC);
@@ -817,9 +854,9 @@ void GameScene::setFailure(bool value) {
 
 
 /**
- * Add a new bullet to the world and send it in the right direction.
+ * Scuffed attack for the player.
  */
-void GameScene::createAttack() {
+void GameScene::createAttack(bool display) {
 	Vec2 pos = _avatar->getPosition();
 	pos.x += (_avatar->isFacingRight() ? ATTACK_OFFSET_H : -ATTACK_OFFSET_H);
     pos.y += ATTACK_OFFSET_V;
@@ -846,7 +883,7 @@ void GameScene::createAttack() {
 
 	std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
     attack->setSceneNode(sprite);
-    sprite->setVisible(true);
+    sprite->setVisible(display);
     sprite->setPosition(pos);
 
 	addObstacle(attack, sprite, true);
@@ -888,6 +925,7 @@ void GameScene::removeAttack(T* attack) {
 	std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
 	AudioEngine::get()->play(POP_EFFECT,source,false,EFFECT_VOLUME, true);
 }
+
 
 
 /**
@@ -943,11 +981,95 @@ void GameScene::popup(std::string s, cugl::Vec2 pos) {
     popup->setVisible(true);
     popup->setPosition(pos);
 
-    CULog(s.c_str());
-    CULog("%f", pos.x);
-    CULog("%f", pos.y);
-
     addChild(popup);
 
     _popups.push_back(std::make_tuple(popup, now));
+}
+
+void GameScene::animate(std::shared_ptr<cugl::scene2::Animate>& animation, std::shared_ptr<cugl::scene2::Action>& action, std::shared_ptr<cugl::scene2::SpriteNode>& target){
+    
+
+
+}
+
+void GameScene::save() {
+    /*std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });*/
+
+    //Should only change nighttime save data unless level was completed, in which case change level/chapter accordingly.
+    auto reader = JsonReader::alloc("./save.json");
+    auto writer = JsonWriter::alloc("./save.json");
+
+    std::shared_ptr<JsonValue> json = JsonValue::allocObject();
+
+    //write basic info.
+    //placeholders
+
+
+    json->appendValue("chapter", 1.0f);
+    json->appendValue("level", 1.0f);
+    
+
+    std::shared_ptr<JsonValue> night = JsonValue::allocObject();
+    
+    night->appendValue("location_x_player", _avatar->getPosition().x);
+    night->appendValue("location_y_player", _avatar->getPosition().y);
+    night->appendValue("health_player", _avatar->getHealth());
+    //Todo:: save buff, enemy status
+
+   /* for (auto& e : _enemies) {
+        if (e->isRemoved()) {
+			continue;
+		}
+		std::shared_ptr<JsonValue> enemy = JsonValue::allocObject();
+		enemy->appendValue("location_x_enemy", e->getPosition().x);
+		enemy->appendValue("location_y_enemy", e->getPosition().y);
+		enemy->appendValue("health_enemy", e->getHealth());
+        night->appendChild(enemy);
+	}*/
+
+
+    json->appendChild("night", night);
+
+    writer->writeJson(json);
+
+
+}
+
+void GameScene::loadSave() {
+	/*std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });*/
+
+
+    //CULog("PATH");
+    //CULog(path.c_str());
+
+    auto reader = JsonReader::alloc("./save.json");
+
+    std::shared_ptr<JsonValue> loaded_json = reader->readJson();
+
+    //Todo:: load enemies separately from level.
+
+    int chapter = loaded_json->getInt("chapter");
+    int level = loaded_json->getInt("level");
+
+    loadLevel(chapter, level);
+
+    
+}
+
+//load level with int specifiers
+void GameScene::loadLevel(int chapter, int level) {
+    std::shared_ptr<Levels> level_obj = nullptr;
+    if (chapter == 1) {
+        if (level == 1) {
+            level_obj = level1;
+        }
+        else if (level == 2) {
+            level_obj = level2;
+        }
+    }
+
+    loadLevel(level_obj);
+
 }

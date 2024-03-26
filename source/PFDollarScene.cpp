@@ -20,6 +20,7 @@
 //  Version:  2/9/24
 //
 
+#include "PFGameScene.h"
 #include "PFDollarScene.h"
 #include <box2d/b2_world.h>
 #include <box2d/b2_contact.h>
@@ -33,6 +34,10 @@
 #include <random>
 
 #define WIDTH 25
+
+//hardcode :3
+#define SCENE_WIDTH 1280
+#define SCENE_HEIGHT 800
 
 #define SMALL_MSG "retrosmall"  
 
@@ -89,9 +94,9 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	/**
 	* 1 0
 	* 0 -1
-	* transform 0,0
+	* transform is screen width/2, screen height/2 for mouse->screen coordinates
 	*/
-	_trans = Affine2(1, 0, 0, -1, 0, 0);
+	_trans = Affine2(1, 0, 0, -1, -SCENE_WIDTH/2,SCENE_HEIGHT/2);
 	_poly = cugl::scene2::PolygonNode::alloc();
 	_box = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>(texture), rect);
 
@@ -185,15 +190,6 @@ void DollarScene::update(float timestep) {
 		}
 	}
 
-	//TODO: handle rendering smarter
-	if (countdown > 0) {
-		countdown--;
-	}
-	else {
-		countdown = 0;
-	}
-
-
 	//re-extrude path
 	_se.set(_path);
 	_se.calculate(WIDTH);
@@ -203,15 +199,13 @@ void DollarScene::update(float timestep) {
 	_poly->setPolygon(_se.getPolygon() * _trans);
 	_poly->setColor(cugl::Color4::BLACK);
 	_poly->setAnchor(cugl::Vec2::ANCHOR_CENTER);
+	_poly->setScale(_scale);
+	
+	_poly->setAbsolute(true);
 
 	//GET RID OF HARDCODE JOHN TODO
-	_poly->setPosition(cugl::Vec2(0,0));
+	//_poly->setPosition(cugl::Vec2(0,0));
 	_box->setPosition(cugl::Vec2(0, 0));
-
-
-
-
-	//_header->setVisible(!isPending() && isSuccess());
 };
 
 //is gesture inputting still in progress?
@@ -224,7 +218,9 @@ bool DollarScene::isPending() {
 //if gesture is completed. pop gesture and calculate similarity
 bool DollarScene::matchWithTouchPath() {
 	if (_input->isGestureCompleted()) {
-		Path2 gesture = _input->popTouchPath();
+		CULog("COMPLETED GESTURE");
+		Path2 gesture = _path;
+		_input->popTouchPath();
 		if (gesture.size() > 3) {
 			float sim = _dollarRecog->similarity(_currentTargetGestures[_currentTargetIndex], gesture);
 			if (sim >= 0) _currentSimilarity = sim;
@@ -248,10 +244,6 @@ void DollarScene::setFocus(bool focus) {
 	}
 }
 
-bool DollarScene::shouldIDisappear() {
-	return countdown == 0;
-}
-
 void DollarScene::reset() {
 	_currentTargetIndex = 0;
 	_header->setVisible(false);
@@ -265,19 +257,3 @@ void DollarScene::reset() {
 	_completed = false;
 	_lastResult = -1;
 }
-
-
-//draws a boundary rectangle
-//void DollarScene::draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint) {
-//
-//	batch->begin();
-//
-//	batch->setColor(tint);
-//
-//	cugl::Vec2* verts = reinterpret_cast<Vec2*>(SHAPE);
-//	cugl::Poly2 poly = cugl::Poly2(verts, sizeof(SHAPE) / sizeof(float) / 2);
-//
-//	batch->fill(poly, cugl::Vec2(0,0), transform);
-//
-//	//batch->end();
-//};
