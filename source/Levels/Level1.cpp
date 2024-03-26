@@ -87,7 +87,10 @@ void Level1::parseJson(const std::string &json, std::shared_ptr<AssetManager> &a
 	// the width 
 
 	window_height = jsonValue->getInt("height");
+	std::string window_height_string = jsonValue->getString("height");
 	int width = jsonValue->getInt("width");
+
+	CULog(window_height_string.c_str());
 
 	std::shared_ptr<cugl::JsonValue> tilesets = jsonValue->get("tilesets");
 	
@@ -105,9 +108,11 @@ void Level1::parseJson(const std::string &json, std::shared_ptr<AssetManager> &a
 
 			// it should be harder than just this
 			std::string tileSource = tile->getString("source");
-			
+			// CULog(tileSource.c_str());
 			tileSource.insert(0, "\\json\\");
-			tileSource.insert(0, _getcwd(NULL, 0));
+			
+			// tileSource.insert(0, _getcwd(NULL, 0));
+			
 			// creates a reader that reads the tileset json in a level,
 			// where we will get the image 
 			// now, our tileSource string will be /../../assets/json/egg_64_enemy.tsj or something
@@ -115,31 +120,40 @@ void Level1::parseJson(const std::string &json, std::shared_ptr<AssetManager> &a
 
 			CULog(_getcwd(NULL, 0));
 
-			jsonReader = cugl::JsonReader::alloc(tileSource);
+			jsonReader = cugl::JsonReader::allocWithAsset(tileSource);
+			// _assets->attach<JsonValue>(jsonReader);
+			
 			std::string absPath = "";
 			CULog(tileSource.c_str());
 			CULog("WE GOT HERE WITHOUT AN ERROR!");
+			std::shared_ptr<JsonValue> nestedJson = jsonReader->readJson();
 			// jsonReader->readJsonString() != "image"
 
 			// THIS IS CURRENTLY NOT WORKING, RIGHT NOW EXTERNAL JSON THING NOT BEING READ
-			while (jsonReader->readJsonString() != "image") {
+			absPath = nestedJson->getString("image");
+			/*while (jsonReader->readJsonString() != "image") {
+				CULog("current item we have:");
 				CULog(jsonReader->readJsonString().c_str());
 				continue;
-			}
+			}*/
 			CULog("Did we ever get here?");
 			// absPath will now be the string RIGHT AFTER our image property
 			// in our tileSet json
-			absPath = jsonReader->readJsonString();
+			// absPath = jsonReader->readJsonString();
 
 			// std::string absPath = tileSource->getString("image");
-			size_t startPos = absPath.find("/textures");
+			size_t startPos = absPath.find("textures");
 
 			if (startPos == std::string::npos) {
 				startPos = 0;
 			}
 			std::string imgPath = absPath.substr(startPos);
-			std::replace(imgPath.begin(), imgPath.end(), '\/', '/');
+			// imgPath = '\\' + imgPath;
+			std::replace(imgPath.begin(), imgPath.end(), '\/', '\\');
+			CULog(imgPath.c_str());
 			idToImage.emplace(tileId, imgPath);
+
+			CULog("OMG we got here!!");
 
 			// for our example, idToImage will look like:
 			// {1:'background-image-1', 705: 'blocky-landscape', 713: 'goaldoor', etc.}
@@ -148,6 +162,11 @@ void Level1::parseJson(const std::string &json, std::shared_ptr<AssetManager> &a
 			// in the populate method
 		}
 	}
+
+	/*for (auto const& [key, value] : idToImage) {
+		std::string str = k + ":" + v;
+		CULog(str.c_str());
+	}*/
 
 	std::shared_ptr<cugl::JsonValue> layers = jsonValue->get("layers");
 	int rowNum = 0;
@@ -164,12 +183,23 @@ void Level1::parseJson(const std::string &json, std::shared_ptr<AssetManager> &a
 			if (i == 0) { // this will always be the background level
 				// background id will always be 1
 				// in theory, this should set up the background
+				CULog("Now we should be drawing the background");
 				std::string pathWeWant = idToImage.at(1);
+				CULog(pathWeWant.c_str());
+				CULog(_getcwd(NULL, 0));
+				CULog("----------- ");
 				assets->load<Texture>(pathWeWant, pathWeWant);
 				image = assets->get<Texture>(pathWeWant);
+				if (image == nullptr) {
+					CULog("POINTS TO NOTHING!!!");
+				}
+				else {
+					CULog("POINTS TO SOMETHING!!!!");
+				}
 				sprite = scene2::PolygonNode::allocWithTexture(image);
 				Size background_size(image->getSize().width / _scale, image->getSize().height / _scale);
-				_background = physics2::BoxObstacle::alloc(Vec2(0,window_height), background_size);
+				// _background = physics2::BoxObstacle::alloc(Vec2(0,window_height), background_size);
+				_background = physics2::BoxObstacle::alloc(BACKGROUND_POS, background_size);
 				_background->setName(BACKGROUND_NAME);
 				_background->setBodyType(b2_staticBody);
 				_background->setDensity(0.0f);
@@ -192,43 +222,47 @@ void Level1::parseJson(const std::string &json, std::shared_ptr<AssetManager> &a
 			// WALL, PLATFORM, BACKGROUND, DUDE, ENEMY, AND OTHERS THAT ARISE.
 			// Each of our images in assets/textures will thus end in _BACKGROUND, or _ENEMY, or etc.
 
-			if (data != nullptr && data->isArray()) {
-				for (int j = 0; j < data->size(); j++) {
-					colNum = j % width;
-					if (colNum == 0 && j != 0) {
-						rowNum += 1;
-					}
-					int tileId = data->get(j)->asInt();
 
-					if (idToImage.find(tileId) != idToImage.end()) {
-						std::string value = idToImage.at(tileId);
-
-						//checking what type exists here
-						if (value.find("_ENEMY.tsj") != std::string::npos) {
-							createEnemy(value, assets, scene, rowNum, colNum);
-						}
-						else if (value.find("_GOAL_DOOR.tsj") != std::string::npos) {
-							createGoalDoor(value, assets, scene, rowNum, colNum);
-						}
-						else if (value.find("_DUDE.tsj") != std::string::npos) {
-							createDude(value, assets, scene, rowNum, colNum);
-						}
-						else if (value.find("_BORDER.tsj") != std::string::npos) {
-							borderNumber = borderNumber + 1;
-							createPlatform(value, assets, scene, rowNum, colNum, borderNumber);
-							
-						}
-						else if (value.find("_PLATFORM.tsj") != std::string::npos) {
-							platformNumber = platformNumber + 1;
-							createPlatform(value, assets, scene, rowNum, colNum, platformNumber);
-						}
-						// WE WILL NEED TO ADD MORE?
-
-					}
+			//if (data != nullptr && data->isArray()) {
+			//	for (int j = 0; j < data->size(); j++) {
+			//		colNum = j % width;
+			//		if (colNum == 0 && j != 0) {
+			//			rowNum += 1;
+			//		}
+			//		int tileId = data->get(j)->asInt();
 
 
-				}
-			}
+			//		if (idToImage.find(tileId) != idToImage.end()) {
+			//			std::string value = idToImage.at(tileId);
+
+			//			//checking what type exists here
+			//			if (value.find("_ENEMY.tsj") != std::string::npos) {
+			//				createEnemy(value, assets, scene, rowNum, colNum);
+			//			}
+			//			else if (value.find("_GOAL_DOOR.tsj") != std::string::npos) {
+			//				createGoalDoor(value, assets, scene, rowNum, colNum);
+			//			}
+			//			else if (value.find("_DUDE.tsj") != std::string::npos) {
+			//				CULog("CHECKING IN ON THE DUDE");
+			//				createDude(value, assets, scene, rowNum, colNum);
+			//			}
+			//			else if (value.find("_BORDER.tsj") != std::string::npos) {
+			//				borderNumber = borderNumber + 1;
+			//				createPlatform(value, assets, scene, rowNum, colNum, borderNumber);
+			//				
+			//			}
+			//			else if (value.find("_PLATFORM.tsj") != std::string::npos) {
+			//				platformNumber = platformNumber + 1;
+			//				createPlatform(value, assets, scene, rowNum, colNum, platformNumber);
+			//			}
+			//			// WE WILL NEED TO ADD MORE?
+			//			CULog("UH-OH");
+
+			//		}
+
+
+			//	}
+			//}
 
 		}
 	}
@@ -569,46 +603,46 @@ void Level1::populate(GameScene& scene) {
 //		scene.addObstacle(wallobj, sprite, 1);  // All walls share the same texture
 //	}
 //
-//#pragma mark : Platforms
-//	for (int ii = 0; ii < PLATFORM_COUNT; ii++) {
-//		std::shared_ptr<physics2::PolygonObstacle> platobj;
-//		Poly2 platform(reinterpret_cast<Vec2*>(PLATFORMS[ii]), sizeof(PLATFORMS[ii]) / sizeof(float) / 2);
-//
-//		EarclipTriangulator triangulator;
-//		triangulator.set(platform.vertices);
-//		triangulator.calculate();
-//		platform.setIndices(triangulator.getTriangulation());
-//		triangulator.clear();
-//
-//		platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_CENTER);
-//		// You cannot add constant "".  Must stringify
-//		platobj->setName(std::string(PLATFORM_NAME) + cugl::strtool::to_string(ii));
-//
-//		// Set the physics attributes
-//		platobj->setBodyType(b2_staticBody);
-//		platobj->setDensity(BASIC_DENSITY);
-//		platobj->setFriction(BASIC_FRICTION);
-//		platobj->setRestitution(BASIC_RESTITUTION);
-//		platobj->setDebugColor(DEBUG_COLOR);
-//
-//		platform *= _scale;
-//		sprite = scene2::PolygonNode::allocWithTexture(image, platform);
-//		scene.addObstacle(platobj, sprite, 1);
-//	}
+#pragma mark : Platforms
+	for (int ii = 0; ii < PLATFORM_COUNT; ii++) {
+		std::shared_ptr<physics2::PolygonObstacle> platobj;
+		Poly2 platform(reinterpret_cast<Vec2*>(PLATFORMS[ii]), sizeof(PLATFORMS[ii]) / sizeof(float) / 2);
 
-//#pragma mark : Dude
-//	Vec2 dudePos = DUDE_POS;
-//	// node = scene2::SceneNode::alloc();
-//	image = _assets->get<Texture>(DUDE_TEXTURE);
-//	_avatar = DudeModel::alloc(dudePos, image->getSize() / (2 + _scale), _scale);
-//	sprite = scene2::PolygonNode::allocWithTexture(image);
-//	_avatar->setSceneNode(sprite);
-//	_avatar->setDebugColor(DEBUG_COLOR);
-//	scene.addObstacle(_avatar, sprite); // Put this at the very front
-//
-//	// Play the background music on a loop.
-//	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
-//	AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
+		EarclipTriangulator triangulator;
+		triangulator.set(platform.vertices);
+		triangulator.calculate();
+		platform.setIndices(triangulator.getTriangulation());
+		triangulator.clear();
+
+		platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_CENTER);
+		// You cannot add constant "".  Must stringify
+		platobj->setName(std::string(PLATFORM_NAME) + cugl::strtool::to_string(ii));
+
+		// Set the physics attributes
+		platobj->setBodyType(b2_staticBody);
+		platobj->setDensity(BASIC_DENSITY);
+		platobj->setFriction(BASIC_FRICTION);
+		platobj->setRestitution(BASIC_RESTITUTION);
+		platobj->setDebugColor(DEBUG_COLOR);
+
+		platform *= _scale;
+		sprite = scene2::PolygonNode::allocWithTexture(image, platform);
+		scene.addObstacle(platobj, sprite, 1);
+	}
+
+#pragma mark : Dude
+	Vec2 dudePos = DUDE_POS;
+	// node = scene2::SceneNode::alloc();
+	image = _assets->get<Texture>(DUDE_TEXTURE);
+	_avatar = DudeModel::alloc(dudePos, image->getSize() / (2 + _scale), _scale);
+	sprite = scene2::PolygonNode::allocWithTexture(image);
+	_avatar->setSceneNode(sprite);
+	_avatar->setDebugColor(DEBUG_COLOR);
+	scene.addObstacle(_avatar, sprite); // Put this at the very front
+
+	// Play the background music on a loop.
+	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
+	AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
 
 	/*Vec2 shrimp_pos = SHRIMP_POS;

@@ -48,6 +48,9 @@ void PlatformApp::onStartup() {
     _assets->attach<Sound>(SoundLoader::alloc()->getHook());
     _assets->attach<scene2::SceneNode>(Scene2Loader::alloc()->getHook());
 
+    _assets->attach<JsonValue>(JsonLoader::alloc()->getHook());
+    // _assets->attach<JsonReader>(cugl::JsonReader::alloc()->getHook());
+
     // Create a "loading" screen
     _loaded = false;
     _loading.init(_assets);

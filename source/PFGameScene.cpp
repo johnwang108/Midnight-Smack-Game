@@ -23,6 +23,7 @@
 #include <box2d/b2_world.h>
 #include <box2d/b2_contact.h>
 #include <box2d/b2_collision.h>
+#// include "</../Users/benlo/source/repos/Midnight-Smack-Folder/Midnight-Smack-Game/source/Levels/LevelModel.h"
 
 #include <ctime>
 #include <string>
@@ -141,6 +142,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     } else if (!Scene2::init(dimen)) {
         return false;
     }
+
     
     // Start up the input handler
     _assets = assets;
@@ -149,6 +151,10 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     // Create the world and attach the listeners.
     _world = physics2::ObstacleWorld::alloc(rect,gravity);
+
+    //Here, we are going to set our level's world equal to world
+
+
     _world->activateCollisionCallbacks(true);
     _world->onBeginContact = [this](b2Contact* contact) {
       beginContact(contact);

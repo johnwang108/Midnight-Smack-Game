@@ -190,6 +190,11 @@ public:
      * Disposes of all (non-static) resources allocated to this mode.
      */
     void dispose();
+
+    /** return the current instance of the physics world*/
+    std::shared_ptr<physics2::ObstacleWorld> getWorld() {
+        return _world;
+    }
     
     /**
      * Initializes the controller contents, and starts the game
