@@ -87,7 +87,7 @@ using namespace cugl;
 PlatformInput::PlatformInput() :
 _active(false),
 _resetPressed(false),
-//_debugPressed(false),
+_debugPressed(false),
 _exitPressed(false),
 _firePressed(false),
 _jumpPressed(false),

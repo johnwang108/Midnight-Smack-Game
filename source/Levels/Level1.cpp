@@ -120,7 +120,7 @@ void Level1::populate(GameScene& scene) {
 #pragma mark : Platforms
 	for (int ii = 0; ii < PLATFORM_COUNT; ii++) {
 		std::shared_ptr<Wall> platObj = Wall::alloc(image, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, Color4::BLUE,
-			reinterpret_cast<Vec2*>(PLATFORMS[ii]), PLATFORM_VERTS, std::string(PLATFORM_NAME) + cugl::strtool::to_string(ii), 0, true);
+			reinterpret_cast<Vec2*>(PLATFORMS[ii]), PLATFORM_VERTS, std::string(PLATFORM_NAME) + cugl::strtool::to_string(ii));
 		scene.addObstacle(platObj->getObj(), platObj->getSprite(), 1);
 	}
 
