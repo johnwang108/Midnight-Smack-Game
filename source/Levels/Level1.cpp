@@ -19,6 +19,8 @@ static float RICE_POS[] = { 25.0f, 6.0f };
 
 static float BACKGROUND_POS[] = { 16.0f, 10.0f };
 
+std::vector<std::shared_ptr<Wall>> things;
+
 
 //static float WALL[WALL_COUNT][WALL_VERTS] = {
 //	{16.0f, 20.0f,  0.0f, 20.0f,  0.0f,  0.0f,
@@ -113,7 +115,9 @@ void Level1::populate(GameScene& scene) {
 	image = _assets->get<Texture>(EARTH_TEXTURE);
 	std::string wname = "wall";
 	for (int ii = 0; ii < WALL_COUNT; ii++) {
-		std::shared_ptr<Wall> wallobj = Wall::alloc(image, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, DEBUG_COLOR, reinterpret_cast<Vec2*>(WALL[ii]), WALL_VERTS, wname);
+		std::shared_ptr<Wall> wallobj = Wall::alloc(image, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, DEBUG_COLOR,
+			reinterpret_cast<Vec2*>(WALL[ii]), WALL_VERTS, wname);
+		things.push_back(wallobj);
 		scene.addObstacle(wallobj->getObj(), wallobj->getSprite(), 1);  // All walls share the same texture
 	}
 
@@ -121,6 +125,12 @@ void Level1::populate(GameScene& scene) {
 	for (int ii = 0; ii < PLATFORM_COUNT; ii++) {
 		std::shared_ptr<Wall> platObj = Wall::alloc(image, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, Color4::BLUE,
 			reinterpret_cast<Vec2*>(PLATFORMS[ii]), PLATFORM_VERTS, std::string(PLATFORM_NAME) + cugl::strtool::to_string(ii));
+		std::vector<Vec3> path;
+		path = { Vec3(100,100,0), Vec3(200,200,0), Vec3(300,300,0), Vec3(400,400,0) };
+		if (ii % 2 == 0) {
+			platObj->initiatePath(path,2);
+		}
+		things.push_back(platObj);
 		scene.addObstacle(platObj->getObj(), platObj->getSprite(), 1);
 	}
 
@@ -250,4 +260,12 @@ void Level1::populate(GameScene& scene) {
 	scene.setEnemies(_enemies);
 	scene.setGoalDoor(_goalDoor);
 
+}
+void Level1::update(float step) {
+	//CULog("cry");
+	for (const auto& obj : things) {
+		if (obj->queryActivePath()) {
+			obj->update(step);
+		}
+	}
 }

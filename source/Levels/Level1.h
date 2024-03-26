@@ -19,6 +19,7 @@ public:
     }
 
     void populate(GameScene& scene) override;
+    void update(float step) override;
 };
 
 #endif /* __LEVEL1_H__ */

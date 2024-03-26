@@ -683,6 +683,7 @@ void GameScene::fixedUpdate(float step) {
         setComplete(true);
     }
     _world->update(step);
+    currentLevel->update(step);
 }
     
 /**
@@ -717,6 +718,7 @@ void GameScene::postUpdate(float remain) {
     // I CHANGED THIS
     // _spinner->update(remain);
     // _ropebridge->update(remain);
+    
 
 
     // Add a bullet AFTER physics allows it to hang in front
@@ -746,7 +748,7 @@ void GameScene::postUpdate(float remain) {
     }
 
      //Reset the game if we win or lose.
-   if (_countdown > 0) {
+    if (_countdown > 0) {
         _countdown--;
     } else if (_countdown == 0) {
         if (_failed == false) {
@@ -912,13 +914,12 @@ void GameScene::beginContact(b2Contact* contact) {
     }
 
     // Check if the player hits a wall NOT PLATFORM (not implemented for that atm)
-    if ((bd1 == _avatar.get() && bd2->getName() == WALL_NAME) ||
-        (bd2 == _avatar.get() && bd1->getName() == WALL_NAME)) {
+    if ((bd1 == _avatar.get() && (bd2->getName().find("wall") != std::string::npos || bd2->getName().find("platform") != std::string::npos)) ||
+        (bd2 == _avatar.get() && (bd1->getName().find("wall") != std::string::npos || bd2->getName().find("platform") != std::string::npos))) {
         _avatar->setContactingWall(true);
         _avatar->setVX(0);
     }
 
-    CULog(bd1->getName().c_str());
 
     if ((bd1 == _avatar.get() && bd2->getName().find("dd") != std::string::npos) ||
         (bd2 == _avatar.get() && bd1->getName().find("dd") != std::string::npos)) {

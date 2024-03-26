@@ -14,6 +14,9 @@ Wall::Wall() {
 	name = "";
 	breakableCoolDown = 0;
 	doesDamage = false;
+	movementForce = 0;
+	currentPathNode = 0;
+	path.push_back(Vec3(-1, -1, -1));
 }
 
 bool Wall::init(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION, 
@@ -87,6 +90,38 @@ Poly2 Wall::getCollisionPoly()
 std::shared_ptr<scene2::SceneNode> Wall::getSprite()
 {
 	return this->sprite;
+}
+
+void Wall::initiatePath(std::vector<Vec3> paath, int movementForce)
+{
+	path.clear();
+	path = paath;
+	this->movementForce = movementForce;
+}
+
+void Wall::update(float dt) {
+	applyPathMovement(dt);
+}
+
+bool Wall::queryActivePath() {
+	return path.front().z != -1;
+}
+
+void Wall::applyPathMovement(float step) {
+	//CULog("print");
+	//CULog("%f",_obj->getX());
+	Vec3 target = path[currentPathNode];
+	Vec3 pos = Vec3(_obj->getX(), _obj->getY(), 0);
+
+	//magic number 0.2 are for smoothness
+	//float smooth = std::min(0.2f, (target - pos).length());
+	float smooth = 0.2;
+	pos.smooth(target, step, smooth);
+	//cugl::Vec3 pos = _avatar->getPosition() * _scale;
+	//_obj->ApplyLinearImpulse(force, _body->GetPosition(), true);
+	float activeVX = std::min(5.0f, path[currentPathNode].x - pos.x);
+	float activeVY = std::min(5.0f, path[currentPathNode].y - pos.y);
+	//_obj->applyForce(target);
 }
 
 

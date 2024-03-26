@@ -126,6 +126,7 @@ public:
 
     virtual void populate(GameScene& scene) = 0;
 
+    virtual void update(float step);
 };
 
 #endif /* __LEVELS_H__ */
