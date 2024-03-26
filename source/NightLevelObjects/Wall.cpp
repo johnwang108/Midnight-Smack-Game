@@ -1,5 +1,6 @@
 #include "Wall.h"
 
+using namespace cugl;
 
 Wall::Wall() {
 	image = nullptr;
@@ -7,7 +8,7 @@ Wall::Wall() {
 	BASIC_DENSITY = 0.0;
 	BASIC_FRICTION = 0.0;
 	BASIC_RESTITUTION = 0.0,
-	DEBUG_COLOR = cugl::Color4::YELLOW;
+	DEBUG_COLOR = Color4::YELLOW;
 	WALL_POS = nullptr;
 	WALL_VERTS = 1;
 	name = "";
@@ -15,18 +16,18 @@ Wall::Wall() {
 	doesDamage = false;
 }
 
-bool Wall::init(std::shared_ptr<cugl::Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION, 
-	float BASIC_RESTITUTION, cugl::Color4 DEBUG_COLOR, cugl::Vec2* WALL_POS, int WALL_VERTS, std::string name,
+bool Wall::init(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION, 
+	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name,
 	int breakableCooldown, bool doesDamage) {
-	cugl::Poly2 _collisionPoly(WALL_POS, WALL_VERTS / 2);
+	Poly2 _collisionPoly(WALL_POS, WALL_VERTS / 2);
 	// Call this on a polygon to get a solid shape
-	cugl::EarclipTriangulator triangulator;
+	EarclipTriangulator triangulator;
 	triangulator.set(_collisionPoly.vertices);
 	triangulator.calculate();
 	_collisionPoly.setIndices(triangulator.getTriangulation());
 	triangulator.clear();
 
-	_obj = cugl::physics2::PolygonObstacle::allocWithAnchor(_collisionPoly, cugl::Vec2::ANCHOR_CENTER);
+	_obj = physics2::PolygonObstacle::allocWithAnchor(_collisionPoly, Vec2::ANCHOR_CENTER);
 	// You cannot add constant "".  Must stringify
 
 	// Set the physics attributes
@@ -37,7 +38,7 @@ bool Wall::init(std::shared_ptr<cugl::Texture> image, float _scale, float BASIC_
 	_obj->setDebugColor(DEBUG_COLOR);
 
 	_collisionPoly *= _scale;
-	sprite = cugl::scene2::PolygonNode::allocWithTexture(image, _collisionPoly);
+	sprite = scene2::PolygonNode::allocWithTexture(image, _collisionPoly);
 
 
 
@@ -66,24 +67,24 @@ bool Wall::init(std::shared_ptr<cugl::Texture> image, float _scale, float BASIC_
 	return true;
 }
 
-std::shared_ptr<Wall> Wall::alloc(std::shared_ptr<cugl::Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION, 
-	float BASIC_RESTITUTION, cugl::Color4 DEBUG_COLOR, cugl::Vec2* WALL_POS, int WALL_VERTS, std::string name, int breakableCooldown, bool doesDamage) {
+std::shared_ptr<Wall> Wall::alloc(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION, 
+	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, int breakableCooldown, bool doesDamage) {
 	std::shared_ptr<Wall> result = std::make_shared<Wall>();
 	return (result->init(image, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, DEBUG_COLOR, WALL_POS, WALL_VERTS, name, 
 		breakableCooldown, doesDamage) ? result : nullptr);
 }
 
-std::shared_ptr<cugl::physics2::PolygonObstacle> Wall::getObj()
+std::shared_ptr<physics2::PolygonObstacle> Wall::getObj()
 {
 	return this->_obj;
 }
 
-cugl::Poly2 Wall::getCollisionPoly()
+Poly2 Wall::getCollisionPoly()
 {
 	return this->_collisionPoly;
 }
 
-std::shared_ptr<cugl::scene2::SceneNode> Wall::getSprite()
+std::shared_ptr<scene2::SceneNode> Wall::getSprite()
 {
 	return this->sprite;
 }
