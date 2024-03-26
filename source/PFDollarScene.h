@@ -30,11 +30,11 @@
 #include <box2d/b2_fixture.h>
 #include <unordered_set>
 #include <vector>
+#include <deque>
 #include "PFInput.h"
 #include "PFAttack.h"
 #include "PFDudeModel.h"
-#include "PFRopeBridge.h"
-#include "PFSpinner.h"
+#include "Ingredient.h"
 
 /**Todo: Implement a basic dollar gesture input scene that can be represented as 
 a child node of GameScene and has a basic rectangle that waits for input from a 
@@ -86,6 +86,13 @@ protected:
 
     float _currentSimilarity; 
 
+    std::shared_ptr<cugl::scene2::SceneNode> _bottomBar;
+    std::shared_ptr<cugl::scene2::SceneNode> _conveyorBelt;
+
+
+    std::deque<std::shared_ptr<Ingredient>> _currentIngredients;
+
+    std::shared_ptr<Ingredient> _ingredientToRemove; 
     //Todo: need library of existing predetermined inputs to check against
 
 public:
@@ -136,6 +143,15 @@ public:
     bool matchWithTouchPath();
 
     bool getJustCompletedGesture() { return _justCompletedGesture; }
+
+    std::shared_ptr<cugl::scene2::SceneNode> getBottomBar() { return _bottomBar; }
+    void setBottomBar(std::shared_ptr<cugl::scene2::SceneNode> bar);
+
+    void addIngredient(std::shared_ptr<Ingredient> ingredient);
+    std::shared_ptr<Ingredient> DollarScene::popIngredient();
+
+
+    void updateConveyor();
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */

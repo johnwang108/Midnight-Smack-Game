@@ -238,7 +238,47 @@
         "labscene": "widgets/labscene.json"
     },
     "scene2s": {
-        "lab": {
+        "lab0": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "labscene"
+            }
+        },
+        "lab1": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "labscene"
+            }
+        },
+        "lab2": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "labscene"
+            }
+        },
+        "lab3": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "labscene"
+            }
+        },
+        "lab4": {
             "type": "Widget",
             "comment": "This is the root node of the scene for the lab",
             "format": {

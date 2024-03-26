@@ -1,23 +1,33 @@
-#ifndef __ORDER_H__
-#define __ORDER_H__
+#ifndef __INGREDIENT_H__
+#define __INGREDIENT_H__
 
 #include <cugl/cugl.h>
 
-class Order {
+
+
+class Ingredient {
 private: 
+	std::string _name;
 	std::string _station;
 	std::vector<std::string> _gestureNames;
 	float _startTime;
+
+	std::shared_ptr<cugl::scene2::Button> _button;
+	bool _beingHeld;
 public: 
 	
-	Order();
+	
+	Ingredient();
 
 	/**
 	* Creates a new Order object for cook station station and starting at startTime seconds after the day begins.
 	*
 	*/
-	Order(std::string station, std::vector<std::string> gestures, float startTime);
-	
+	Ingredient(std::string station, std::vector<std::string> gestures, float startTime);
+
+	std::string getName() { return _name; }
+	void setName(std::string newName) { _name = newName; }
+
 	float getStartTime() { return _startTime; }
 
 	void setStartTime(float time) { _startTime = time; };
@@ -31,6 +41,12 @@ public:
 	std::vector<std::string> getGestures() { return _gestureNames; }
 
 	void setGestures(std::vector<std::string> gestures) {_gestureNames = gestures;};
+
+	void init(std::shared_ptr<cugl::Texture> texture);
+
+	bool getBeingHeld() { return _beingHeld; }
+
+	std::shared_ptr<cugl::scene2::Button> getButton() { return _button; }
 };
 
-#endif // __ORDER_H__
+#endif // __INGREDIENT_H__

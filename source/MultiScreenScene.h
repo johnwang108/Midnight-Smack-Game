@@ -4,8 +4,7 @@
 #include <cugl/cugl.h>
 #include "PFInput.h"
 #include "PFDollarScene.h"
-#include "Order.h"
-#include <cugl/cugl.h>
+#include "Ingredient.h"
 #include <box2d/b2_world_callbacks.h>
 #include <box2d/b2_fixture.h>
 #include <unordered_set>
@@ -19,7 +18,7 @@ private:
 	// current time, in seconds with decimals
 	float _currentTime;
 	std::map<std::string, int> _stationMap;
-	bool _finishedOrders;
+	bool _finishedIngredients;
 
 
 
@@ -59,11 +58,19 @@ protected:
 
 	cugl::Timestamp _gestureInitiatedTime;
 
-	std::vector<Order> _orders; 
+	std::vector<std::shared_ptr<Ingredient>> _ingredients; 
 
 	std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
+
+    /* This is the name of the dish we are making for the day, to display */
+	std::string _dishToPrepare;
+	float _dayDuration;
+	int _quota;
+	
+	/* If the day has ended*/
+	bool _ended;
 	// the index in the _orders vector where we will find the first new order
-	int _newOrderIndex;
+	int _newIngredientIndex;
 public:
 	MultiScreenScene();
 
@@ -93,15 +100,17 @@ public:
 
 	int determineSwipeDirection();
 
-	void readLevel(std::shared_ptr<JsonValue>& level);
+	void readLevel(std::shared_ptr<cugl::JsonValue>& level);
 
-	void renderUI(std::shared_ptr<SpriteBatch> batch);
+	void renderUI(std::shared_ptr<cugl::SpriteBatch> batch);
 
 	void tempPopulate();
 	
 	void unfocusAll();
 
 	void focusCurr();
+
+	void endDay();
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */

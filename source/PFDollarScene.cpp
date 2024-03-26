@@ -40,6 +40,7 @@
 
 #define GOOD_THRESHOLD 0.7
 #define PERFECT_THRESHOLD 0.85
+#define CONVEYOR_SPEED 1.0f
 
 using namespace cugl;
 
@@ -212,6 +213,7 @@ void DollarScene::update(float timestep) {
 
 
 	//_header->setVisible(!isPending() && isSuccess());
+	updateConveyor();
 };
 
 //is gesture inputting still in progress?
@@ -251,7 +253,51 @@ bool DollarScene::shouldIDisappear() {
 	return countdown == 0;
 }
 
+void DollarScene::setBottomBar(std::shared_ptr<cugl::scene2::SceneNode> bar) {
+	_bottomBar = bar;
+	if (_bottomBar != nullptr) {
+		_conveyorBelt = _bottomBar->getChildByName("kitchenbar")->getChildByName("Conveyor")->getChildByName("ConveyorBelt");
+	}
+}
 
+void DollarScene::addIngredient(std::shared_ptr<Ingredient> ing) {
+	if (_bottomBar == nullptr) {
+		CULogError("Trying to add ingredient to Dollar Scene Without Bottom Bar");
+		return;
+	}
+	_currentIngredients.push_back(ing);
+	ing->getButton()->setPosition(_conveyorBelt->getWidth() - ing->getButton()->getWidth()/2, _conveyorBelt->getHeight() / 2);
+}
+
+
+void DollarScene::updateConveyor() {
+	if (_bottomBar == nullptr) return;
+
+	for (auto& ingredient : _currentIngredients) {
+		std::shared_ptr<scene2::SceneNode> button = ingredient->getButton();
+		CULog("%f", button->getPositionX());
+		button->setPositionX(button->getPositionX() - CONVEYOR_SPEED);
+
+		if (button->getPositionX() <= button->getWidth()/2) {
+			button->setVisible(false);
+			
+			// mark button switch to next pos
+			_ingredientToRemove = ingredient;
+		}
+	}
+}
+
+std::shared_ptr<Ingredient> DollarScene::popIngredient() {
+	if (_ingredientToRemove == nullptr) {
+		return nullptr;
+	}
+	auto ingIt = std::remove(_currentIngredients.begin(), _currentIngredients.end(), _ingredientToRemove);
+	_currentIngredients.erase(ingIt, _currentIngredients.end());
+	
+	std::shared_ptr<Ingredient> removedIngredient = _ingredientToRemove;
+	_ingredientToRemove.reset();
+	return removedIngredient;
+}
 //draws a boundary rectangle
 //void DollarScene::draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint) {
 //
