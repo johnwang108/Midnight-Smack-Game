@@ -267,6 +267,11 @@ void DollarScene::addIngredient(std::shared_ptr<Ingredient> ing) {
 	}
 	_currentIngredients.push_back(ing);
 	ing->getButton()->setPosition(_conveyorBelt->getWidth() - ing->getButton()->getWidth()/2, _conveyorBelt->getHeight() / 2);
+	if (_conveyorBelt == nullptr) {
+		CULogError("Trying to add ingredient to Dollar Scene Without Bottom Bar");
+		return;
+	} 
+	_conveyorBelt->addChild(ing->getButton());
 }
 
 
@@ -275,12 +280,9 @@ void DollarScene::updateConveyor() {
 
 	for (auto& ingredient : _currentIngredients) {
 		std::shared_ptr<scene2::SceneNode> button = ingredient->getButton();
-		CULog("%f", button->getPositionX());
 		button->setPositionX(button->getPositionX() - CONVEYOR_SPEED);
 
-		if (button->getPositionX() <= button->getWidth()/2) {
-			button->setVisible(false);
-			
+		if (button->getPositionX() <= button->getWidth()) {			
 			// mark button switch to next pos
 			_ingredientToRemove = ingredient;
 		}
@@ -296,6 +298,7 @@ std::shared_ptr<Ingredient> DollarScene::popIngredient() {
 	
 	std::shared_ptr<Ingredient> removedIngredient = _ingredientToRemove;
 	_ingredientToRemove.reset();
+	_conveyorBelt->removeChild(removedIngredient->getButton());
 	return removedIngredient;
 }
 //draws a boundary rectangle

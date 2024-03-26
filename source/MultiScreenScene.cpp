@@ -263,9 +263,6 @@ void MultiScreenScene::preUpdate(float timestep) {
 
 		//todo update this when you get new widgets
 		_scenes[stationIdx]->addIngredient(upcomingIngredient);
-		std::shared_ptr<scene2::SceneNode> bar = _scenes[stationIdx]->getBottomBar()->getChildByName("kitchenbar");
-		bar->getChildByName("Conveyor")->getChildByName("ConveyorBelt")->addChild(upcomingIngredient->getButton());
-
 		_scenes[stationIdx]->setTargetGestures(upcomingIngredient->getGestures());
 
 		if (_newIngredientIndex < _ingredients.size() - 1) _newIngredientIndex++;
@@ -277,7 +274,20 @@ void MultiScreenScene::preUpdate(float timestep) {
 
 	for (int i = 0; i < 5; i++) {
 		_scenes[i]->update(timestep);
+		std::shared_ptr<Ingredient> poppedIng = _scenes[i]->popIngredient();
+		if (poppedIng != nullptr) {
+			int newIndex;
+			if (i >= 4) {
+				newIndex = 0;
+			}
+			else {
+				newIndex = i + 1;
+			}
+			_scenes[newIndex]->addIngredient(poppedIng);
+		}
 	}
+
+	
 
 	if (_scenes[_curr]->getJustCompletedGesture()) {
 		_gestureInitiatedTime = Timestamp();
