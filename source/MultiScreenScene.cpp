@@ -104,6 +104,14 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_stationMap["cutting_station"] = 3;
 	_stationMap["blending_station"] = 4;
 
+	_stationIngredients[0] = std::vector<std::string>{ "Rice", "Egg"};
+	_stationIngredients[1] = std::vector<std::string>{};
+	_stationIngredients[2] = std::vector<std::string>{ "Rice", "Egg", "Shrimp", "Beef", "Carrot"};
+	_stationIngredients[3] = std::vector<std::string>{"Shrimp", "Carrot" };
+	_stationIngredients[4] = std::vector<std::string>{ "Egg" };
+
+
+
 	std::string stationTextures[5] = {"pot_station","prep_station" ,"panfry_station" ,"cutting_station" ,"blending_station"};
 	initStations(stationTextures, 5);
 
@@ -196,6 +204,7 @@ void MultiScreenScene::initStations(std::string textures[], int size) {
 		scene->setAnchor(Vec2::ANCHOR_CENTER);
 		scene->setPosition(positions[i]);
 		scene->setVisible(true);
+		scene->setValidIngredients(_stationIngredients[i]);
 
 		std::string uiKey = "lab"; 
 		uiKey += std::to_string(i);
@@ -208,18 +217,18 @@ void MultiScreenScene::initStations(std::string textures[], int size) {
 		setScene(i, scene);
 	}
 
-	std::shared_ptr<scene2::PolygonNode> p = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("ninepatch"));
-	p->setContentSize(Size(80, 80));
-	std::shared_ptr<cugl::scene2::Button> testButton = scene2::Button::alloc(p);
-	testButton->setAnchor(Vec2::ANCHOR_CENTER);
-	testButton->setColor(Color4::RED);
-	testButton->addListener([=](const std::string& name, bool down) {
-		CULog("Button pressed!!! !!!! !!!!:)");
-		CULog("");
-		});
-	testButton->activate();
-	addChild(testButton);
-	testButton->setPosition(cugl::Vec2(0,0));
+	//std::shared_ptr<scene2::PolygonNode> p = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("ninepatch"));
+	//p->setContentSize(Size(80, 80));
+	//std::shared_ptr<cugl::scene2::Button> testButton = scene2::Button::alloc(p);
+	//testButton->setAnchor(Vec2::ANCHOR_CENTER);
+	//testButton->setColor(Color4::RED);
+	//testButton->addListener([=](const std::string& name, bool down) {
+	//	CULog("Button pressed!!! !!!! !!!!:)");
+	//	CULog("");
+	//	});
+	//testButton->activate();
+	//addChild(testButton);
+	//testButton->setPosition(cugl::Vec2(0,0));
 
 
 
@@ -272,8 +281,8 @@ void MultiScreenScene::update(float timestep) {
 void MultiScreenScene::preUpdate(float timestep) {
 	_input->update(timestep);
 
-	CULog("Camera position: %f, %f", _camera->getPosition().x, _camera->getPosition().y);
-	CULog("Scene position: %f, %f", _scenes[_curr]->getPosition().x, _scenes[_curr]->getPosition().y);
+	//CULog("Camera position: %f, %f", _camera->getPosition().x, _camera->getPosition().y);
+	//CULog("Scene position: %f, %f", _scenes[_curr]->getPosition().x, _scenes[_curr]->getPosition().y);
 
 	if (_input->didExit()) {
 		CULog("Shutting down");

@@ -12,6 +12,7 @@ private:
 	std::vector<std::string> _gestureNames;
 	float _startTime;
 	bool _falling;
+	bool _inPot;
 
 	std::shared_ptr<cugl::scene2::Button> _button;
 	bool _beingHeld;
@@ -51,6 +52,9 @@ public:
 
 	bool isFalling() { return _falling; }
 	void setFalling(bool val) { _falling = val; };
+
+	bool inPot() { return _inPot; }
+	void setInPot(bool val) { _inPot = val; };
 };
 
 #endif // __INGREDIENT_H__

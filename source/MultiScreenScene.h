@@ -18,6 +18,7 @@ private:
 	// current time, in seconds with decimals
 	float _currentTime;
 	std::map<std::string, int> _stationMap;
+	std::map<int, std::vector<std::string>> _stationIngredients;
 	bool _finishedIngredients;
 
 

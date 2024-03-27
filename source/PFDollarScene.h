@@ -53,7 +53,6 @@ protected:
     std::shared_ptr<cugl::GestureRecognizer> _dollarRecog;
 
 
-    //Todo: turn these into nodes
     cugl::Path2 _path;
 
     std::shared_ptr<cugl::scene2::PolygonNode> _poly;
@@ -91,6 +90,8 @@ protected:
     int countdown;
 
     float _currentSimilarity; 
+
+    std::vector<std::string> _validIngredients;
 
     std::shared_ptr<cugl::scene2::SceneNode> _bottomBar;
     std::shared_ptr<cugl::scene2::SceneNode> _conveyorBelt;
@@ -144,6 +145,8 @@ public:
         _completed = false;
     }
 
+    void setValidIngredients(std::vector<std::string> ingredients) { _validIngredients = ingredients; };
+
     bool isFocus() { return _focus; };
 
     bool initGestureRecognizer();
@@ -161,6 +164,8 @@ public:
 
     void updateConveyor();
     std::shared_ptr<Ingredient> getHeldIngredient();
+
+    void addIngredientToStation(std::shared_ptr<Ingredient>);
 
     void reset();
 };

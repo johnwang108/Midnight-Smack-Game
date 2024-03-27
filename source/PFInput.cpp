@@ -451,7 +451,6 @@ void PlatformInput::swipeEndedCB(const PanEvent& event, bool focus) {
 
 /** Returns touch path.*/
 cugl::Path2 PlatformInput::getTouchPath() {
-    CULog("gotten");
     return _touchPath;
 }
 

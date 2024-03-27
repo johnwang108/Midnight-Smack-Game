@@ -13,9 +13,11 @@ Ingredient::Ingredient(std::string station, std::vector<std::string> gestures, f
 	_startTime = startTime;
 	_beingHeld = false;
 	_falling = false;
+	_inPot = false;
 }
 
 void Ingredient::init(std::shared_ptr<Texture> texture) {
+	_inPot = false;
 	std::shared_ptr<PolygonNode> texturedPoly =  PolygonNode::allocWithTexture(texture);
 	_button = Button::alloc(texturedPoly);
 	_button->addListener([=](const std::string& name, bool down) {
@@ -24,6 +26,7 @@ void Ingredient::init(std::shared_ptr<Texture> texture) {
 	_button->activate();
 	_button->setAnchor(Vec2::ANCHOR_CENTER);
 	_button->setScale(Vec2(.5, .5));
+	//_button->setContentSize(_button->getSize())
 	_button->setPosition(Vec2(0, 0));
 	_button->setVisible(true);
 }

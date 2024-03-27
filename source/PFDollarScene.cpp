@@ -43,7 +43,7 @@
 #define GOOD_THRESHOLD 0.7
 #define PERFECT_THRESHOLD 0.85
 #define CONVEYOR_SPEED 1.0f
-#define FALL_SPEED 1.0f
+#define FALL_SPEED 3.0f
 
 using namespace cugl;
 
@@ -89,6 +89,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_lastResult = -1;
 	_justCompletedGesture = false;
 	_currentlyHeldIngredient = nullptr;
+	_validIngredients = std::vector<std::string>();
 	//todo fix this
 	_readyToCook = false;
 	initGestureRecognizer();
@@ -98,7 +99,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	* 0 -1
 	* transform is screen width/2, screen height/2 for mouse->screen coordinates
 	*/
-	_transf = Affine2(1, 0, 0, -1, -SCENE_WIDTH/2,SCENE_HEIGHT/2);
+	_transf = Affine2(1, 0, 0, -1, -SCENE_WIDTH/2,SCENE_HEIGHT);
 	_poly = cugl::scene2::PolygonNode::alloc();
 	_box = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>(texture), rect);
 
@@ -231,13 +232,28 @@ void DollarScene::update(float timestep) {
 
 	_currentlyHeldIngredient = getHeldIngredient();
 	if (_currentlyHeldIngredient != nullptr) {
-		_currentlyHeldIngredient->getButton()->setPosition(_input->getTouchPos()*_transf);
+		std::shared_ptr<scene2::Button> button = _currentlyHeldIngredient->getButton();
+		//CULog("%f, %f", _input->getTouchPos().x, _input->getTouchPos().y);
+		Vec2 transformedMouse = _input->getTouchPos() * _transf; 
+		button->setPositionX(transformedMouse.x + _currentlyHeldIngredient->getButton()->getWidth()/2);
+		button->setPositionY(transformedMouse.y);
 	}
 	
 	for (auto ing : _currentIngredients) {
-		if (ing->isFalling() && _stationHitbox->inContentBounds(ing->getButton()->getPosition())) {
+		if (!ing->inPot() && ing->isFalling() && _stationHitbox->inContentBounds(ing->getButton()->getPosition())) {
 			_readyToCook = true;
 			//add ingredient to pot somehow lmao
+			bool isValidIng = false;
+
+			for (std::string ing_name : _validIngredients) {
+				if (ing->getName() == ing_name) isValidIng = true;
+			}
+
+			if (isValidIng) {
+				addIngredientToStation(ing);
+			}
+
+			break;
 		}
 	}
 };
@@ -286,7 +302,7 @@ void DollarScene::setBottomBar(std::shared_ptr<cugl::scene2::SceneNode> bar) {
 		_conveyorBelt = _bottomBar->getChildByName("kitchenbar")->getChildByName("Conveyor")->getChildByName("ConveyorBelt");
 		std::shared_ptr<cugl::scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(_bottomBar->getChildByName("kitchenbar")->getChildByName("Item")->getChildByName("Item")->getChildByName("RecipeBook"));
 		butt->addListener([=](const std::string& name, bool down) {
-			CULog("BUTT PRESSED");
+			CULog("COOKBOOK PRESSED");
 		});
 		butt->activate();
 	}
@@ -312,7 +328,7 @@ void DollarScene::updateConveyor() {
 	if (_bottomBar == nullptr) return;
 
 	for (auto& ingredient : _currentIngredients) {
-		if (ingredient == _currentlyHeldIngredient) continue;
+		if (ingredient == _currentlyHeldIngredient || ingredient->inPot()) continue;
 		std::shared_ptr<scene2::SceneNode> button = ingredient->getButton();
 
 		if (ingredient->isFalling()) {
@@ -354,6 +370,15 @@ std::shared_ptr<Ingredient> DollarScene::getHeldIngredient() {
 		if (ing->getBeingHeld() == true) return ing;
 	}
 	return nullptr;
+}
+
+void DollarScene::addIngredientToStation(std::shared_ptr<Ingredient> ing) {
+	CULog("%d", _conveyorBelt->getChildCount());
+	_conveyorBelt->removeChild(ing->getButton());
+	ing->setFalling(false);
+	ing->setInPot(true);
+	CULog("added to pot");
+
 }
 
 //draws a boundary rectangle
