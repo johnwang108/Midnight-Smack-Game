@@ -45,7 +45,7 @@ protected:
     std::shared_ptr<AssetManager> _assets;
     bool _shoot;
     float healthPercentage;
-    std::shared_ptr<scene2::SceneNode> _healthBarForeground;
+    std::shared_ptr<scene2::PolygonNode> _healthBarForeground;
     bool _summoned;
     float _CA;
     int _CAcount;

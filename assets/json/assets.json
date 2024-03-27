@@ -54,12 +54,6 @@
         "shake": {
             "file":      "textures/shake.png"
         },
-        "bosshealth": {
-            "file": "textures/bosshealth.png"
-        },
-        "bullbar": {
-            "file": "textures/bullbar.png"
-        },
         "panfry_station": {
             "file": "textures/Panfry_Station.png",
             "wrapS": "repeat",
@@ -210,17 +204,12 @@
         "winter drinkRegular25": {
             "file": "fonts/WinterDrink.ttf",
             "size": 25
-        }, 
-            "winter drinkRegular20": {
-            "file": "fonts/WinterDrink.ttf",
-            "size": 20
         }
     },
 
     "widgets" : {
         "mylabscene": "widgets/mylabscene.json",
-        "mymenubutton": "widgets/mymenubutton.json",
-        "labscene": "widgets/labscene.json"
+        "mymenubutton": "widgets/mymenubutton.json"
 	},
 
     "scene2s" : {
