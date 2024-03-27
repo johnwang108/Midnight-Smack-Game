@@ -407,7 +407,7 @@ void DudeModel::update(float dt) {
 	}
 
 
-    CULog("Number of touching enemies: %d", _numberOfTouchingEnemies);
+  //  CULog("Number of touching enemies: %d", _numberOfTouchingEnemies);
     if (_numberOfTouchingEnemies > 0) {
         takeDamage(34, 0);
     }

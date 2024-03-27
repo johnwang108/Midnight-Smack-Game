@@ -50,6 +50,8 @@ protected:
     float _CA;
     int _CAcount;
     bool _running;
+    float _breaking;
+
 
 public:
     BullModel() : CapsuleObstacle(), _drawScale(1.0f), _health(100.0f), _healthCooldown(0.2f), _lastDamageTime(0), _isChasing(true), _direction(-1) {}

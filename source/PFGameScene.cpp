@@ -285,7 +285,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     currentLevel = level2;
     loadLevel(currentLevel);
 
-   // loadSave();
+//   loadSave();
 
     _actionManager = cugl::scene2::ActionManager::alloc();
 
@@ -711,9 +711,11 @@ void GameScene::fixedUpdate(float step) {
 		_camera->update();
         _dollarnode->setPosition(pos);
     }
+    /*
     if (_avatar->getHealth()<=0) {
         setFailure(true);
 	}
+    */
     if (_Bull!=nullptr && _Bull->getHealth() <= 0) {
         setComplete(true);
     }
