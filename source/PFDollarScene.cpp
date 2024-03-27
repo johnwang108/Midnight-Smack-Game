@@ -108,13 +108,13 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 
 	_header = scene2::Label::allocWithText("Gestures, Similarity: t tosdgodfho figjgoj ghkohko ", _assets->get<Font>(SMALL_MSG));
 	_header->setAnchor(Vec2::ANCHOR_CENTER);
-	_header->setPosition(cugl::Vec2(0, 200));
+	_header->setPosition(cugl::Vec2(640, 600));
 	_header->setForeground(cugl::Color4::RED);
 	_header->setVisible(false);
 
 	_currentGestureLabel = scene2::Label::allocWithText("Current Target Gesture: filling out text bc i swear this always breaks", _assets->get<Font>(SMALL_MSG));
-	_currentGestureLabel->setAnchor(Vec2::ANCHOR_TOP_CENTER);
-	_currentGestureLabel->setPosition(cugl::Vec2(0, 100));
+	_currentGestureLabel->setAnchor(Vec2::ANCHOR_CENTER);
+	_currentGestureLabel->setPosition(cugl::Vec2(640, 540));
 	_currentGestureLabel->setForeground(cugl::Color4::BLACK);
 	_currentGestureLabel->setVisible(false);
 
@@ -195,8 +195,10 @@ void DollarScene::update(float timestep) {
 				_header->setText("Similarity: " + std::to_string(_currentSimilarity));
 				_header->setVisible(true);
 			}
-			else _currentGestureLabel->setVisible(false);
-
+			else {
+				_currentGestureLabel->setVisible(false);
+				_header->setVisible(false);
+			}
 		}
 	}
 
@@ -216,6 +218,11 @@ void DollarScene::update(float timestep) {
 
 		//GET RID OF HARDCODE JOHN TODO
 		//_poly->setPosition(cugl::Vec2(0,0));
+	}
+
+	if (_completed) {
+		_readyToCook = false;
+		_completed = false;
 	}
 
 
@@ -239,9 +246,8 @@ void DollarScene::update(float timestep) {
 		button->setPositionY(transformedMouse.y);
 	}
 	
-	for (auto ing : _currentIngredients) {
+	for (std::shared_ptr<Ingredient> ing : _currentIngredients) {
 		if (!ing->inPot() && ing->isFalling() && _stationHitbox->inContentBounds(ing->getButton()->getPosition())) {
-			_readyToCook = true;
 			//add ingredient to pot somehow lmao
 			bool isValidIng = false;
 
@@ -327,7 +333,7 @@ void DollarScene::addIngredient(std::shared_ptr<Ingredient> ing) {
 void DollarScene::updateConveyor() {
 	if (_bottomBar == nullptr) return;
 
-	for (auto& ingredient : _currentIngredients) {
+	for (std::shared_ptr<Ingredient> ingredient : _currentIngredients) {
 		if (ingredient == _currentlyHeldIngredient || ingredient->inPot()) continue;
 		std::shared_ptr<scene2::SceneNode> button = ingredient->getButton();
 
@@ -373,12 +379,14 @@ std::shared_ptr<Ingredient> DollarScene::getHeldIngredient() {
 }
 
 void DollarScene::addIngredientToStation(std::shared_ptr<Ingredient> ing) {
-	CULog("%d", _conveyorBelt->getChildCount());
+	CULog("added to pot");
 	_conveyorBelt->removeChild(ing->getButton());
 	ing->setFalling(false);
 	ing->setInPot(true);
-	CULog("added to pot");
 
+	_readyToCook = true;
+	_currentTargetGestures = ing->getGestures();
+	_currentTargetIndex = 0;
 }
 
 //draws a boundary rectangle
