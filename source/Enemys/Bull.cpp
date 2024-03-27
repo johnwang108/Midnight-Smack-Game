@@ -25,6 +25,7 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         _running = false;
         _CA=0;
         _CAcount = 0;
+        _breaking = 0;
         b2Filter filter = getFilterData();
         filter.groupIndex = -1;
         setFilterData(filter);
@@ -107,21 +108,43 @@ void BullModel::update(float dt) {
         _running = false;
         _node->setVisible(true);
         _body->SetEnabled(true);
-        setPosition(getPosition() + -_direction * Vec2(40, 0));
+      //  setPosition(getPosition() + -_direction * Vec2(40, 0));
+    }
+    if (_breaking>0) {
+        _breaking -= dt;
+        velocity.x *= 5/1.2*_breaking/10;
+        if (_breaking<0.1) {
+            _isChasing= false;
+        }
     }
 
-    if (_isChasing) {
+    if (_isChasing && !_breaking) {
         velocity.x *= BULL_CHASE_SPEED;
         if (_CAcount > 0) {
-            velocity.x *= _CAcount/1.5;
-            _bull_attack_chance = BULL_ATTACK_CHANCE*2;
+            velocity.x *= _CAcount/1.2;
+            _bull_attack_chance = BULL_ATTACK_CHANCE*1.5;
+        }
+        if (_CAcount == 6 && _CA <= 0) {
+            _CAcount = 0;
+            _breaking = 10;
         }
         if (_CA > 0) {
-			_CA -= dt;
-            _node->setVisible(false);
-            _body->SetEnabled(false);
+            _CA -= dt;
+           // _node->setVisible(false);
+          //  _body->SetEnabled(false);
+            
+            float yyy;
+            if(_CA>5){
+                yyy=25*(dt/10);
+            }else{
+                yyy=-25*(dt/10);
+            }
+ 
+            setPosition(getPosition()+Vec2(-_direction*(38-_CAcount*3)*(dt/10),yyy));
+
             if (_CA <= 0) {
                 _running = true;
+                setGravityScale(1);
             }
             return;
 		}
@@ -380,5 +403,6 @@ void BullModel::Summon(GameScene& scene) {
 }
 
 void BullModel::circleattack(GameScene& scene) {
-    _CA = 5;
+    _CA = 10;
+    setGravityScale(0);
 }

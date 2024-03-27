@@ -17,6 +17,8 @@ sources:                            # The list of the source code files
     - source/Enemys/*.cpp
     - source/Levels/*.h
     - source/Levels/*.cpp
+    - source/NightLevelObjects/*.cpp
+    - source/NightLevelObjects/*.h
 
 
 # This must be one of portrait, landscape, portrait-flipped, landscape-flipped,

@@ -25,7 +25,7 @@ void Ingredient::init(std::shared_ptr<Texture> texture) {
 	});
 	_button->activate();
 	_button->setAnchor(Vec2::ANCHOR_CENTER);
-	_button->setScale(Vec2(.5, .5));
+	_button->setScale(Vec2(.3, .3));
 	//_button->setContentSize(_button->getSize())
 	_button->setPosition(Vec2(0, 0));
 	_button->setVisible(true);

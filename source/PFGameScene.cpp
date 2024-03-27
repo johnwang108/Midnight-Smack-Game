@@ -308,7 +308,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     _target = std::make_shared<EnemyModel>();
 
-    currentLevel = level2;
+    currentLevel = level1;
     loadLevel(currentLevel);
 
     save();
@@ -585,7 +585,9 @@ void GameScene::preUpdate(float dt) {
         _avatar->setJumping(_input->didJump());
         _avatar->setDash(_input->didDash());
         _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
-
+        if (_avatar->getIsOnDangerousGround()) {
+            _avatar->takeDamage(20, 0);
+        }
         if (_avatar->isJumping() && _avatar->isGrounded()) {
             std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
             AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
@@ -809,13 +811,16 @@ void GameScene::fixedUpdate(float step) {
 		_camera->update();
         //_dollarnode->setPosition(pos);
     }
+    /*
     if (_avatar->getHealth()<=0) {
         setFailure(true);
 	}
+    */
     if (_Bull!=nullptr && _Bull->getHealth() <= 0) {
         setComplete(true);
     }
     _world->update(step);
+    currentLevel->update(step);
 }
     
 /**
@@ -843,6 +848,14 @@ void GameScene::fixedUpdate(float step) {
 void GameScene::postUpdate(float remain) {
     // Since items may be deleted, garbage collect
     _world->garbageCollect();
+
+    // TODO: Update this demo to support interpolation
+    // We can interpolate the rope bridge and spinner as we have the data structures
+    
+    // I CHANGED THIS
+    // _spinner->update(remain);
+    // _ropebridge->update(remain);
+
 
     // Add a bullet AFTER physics allows it to hang in front
     // Otherwise, it looks like bullet appears far away
@@ -878,17 +891,17 @@ void GameScene::postUpdate(float remain) {
     }
 
      //Reset the game if we win or lose.
-   if (_countdown > 0) {
+    if (_countdown > 0) {
         _countdown--;
     } else if (_countdown == 0) {
         if (_failed == false) {
            
             if (currentLevel == level1) {
-                loadLevel(level2);
+                currentLevel= level2;
                 reset();
             }
             else {
-                loadLevel(level1);
+                currentLevel = level1;
                 reset();
             }
         }

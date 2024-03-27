@@ -27,7 +27,7 @@ private:
 protected:
 	std::shared_ptr<cugl::AssetManager> _assets;
 	std::shared_ptr<cugl::scene2::SceneNode> _uiNode;
-	std::shared_ptr<cugl::scene2::PolygonNode> _progBar;
+	std::shared_ptr<cugl::scene2::SceneNode> _progBar;
 
 
 	std::shared_ptr<PlatformInput> _input;
@@ -110,7 +110,7 @@ public:
 
 	int determineSwipeDirection();
 
-	void readLevel(std::shared_ptr<cugl::JsonValue>& level);
+	void readLevel(std::shared_ptr<cugl::JsonValue> level);
 
 	void renderUI(std::shared_ptr<cugl::SpriteBatch> batch);
 

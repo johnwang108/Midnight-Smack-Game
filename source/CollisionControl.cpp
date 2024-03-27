@@ -69,12 +69,7 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd2)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
-        if (_Bull->getCAcount() == 5 && _Bull->getCA() <= 0) {
-            _Bull->setCAcount(0);
-            _Bull->setIsChasing(false);
-
-        }
-        else if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0) {
+        if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0) {
             _Bull->setCAcount(_Bull->getCAcount() + 1);
             _Bull->circleattack(*this);
         }
@@ -90,12 +85,7 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd1)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
-        if (_Bull->getCAcount() == 5 && _Bull->getCA() <= 0) {
-            _Bull->setCAcount(0);
-            _Bull->setIsChasing(false);
-
-        }
-        else if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0) {
+       if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0) {
             _Bull->setCAcount(_Bull->getCAcount() + 1);
             _Bull->circleattack(*this);
         }

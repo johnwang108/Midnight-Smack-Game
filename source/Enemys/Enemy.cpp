@@ -39,7 +39,7 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
         }
         _isChasing = false;
         _isGrounded = false;
-        _direction = -1; 
+        _direction = -1;
         _lastDirection = _direction;
         _changeDirectionInterval = 3.0f;
         _nextChangeTime = _changeDirectionInterval + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * _changeDirectionInterval;
@@ -47,7 +47,7 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
         _healthCooldown = 0.2f;
         _lastDamageTime = 0;
         _attacktime = false;
-        _preparetime= 0;
+        _preparetime = 0;
         _shooted = false;
         _vulnerable = false;
         _state = "patrolling";
@@ -82,8 +82,8 @@ void EnemyModel::createFixtures() {
 
 
     b2FixtureDef sensorDef;
-    sensorDef.density = 0;  
-    sensorDef.isSensor = true;  
+    sensorDef.density = 0;
+    sensorDef.isSensor = true;
 
     b2PolygonShape sensorShape;
     b2Vec2 sensorVertices[4];
@@ -108,7 +108,7 @@ void EnemyModel::createFixtures() {
 
 void EnemyModel::takeDamage(float damage, const int attackDirection) {
     if (_lastDamageTime >= _healthCooldown) {
-        _lastDamageTime= 0;
+        _lastDamageTime = 0;
         _health -= damage;
         if (_health < 0) {
             _health = 0;
@@ -202,17 +202,17 @@ void EnemyModel::update(float dt) {
             float spd = CHASE_SPEED * _direction;
             if (SIGNUM(_direction) != SIGNUM(velocity.x)) {
                 spd *= 2.5;
-			}
+            }
             velocity.x = velocity.x + spd;
             _body->ApplyAngularImpulse((_direction * -0.05f), true);
         }
         else if (_state == "stunned") {
-			velocity.x = 0;
+            velocity.x = 0;
         }
         else if (_state == "patrolling") {
-			velocity.x = ENEMY_FORCE * _direction;
+            velocity.x = ENEMY_FORCE * _direction;
 
-		}
+        }
         else {
             CULog("error: shrimp");
         }
@@ -307,8 +307,8 @@ void EnemyModel::update(float dt) {
 
     //    _body->SetLinearVelocity(velocity);
     //}
-    _lastDamageTime+= dt;
-    
+    _lastDamageTime += dt;
+
 
     // Update scene node position and rotation to match physics body
     if (_node != nullptr) {
@@ -365,8 +365,8 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> EnemyM
 
 
     if (getDirection() > 0) {
-		attack->setFaceRight(true);
-	}
+        attack->setFaceRight(true);
+    }
     attack->setName("enemy_attack");
     attack->setBullet(true);
     attack->setGravityScale(0.2);
@@ -390,20 +390,20 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> EnemyM
 }
 
 //begins the aggro behavior, maintains player location information
-void EnemyModel::setIsChasing(bool isChasing) { 
-    _isChasing = isChasing; 
+void EnemyModel::setIsChasing(bool isChasing) {
+    _isChasing = isChasing;
     if (isChasing) {
         if (_state == "patrolling") {
             setState("chasing");
         }
-	}
+    }
     else {
         setState("patrolling");
-	}
+    }
 }
 
 void EnemyModel::updatePlayerDistance(cugl::Vec2 playerPosition) {
-	_distanceToPlayer = playerPosition - getPosition();
+    _distanceToPlayer = playerPosition - getPosition();
     //CULog("Distance to player: %f", _distanceToPlayer.length());
 }
 
@@ -515,9 +515,8 @@ std::string EnemyModel::getNextState(std::string state) {
             }
             break;
 
-        default:
-            return "patrolling";
-	}
+    default:
+        return "patrolling";
+    }
     return "none";
 }
-

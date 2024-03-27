@@ -7,7 +7,7 @@
 #include "../PFDudeModel.h"
 #include "../Enemys/Enemy.h"
 #include "../Enemys/Bull.h"
-
+#include "../NightLevelObjects/Wall.h"
 
 
 #pragma mark -
@@ -19,7 +19,7 @@
 /** The density for a bullet */
 #define HEAVY_DENSITY   10.0f
 /** Friction of most platforms */
-#define BASIC_FRICTION  0.4f
+#define BASIC_FRICTION  1.0f
 /** The restitution for all physics objects */
 #define BASIC_RESTITUTION   0.1f
 /** The width of the rope bridge */
@@ -128,6 +128,7 @@ public:
 
     virtual void populate(GameScene& scene) = 0;
 
+    virtual void update(float step);
 };
 
 #endif /* __LEVELS_H__ */

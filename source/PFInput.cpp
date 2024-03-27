@@ -85,25 +85,25 @@ using namespace cugl;
  * object. This makes it safe to use this class without a pointer.
  */
 PlatformInput::PlatformInput() :
-_active(false),
-_resetPressed(false),
-_debugPressed(false),
-_exitPressed(false),
-_firePressed(false),
-_jumpPressed(false),
-_slowPressed(false),
-_keyJump(false),
-_keyFire(false),
-_keyReset(false),
-_keyDebug(false),
-_keyExit(false),
-_keyLeft(false),
-_keyRight(false),
-_keySlow(false),
-_horizontal(0.0f),
-_vertical(0.0f),
-_dashKey(false),
-_hasJumped(false) {
+    _active(false),
+    _resetPressed(false),
+    _debugPressed(false),
+    _exitPressed(false),
+    _firePressed(false),
+    _jumpPressed(false),
+    _slowPressed(false),
+    _keyJump(false),
+    _keyFire(false),
+    _keyReset(false),
+    _keyDebug(false),
+    _keyExit(false),
+    _keyLeft(false),
+    _keyRight(false),
+    _keySlow(false),
+    _horizontal(0.0f),
+    _vertical(0.0f),
+    _dashKey(false),
+    _hasJumped(false) {
 }
 
 /**
@@ -122,7 +122,7 @@ void PlatformInput::dispose() {
         touch->removeBeginListener(GESTURE_LISTENER_KEY);
         touch->removeEndListener(GESTURE_LISTENER_KEY);
         touch->removeMotionListener(GESTURE_LISTENER_KEY);
-            
+
         //_gameCont->removeAxisListener(CONTROLLER_LISTENER_KEY);
 #endif
         _active = false;
@@ -142,7 +142,7 @@ void PlatformInput::dispose() {
  */
 bool PlatformInput::init(const Rect bounds) {
     if (_active) {
-        CULog("ALREADY INITED"); 
+        CULog("ALREADY INITED");
         return false;
     }
     CULog("HI I INITEDDDD!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! :D");
@@ -158,7 +158,7 @@ bool PlatformInput::init(const Rect bounds) {
     if (contSuccess) {
         GameControllerInput* controller = Input::get<GameControllerInput>();
         std::vector<std::string> deviceUUIDs = controller->devices();
-       
+
         if (!deviceUUIDs.empty()) {
             _gameCont = controller->open(deviceUUIDs.front());
             CULog("Controller Obtained, Name: %s", _gameCont->getName().c_str());
@@ -183,13 +183,15 @@ bool PlatformInput::init(const Rect bounds) {
     CULog("%s", success ? "Mouse Activated" : "Mouse Failed");
     Mouse* mouse = Input::get<Mouse>();
     mouse->setPointerAwareness(Mouse::PointerAwareness::DRAG);
-    mouse ->addPressListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, Uint8 clicks, bool focus) {
-        		this->mousePressCB(event, focus);
-         });
+    mouse->addPressListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, Uint8 clicks, bool focus) {
+        CULog("STARTING!");
+        this->mousePressCB(event, focus);
+        });
 
-    mouse -> addDragListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, const Vec2& previous, bool focus) {
-        		this->mouseDragCB(event, focus);
-                		});
+    mouse->addDragListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, const Vec2& previous, bool focus) {
+        CULog("DRAGGIN!");
+        this->mouseDragCB(event, focus);
+        });
 
     mouse->addReleaseListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, Uint8 clicks, bool focus) {
         this->mouseReleaseCB(event, focus);
@@ -197,18 +199,18 @@ bool PlatformInput::init(const Rect bounds) {
 #else
     CULog("%d", CU_TOUCH_SCREEN);
     Touchscreen* touch = Input::get<Touchscreen>();
-    touch->addBeginListener(GESTURE_LISTENER_KEY,[=](const TouchEvent& event, bool focus) {
-        this->touchBeganCB(event,focus);
-    });
-    touch->addEndListener(GESTURE_LISTENER_KEY,[=](const TouchEvent& event, bool focus) {
-        this->touchEndedCB(event,focus);
-    });
-    touch->addMotionListener(GESTURE_LISTENER_KEY,[=](const TouchEvent& event, const Vec2& previous, bool focus) {
+    touch->addBeginListener(GESTURE_LISTENER_KEY, [=](const TouchEvent& event, bool focus) {
+        this->touchBeganCB(event, focus);
+        });
+    touch->addEndListener(GESTURE_LISTENER_KEY, [=](const TouchEvent& event, bool focus) {
+        this->touchEndedCB(event, focus);
+        });
+    touch->addMotionListener(GESTURE_LISTENER_KEY, [=](const TouchEvent& event, const Vec2& previous, bool focus) {
         this->touchesMovedCB(event, previous, focus);
-    });
+        });
 
 #endif
-    
+
 
     bool swipeSuccess = Input::activate<PanGesture>();
     PanGesture* swiper = Input::get<PanGesture>();
@@ -221,11 +223,11 @@ bool PlatformInput::init(const Rect bounds) {
 
     swiper->addBeginListener(SWIPE_LISTENER_KEY, [=](const PanEvent& event, bool focus) {
         this->swipeBeganCB(event, focus);
-    });
+        });
 
     swiper->addEndListener(SWIPE_LISTENER_KEY, [=](const PanEvent& event, bool focus) {
         this->swipeEndedCB(event, focus);
-    });
+        });
 
     _gestureCompleted = false;
 
@@ -311,7 +313,7 @@ void PlatformInput::update(float dt) {
     _yAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_Y);
 
 #endif
-   
+
 
     _resetPressed = _keyReset;
     _debugPressed = _keyDebug;
@@ -349,15 +351,15 @@ void PlatformInput::update(float dt) {
         }
     }
 
-// If it does not support keyboard, we must reset "virtual" keyboard
-//#ifdef CU_TOUCH_SCREEN
-//    _keyExit = false;
-//    _keyReset = false;
-//    _keyDebug = false;
-//    _keyJump  = false;
-//    _keyFire  = false;
-//
-//#endif
+    // If it does not support keyboard, we must reset "virtual" keyboard
+    //#ifdef CU_TOUCH_SCREEN
+    //    _keyExit = false;
+    //    _keyReset = false;
+    //    _keyDebug = false;
+    //    _keyJump  = false;
+    //    _keyFire  = false;
+    //
+    //#endif
 }
 
 /**
@@ -366,7 +368,7 @@ void PlatformInput::update(float dt) {
 void PlatformInput::clear() {
     _resetPressed = false;
     _debugPressed = false;
-    _exitPressed  = false;
+    _exitPressed = false;
     _jumpPressed = false;
     _firePressed = false;
     _dashPressed = false;
@@ -400,11 +402,11 @@ void PlatformInput::clearTouchInstance(TouchInstance& touchInstance) {
  * @return the scene location of a touch
  */
 Vec2 PlatformInput::touch2Screen(const Vec2 pos) const {
-    float px = pos.x/_tbounds.size.width -_tbounds.origin.x;
-    float py = pos.y/_tbounds.size.height-_tbounds.origin.y;
+    float px = pos.x / _tbounds.size.width - _tbounds.origin.x;
+    float py = pos.y / _tbounds.size.height - _tbounds.origin.y;
     Vec2 result;
-    result.x = px*_sbounds.size.width +_sbounds.origin.x;
-    result.y = (1-py)*_sbounds.size.height+_sbounds.origin.y;
+    result.x = px * _sbounds.size.width + _sbounds.origin.x;
+    result.y = (1 - py) * _sbounds.size.height + _sbounds.origin.y;
     return result;
 }
 
@@ -421,15 +423,16 @@ Vec2 PlatformInput::touch2Screen(const Vec2 pos) const {
  * @return a nonzero value if this is a quick left or right swipe
  */
 int PlatformInput::processSwipe(const Vec2 start, const Vec2 stop, Timestamp current) {
-	// Look for swipes up that are "long enough"
-	float xdiff = (stop.x-start.x);
+    // Look for swipes up that are "long enough"
+    float xdiff = (stop.x - start.x);
     float thresh = SWIPE_LENGTH;
     if (xdiff > thresh) {
         return 1;
-    } else if (xdiff < thresh * -1) {
+    }
+    else if (xdiff < thresh * -1) {
         return -1;
     }
-	return 0;
+    return 0;
 }
 
 
@@ -508,7 +511,7 @@ void PlatformInput::mousePressCB(const cugl::MouseEvent& event, bool focus) {
 }
 
 void PlatformInput::mouseDragCB(const cugl::MouseEvent& event, bool focus) {
-	Vec2 pos = event.position;
+    Vec2 pos = event.position;
     gestureMoveCB(pos, focus);
 }
 
@@ -538,4 +541,3 @@ void PlatformInput::gestureEndCB(Vec2 pos, bool focus) {
     _touchPath = smoother.getPath();
     _gestureCompleted = true;
 }
-
