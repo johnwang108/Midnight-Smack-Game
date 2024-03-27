@@ -11,6 +11,9 @@
         "su_attack_sheet": {
             "file": "textures/su_attack_test_sheet.png"
         },
+        "su_run": {
+            "file": "textures/su_run.png"
+        },
         "su_idle_blink": {
             "file": "textures/su_idle_blink.png"
         },
@@ -209,6 +212,9 @@
         },
         "heartsfull": {
             "file": "textures/UI/heartsfull.png"
+        },
+        "ninepatch": {
+            "file": "textures/greynine.png"
         }
     },
     "sounds": {

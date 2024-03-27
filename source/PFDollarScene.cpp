@@ -35,9 +35,6 @@
 
 #define WIDTH 25
 
-//hardcode :3
-#define SCENE_WIDTH 1280
-#define SCENE_HEIGHT 800
 
 #define SMALL_MSG "retrosmall"  
 
@@ -101,7 +98,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	* 0 -1
 	* transform is screen width/2, screen height/2 for mouse->screen coordinates
 	*/
-	_trans = Affine2(1, 0, 0, -1, -SCENE_WIDTH/2,SCENE_HEIGHT/2);
+	_transf = Affine2(1, 0, 0, -1, -SCENE_WIDTH/2,SCENE_HEIGHT/2);
 	_poly = cugl::scene2::PolygonNode::alloc();
 	_box = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>(texture), rect);
 
@@ -208,8 +205,8 @@ void DollarScene::update(float timestep) {
 		_se.calculate(WIDTH);
 
 
-		//have to reflect across x axis with _trans
-		_poly->setPolygon(_se.getPolygon() * _trans);
+		//have to reflect across x axis with _transf
+		_poly->setPolygon(_se.getPolygon() * _transf);
 		_poly->setColor(cugl::Color4::BLACK);
 		_poly->setAnchor(cugl::Vec2::ANCHOR_CENTER);
 		_poly->setScale(_scale);
@@ -221,7 +218,7 @@ void DollarScene::update(float timestep) {
 	}
 
 
-	_box->setPosition(cugl::Vec2(0, 0));
+	//_box->setPosition(cugl::Vec2(0, 0));
 
 
 	//_header->setVisible(!isPending() && isSuccess());
@@ -234,7 +231,7 @@ void DollarScene::update(float timestep) {
 
 	_currentlyHeldIngredient = getHeldIngredient();
 	if (_currentlyHeldIngredient != nullptr) {
-		_currentlyHeldIngredient->getButton()->setPosition(_input->getTouchPos()*_trans);
+		_currentlyHeldIngredient->getButton()->setPosition(_input->getTouchPos()*_transf);
 
 		//check if within ingredient box
 
@@ -284,6 +281,11 @@ void DollarScene::setBottomBar(std::shared_ptr<cugl::scene2::SceneNode> bar) {
 	_bottomBar = bar;
 	if (_bottomBar != nullptr) {
 		_conveyorBelt = _bottomBar->getChildByName("kitchenbar")->getChildByName("Conveyor")->getChildByName("ConveyorBelt");
+		std::shared_ptr<cugl::scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(_bottomBar->getChildByName("kitchenbar")->getChildByName("Item")->getChildByName("Item")->getChildByName("RecipeBook"));
+		butt->addListener([=](const std::string& name, bool down) {
+			CULog("BUTT PRESSED");
+		});
+		butt->activate();
 	}
 }
 

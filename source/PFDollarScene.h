@@ -35,6 +35,10 @@
 #include "PFDudeModel.h"
 #include "Ingredient.h"
 
+//hardcode :3
+#define SCENE_WIDTH 1280
+#define SCENE_HEIGHT 800
+
 /**
 * 
 * 
@@ -64,7 +68,7 @@ protected:
 
   
     //transform for poly
-    cugl::Affine2 _trans;
+    cugl::Affine2 _transf;
 
     //temp
     cugl::Spline2 _spline;
