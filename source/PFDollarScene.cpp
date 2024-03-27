@@ -231,7 +231,7 @@ void DollarScene::update(float timestep) {
 
 	_currentlyHeldIngredient = getHeldIngredient();
 	if (_currentlyHeldIngredient != nullptr) {
-		_currentlyHeldIngredient->getButton()->setPosition(_input->getTouchPos()*_trans);
+		_currentlyHeldIngredient->getButton()->setPosition(_input->getTouchPos()*_transf);
 	}
 	
 	for (auto ing : _currentIngredients) {
