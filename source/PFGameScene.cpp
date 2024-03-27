@@ -282,7 +282,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _target = std::make_shared<EnemyModel>();
 
-    currentLevel = level1;
+    currentLevel = level2;
     loadLevel(currentLevel);
 
 //   loadSave();

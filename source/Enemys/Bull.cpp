@@ -139,7 +139,7 @@ void BullModel::update(float dt) {
         if (_CA > 0) {
             _CA -= dt;
            // _node->setVisible(false);
-          //  _body->SetEnabled(false);
+            _body->SetEnabled(false);
             
             float yyy;
             if(_CA>5){
@@ -148,7 +148,7 @@ void BullModel::update(float dt) {
                 yyy=-25*(dt/10);
             }
  
-            setPosition(getPosition()+Vec2(-_direction*(38-_CAcount*3)*(dt/10),yyy));
+            setPosition(getPosition()+Vec2(-_direction*(38)*(dt/10),yyy));
 
             if (_CA <= 0) {
                 _running = true;
