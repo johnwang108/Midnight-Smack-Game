@@ -116,7 +116,7 @@ void BullModel::update(float dt) {
         _running = false;
         _node->setVisible(true);
         _body->SetEnabled(true);
-        setPosition(getPosition() + -_direction * Vec2(40, 0));
+      //  setPosition(getPosition() + -_direction * Vec2(40, 0));
     }
     if (_breaking>0) {
         _breaking -= dt;
@@ -137,11 +137,22 @@ void BullModel::update(float dt) {
             _breaking = 10;
         }
         if (_CA > 0) {
-			_CA -= dt;
-            _node->setVisible(false);
-            _body->SetEnabled(false);
+            _CA -= dt;
+           // _node->setVisible(false);
+          //  _body->SetEnabled(false);
+            
+            float yyy;
+            if(_CA>5){
+                yyy=25*(dt/10);
+            }else{
+                yyy=-25*(dt/10);
+            }
+ 
+            setPosition(getPosition()+Vec2(-_direction*(38-_CAcount*2)*(dt/10),yyy));
+
             if (_CA <= 0) {
                 _running = true;
+                setGravityScale(1);
             }
             return;
 		}
@@ -396,5 +407,6 @@ void BullModel::Summon(GameScene& scene) {
 }
 
 void BullModel::circleattack(GameScene& scene) {
-    _CA = 5;
+    _CA = 10;
+    setGravityScale(0);
 }
