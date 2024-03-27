@@ -349,7 +349,7 @@ void DollarScene::updateConveyor() {
 		else {
 			button->setPositionX(button->getPositionX() - CONVEYOR_SPEED);
 
-			if (button->getPositionX() <= button->getWidth()) {
+			if (button->getPositionX() <= button->getWidth()/2) {
 				// mark button switch to next pos
 				_ingredientToRemove = ingredient;
 			}
