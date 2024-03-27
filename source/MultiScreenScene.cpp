@@ -178,7 +178,7 @@ void MultiScreenScene::initStations(std::string textures[], int size) {
 		scene = std::make_shared<DollarScene>();
 				
 		rect = cugl::Rect(Vec2::ZERO, _size);
-		scene->init(_assets, _input, rect, textures[i]);
+		scene->init(_assets, _input, rect, textures[i], std::vector<std::string>(), Size(600, 450));
 		scene->setAnchor(Vec2::ANCHOR_CENTER);
 		scene->setPosition(positions[i]);
 		scene->setVisible(true);
@@ -385,6 +385,8 @@ void MultiScreenScene::preUpdate(float timestep) {
 
 
 	std::shared_ptr<Ingredient> curHeld = _scenes[_curr]->getHeldIngredient();
+	
+	
 	// find current touch position, set curHeld->button to be that pos
 
 }

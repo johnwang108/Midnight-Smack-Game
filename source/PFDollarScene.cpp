@@ -92,6 +92,8 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_lastResult = -1;
 	_justCompletedGesture = false;
 	_currentlyHeldIngredient = nullptr;
+	//todo fix this
+	_readyToCook = false;
 	initGestureRecognizer();
 	//reflection across the x axis is necessary for polygon path
 	/**
@@ -127,6 +129,13 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	update(0);
 
 	return true;
+}
+
+bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector<std::string> gestures, Size hitboxSize) {
+	_stationHitbox = cugl::scene2::SceneNode::allocWithBounds(hitboxSize);
+	_stationHitbox->setAnchor(Vec2::ANCHOR_CENTER);
+	_stationHitbox->setPosition(Vec2(0, 0));
+	return init(assets, input, rect, texture, gestures);
 }
 
 
@@ -168,7 +177,7 @@ bool DollarScene::initGestureRecognizer() {
 void DollarScene::update(float timestep) {
 	//pop new path if this node is focused on and the input controller contains a nonempty path.
 	_justCompletedGesture = false;
-	if (_focus) {
+	if (_focus && _readyToCook) {
 		if (!(_input->getTouchPath().empty())) {
 			// for spline
 			_path = _input->getTouchPath();
@@ -193,24 +202,26 @@ void DollarScene::update(float timestep) {
 		}
 	}
 
-	//re-extrude path
-	_se.set(_path);
-	_se.calculate(WIDTH);
+	if (_readyToCook) {
+		//re-extrude path
+		_se.set(_path);
+		_se.calculate(WIDTH);
 
 
-	//have to reflect across x axis with _trans
-	_poly->setPolygon(_se.getPolygon() * _trans);
-	_poly->setColor(cugl::Color4::BLACK);
-	_poly->setAnchor(cugl::Vec2::ANCHOR_CENTER);
-	_poly->setScale(_scale);
-	
-	_poly->setAbsolute(true);
+		//have to reflect across x axis with _trans
+		_poly->setPolygon(_se.getPolygon() * _trans);
+		_poly->setColor(cugl::Color4::BLACK);
+		_poly->setAnchor(cugl::Vec2::ANCHOR_CENTER);
+		_poly->setScale(_scale);
 
-	//GET RID OF HARDCODE JOHN TODO
-	//_poly->setPosition(cugl::Vec2(0,0));
+		_poly->setAbsolute(true);
+
+		//GET RID OF HARDCODE JOHN TODO
+		//_poly->setPosition(cugl::Vec2(0,0));
+	}
+
+
 	_box->setPosition(cugl::Vec2(0, 0));
-
-
 
 
 	//_header->setVisible(!isPending() && isSuccess());
@@ -222,6 +233,12 @@ void DollarScene::update(float timestep) {
 	}
 
 	_currentlyHeldIngredient = getHeldIngredient();
+	if (_currentlyHeldIngredient != nullptr) {
+		_currentlyHeldIngredient->getButton()->setPosition(_input->getTouchPos()*_trans);
+
+		//check if within ingredient box
+
+	}
 	//_currentlyHeldIngredient->getButton()->setPosition();
 };
 
@@ -262,6 +279,8 @@ void DollarScene::setFocus(bool focus) {
 }
 
 void DollarScene::setBottomBar(std::shared_ptr<cugl::scene2::SceneNode> bar) {
+	//todo fix this 
+	_readyToCook = false;
 	_bottomBar = bar;
 	if (_bottomBar != nullptr) {
 		_conveyorBelt = _bottomBar->getChildByName("kitchenbar")->getChildByName("Conveyor")->getChildByName("ConveyorBelt");
@@ -358,4 +377,13 @@ void DollarScene::reset() {
 	_focus = false;
 	_completed = false;
 	_lastResult = -1;
+	//todo ready to cook idk if it should be false
+	_readyToCook = false;
+	for (std::shared_ptr<Ingredient> ing : _currentIngredients) {
+		_conveyorBelt->removeChild(ing->getButton());
+	}
+	_currentIngredients.clear();
+	_currentlyHeldIngredient.reset();
+	_ingredientToRemove.reset();
+	_conveyorBelt = nullptr;
 }

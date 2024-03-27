@@ -90,12 +90,14 @@ protected:
 
     std::shared_ptr<cugl::scene2::SceneNode> _bottomBar;
     std::shared_ptr<cugl::scene2::SceneNode> _conveyorBelt;
-
+    std::shared_ptr<cugl::scene2::SceneNode> _stationHitbox;
 
     std::deque<std::shared_ptr<Ingredient>> _currentIngredients;
 
     std::shared_ptr<Ingredient> _ingredientToRemove; 
     std::shared_ptr<Ingredient> _currentlyHeldIngredient;
+
+    bool _readyToCook;
 
     
     //Todo: need library of existing predetermined inputs to check against
@@ -120,6 +122,7 @@ public:
     }
 
     bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector <std::string> gestures);
+    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector<std::string> gestures, cugl::Size hitboxSize);
 
     void update(float timestep);
 

@@ -104,6 +104,9 @@ protected:
     float _xAxis;
     float _yAxis;
 
+    //mouse pos 
+    cugl::Vec2 _touchPos;
+
 
 #pragma mark Internal Touch Management   
 	// The screen is divided into four zones: Left, Bottom, Right and Main/
@@ -308,6 +311,8 @@ public:
     bool didDash() const { return _dashPressed; }
 
     bool didTransition() const { return _transitionPressed; }
+
+    cugl::Vec2 getTouchPos() { return _touchPos; }
 
 #pragma mark -
 #pragma mark Touch and Mouse Callbacks
