@@ -54,6 +54,12 @@
         "shake": {
             "file":      "textures/shake.png"
         },
+        "bosshealth": {
+            "file": "textures/bosshealth.png"
+        },
+        "bullbar": {
+            "file": "textures/bullbar.png"
+        },
         "panfry_station": {
             "file": "textures/Panfry_Station.png",
             "wrapS": "repeat",

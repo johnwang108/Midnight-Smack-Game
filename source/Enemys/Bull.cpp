@@ -39,12 +39,12 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
 }
 void BullModel::sethealthbar(GameScene& scene){
     std::shared_ptr<Scene2> UI=scene.getuiScene();
-    auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
-    auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
+    auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("bullbar"));
+    auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("bosshealth"));
     healthBarForeground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
     healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
-    healthBarBackground->setPosition(Vec2(500, 750));
-    healthBarForeground->setPosition(Vec2(500, 750));
+    healthBarBackground->setPosition(Vec2(350, 730));
+    healthBarForeground->setPosition(Vec2(350, 730));
     UI->addChild(healthBarBackground);
     UI->addChild(healthBarForeground);
     _healthBarForeground = healthBarForeground;
