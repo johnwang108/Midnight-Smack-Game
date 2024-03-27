@@ -7,10 +7,10 @@
 using namespace cugl;
 
 #define BULL_SENSOR_NAME     "bullsensor" // If the Bull requires a unique sensor
-#define BULL_CHASE_SPEED     5.0f         // Using the CHASE_SPEED for consistency
+#define BULL_CHASE_SPEED     10.0f         // Using the CHASE_SPEED for consistency
 #define BULL_DENSITY         2.0f         // Assuming the Bull is heavier than a regular enemy
 #define BULL_FORCE           1.0f         // Force specific to the Bull's movement, potentially stronger
-#define BULL_MAXSPEED        5.0f         // A reasonable max speed for the Bull, ensuring it's fast but manageable
+#define BULL_MAXSPEED        7.5f         // A reasonable max speed for the Bull, ensuring it's fast but manageable
 #define BULL_KNOCKBACK_FORCE 5.0f        // Increased knockback force due to the Bull's strength
 #define BULL_KNOCKBACK_FORCE_UP 15.0f      // Vertical knockback component
 
@@ -19,7 +19,7 @@ using namespace cugl;
 
 #define SENSOR_HEIGHT 0.1f
 
-#define BULL_ATTACK_CHANCE 0.001f
+#define BULL_ATTACK_CHANCE 0.002f
 
 class GameScene;
 class BullModel : public physics2::CapsuleObstacle {
@@ -46,6 +46,10 @@ protected:
     bool _shoot;
     float healthPercentage;
     std::shared_ptr<scene2::PolygonNode> _healthBarForeground;
+    bool _summoned;
+    float _CA;
+    int _CAcount;
+    bool _running;
 
 public:
     BullModel() : CapsuleObstacle(), _drawScale(1.0f), _health(100.0f), _healthCooldown(0.2f), _lastDamageTime(0), _isChasing(true), _direction(-1) {}
@@ -104,7 +108,16 @@ public:
     bool getshoot() { return _shoot; }
     void setshoot(bool shoot) { _shoot = shoot; }
     void setassets(std::shared_ptr<AssetManager> assets) { _assets = assets; }
-    void sethealthbar();
+    void sethealthbar(GameScene& scene);
+    void Summon(GameScene& scene);
+    void setsummoned(bool summoned) { _summoned = summoned; };
+    bool getsummoned() { return _summoned; };
+    void setsprintpreparetime(float time) { _sprintPrepareTime = time; }
+    void setCAcount(int time) { _CAcount = time; }
+    void setCA(float time) { _CA = time; }
+    int getCAcount() { return _CAcount; }
+    float getCA() { return _CA; }
+    void circleattack(GameScene& scene);
 };
 
 #endif /* __BULL_MODEL_H__ */

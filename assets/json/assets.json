@@ -8,6 +8,16 @@
         "dude": {
             "file": "textures/dude.png"
         },
+        "su_attack_sheet": {
+            "file": "textures/su_attack_test_sheet.png"
+        },
+
+        "su_idle_blink": {
+            "file": "textures/su_idle_blink.png"
+        },
+        "su_idle": {
+            "file": "textures/su_idle.png"
+        },
         "background-1": {
             "file": "textures/background-image-1.png"
         },
@@ -179,6 +189,33 @@
         },
         "TextBack": {
             "file": "textures/TextBack.png"
+        },
+        "MYbackgroundbig": {
+            "file": "textures/UI/MYbackgroundbig.png"
+        },
+        "MYmenuboard": {
+            "file": "textures/UI/MYmenu.png"
+        },
+        "Language": {
+            "file": "textures/UI/Language.png"
+        },
+        "Credits": {
+            "file": "textures/UI/Credits.png"
+        },
+        "metalbutton": {
+            "file": "textures/UI/metalnine.png"
+        },
+        "textfieldarea": {
+            "file": "textures/UI/textfieldarea.png"
+        },
+        "GameTitle": {
+            "file": "textures/UI/GameTitle.png"
+        },
+        "heartsbroken":{
+            "file":      "textures/UI/heartsbroken.png"
+        },
+        "heartsfull":{
+            "file":      "textures/UI/heartsfull.png"
         }
     },
     "sounds": {
@@ -225,19 +262,38 @@
             "file": "fonts/RetroGame.ttf",
             "size": 16
         },
-        "winter drinkRegular20": {
+
+        "winter drinkRegular40": {
             "file": "fonts/WinterDrink.ttf",
-            "size": 20
+            "size": 38
         },
         "winter drinkRegular25": {
             "file": "fonts/WinterDrink.ttf",
             "size": 25
+        },
+        "winter drinkRegular20": {
+            "file": "fonts/WinterDrink.ttf",
+            "size": 20
         }
     },
+
     "widgets": {
+        "mylabscene": "widgets/mylabscene.json",
+        "mymenubutton": "widgets/mymenubutton.json",
         "labscene": "widgets/labscene.json"
     },
+
     "scene2s": {
+        "menu": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "mylabscene"
+            }
+        },
         "lab0": {
             "type": "Widget",
             "comment": "This is the root node of the scene for the lab",

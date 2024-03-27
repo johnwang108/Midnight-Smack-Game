@@ -28,16 +28,18 @@
 #include <cugl/cugl.h>
 #include <box2d/b2_world_callbacks.h>
 #include <box2d/b2_fixture.h>
+#include <box2d/b2_world.h>
+#include <box2d/b2_contact.h>
+#include <box2d/b2_collision.h>
 #include <unordered_set>
 #include <vector>
 #include "PFInput.h"
-#include "PFAttack.h"
+#include "Attack.h"
 #include "PFDudeModel.h"
-#include "PFRopeBridge.h"
-#include "PFSpinner.h"
 #include "PFDollarScene.h"
 #include "Levels/Level1.h"
 #include "Levels/Level2.h"
+// #include "Levels/Level3.h"
 
 
 /**
@@ -70,13 +72,8 @@ protected:
     /** Reference to the right joystick image */
     std::shared_ptr<cugl::scene2::PolygonNode> _rightnode;
 
-    std::shared_ptr<cugl::scene2::Label> _gestureFeedback;
-
     std::shared_ptr<Scene2> _bgScene;
-
     std::shared_ptr<Scene2> _uiScene;
-
-    cugl::Timestamp _gestureInitiatedTime;
 
     std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
 
@@ -111,12 +108,6 @@ protected:
     //Current target for cook-time
     std::shared_ptr<EnemyModel> _target;
 
-
-    /** Reference to the spinning barrier */
-    std::shared_ptr<Spinner>			  _spinner;
-    /** Reference to the rope bridge */
-    std::shared_ptr<RopeBridge>			  _ropebridge;
-
     //temp bad code
     std::vector<std::shared_ptr<Attack>>  _attacks;
     time_t start;
@@ -150,9 +141,22 @@ protected:
 
     /** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
     bool _transitionScenes;
+    std::string _targetScene;
     float healthPercentage;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarBackground;
+
+    std::shared_ptr<cugl::scene2::Label> _buffLabel;
+
+    std::vector<std::tuple<std::shared_ptr<cugl::scene2::Label>, cugl::Timestamp>> _popups;
+
+    std::shared_ptr<cugl::scene2::ActionManager> _actionManager;
+
+    std::shared_ptr<cugl::scene2::Button> _pauseButton;
+
+    bool _paused;
+
+    float _flag;
 
 #pragma mark Internal Object Management
     /**
@@ -435,7 +439,7 @@ public:
     /**
     * Adds a new bullet to the world and sends it in the right direction.
     */
-    void createAttack();
+    void createAttack(bool display = true);
 
     /**
     * Removes the input Bullet from the world.
@@ -468,6 +472,8 @@ public:
         currentLevel = level;
     }
 
+    void loadLevel(int chapter, int level);
+
     void setAssets(const std::shared_ptr<AssetManager>& assets) { _assets = assets; }
     void setScale(float scale) { _scale = scale; }
     void setBackground(const std::shared_ptr<cugl::scene2::PolygonNode>& background) { _background = background; }
@@ -483,11 +489,37 @@ public:
 
     void transition(bool t);
 
-    bool transitionedAway() { return _transitionScenes; }
     void renderBG(std::shared_ptr<cugl::SpriteBatch> batch);
 
     void renderUI(std::shared_ptr<cugl::SpriteBatch> batch);
 
-  };
+    //creates a popup message that dissapates. Position is in word coords, not physics.
+    void popup(std::string s, Vec2 pos);
+    
+    std::shared_ptr<Scene2> getuiScene() { return _uiScene; }
+    void setuiScene(std::shared_ptr<Scene2> scene) { _uiScene = scene; }
+
+    void animate(std::shared_ptr<cugl::scene2::Animate>& animation, std::shared_ptr<cugl::scene2::Action>& action, std::shared_ptr<cugl::scene2::SpriteNode>& target);
+  
+    std::shared_ptr<cugl::scene2::ActionManager> getActionManager() { return _actionManager; };
+
+    void setPaused(bool paused) { _paused = paused; };
+
+    bool getPaused() { return _paused; };
+
+    std::string getTargetScene() { return _targetScene; };
+
+    bool didTransition() { return _transitionScenes; };
+
+    void setTransition(bool b) { _transitionScenes = b; };
+
+    std::string getTarget() { return _targetScene; };
+
+    void setTarget(std::string s) { _targetScene = s; };
+
+    void save();
+    void loadSave();
+};
+
 
 #endif /* __PF_GAME_SCENE_H__ */

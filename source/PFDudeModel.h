@@ -47,6 +47,7 @@
 #include <cugl/physics2/CUBoxObstacle.h>
 #include <cugl/physics2/CUCapsuleObstacle.h>
 #include <cugl/scene2/graph/CUWireNode.h>
+#include "EntitySpriteNode.h"
 
 #pragma mark -
 #pragma mark Drawing Constants
@@ -54,6 +55,8 @@
 #define DUDE_TEXTURE    "dude"
 /** Identifier to allow us to track the sensor in ContactListener */
 #define SENSOR_NAME     "dudesensor"
+
+#define BODY_SENSOR_NAME "dudebodysensor"
 
 
 #pragma mark -
@@ -75,6 +78,39 @@
 * experience, using a rectangular shape for a character will regularly snag
 * on a platform.  The round shapes on the end caps lead to smoother movement.
 */
+
+enum class buff{
+    attack,
+    health,
+    jump,
+    defense,
+    speed,
+    none
+};
+
+enum class modifier {
+    duration,
+    effect,
+    none
+};
+
+#define DEFAULT_BUFF 1.0f
+
+#define BASE_ATTACK_BUFF 1.5f
+#define BASE_HEALTH_BUFF 5.0f
+#define BASE_JUMP_BUFF 1.5f
+//defense <1 because damage multiplied by defense
+#define BASE_DEFENSE_BUFF 0.5f
+#define BASE_SPEED_BUFF 2.0f
+
+#define SUPER_ATTACK_BUFF 3.0f
+#define SUPER_HEALTH_BUFF 5.0f
+#define SUPER_JUMP_BUFF 3.0f
+#define SUPER_DEFENSE_BUFF 0.0f
+#define SUPER_SPEED_BUFF 5.0f
+
+#define BASE_DURATION 10.0f
+
 class DudeModel : public cugl::physics2::CapsuleObstacle {
 private:
 	/** This macro disables the copy constructor (not allowed on physics objects) */
@@ -99,11 +135,17 @@ protected:
 	b2Fixture*  _sensorFixture;
 	/** Reference to the sensor name (since a constant cannot have a pointer) */
 	std::string _sensorName;
+
+    b2Fixture* _bodySensorFixture;
+
+    std::string _bodySensorName;
 	/** The node for debugging the sensor */
 	std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
 
+    std::shared_ptr<cugl::scene2::WireNode> _bodySensorNode;
+
 	/** The scene graph node for the Dude. */
-	std::shared_ptr<cugl::scene2::SceneNode> _node;
+	std::shared_ptr<EntitySpriteNode> _node;
 	/** The scale between the physics world and the screen (MUST BE UNIFORM) */
 	float _drawScale;
 
@@ -120,6 +162,39 @@ protected:
 
     float healthPercentage;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
+
+    float _attack;
+
+    //attack damage buff
+    float _attackBuff;
+    //health buff
+    float _healthBuff;
+    //jump magnitude buff
+    float _jumpBuff;
+    //dash magnitude buff
+    float _defenseBuff;
+    //max speed buff
+    float _speedBuff;
+
+
+    //duration of buff, 0 if one-time buff
+    float _duration;
+
+    bool _hasSuper;
+
+    float _numberOfTouchingEnemies;
+
+
+    std::unordered_map<std::string, std::shared_ptr<cugl::scene2::Animate>> _actions;
+
+    //unordered map of strings -> sprite sheets for the corresponding action
+    std::unordered_map<std::string, std::shared_ptr<cugl::Texture>> _sheets;
+
+    //info about each action's sheet: rows, cols, size, duration
+    std::unordered_map<std::string, std::tuple<int,int,int,float,bool>> _info;
+
+    //the last action that was animated
+    std::string _activeAction;
 
 	/**
 	* Redraws the outline of the physics fixtures to the debug node
@@ -139,7 +214,7 @@ public:
      * This constructor does not initialize any of the dude values beyond
      * the defaults.  To use a DudeModel, you must call init().
      */
-    DudeModel() : CapsuleObstacle(), _sensorName(SENSOR_NAME) { }
+    DudeModel() : CapsuleObstacle(), _sensorName(SENSOR_NAME), _bodySensorName(BODY_SENSOR_NAME) { }
     
     /**
      * Destroys this DudeModel, releasing all resources.
@@ -314,7 +389,7 @@ public:
      *
      * @return the scene graph node representing this DudeModel.
      */
-	const std::shared_ptr<cugl::scene2::SceneNode>& getSceneNode() const { return _node; }
+	const std::shared_ptr<cugl::scene2::SceneNode> getSceneNode() { return _node; }
 
     /**
      * Sets the scene graph node representing this DudeModel.
@@ -334,10 +409,22 @@ public:
      *
      * @param node  The scene graph node representing this DudeModel, which has been added to the world node already.
      */
-	void setSceneNode(const std::shared_ptr<cugl::scene2::SceneNode>& node) {
+	void setSceneNode(const std::shared_ptr<EntitySpriteNode> node) {
         _node = node;
         _node->setPosition(getPosition() * _drawScale);
     }
+
+    void addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool isPassive = true);
+
+    void animate(std::string action_name);
+
+    void changeSheet(std::string action_name);
+
+    std::shared_ptr<cugl::scene2::Animate> getAction(std::string action_name) { return _actions[action_name]; };
+
+    void getInfo(std::string action_name) {};
+
+    std::string getActiveAction() { return _activeAction; };
 
     
 #pragma mark -
@@ -437,7 +524,7 @@ public:
      *
      * @return the upper limit on dude left-right movement.
      */
-    float getMaxSpeed() const { return DUDE_MANUEL_MAXSPEED; }
+    float getMaxSpeed() { return DUDE_MANUEL_MAXSPEED * getSpeedBuff(); }
     
     /**
      * Returns the name of the ground sensor
@@ -447,6 +534,8 @@ public:
      * @return the name of the ground sensor
      */
     std::string* getSensorName() { return &_sensorName; }
+
+    std::string* getBodySensorName() { return &_bodySensorName; }
     
     /**
      * Returns true if this character is facing right
@@ -492,11 +581,108 @@ public:
      */
     void applyForce(float h, float v);
 
-    void DudeModel::takeDamage(float damage, const int attackDirection);
+    void takeDamage(float damage, const int attackDirection);
 	
     float getHealth() { return _health; }
 
-    void DudeModel::sethealthbar(std::shared_ptr<cugl::AssetManager> asset);
+    void sethealthbar(std::shared_ptr<cugl::AssetManager> asset);
+
+    //Apply buff to Sue with proper modifier.
+    void applyBuff(buff b, modifier m);
+
+    /**This function gets the attack, and resets the attack buff if it is super*/
+    float getAttack() { return _attack * getAttackBuff(); }
+
+    float getDuration() { return _duration; };
+
+    void resetBuff();
+
+    bool hasSuper() { return _hasSuper; };
+
+    void addTouching() { _numberOfTouchingEnemies++; };
+
+    void removeTouching() { _numberOfTouchingEnemies--; };
+
+    float getAttackBuff() {
+        if (_duration > 0) {
+            return _attackBuff;
+        }
+        if (_hasSuper && (_attackBuff != DEFAULT_BUFF)) {
+            _hasSuper = false;
+            return _attackBuff;
+        }
+        return DEFAULT_BUFF;
+    };
+
+    float getDefenseBuff() {
+        if (_duration > 0) {
+            return _defenseBuff;
+        }
+        if (_hasSuper && (_defenseBuff != DEFAULT_BUFF)) {
+            _hasSuper = false;
+            return _defenseBuff;
+        }
+        return DEFAULT_BUFF;
+    }
+
+    float getJumpBuff() {
+        if (_duration > 0) {
+            return _jumpBuff;
+        }
+        if (_hasSuper && (_jumpBuff != DEFAULT_BUFF)) {
+            _hasSuper = false;
+            return _jumpBuff;
+        }
+        return DEFAULT_BUFF;
+    }
+
+    float getSpeedBuff() {
+        if (_duration > 0) {
+            return _speedBuff;
+        }
+        if (_hasSuper && (_speedBuff != DEFAULT_BUFF)) {
+            _hasSuper = false;
+            return _speedBuff;
+        }
+        return DEFAULT_BUFF;
+    }
+
+    //maybe not needed
+    float getHealthBuff() { return 0.0f; };
+
+    static char* getStrForBuff(buff enumVal)
+    {
+        switch (enumVal)
+        {
+        case buff::attack:
+            return "attack";
+        case buff::jump:
+            return "jump";
+        case buff::speed:
+            return "speed";
+        case buff::defense:
+            return "defense";
+        case buff::health:
+            return "health";
+        default:
+            return "Not recognized..";
+        }
+    }
+
+    static char* getStrForModifier(modifier enumVal)
+    {
+        switch (enumVal)
+        {
+        case modifier::duration:
+            return "duration";
+        case modifier::effect:
+            return "effect";
+        case modifier::none:
+            return "none";
+        default:
+            return "Not recognized..";
+        }
+    }
 };
 
 #endif /* __PF_DUDE_MODEL_H__ */

@@ -22,35 +22,17 @@ static float BACKGROUND_POS[] = { 16.0f, 10.0f };
 /** The wall vertices */
 
 static float WALL[WALL_COUNT][WALL_VERTS] = {
-	{16.0f, 20.0f,  0.0f, 20.0f,  0.0f,  0.0f,
-	  1.0f,  0.0f,  1.0f, 19.5f, 16.0f, 19.5f },
-	{32.0f, 20.0f, 16.0f, 20.0f, 16.0f, 19.5f,
-	 31.0f, 19.5f, 31.0f,  0.0f, 32.0f,  0.0f }
+	{16.0f, 40.0f,  0.0f, 40.0f,  0.0f,  0.0f,
+	  1.0f,  0.0f,  1.0f, 39.5f, 16.0f, 39.5f },
+	{50.0f, 40.0f, 16.0f, 40.0f, 16.0f, 39.5f,
+	 49.0f, 39.5f, 49.0f,  0.0f, 50.0f,  0.0f }
 };
-
-
-
-/** The outlines of all of the platforms */
-
-float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
-	{ 1.0f, 3.0f, 1.0f, 2.5f, 6.0f, 2.5f, 6.0f, 3.0f},
-	{ 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
-	{23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
-	{26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
-	{29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
-	{24.0f, 8.5f,24.0f, 8.0f,27.0f, 8.0f,27.0f, 8.5f},
-	{29.0f,10.0f,29.0f, 9.5f,31.0f, 9.5f,31.0f,10.0f},
-	{23.0f,11.5f,23.0f,11.0f,27.0f,11.0f,27.0f,11.5f},
-	{19.0f,12.5f,19.0f,12.0f,23.0f,12.0f,23.0f,12.5f},
-	{ 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
-};
-
 
 
 
 /** The outlines of all of the platforms */
 static float ALT_PLATFORMS[ALT_PLATFORM_COUNT][ALT_PLATFORM_VERTS] = {
-	{ 1.0f, .5f, 1.0f, .0f, 33.0f, .0f, 33.0f, .50f}
+	{ 1.0f, .5f, 1.0f, .0f, 50.0f, .0f, 50.0f, .50f}
 };
 
 void Level2::populate(GameScene& scene) {
@@ -159,15 +141,27 @@ void Level2::populate(GameScene& scene) {
 	}
 
 #pragma mark : Dude
-	Vec2 dudePos = DUDE_POS;
-	// node = scene2::SceneNode::alloc();
-	image = _assets->get<Texture>(DUDE_TEXTURE);
-	_avatar = DudeModel::alloc(dudePos, image->getSize() / (2 + _scale), _scale);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_avatar->setSceneNode(sprite);
-	_avatar->setDebugColor(DEBUG_COLOR);
-	_avatar->setName(DUDE_TEXTURE);
-	scene.addObstacle(_avatar, sprite); // Put this at the very front
+    Vec2 dudePos = DUDE_POS;
+    // node = scene2::SceneNode::alloc();
+    image = _assets->get<Texture>("su_idle");
+
+
+    //hardcoded player size
+    cugl::Size s = PLAYER_SIZE_DEFAULT;
+    _avatar = DudeModel::alloc(dudePos, s, _scale);
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4,16);
+
+    //CALCULATE sue sprite size from sue obstacle size. Goal: su's feet line up with foot sensor, and head (not hat) with top of obstacle. Todo still
+    //float scalar = (s.width *_scale) / spritenode->getSize().width;
+    spritenode->setAnchor(Vec2(0.5, 0.35));
+    spritenode->setPosition(dudePos);
+    _avatar->setSceneNode(spritenode);
+    _avatar->setDebugColor(DEBUG_COLOR);
+    _avatar->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 4, 16, 2.0f, true);
+    _avatar->addActionAnimation("idle_blink", _assets->get<Texture>("su_idle_blink"), 4, 5, 18, 2.0f, true);
+    _avatar->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 4, 15, 1.0f, true);
+    //CULog(scene.getActionManager()->isActive("") ? "active" : "inactive");
+    scene.addObstacle(_avatar, spritenode); // Put this at the very front
 
 	// Play the background music on a loop.
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
@@ -181,6 +175,7 @@ void Level2::populate(GameScene& scene) {
 	_bull->setName(BULL_TEXTURE);
 	_bull->setDebugColor(DEBUG_COLOR);
 	_bull->setassets(_assets);
+	_bull->sethealthbar(scene);
 	scene.addObstacle(_bull, sprite);
 	/*
 	Vec2 egg_pos = EGG_POS;

@@ -1,0 +1,129 @@
+{
+    "variables" : {
+        "text"   : ["children","up","children","text","data","text"],
+        "size": ["data", "size"]
+    },
+    "contents": {
+        "type": "Button",
+        "format": {
+            "type": "Anchored"
+        },
+        "data": {
+            "anchor": [
+                0,
+                0
+            ],
+            "size": [
+                245,
+                65
+            ],
+            "angle": 0,
+            "position": [
+                27,
+                158
+            ],
+            "visible": true,
+            "upnode": "up"
+        },
+        "children": {
+            "up": {
+                "type": "Node",
+                "format": {
+                    "type": "Anchored"
+                },
+                "data": {
+                    "anchor": [
+                        0.5,
+                        0.5
+                    ],
+                    "size": [
+                        245,
+                        65
+                    ],
+                    "angle": 0,
+                    "position": [
+                        0,
+                        0
+                    ],
+                    "visible": true
+                },
+                "children": {
+                    "metalbutton": {
+                        "type": "Ninepatch",
+                        "data": {
+                            "texture": "metalbutton",
+                            "interior" : [27,29,42,40],
+                            "anchor": [
+                                0.5,
+                                0.5
+                            ],
+                            "size": [
+                                245,
+                                65
+                            ],
+                            "angle": 0,
+                            "position": [
+                                0,
+                                0
+                            ],
+                            "visible": true
+                        },
+                        "layout": {
+                            "x_anchor": "fill",
+                            "y_anchor": "fill",
+                            "absolute": false,
+                            "x_offset": 0,
+                            "y_offset": 0
+                        }
+                    },
+                    "text": {
+                        "type": "Label",
+                        "data": {
+                            "anchor": [
+                                0.5,
+                                0.5
+                            ],
+                            "size": [
+                                200,
+                                50
+                            ],
+                            "position": [
+                                23,
+                                7
+                            ],
+                            "angle": 0,
+                            "visible": true,
+                            "font": "winter drinkRegular40",
+                            "text": "START",
+                            "foreground": "#ffffffff",
+                            "background": "#00000000",
+                            "padding": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ],
+                            "valign": "middle",
+                            "halign": "center"
+                        },
+                        "children": {},
+                        "layout": {
+                            "x_anchor": "fill",
+                            "y_anchor": "fill",
+                            "absolute": false,
+                            "x_offset": 0.09,
+                            "y_offset": 0.11
+                        }
+                    }
+                },
+                "layout": {
+                    "x_anchor": "fill",
+                    "y_anchor": "fill",
+                    "absolute": false,
+                    "x_offset": 0,
+                    "y_offset": 0
+                }
+            }
+        }
+    }
+}

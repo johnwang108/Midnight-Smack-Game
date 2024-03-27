@@ -50,17 +50,14 @@ MultiScreenScene::MultiScreenScene() : Scene2(),
 	_size(0, 0),
 	_zoom(1.0f),
 	_animating(false),
-	_curr(0) {
+	_curr(0),
+	_flag(0.0f){
 }
 
 void MultiScreenScene::dispose() {
 	_assets = nullptr;
 	_input = nullptr;
 	_camera = nullptr;
-	//_texture[0] = nullptr;
-	//_texture[1] = nullptr;
-	//_texture[2] = nullptr;
-	//_texture[3] = nullptr;
 	_scenes[0] = nullptr;
 	_scenes[1] = nullptr;
 	_scenes[2] = nullptr;
@@ -69,6 +66,10 @@ void MultiScreenScene::dispose() {
 }
 
 bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
+	if (_flag < 0) {
+		reset();
+		return true;
+	}
 	_size = Application::get()->getDisplaySize();
 	if (assets == nullptr) {
 		return false;
@@ -110,6 +111,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	//init inactive
 	setActive(false);
 	_transitionScenes = false;
+	_targetScene = "";
 	
 	_curr = 2;
 	_animating = false;
@@ -146,10 +148,15 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	//std::shared_ptr<cugl::scene2::SceneNode> tempNode = _assets->get<scene2::SceneNode>("lab2");
 	//_scenes[1]->addChild(tempNode);
 	
-
+	_flag = -1;
 	_finishedIngredients = false;
 
 	_ended = false;
+
+	setName("night");
+
+	transition(false);
+	setTarget("");
 
 	return true;
 
@@ -310,10 +317,19 @@ void MultiScreenScene::preUpdate(float timestep) {
 		_gestureFeedback->setVisible(false);
 	}
 
+	if (_input->didExit()) {
+		CULog("Shutting down");
+		transition(true);
+		setTarget("main_menu");
+	}
+
+	if (_input->didReset()) {
+		reset();
+	}
 
 	if (_input->didTransition()) {
 		transition(true);
-		CULog("______________________________________________________________________________________________________");
+		setTarget("night");
 		return;
 	}
 
@@ -373,7 +389,7 @@ void MultiScreenScene::preUpdate(float timestep) {
 
 }
 
-
+/*
 int MultiScreenScene::determineSwipeDirection() {
 	Vec2 swipeDelta = _input->getSwipeDelta();
 
@@ -385,7 +401,7 @@ int MultiScreenScene::determineSwipeDirection() {
 		}
 	}
 }
-
+*/
 void MultiScreenScene::fixedUpdate(float timestep) {
 
 
@@ -428,7 +444,47 @@ void MultiScreenScene::focusCurr() {
 	_scenes[_curr]->setFocus(true);
 }
 
+void MultiScreenScene::reset() {
+
+	_camera->setPosition(Vec2(0, 0));
+	_camera->update();
+	_startTime = Timestamp();
+	_finishedIngredients = false;
+	tempPopulate();
+	_curr = 2;
+
+	for (int i = 0; i < 5; i++) {
+		_scenes[i]->reset();
+	}
+
+	_scenes[2]->setFocus(true);
+
+}
+
+void MultiScreenScene::save() {
+	//save the current state of the game
+	//should only change daytime and persistent save data
+	auto reader = JsonReader::alloc("./save.json");
+	auto writer = JsonWriter::alloc("./save.json");
+
+	std::shared_ptr<JsonValue> json = JsonValue::allocObject();
+
+	//placeholder values
+	json->appendValue("chapter", 1.0f);
+	json->appendValue("level", 1.0f);
+
+	std::shared_ptr<JsonValue> day = JsonValue::allocArray();
+
+	json->appendChild("day", day);
+
+}
+
+void MultiScreenScene::loadSave() {
+	auto reader = JsonReader::alloc("./save.json");
+}
+
 void MultiScreenScene::endDay() {
 	_ended = true;
 }
+
 

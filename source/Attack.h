@@ -1,6 +1,6 @@
 
-#ifndef __PF_ENEMY_ATTACK_MODEL_H__
-#define __PF_ENEMY_ATTACK_MODEL_H__
+#ifndef __ATTACK_H__
+#define __ATTACK_H__
 #include <cugl/cugl.h>
 #include <cugl/physics2/CUBoxObstacle.h>
 #include <cugl/scene2/graph/CUWireNode.h>
@@ -17,13 +17,15 @@
 #define EA_HSHRINK    0.7f
 #define SENSOR_HEIGHT 0.1f
 
+#define ATTACK_LIFETIME  5
+
 
 #pragma mark -
 #pragma mark Attack Model
-class EnemyAttack : public cugl::physics2::BoxObstacle {
+class Attack : public cugl::physics2::BoxObstacle {
 private:
 	/** This macro disables the copy constructor (not allowed on physics objects) */
-	CU_DISALLOW_COPY_AND_ASSIGN(EnemyAttack);
+	CU_DISALLOW_COPY_AND_ASSIGN(Attack);
 
 protected:
 	/** The scene graph node for the Attack. */
@@ -46,13 +48,17 @@ protected:
     bool _shoot;
 
     bool _rand;
+    
+    bool _norotate;
 
     std::string _sensorName;
 
     b2Fixture* _sensorFixture;
     cugl::Vec2 _straight;
 
-    float _angle;
+  //  float _angle;
+
+    bool _go;
 
 public:
 #pragma mark Constructors
@@ -62,14 +68,14 @@ public:
      * This constructor does not initialize any of the Attack values beyond
      * the defaults.  To use a Attack, you must call init().
      */
-    EnemyAttack() : BoxObstacle() {
+    Attack() : BoxObstacle() {
         setSensor(true);
     }
     
     /**
      * Destroys this Attack, releasing all resources.
      */
-    virtual ~EnemyAttack(void) { dispose(); }
+    virtual ~Attack(void) { dispose(); }
     
     /**
      * Disposes all resources and assets of this Attack
@@ -96,8 +102,8 @@ public:
      *
      * @return  A newly allocated Attack at the given position, with the given radius
      */
-    static std::shared_ptr<EnemyAttack> alloc(cugl::Vec2 pos, const cugl::Size& size) {
-        std::shared_ptr<EnemyAttack> result = std::make_shared<EnemyAttack>();
+    static std::shared_ptr<Attack> alloc(cugl::Vec2 pos, const cugl::Size& size) {
+        std::shared_ptr<Attack> result = std::make_shared<Attack>();
         //return (result->init(pos, radius) ? result : nullptr);
         return (result->init(pos, size) ? result : nullptr);
     }
@@ -162,6 +168,8 @@ public:
     std::string* getSensorName() { return &_sensorName; };
     void setrand(bool rand=false) { _rand = rand; }
     void setstraight(cugl::Vec2 straight) { _straight = straight; }
+    void setGo(bool go) { _go = go; }
+    void setnorotate(bool norotate){_norotate=norotate;}
 };
 
-#endif /* __PF_ENEMY_ATTACK_MODEL_H__ */
+#endif /* __ATTACK_H__ */

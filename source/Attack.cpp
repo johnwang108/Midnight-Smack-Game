@@ -1,5 +1,5 @@
 
-#include "EnemyAttack.h"
+#include "Attack.h"
 #include <cugl/scene2/graph/CUPolygonNode.h>
 #include <cugl/scene2/graph/CUTexturedNode.h>
 #include <cugl/assets/CUAssetManager.h>
@@ -11,7 +11,7 @@ using namespace cugl;
 
 //lifetime in frames
 
-bool EnemyAttack::init(cugl::Vec2 pos, const cugl::Size& size) {
+bool Attack::init(cugl::Vec2 pos, const cugl::Size& size) {
 
 
     if (BoxObstacle::init(pos, size)) {
@@ -22,6 +22,8 @@ bool EnemyAttack::init(cugl::Vec2 pos, const cugl::Size& size) {
 		_direction = -1;
 		_shoot = true;
 		_straight = Vec2(-87,-87);
+		_go = false;
+        _norotate= false;
 
         return true;
     }
@@ -35,9 +37,22 @@ bool EnemyAttack::init(cugl::Vec2 pos, const cugl::Size& size) {
  *
  * @param delta Number of seconds since last animation frame
  */
-void EnemyAttack::update(float dt) {
+void Attack::update(float dt) {
 	BoxObstacle::update(dt);
-	if (_lifetime) {
+    
+    if (_faceright) {
+        scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
+        if (image != nullptr) {
+            image->flipHorizontal(!image->isFlipHorizontal());
+        }
+        _direction = 1;
+        _faceright = false;
+    }
+    
+	if (_go) {
+        _body->SetLinearVelocity(b2Vec2(8*_direction, 0));
+	}
+	else {
 		if (_lifetime == 0) {
 			_killme = true;
 		}
@@ -45,33 +60,27 @@ void EnemyAttack::update(float dt) {
 			_lifetime = (_lifetime > 0 ? _lifetime - 1 : 0);
 		}
 	}
-	if (_faceright) {
-		scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
-		if (image != nullptr) {
-			image->flipHorizontal(!image->isFlipHorizontal());
-		}
-		_direction = 1;
-		_faceright = false;
-	}
+
+
 	if (_shoot) {
 		_shoot = false;
 		if (_rand) {
-			_body->ApplyLinearImpulseToCenter(b2Vec2(10*static_cast<float>(rand()) / static_cast<float>(RAND_MAX)-5, 15), true);
+			_body->ApplyLinearImpulseToCenter(b2Vec2(20*static_cast<float>(rand()) / static_cast<float>(RAND_MAX)-5, 45), true);
 		}
-		else if (_straight!= Vec2(-87, -87)) {
+		else if (_straight != Vec2(-87, -87)) {
 			b2Vec2 targetDirection = b2Vec2(_straight.x - getPosition().x, _straight.y - getPosition().y);
 			targetDirection.Normalize();
-			_body->ApplyLinearImpulseToCenter(b2Vec2(targetDirection.x * 30, targetDirection.y * 30), true);
-			_angle = atan2(_straight.y - getPosition().y, _straight.x - getPosition().x) + M_PI;
+			_body->ApplyLinearImpulseToCenter(b2Vec2(targetDirection.x * 120, targetDirection.y * 120), true);
+            _body->SetTransform(_body->GetPosition(), atan2(_straight.y - getPosition().y, _straight.x - getPosition().x) + M_PI);
 		}
 		else {
-			_body->ApplyLinearImpulseToCenter(b2Vec2(2 * _direction, 3), true);
+			_body->ApplyLinearImpulseToCenter(b2Vec2(3 * _direction, 10), true);
 		}
 	}
 
 	float currentAngle = _body->GetAngle();
 	b2Vec2 velocity = _body->GetLinearVelocity();
-	if (_straight== Vec2(-87, -87)) {
+	if (_straight== Vec2(-87, -87)&& !_norotate) {
 		if (velocity.x < 0) {
 			_body->SetTransform(_body->GetPosition(), currentAngle + M_PI * dt);
 		}
@@ -79,10 +88,9 @@ void EnemyAttack::update(float dt) {
 			_body->SetTransform(_body->GetPosition(), currentAngle - M_PI * dt);
 		}
 	}
-	else {
-		_body->SetTransform(_body->GetPosition(), _angle);
+	else if(!_norotate) {
+		_body->SetTransform(_body->GetPosition(), currentAngle);
 	}
-
 
 
 	if (_node != nullptr) {
@@ -97,12 +105,12 @@ void EnemyAttack::update(float dt) {
  * Any assets owned by this object will be immediately released.  Once
  * disposed, a Attack may not be used until it is initialized again.
  */
-void EnemyAttack::dispose() {
+void Attack::dispose() {
 	_geometry = nullptr;
 	_node = nullptr;
 }
 
-void EnemyAttack::releaseFixtures() {
+void Attack::releaseFixtures() {
 	if (_body != nullptr) {
 		return;
 	}
@@ -115,7 +123,7 @@ void EnemyAttack::releaseFixtures() {
 
 }
 
-void EnemyAttack::createFixtures() {
+void Attack::createFixtures() {
 	if (_body == nullptr) {
 		return;
 	}

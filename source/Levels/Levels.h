@@ -3,7 +3,7 @@
 
 #include <cugl/cugl.h>
 #include "../PFInput.h"
-#include "../PFAttack.h"
+#include "../Attack.h"
 #include "../PFDudeModel.h"
 #include "../Enemys/Enemy.h"
 #include "../Enemys/Bull.h"
@@ -116,6 +116,8 @@
 /** The wall vertices */
 #define WALL_VERTS 12
 #define WALL_COUNT  2
+
+#define PLAYER_SIZE_DEFAULT cugl::Size(1.5f, 2.0f)
 
 
 class GameScene;

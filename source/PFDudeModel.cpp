@@ -49,6 +49,10 @@
 
 #define SIGNUM(x)  ((x > 0) - (x < 0))
 
+#define PASSIVE_KEY "passive_action"
+
+#define ACTIVE_KEY "active_action"
+
 
 /**Modif for the max height jump in ~(Sues +1)*/
 float jmpHeight = 1;
@@ -70,17 +74,20 @@ float floatyFrames = 10;
 /** The amount to shrink the body fixture (horizontally) relative to the image */
 #define DUDE_HSHRINK  0.7f
 /** The amount to shrink the sensor fixture (horizontally) relative to the image */
-#define DUDE_SSHRINK  0.6f
+#define DUDE_SSHRINK  0.7f
 /** Height of the sensor attached to the player's feet */
 #define SENSOR_HEIGHT   0.1f
 /** The density of the character */
 #define DUDE_DENSITY    1.0f
 /** The impulse for the character jump */
-#define DUDE_JUMP       sqrt( 3 * 2 * (9.8) * getHeight() * jmpHeight ) * getMass()
+#define DUDE_JUMP       (sqrt( 3 * 2 * (9.8) * getHeight() * jmpHeight ) * getMass() * getJumpBuff())
 /** The impulse for the character dash */
-#define DUDE_DASH       DUDE_JUMP * dashModif
+#define DUDE_DASH       (DUDE_JUMP * dashModif)
 /** Debug color for the sensor */
 #define DEBUG_COLOR     Color4::RED
+
+//placeholder.  Will be replaced by a json file. action string name maps to action info.
+#define ACTIONS_INFO {}
 
 
 using namespace cugl;
@@ -106,8 +113,8 @@ using namespace cugl;
  */
 bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale) {
     Size nsize = size;
-    nsize.width  *= DUDE_HSHRINK;
-    nsize.height *= DUDE_VSHRINK;
+    //nsize.width  *= DUDE_HSHRINK;
+    //nsize.height *= DUDE_VSHRINK;
     _drawScale = scale;
     
     if (CapsuleObstacle::init(pos,nsize)) {
@@ -133,9 +140,65 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         _lastDamageTime=0;
         _knockbackTime = 0;
 
+        _hasSuper = false;
+
+        //default hardcode
+        _attack = 34;
+
+        //animation inits
+        //_actionManager = cugl::scene2::ActionManager::alloc();
+        _actions = std::unordered_map<std::string, std::shared_ptr<cugl::scene2::Animate>>();
+        _sheets = std::unordered_map<std::string, std::shared_ptr<cugl::Texture>>();
+        _info = std::unordered_map<std::string, std::tuple<int,int,int,float,bool>>();
+        _activeAction = "";
+        _numberOfTouchingEnemies = 0;
+
+        b2Filter filter = getFilterData();
+        filter.groupIndex = -1;
+        setFilterData(filter);
+
         return true;
     }
     return false;
+}
+
+/** Register a new animation in the dict*/
+void DudeModel::addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool isPassive) {
+    std::vector<int> forward;
+    for (int ii = 0; ii < size; ii++) {
+        forward.push_back(ii);
+    }
+    _actions[action_name] = cugl::scene2::Animate::alloc(forward, duration);
+    _sheets[action_name] = sheet;
+    _info[action_name] = std::make_tuple(rows, cols, size, duration, isPassive);
+}
+
+/**Unsure if override needed. Begins an animation.*/
+void DudeModel::animate(std::string action_name) {
+    //first, switch the sheet
+    changeSheet(action_name);
+    if (action_name == "idle") {
+        _node->setScale(0.45/4);
+    }
+    else {
+        _node->setScale(0.45);
+    }
+    _activeAction = action_name;
+
+    //info = {int rows, int cols, int size, float duration, bool isPassive}
+    auto info = _info[action_name];
+}
+
+void DudeModel::changeSheet(std::string action_name) {
+    //info = {int rows, int cols, int size, float duration, bool isPassive}
+    try {
+        auto info = _info[action_name];
+        _node->changeSheet(_sheets[action_name], std::get<0>(info), std::get<1>(info), std::get<2>(info));
+    }
+    catch (int e) {
+        CULog("Error changing sheets. Is the action registered?");
+    }
+    
 }
 
 void DudeModel::sethealthbar(std::shared_ptr<cugl::AssetManager> asset) {
@@ -206,6 +269,28 @@ void DudeModel::createFixtures() {
     sensorDef.shape = &sensorShape;
     sensorDef.userData.pointer = reinterpret_cast<uintptr_t>(getSensorName());
     _sensorFixture = _body->CreateFixture(&sensorDef);
+    b2Filter filter = getFilterData();
+    filter.groupIndex = -1;
+    _sensorFixture->SetFilterData(filter);
+
+
+
+    corners[0].x = -getWidth() / 2.0f;
+    corners[0].y = getHeight()/ 2.0f;
+    corners[1].x = -getWidth() / 2.0f;
+    corners[1].y = -getHeight()/ 2.0f;
+    corners[2].x = getWidth() / 2.0f;
+    corners[2].y = -getHeight() /2.0f;
+    corners[3].x = getWidth() / 2.0f;
+    corners[3].y = getHeight() / 2.0f;
+
+    sensorShape.Set(corners, 4);
+    sensorDef.shape = &sensorShape;
+    sensorDef.userData.pointer = reinterpret_cast<uintptr_t>(getBodySensorName());
+    sensorDef.isSensor = true;
+    _bodySensorFixture = _body->CreateFixture(&sensorDef);
+
+
 }
 
 /**
@@ -272,6 +357,7 @@ void DudeModel::applyForce(float h, float v) {
 
 
     // Jump!
+
     if (isJumping() && isGrounded()) {
         setVY(0);
         b2Vec2 force(0, DUDE_JUMP);
@@ -279,14 +365,15 @@ void DudeModel::applyForce(float h, float v) {
     }
     else if (isJumping() && contactingWall() && !isGrounded()) {
         setVY(0);
-        b2Vec2 force(4 * DUDE_JUMP*5* (isFacingRight() ? 1: -1), DUDE_JUMP * 1.2);
+        b2Vec2 force(4 * DUDE_JUMP *5* (isFacingRight() ? 1: -1), DUDE_JUMP * 1.2);
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
     }
     if (canDash() && getDashNum()>0) {
-        b2Vec2 force(DUDE_DASH*SIGNUM(h), DUDE_DASH * SIGNUM(v) * .8);
+        //b2Vec2 force(DUDE_DASH*SIGNUM(h), DUDE_DASH * SIGNUM(v) * .8);
+        b2Vec2 force(SIGNUM(h), SIGNUM(v) * .8);
         setVY(0);
         setVX(0);
-        _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
+        _body->ApplyLinearImpulse(DUDE_DASH * force, _body->GetPosition(), true);
         //deltaDashNum(-1);
     }
 }
@@ -301,6 +388,29 @@ void DudeModel::applyForce(float h, float v) {
 void DudeModel::update(float dt) {
 
     CapsuleObstacle::update(dt);
+
+    if (_duration > 0) {
+		_duration -= dt;
+        _duration = std::max(0.0f, _duration);
+        //reset buff state if duration is over
+		if (_duration == 0) {
+            resetBuff();
+        }
+        else {
+            _node->setColor(Color4::BLACK);
+        }
+    }
+    else if (_hasSuper) {
+		_node->setColor(Color4::RED);
+    } else {
+		_node->setColor(Color4::WHITE);
+	}
+
+
+    CULog("Number of touching enemies: %d", _numberOfTouchingEnemies);
+    if (_numberOfTouchingEnemies > 0) {
+        takeDamage(34, 0);
+    }
 
     if (_knockbackTime > 0) {
         if (int(_knockbackTime*10) % 2 <1) {
@@ -379,22 +489,102 @@ void DudeModel::resetDebug() {
     _sensorNode = scene2::WireNode::allocWithTraversal(poly, poly2::Traversal::INTERIOR);
     _sensorNode->setColor(DEBUG_COLOR);
     _sensorNode->setPosition(Vec2(_debug->getContentSize().width/2.0f, 0.0f));
-    _debug->addChild(_sensorNode);
 }
 
 
 void DudeModel::takeDamage(float damage, const int attackDirection) {
     if (_lastDamageTime >= _healthCooldown) {
         _lastDamageTime = 0;
-        _health -= damage;
+        _health -= damage * getDefenseBuff();
         if (_health < 0) {
             _health = 0;
         }
         else {
             b2Vec2 impulse = b2Vec2(attackDirection * 15, 10);
-            _body->ApplyLinearImpulseToCenter(impulse, true);
+            /*_body->ApplyLinearImpulseToCenter(impulse, true);*/
+            _body->SetLinearVelocity(impulse);
             _knockbackTime = 2;
         }
     }
 }
 
+
+void DudeModel::applyBuff(const buff b, modifier m) {
+    resetBuff();
+    switch (b) {
+    case buff::attack:
+        if (m == modifier::duration) {
+            _attackBuff = BASE_ATTACK_BUFF;
+            _duration = BASE_DURATION;
+            _hasSuper = false;
+        }
+        else {
+            _attackBuff = SUPER_ATTACK_BUFF;
+            _duration = 0;
+            _hasSuper = true;
+        }
+        break;
+    case buff::health:
+        if (m == modifier::duration) {
+            _healthBuff = BASE_HEALTH_BUFF;
+            _duration = BASE_DURATION;
+            _hasSuper = false;
+        } else {
+            _healthBuff = SUPER_HEALTH_BUFF;
+            _duration = 0;
+            _hasSuper = true;
+        }
+        break;
+    case buff::jump:
+        if (m == modifier::duration) {
+            _jumpBuff = BASE_JUMP_BUFF;
+            _duration = BASE_DURATION;
+            _hasSuper = false;
+        }
+        else {
+            _jumpBuff = SUPER_JUMP_BUFF;
+            _duration = 0;
+            _hasSuper = true;
+        }
+        break;
+    case buff::speed:
+        if (m == modifier::duration) {
+            _speedBuff = BASE_SPEED_BUFF;
+            _duration = BASE_DURATION;
+            _hasSuper = false;
+        } else {
+			_speedBuff = SUPER_SPEED_BUFF;
+			_duration = 0;
+			_hasSuper = true;
+		}
+        break;
+    case buff::defense:
+        if (m == modifier::duration) {
+            _defenseBuff = BASE_DEFENSE_BUFF;
+            _duration = BASE_DURATION;
+            _hasSuper = false;
+        } else {
+			_defenseBuff = SUPER_DEFENSE_BUFF;
+			_duration = 0;
+			_hasSuper = true;
+		}
+		break;
+    default:
+        CULog("NULL BUFF APPLIED");
+    }
+}
+
+
+/**
+ * Resets the buff to default values
+ */
+void DudeModel::resetBuff() {
+	_attackBuff = DEFAULT_BUFF;
+	_healthBuff = DEFAULT_BUFF;
+	_jumpBuff = DEFAULT_BUFF;
+	_defenseBuff = DEFAULT_BUFF;
+	_speedBuff = DEFAULT_BUFF;
+	_duration = 0;
+    _hasSuper = false;
+    _node->setColor(Color4::WHITE);
+}

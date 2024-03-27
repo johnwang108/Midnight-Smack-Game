@@ -3,15 +3,15 @@
 #include <cugl/cugl.h>
 #include <cugl/physics2/CUBoxObstacle.h>
 #include <cugl/physics2/CUCapsuleObstacle.h>
-#include "EnemyAttack.h"
-
-
-
+#include "../Attack.h"
+#include "../PFDudeModel.h"
 
 #define ENEMY_SENSOR_NAME     "enemysensor"
 #define SHRIMP_TEXTURE    "shrimpBoss"
 #define EGG_TEXTURE    "eggEnemy"
 #define RICE_TEXTURE    "riceEnemy"
+#define BEEF_TEXTURE    "beef"
+#define CARROT_TEXTURE    "carrot"
 
 #define ENEMY_FORCE      0.75f
 #define ENEMY_DAMPING    5.0f
@@ -24,23 +24,32 @@
 #define SENSOR_HEIGHT 0.1f
 
 #define CHASE_THRESHOLD 10.0f  
-#define CHASE_SPEED 2.0f
+#define CHASE_SPEED 0.03f
 
 #define ATTACK_OFFSET_X 0.5f
 #define ATTACK_OFFSET_Y 0.5f
 
 #define ENEMY_ATTACK_CHANCE 0.001f
 
+#define SIGNUM(x)  ((x > 0) - (x < 0))
+
 class GameScene;
 
 /**
  * Enum for enemy types.
  * Add additional enemy types as needed.
+ * Shrimp: rolling enemy, fast and can jump but telegraphed in building up speed
+ * Rice: default aggressive walking enemy, can jump on top of each other. Probably needs to be a box because of this
+ * Beef: mole enemy, can jump and attack. Individually dangerous
+ * Carrots: fast enemy, low detection range
+ * Egg: tall enemy. dangerous at range, easier to kill up close
  */
 enum class EnemyType {
     shrimp, 
     rice, 
-    egg 
+    egg,
+    carrot,
+    beef
 };
 
 class EnemyModel : public cugl::physics2::CapsuleObstacle {
@@ -56,8 +65,13 @@ protected:
     /** Whether the enemy is currently on the ground */
     bool _isGrounded;
     /** The node for visual representation of the enemy */
-    bool _isChasing;
     std::shared_ptr<cugl::scene2::SceneNode> _node;
+    /** Whether the enemy is aggroed*/
+    bool _isChasing;
+
+    /** Enemy state*/
+    std::string _state;
+
     /** The node for debugging the sensor */
  //   std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
     /** The scale between the physics world and the screen (MUST BE UNIFORM) */
@@ -87,7 +101,16 @@ protected:
     bool _vulnerable;
 
     //placeholder, name of the gesture to input for this enemy
-    std::string _gestureName;
+    std::vector<std::string> _gestureSeq1;
+
+    std::vector<std::string> _gestureSeq2;
+
+    float _behaviorCounter;
+
+    //distance to player = player position - enemy position
+    cugl::Vec2 _distanceToPlayer;
+
+
 
 
 
@@ -96,6 +119,7 @@ protected:
 
 public:
     EnemyModel() : CapsuleObstacle(), _sensorName(ENEMY_SENSOR_NAME) { }
+
     /**
      * Initializes a new enemy at the given position with the specified size and type.
      *
@@ -106,7 +130,12 @@ public:
      *
      * @return true if the enemy is initialized properly, false otherwise.
      */
+
+    /** default constructor, sets both gesture sequences to the default for that enemy type*/
     virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type);
+
+    /**init with gesture sequences*/
+    virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type, std::vector<std::string> seq1, std::vector<std::string> seq2);
 
     /**
      * Creates and returns a new enemy at the given position with the specified size and type.
@@ -139,7 +168,9 @@ public:
 
     const std::shared_ptr<cugl::scene2::SceneNode>& getSceneNode() const { return _node; }
 
-    void setIsChasing(bool isChasing) { _isChasing = isChasing; }
+    void setIsChasing(bool isChasing);
+
+    void updatePlayerDistance(cugl::Vec2 playerPosition);
 
     bool isChasing() const { return _isChasing; }
 
@@ -206,16 +237,68 @@ public:
      */
     void dispose();
 
-    void createAttack(GameScene& scene);
+    bool didAttack();
+
+    std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale);
 
 
     void setVulnerable(bool vulnerable) { _vulnerable = vulnerable; }
 
     bool isVulnerable() {return _vulnerable; }
 
-    std::string getGestureString() { return _gestureName; }
-    
-    void setGestureString(std::string gesture) { _gestureName = gesture; };
+    std::vector<std::string> getGestureSeq1() { return _gestureSeq1; }
+    std::vector<std::string> getGestureSeq2() { return _gestureSeq2; }
+
+    void setGestureSeq1(std::vector<std::string> gestures) { _gestureSeq1 = gestures; };
+    void setGestureSeq2(std::vector<std::string> gestures) { _gestureSeq2 = gestures; };
+
+    EnemyType getType() { return _type; }
+
+    b2Vec2 handleMovement(b2Vec2 velocity);
+
+    void setState(std::string state);
+
+    std::string getNextState(std::string state);
+
+    //Dict for enemy type to buff 
+    static buff enemyToBuff(EnemyType type) {
+        switch (type) {
+        case EnemyType::shrimp:
+            return buff::attack;
+        case EnemyType::rice:
+            return buff::defense;
+
+            //switch egg and carrot
+        case EnemyType::egg:
+            return buff::jump;
+        case EnemyType::carrot:
+            return buff::speed;
+        case EnemyType::beef:
+            return buff::health;
+        default:
+            return buff::none;
+        }
+    }
+
+    /**
+    Gives the default sequence of gestures for each enemy type. 
+    */
+    static std::vector <std::string> defaultSeq(EnemyType type) {
+		switch (type) {
+		case EnemyType::shrimp:
+			return { "pigtail", "v", "circle"};
+		case EnemyType::rice:
+			return { "circle", "circle", "pigtail"};
+		case EnemyType::egg:
+			return { "v", "v", "v", };
+		case EnemyType::carrot:
+			return { "horizswipe", "vertswipe", "horizswipe" };
+		case EnemyType::beef:
+			return { "v", "circle", "pigtail" };
+		default:
+			return {};
+		}
+	}
 
 };
 

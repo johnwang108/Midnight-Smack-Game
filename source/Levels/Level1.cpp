@@ -2,7 +2,7 @@
 #include "../PFGameScene.h"
 
 /** The goal door position */
-static float GOAL_POS[] = { 4.0f,14.0f };
+static float GOAL_POS[] = { 44.0f,30.0f };
 // float GOAL_POS[] = { 6.0f, 5.0f };
 /** The position of the spinning barrier */
 static float SPIN_POS[] = { 13.0f,12.5f };
@@ -11,22 +11,28 @@ static float DUDE_POS[] = { 2.5f, 5.0f };
 /** The position of the rope bridge */
 static float BRIDGE_POS[] = { 9.0f, 3.8f };
 
-static float SHRIMP_POS[] = { 22.0f, 16.0f };
+static float SHRIMP_POS[] = { 22.0f, 6.0f };
 
-static float EGG_POS[] = { 14.0f, 18.0f };
+static float EGG_POS[] = { 14.0f, 6.0f };
 
-static float RICE_POS[] = { 25.0f, 14.0f };
+static float RICE_POS[] = { 25.0f, 6.0f };
 
 static float BACKGROUND_POS[] = { 16.0f, 10.0f };
 
 
-static float WALL[WALL_COUNT][WALL_VERTS] = {
-	{16.0f, 20.0f,  0.0f, 20.0f,  0.0f,  0.0f,
-	  1.0f,  0.0f,  1.0f, 19.5f, 16.0f, 19.5f },
-	{32.0f, 20.0f, 16.0f, 20.0f, 16.0f, 19.5f,
-	 31.0f, 19.5f, 31.0f,  0.0f, 32.0f,  0.0f }
-};
+//static float WALL[WALL_COUNT][WALL_VERTS] = {
+//	{16.0f, 20.0f,  0.0f, 20.0f,  0.0f,  0.0f,
+//	  1.0f,  0.0f,  1.0f, 19.5f, 16.0f, 19.5f },
+//	{32.0f, 20.0f, 16.0f, 20.0f, 16.0f, 19.5f,
+//	 31.0f, 19.5f, 31.0f,  0.0f, 32.0f,  0.0f }
+//};
 
+static float WALL[WALL_COUNT][WALL_VERTS] = {
+	{27.5f, 36.0f,  0.0f, 36.0f,  0.0f,  0.0f,
+	  1.0f,  0.0f,  1.0f, 35.5f, 27.5f, 35.5f },
+	{55.0f, 36.0f, 27.5f, 36.0f, 27.5f, 35.5f,
+	 54.0f, 35.5f, 54.0f,  0.0f, 55.0f,  0.0f }
+};
 
 
 /** The outlines of all of the platforms */
@@ -44,17 +50,19 @@ static float WALL[WALL_COUNT][WALL_VERTS] = {
 //	{ 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
 //};
 
+//PLATFORM_COUNT
 static float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
-	{1.0f, 4.0f, 1.0f, 2.0f, 4.0f, 2.0f, 4.0f, 4.0f},
-	{ 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
-	{9.5f, 6.0f, 9.5f, 5.0f, 12.5f, 5.0f, 12.5f, 6.0f},
-	{15.0f, 8.5f, 15.0f, 7.0f, 20.0f, 4.5f, 20.0f, 6.0f},
-	{23.0f, 4.0f, 23.0f, 3.0f, 27.0f, 3.0f, 27.0f, 4.0f},
-	{28.0f, 5.0f, 28.0f, 4.0f, 30.0f, 8.0f, 30.0f, 9.0f},
-	{23.0f, 10.0f, 23.0f, 9.f, 27.0f, 9.f, 27.0f, 10.f},
-	{16.0f, 12.f, 16.0f, 10.0f, 22.0f, 12.0f, 22.0f, 10.f},
-	{6.0f, 15.0f, 6.0f, 14.5f, 14.0f, 12.5f, 14.0f, 13.0f},
-	{ 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
+	// {1.0f, 4.0f, 1.0f, 2.0f, 4.0f, 2.0f, 4.0f, 4.0f},
+	{1.0f, 4.0f, 1.0f, 0.0f, 55.0f, 0.0f, 55.0f, 4.0f},
+	{42.5f, 8.0f, 42.5f, 7.0f, 47.5f, 7.0f, 47.5f, 8.0f},
+	{42.5f, 18.0f, 42.5f, 17.0f, 47.5f, 17.0f, 47.5f, 18.0f},
+	{30.0f, 11.0f, 30.0f, 10.5f, 40.0f, 10.5f, 40.0f, 11.0f},
+	{15.0f, 15.0f, 15.0f, 14.5f, 29.0f, 14.5f, 29.0f, 15.0f},
+	{13.0f, 20.0f, 13.0f, 19.0f, 20.0f, 19.0f, 20.0f, 20.0f},
+	{22.0f, 25.0f, 22.0f, 24.0f, 25.0f, 24.0f, 25.0f, 25.0f},
+	{25.0f, 27.0f, 25.0f, 26.0f, 30.0f, 26.0f, 30.0f, 27.0f},
+	{30.0f, 28.0f, 30.0f, 27.5f, 40.0f, 27.5f, 40.0f, 28.0f},
+	{42.0f, 28.0f, 42.0f, 27.5f, 46.0f, 27.5f, 46.0f, 28.0f}
 };
 
 
@@ -162,12 +170,25 @@ void Level1::populate(GameScene& scene) {
 #pragma mark : Dude
 	Vec2 dudePos = DUDE_POS;
 	// node = scene2::SceneNode::alloc();
-	image = _assets->get<Texture>(DUDE_TEXTURE);
-	_avatar = DudeModel::alloc(dudePos, image->getSize() / (2 + _scale), _scale);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_avatar->setSceneNode(sprite);
+	image = _assets->get<Texture>("su_idle");
+
+
+	//hardcoded player size
+	cugl::Size s = PLAYER_SIZE_DEFAULT;
+	_avatar = DudeModel::alloc(dudePos, s, _scale);
+	std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4,16);
+
+	//CALCULATE sue sprite size from sue obstacle size. Goal: su's feet line up with foot sensor, and head (not hat) with top of obstacle. Todo still
+	//float scalar = (s.width *_scale) / spritenode->getSize().width;
+	spritenode->setAnchor(Vec2(0.5, 0.35));
+	spritenode->setPosition(dudePos);
+	_avatar->setSceneNode(spritenode);
 	_avatar->setDebugColor(DEBUG_COLOR);
-	scene.addObstacle(_avatar, sprite); // Put this at the very front
+	_avatar->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 4, 16, 2.0f, true);
+	_avatar->addActionAnimation("idle_blink", _assets->get<Texture>("su_idle_blink"), 4, 5, 18, 2.0f, true);
+	_avatar->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 4, 15, 1.0f, true);
+	//CULog(scene.getActionManager()->isActive("") ? "active" : "inactive");
+	scene.addObstacle(_avatar, spritenode); // Put this at the very front
 
 	// Play the background music on a loop.
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
@@ -183,7 +204,28 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
-	_enemy->setGestureString("pigtail");
+
+	////shrimp 2
+	//image = _assets->get<Texture>(SHRIMP_TEXTURE);
+	//_enemy = EnemyModel::alloc({30.0f, 6.0f}, image->getSize() / _scale, _scale, EnemyType::shrimp);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
+
+
+
+	////shrimp 3
+	//image = _assets->get<Texture>(SHRIMP_TEXTURE);
+	//_enemy = EnemyModel::alloc({25.0f, 18.0f}, image->getSize() / _scale, _scale, EnemyType::shrimp);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
 
 	Vec2 rice_pos = RICE_POS;
 	image = _assets->get<Texture>(RICE_TEXTURE);
@@ -194,7 +236,28 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
-	_enemy->setGestureString("circle");
+
+	////rice 2
+	//image = _assets->get<Texture>(RICE_TEXTURE);
+	//_enemy = EnemyModel::alloc({ 27.0f, 28.0f }, image->getSize() / _scale, _scale, EnemyType::rice);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
+
+	////rice 3
+	//image = _assets->get<Texture>(RICE_TEXTURE);
+	//_enemy = EnemyModel::alloc({ 35.0f, 30.0f }, image->getSize() / _scale, _scale, EnemyType::rice);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
+
+
 
 	Vec2 egg_pos = EGG_POS;
 	image = _assets->get<Texture>(EGG_TEXTURE);
@@ -205,7 +268,28 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
-	_enemy->setGestureString("pigtail");
+
+	////egg 2
+	//image = _assets->get<Texture>(EGG_TEXTURE);
+	//_enemy = EnemyModel::alloc({25.0f, 28.0f}, image->getSize() / (_scale), _scale, EnemyType::egg);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
+
+	////egg 3
+
+	//image = _assets->get<Texture>(EGG_TEXTURE);
+	//_enemy = EnemyModel::alloc({30.0f, 30.0f}, image->getSize() / (_scale), _scale, EnemyType::egg);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
+
 
 	scene.setAssets(_assets);
 	scene.setScale(_scale);
