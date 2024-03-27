@@ -26,6 +26,7 @@ private:
 protected:
 	std::shared_ptr<cugl::AssetManager> _assets;
 	std::shared_ptr<cugl::scene2::SceneNode> _uiNode;
+	std::shared_ptr<cugl::scene2::PolygonNode> _progBar;
 
 
 	std::shared_ptr<PlatformInput> _input;
@@ -70,6 +71,11 @@ protected:
 	std::string _dishToPrepare;
 	float _dayDuration;
 	int _quota;
+	int _currentScore; 
+	
+	// 0 = playing, 1 = win, -1 = lose
+	int _gameState;
+
 	
 	/* If the day has ended*/
 	bool _ended;

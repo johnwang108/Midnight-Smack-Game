@@ -235,11 +235,14 @@ void DollarScene::update(float timestep) {
 	_currentlyHeldIngredient = getHeldIngredient();
 	if (_currentlyHeldIngredient != nullptr) {
 		_currentlyHeldIngredient->getButton()->setPosition(_input->getTouchPos()*_trans);
-
-		//check if within ingredient box
-
 	}
-	//_currentlyHeldIngredient->getButton()->setPosition();
+	
+	for (auto ing : _currentIngredients) {
+		if (ing->isFalling() && _stationHitbox->inContentBounds(ing->getButton()->getPosition())) {
+			_readyToCook = true;
+			//add ingredient to pot somehow lmao
+		}
+	}
 };
 
 //is gesture inputting still in progress?

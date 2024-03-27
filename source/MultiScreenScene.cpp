@@ -85,7 +85,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 
 	std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("json/exLevel.json");
 	readLevel(reader->readJson());
-	
+
 	//MULTISCREEN IS RESPONSIBLE FOR INITING THE SHARED INPUT CONTROLLER. TEMPORARY SOLUTION
 	_input = input;
 	_input->init(getBounds());
@@ -98,8 +98,6 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_stationMap["panfry_station"] = 2;
 	_stationMap["cutting_station"] = 3;
 	_stationMap["blending_station"] = 4;
-
-
 
 	std::string stationTextures[5] = {"pot_station","prep_station" ,"panfry_station" ,"cutting_station" ,"blending_station"};
 	initStations(stationTextures, 5);
@@ -140,8 +138,15 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_gestureFeedback->setForeground(Color4::BLACK);
 	_gestureFeedback->setVisible(false);
 
+	_progBar = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("cooktime"));
+	_progBar->setContentSize(_progBar->getSize() * .5);
+	_progBar->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
+	_progBar->setPosition(0,0);
+	
+
 	_uiScene->addChild(_timer);
 	_uiScene->addChild(_gestureFeedback);
+	_uiScene->addChild(_progBar);
 	//_uiScene->addChild(_uiNode);
 
 	//std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("exLevel");
@@ -157,6 +162,9 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 
 	transition(false);
 	setTarget("");
+
+	_currentScore = 0;
+	_gameState = 0;
 
 	return true;
 
@@ -244,7 +252,18 @@ void MultiScreenScene::preUpdate(float timestep) {
 
 	if (_input->didExit()) {
 		CULog("Shutting down");
-		Application::get()->quit();
+		transition(true);
+		setTarget("main_menu");
+	}
+
+	if (_input->didReset()) {
+		reset();
+	}
+
+	if (_input->didTransition()) {
+		transition(true);
+		setTarget("night");
+		return;
 	}
 
 	if (_ended && !_animating) return;
@@ -255,6 +274,16 @@ void MultiScreenScene::preUpdate(float timestep) {
 
 	_currentTime = now.ellapsedMillis(_startTime) / 1000;
 	_timer->setText(std::to_string((int) _currentTime));
+
+	float reqRate = _quota / _dayDuration;
+
+	float reqQuotaUnits = _currentTime * reqRate;
+	float quotaFloatPercent = reqQuotaUnits / _quota;
+
+	float clipHeight = _progBar->getHeight() * quotaFloatPercent;
+	//CULog("%f", clipHeight);
+	std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, _progBar->getWidth(), clipHeight));
+	_progBar->setScissor(scissor);
 
 	if (_currentTime >= _dayDuration) {
 		endDay();
@@ -315,22 +344,6 @@ void MultiScreenScene::preUpdate(float timestep) {
 	else {
 		_gestureFeedback->setText("");
 		_gestureFeedback->setVisible(false);
-	}
-
-	if (_input->didExit()) {
-		CULog("Shutting down");
-		transition(true);
-		setTarget("main_menu");
-	}
-
-	if (_input->didReset()) {
-		reset();
-	}
-
-	if (_input->didTransition()) {
-		transition(true);
-		setTarget("night");
-		return;
 	}
 
 	//if not animating, listen for screen change input. TODO for three fingered swipes to switch scenes
@@ -454,6 +467,9 @@ void MultiScreenScene::reset() {
 	_finishedIngredients = false;
 	tempPopulate();
 	_curr = 2;
+	_ended = false;
+	_startTime = Timestamp();
+
 
 	for (int i = 0; i < 5; i++) {
 		_scenes[i]->reset();
@@ -487,6 +503,12 @@ void MultiScreenScene::loadSave() {
 
 void MultiScreenScene::endDay() {
 	_ended = true;
+	if (_currentScore >= _quota) {
+		_gameState = 1;
+	}
+	else {
+		_gameState = -1;
+	}
 }
 
 
