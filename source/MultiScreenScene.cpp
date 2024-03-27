@@ -151,7 +151,11 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_gestureFeedback->setForeground(Color4::BLACK);
 	_gestureFeedback->setVisible(false);
 
-	_progBar = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("cooktime"));
+
+	std::shared_ptr<scene2::SceneNode> quotaRoot = _assets->get<scene2::SceneNode>("quotaScene");
+	
+
+	_progBar = quotaRoot->getChildByName("Quota")->getChildByName("Bar");
 	_progBar->setContentSize(_progBar->getSize() * .5);
 	_progBar->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 	_progBar->setPosition(0,0);
@@ -159,7 +163,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 
 	_uiScene->addChild(_timer);
 	_uiScene->addChild(_gestureFeedback);
-	_uiScene->addChild(_progBar);
+	_uiScene->addChild(quotaRoot);
 	//_uiScene->addChild(_uiNode);
 
 	//std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("exLevel");
@@ -466,7 +470,7 @@ void MultiScreenScene::transition(bool t) {
 }
 
 void MultiScreenScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
-	//_uiScene->render(batch);
+	_uiScene->render(batch);
 }
 
 void MultiScreenScene::tempPopulate() {

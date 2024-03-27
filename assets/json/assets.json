@@ -1,5 +1,11 @@
 {
     "textures": {
+        "Ramsay": {
+            "file": "textures/Ramsay.png"
+        },
+        "Bar": {
+            "file": "textures/Bar.png"
+        },
         "earth": {
             "file": "textures/placeholder_block.png",
             "wrapS": "repeat",
@@ -277,7 +283,8 @@
     "widgets": {
         "mylabscene": "widgets/mylabscene.json",
         "mymenubutton": "widgets/mymenubutton.json",
-        "labscene": "widgets/labscene.json"
+        "labscene": "widgets/labscene.json",
+        "quotaBar": "widgets/quota.json"
     },
     "scene2s": {
         "menu": {
@@ -288,6 +295,16 @@
             },
             "data": {
                 "key": "mylabscene"
+            }
+        },
+        "quotaScene": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "quotaBar"
             }
         },
         "lab0": {
