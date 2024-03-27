@@ -499,11 +499,16 @@ void GameScene::preUpdate(float dt) {
         if (_dollarnode->isFocus()) {
             _dollarnode->setFocus(false);
         }
-
         _avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
         _avatar->setJumping(_input->didJump());
         _avatar->setDash(_input->didDash());
         _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
+
+        if (_input->getHorizontal() != 0) {
+            _avatar->animate("run");
+            auto runAction = _avatar->getAction("run");
+            _actionManager->activate("run", runAction, _avatar->getSceneNode());
+        }
         if (_avatar->isJumping() && _avatar->isGrounded()) {
             std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
             AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);

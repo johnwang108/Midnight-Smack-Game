@@ -187,6 +187,7 @@ void Level1::populate(GameScene& scene) {
 	_avatar->addActionAnimation("idle_blink", _assets->get<Texture>("su_idle_blink"), 4, 5, 18, 2.0f, true);
 	_avatar->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 5, 18, 0.6f, true);
 	_avatar->addActionAnimation("recover", _assets->get<Texture>("su_attack_recover"), 3, 4, 10, 0.83f, true);
+	_avatar->addActionAnimation("run" , _assets->get<Texture>("su_run"), 3, 4, 10, 0.83f, true);
 	//CULog(scene.getActionManager()->isActive("") ? "active" : "inactive");
 	scene.addObstacle(_avatar, spritenode); // Put this at the very front
 
