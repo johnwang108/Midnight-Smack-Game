@@ -11,7 +11,6 @@
         "su_attack_sheet": {
             "file": "textures/su_attack_test_sheet.png"
         },
-
         "su_idle_blink": {
             "file": "textures/su_idle_blink.png"
         },
@@ -87,12 +86,6 @@
         },
         "P2bull": {
             "file": "textures/P2bull.png"
-        },
-        "heartsbroken": {
-            "file": "textures/heartsbroken.png"
-        },
-        "heartsfull": {
-            "file": "textures/heartsfull.png"
         },
         "cooktime": {
             "file": "textures/cutting_board.png",
@@ -211,11 +204,11 @@
         "GameTitle": {
             "file": "textures/UI/GameTitle.png"
         },
-        "heartsbroken":{
-            "file":      "textures/UI/heartsbroken.png"
+        "heartsbroken": {
+            "file": "textures/UI/heartsbroken.png"
         },
-        "heartsfull":{
-            "file":      "textures/UI/heartsfull.png"
+        "heartsfull": {
+            "file": "textures/UI/heartsfull.png"
         }
     },
     "sounds": {
@@ -262,7 +255,6 @@
             "file": "fonts/RetroGame.ttf",
             "size": 16
         },
-
         "winter drinkRegular40": {
             "file": "fonts/WinterDrink.ttf",
             "size": 38
@@ -276,13 +268,11 @@
             "size": 20
         }
     },
-
     "widgets": {
         "mylabscene": "widgets/mylabscene.json",
         "mymenubutton": "widgets/mymenubutton.json",
         "labscene": "widgets/labscene.json"
     },
-
     "scene2s": {
         "menu": {
             "type": "Widget",
