@@ -20,6 +20,7 @@ private:
     bool doesDamage;
     float ogX;
     float ogY;
+    int pathNodeCoolDown;
 
     std::vector<Vec3> path;
     float movementForce;
@@ -43,6 +44,8 @@ public:
     void applyPathMovement(float step);
     float getOGX();
     float getOGY();
+    int getPathNodeCoolDown();
+    void setPathNodeCoolDown(int val);
 };
 
 #endif /* __WALL_H__ */

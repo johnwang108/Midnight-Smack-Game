@@ -17,6 +17,7 @@ Wall::Wall() {
 	movementForce = 0;
 	currentPathNode = 0;
 	path.push_back(Vec3(-1, -1, -1));
+	float pathNodeCoolDown = -1;
 
 	ogX = 0;
 	ogY = 0;
@@ -99,8 +100,10 @@ std::shared_ptr<scene2::SceneNode> Wall::getSprite()
 
 void Wall::initiatePath(std::vector<Vec3> paath, int movementForce)
 {
+	pathNodeCoolDown = -1;
 	std::vector<Vec3> temp;
 	for (Vec3 pathNode : paath) {
+		pathNode.set(pathNode.x/_scale + getOGX(), pathNode.y / _scale + getOGY(), pathNode.z);
 		pathNode.set(pathNode.x + getOGX(), pathNode.y + getOGY(), 0);
 		temp.push_back(pathNode);
 	}
@@ -135,6 +138,23 @@ void Wall::applyPathMovement(float step) {
 	CULog("targX %f", activeVX);
 	CULog("Peice fo SHit X %f", activeVY);
 
+	float distanceX = std::min(movementForce*step, std::abs(target.x - pos.x));
+	float distanceY = std::min(movementForce*step, std::abs(target.y - pos.y));
+
+	if (pos.x < target.x) {
+		pos.x += distanceX;
+	}
+	else if (pos.x > target.x) {
+		pos.x -= distanceX;
+	}
+	if (pos.y < target.y) {
+		pos.y += distanceY;
+	}
+	else if (pos.y > target.y) {
+		pos.y -= distanceY;
+	}
+
+	_obj->setPosition(pos.x, pos.y);
 
 	_obj->setPosition(activeVX+pos.x, activeVY+pos.y);
 	scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(sprite.get());
@@ -142,18 +162,33 @@ void Wall::applyPathMovement(float step) {
 	image->setPositionY(this->_obj->getY());
 	image->setPosition(this->_obj->getPosition() * _scale);
 
+	if (std::abs(pos.x - target.x) < 0.1 && std::abs(pos.y - target.y) < 0.1) {
+		if (pathNodeCoolDown == -1) {
+			pathNodeCoolDown = target.z;
+		}
+		else {
+			if (pathNodeCoolDown > 0) {
+				pathNodeCoolDown--;
+			}
+			else {
+				currentPathNode = (currentPathNode + 1) % path.size();
+				pathNodeCoolDown = -1;
+			}
+
 	if (pos.x < (target.x+.1) || (pos.x > (target.x - .1))
 	   && (pos.y < (target.y+.1) || pos.y > (target.y - .1))) {
 		CULog("%f", this->currentPathNode);
 		this->currentPathNode = (this->currentPathNode + 1) % path.size();
-	}
+		}
 
+	}
 	//float activeVX = std::min(.5f, path[currentPathNode].x - pos.x);
 	//float activeVY = std::min(.5f, path[currentPathNode].y - pos.y);
 	////subject->applyForce(target);
 	//subject->setPosition(subject->getX() + activeVX, subject->getY() + activeVY);
 	//scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(sprite.get());
 }
+
 
 float Wall::getOGX()
 {

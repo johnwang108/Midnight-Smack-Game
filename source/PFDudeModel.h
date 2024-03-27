@@ -153,6 +153,7 @@ protected:
     int _dashNum;
     float _dashCooldown;
     bool _contactingWall;
+    bool _isOnDangerousGround;
 
     float _health;
 
@@ -472,6 +473,9 @@ public:
 
     bool contactingWall() { return _contactingWall; }
     void setContactingWall(bool val) { _contactingWall = val;  }
+
+    int getIsOnDangerousGround() { return _isOnDangerousGround; }
+    void getIsOnDangerousGround(bool val) { _isOnDangerousGround = val; }
     
     /**
      * Returns true if the dude is actively jumping.

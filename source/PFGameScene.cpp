@@ -505,6 +505,9 @@ void GameScene::preUpdate(float dt) {
         _avatar->setJumping(_input->didJump());
         _avatar->setDash(_input->didDash());
         _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
+        if (_avatar->getIsOnDangerousGround()) {
+            _avatar->takeDamage(20, 0);
+        }
         if (_avatar->isJumping() && _avatar->isGrounded()) {
             std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
             AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
@@ -691,6 +694,9 @@ void GameScene::fixedUpdate(float step) {
     //camera logic
     if (CAMERA_FOLLOWS_PLAYER) {
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
+        cugl::Vec3 mapMin = Vec3(SCENE_WIDTH / 2, SCENE_HEIGHT / 2, 0);
+        cugl::Vec3 mapMax = Vec3(1400 - SCENE_WIDTH / 2, 900 - SCENE_HEIGHT / 2, 0); //replace magic numbers
+        target.clamp(mapMin, mapMax);
         cugl::Vec3 pos = _camera->getPosition();
 
         Rect viewport = _camera->getViewport();
@@ -720,6 +726,7 @@ void GameScene::fixedUpdate(float step) {
         setComplete(true);
     }
     _world->update(step);
+    currentLevel->update(step);
 }
     
 /**
@@ -747,6 +754,14 @@ void GameScene::fixedUpdate(float step) {
 void GameScene::postUpdate(float remain) {
     // Since items may be deleted, garbage collect
     _world->garbageCollect();
+
+    // TODO: Update this demo to support interpolation
+    // We can interpolate the rope bridge and spinner as we have the data structures
+    
+    // I CHANGED THIS
+    // _spinner->update(remain);
+    // _ropebridge->update(remain);
+
 
     // Add a bullet AFTER physics allows it to hang in front
     // Otherwise, it looks like bullet appears far away
@@ -779,7 +794,7 @@ void GameScene::postUpdate(float remain) {
     }
 
      //Reset the game if we win or lose.
-   if (_countdown > 0) {
+    if (_countdown > 0) {
         _countdown--;
     } else if (_countdown == 0) {
         if (_failed == false) {
@@ -929,6 +944,145 @@ void GameScene::removeAttack(T* attack) {
 }
 
 
+#pragma mark -
+#pragma mark Collision Handling
+/**
+ * Processes the start of a collision
+ *
+ * This method is called when we first get a collision between two objects.  We use
+ * this method to test if it is the "right" kind of collision.  In particular, we
+ * use it to test if we make it to the win door.
+ *
+ * @param  contact  The two bodies that collided
+ */
+
+void GameScene::beginContact(b2Contact* contact) {
+    b2Fixture* fix1 = contact->GetFixtureA();
+    b2Fixture* fix2 = contact->GetFixtureB();
+
+    b2Body* body1 = fix1->GetBody();
+    b2Body* body2 = fix2->GetBody();
+
+
+    std::string* fd1 = reinterpret_cast<std::string*>(fix1->GetUserData().pointer);
+    std::string* fd2 = reinterpret_cast<std::string*>(fix2->GetUserData().pointer);
+
+    physics2::Obstacle* bd1 = reinterpret_cast<physics2::Obstacle*>(body1->GetUserData().pointer);
+    physics2::Obstacle* bd2 = reinterpret_cast<physics2::Obstacle*>(body2->GetUserData().pointer);
+
+
+    if (bd1->getName() == BACKGROUND_NAME || bd2->getName() == BACKGROUND_NAME) {
+        return;
+    }
+
+    // Check if the player hits a wall NOT PLATFORM (not implemented for that atm)
+    if ((bd1 == _avatar.get() && bd2->getName() == WALL_NAME) ||
+        (bd2 == _avatar.get() && bd1->getName() == WALL_NAME)) {
+        _avatar->setContactingWall(true);
+        _avatar->setVX(0);
+    }
+
+
+
+    // See if we have landed on the ground.
+    if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
+        (_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
+        _avatar->setGrounded(true);
+        // Could have more than one ground
+        _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
+    }
+
+    for (auto& _enemy : _enemies) {
+        if (!_enemy->isRemoved()) {
+            if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
+                (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
+                    _enemy->setGrounded(true);
+            }
+
+
+/**
+ * Callback method for the start of a collision
+ *
+ * This method is called when two objects cease to touch.  The main use of this method
+ * is to determine when the characer is NOT on the ground.  This is how we prevent
+ * double jumping.
+ */
+
+void GameScene::endContact(b2Contact* contact) {
+    b2Fixture* fix1 = contact->GetFixtureA();
+    b2Fixture* fix2 = contact->GetFixtureB();
+
+    b2Body* body1 = fix1->GetBody();
+    b2Body* body2 = fix2->GetBody();
+
+    std::string* fd1 = reinterpret_cast<std::string*>(fix1->GetUserData().pointer);
+    std::string* fd2 = reinterpret_cast<std::string*>(fix2->GetUserData().pointer);
+
+    physics2::Obstacle* bd1 = reinterpret_cast<physics2::Obstacle*>(body1->GetUserData().pointer);
+    physics2::Obstacle* bd2 = reinterpret_cast<physics2::Obstacle*>(body2->GetUserData().pointer);
+
+    if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
+        (_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
+        _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
+        if (_sensorFixtures.empty()) {
+            _avatar->setGrounded(false);
+        }
+    }
+    // Check if the player is no longer in contact with any walls
+    bool p1 = (_avatar->getSensorName() == fd2);
+    bool p2 = (bd1->getName() != WALL_NAME);
+    bool p3 = (_avatar->getSensorName() == fd1);
+    bool p4 = (bd2->getName() != WALL_NAME);
+    bool p5 = _avatar->contactingWall();
+    if (!(p1 || p2 || p3) && p4 && p5) {
+        _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
+        _avatar->setContactingWall(false);
+    }
+    // Test bullet collision with enemy
+    if (bd1->getName() == ATTACK_NAME && bd2->getName() == ENEMY_NAME) {
+        Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
+        Vec2 attackerPos = ((Attack*)bd1)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        int damage = ((EnemyModel*)bd2)->getHealth();
+        ((EnemyModel*)bd2)->takeDamage(_avatar->getAttack(), direction);
+        damage -= ((EnemyModel*)bd2)->getHealth();
+        if (damage > 0) popup(std::to_string((int) _avatar->getAttack()), enemyPos * _scale);
+        if (((EnemyModel*)bd2)->getHealth() <= 50){
+            ((EnemyModel*)bd2)->setVulnerable(true);
+        }
+    }else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
+        Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
+        Vec2 attackerPos = ((Attack*)bd2)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        int damage = ((EnemyModel*)bd1)->getHealth();
+        ((EnemyModel*)bd1)->takeDamage(_avatar->getAttack(), direction);
+        damage -= ((EnemyModel*)bd1)->getHealth();
+        if (damage > 0) popup(std::to_string((int)_avatar->getAttack()), enemyPos * _scale);
+        if (((EnemyModel*)bd1)->getHealth() <= 50) {
+            ((EnemyModel*)bd1)->setVulnerable(true);
+        }
+    }
+
+
+
+
+
+
+
+    if (bd1->getName() == ENEMY_NAME && bd2 == _avatar.get()) {
+        Vec2 enemyPos = ((DudeModel*)bd2)->getPosition();
+        Vec2 attackerPos = ((EnemyModel*)bd1)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+    }
+    else if (bd2->getName() == ENEMY_NAME && bd1 == _avatar.get()) {
+        Vec2 enemyPos = ((DudeModel*)bd1)->getPosition();
+        Vec2 attackerPos = ((EnemyModel*)bd2)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        _avatar->takeDamage(34, direction);
+    }
+
+}
 
 /**
  * Returns the active screen size of this scene.

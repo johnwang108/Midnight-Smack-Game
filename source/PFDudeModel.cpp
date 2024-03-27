@@ -66,13 +66,13 @@ float floatyFrames = 10;
 /** Cooldown (in animation frames) for jumping */
 #define JUMP_COOLDOWN   5
 /** Cooldown (in animation frames) for shooting */
-#define DASH_COOLDOWN  20
+#define DASH_COOLDOWN  10
 /** Cooldown (in animation frames) for shooting */
 #define SHOOT_COOLDOWN  20
 /** The amount to shrink the body fixture (vertically) relative to the image */
-#define DUDE_VSHRINK  0.95f
+#define DUDE_VSHRINK  1.0f
 /** The amount to shrink the body fixture (horizontally) relative to the image */
-#define DUDE_HSHRINK  0.7f
+#define DUDE_HSHRINK  1.0f
 /** The amount to shrink the sensor fixture (horizontally) relative to the image */
 #define DUDE_SSHRINK  0.7f
 /** Height of the sensor attached to the player's feet */
@@ -128,6 +128,7 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         _faceRight  = true;
         _dash = true;
         _contactingWall = false;
+        _isOnDangerousGround = false;
 
         _dashCooldown = 0;
         _shootCooldown = 0;
@@ -338,7 +339,7 @@ void DudeModel::applyForce(float h, float v) {
             // Instant friction on the ground
             b2Vec2 vel = _body->GetLinearVelocity();
             float LogVal = std::log(abs(vel.x) + 1);
-            float whyDoesntSTDMinWorkpls = LogVal < .8 ? LogVal : .8;
+            float whyDoesntSTDMinWorkpls = LogVal < .7 ? LogVal : .7;
             if (abs(getVX()) > 0) {
                 int negativeAccounter = SIGNUM(vel.x);
                 vel.x = negativeAccounter * vel.x * whyDoesntSTDMinWorkpls < negativeAccounter * .01 ? 0 : whyDoesntSTDMinWorkpls * vel.x; // If you set y, you will stop a jump in place
@@ -369,8 +370,17 @@ void DudeModel::applyForce(float h, float v) {
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
     }
     if (canDash() && getDashNum()>0) {
-        //b2Vec2 force(DUDE_DASH*SIGNUM(h), DUDE_DASH * SIGNUM(v) * .8);
-        b2Vec2 force(SIGNUM(h), SIGNUM(v) * .8);
+        float tempH = SIGNUM(h);
+        float tempV = SIGNUM(v);
+        int sum = tempH + tempV;
+        if (tempH == 0 && tempV == 0) {
+            tempH = isFacingRight() ? 1 : -1;
+        }
+        else if (sum == 0 || abs(sum) == 2) {
+            tempH *= sqrt(.5);
+            tempV *= sqrt(.5);
+        }
+        b2Vec2 force(DUDE_DASH * SIGNUM(tempH), DUDE_DASH * SIGNUM(tempV) * .8);
         setVY(0);
         setVX(0);
         _body->ApplyLinearImpulse(DUDE_DASH * force, _body->GetPosition(), true);
