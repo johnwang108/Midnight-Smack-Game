@@ -71,6 +71,8 @@ protected:
 
     bool _focus;
 
+    bool _readyForGestures;
+
     std::vector<std::string> _currentTargetGestures;
 
     int _currentTargetIndex;
@@ -93,6 +95,9 @@ protected:
     std::deque<std::shared_ptr<Ingredient>> _currentIngredients;
 
     std::shared_ptr<Ingredient> _ingredientToRemove; 
+    std::shared_ptr<Ingredient> _currentlyHeldIngredient;
+
+    
     //Todo: need library of existing predetermined inputs to check against
 
 public:
@@ -152,6 +157,9 @@ public:
 
 
     void updateConveyor();
+    std::shared_ptr<Ingredient> getHeldIngredient();
+
+    void letGoOfIngredient();
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */

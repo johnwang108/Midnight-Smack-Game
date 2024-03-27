@@ -12,6 +12,7 @@ Ingredient::Ingredient(std::string station, std::vector<std::string> gestures, f
 	_gestureNames = gestures;
 	_startTime = startTime;
 	_beingHeld = false;
+	_falling = false;
 }
 
 void Ingredient::init(std::shared_ptr<Texture> texture) {

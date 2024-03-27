@@ -41,6 +41,7 @@
 #define GOOD_THRESHOLD 0.7
 #define PERFECT_THRESHOLD 0.85
 #define CONVEYOR_SPEED 1.0f
+#define FALL_SPEED 1.0f
 
 using namespace cugl;
 
@@ -85,6 +86,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_currentSimilarity = 0;
 	_lastResult = -1;
 	_justCompletedGesture = false;
+	_currentlyHeldIngredient = nullptr;
 	initGestureRecognizer();
 	//reflection across the x axis is necessary for polygon path
 	/**
@@ -206,7 +208,7 @@ void DollarScene::update(float timestep) {
 	_poly->setAnchor(cugl::Vec2::ANCHOR_CENTER);
 
 	//GET RID OF HARDCODE JOHN TODO
-	_poly->setPosition(cugl::Vec2(0,0));
+	_poly->setPosition(cugl::Vec2(0, 0));
 	_box->setPosition(cugl::Vec2(0, 0));
 
 
@@ -214,6 +216,14 @@ void DollarScene::update(float timestep) {
 
 	//_header->setVisible(!isPending() && isSuccess());
 	updateConveyor();
+	if (_currentlyHeldIngredient != nullptr && _currentlyHeldIngredient->getBeingHeld() == false) {
+		// let go
+		_currentlyHeldIngredient->setFalling(true);
+		_currentlyHeldIngredient = nullptr;
+	}
+
+	_currentlyHeldIngredient = getHeldIngredient();
+	//_currentlyHeldIngredient->getButton()->setPosition();
 };
 
 //is gesture inputting still in progress?
@@ -229,7 +239,7 @@ bool DollarScene::matchWithTouchPath() {
 		if (gesture.size() > 3) {
 			float sim = _dollarRecog->similarity(_currentTargetGestures[_currentTargetIndex], gesture);
 			if (sim >= 0) _currentSimilarity = sim;
-			
+
 		}
 		return true;
 	}
@@ -239,7 +249,7 @@ bool DollarScene::matchWithTouchPath() {
 //is gesture inputting a success?
 int DollarScene::gestureResult() {
 	//CULog("%d", (int)(_currentSimilarity > GOOD_THRESHOLD) + (int)(_currentSimilarity > PERFECT_THRESHOLD));
-	return (int) (_currentSimilarity > GOOD_THRESHOLD) + (int) (_currentSimilarity > PERFECT_THRESHOLD);
+	return (int)(_currentSimilarity > GOOD_THRESHOLD) + (int)(_currentSimilarity > PERFECT_THRESHOLD);
 };
 
 void DollarScene::setFocus(bool focus) {
@@ -265,13 +275,14 @@ void DollarScene::addIngredient(std::shared_ptr<Ingredient> ing) {
 		CULogError("Trying to add ingredient to Dollar Scene Without Bottom Bar");
 		return;
 	}
-	_currentIngredients.push_back(ing);
-	ing->getButton()->setPosition(_conveyorBelt->getWidth() - ing->getButton()->getWidth()/2, _conveyorBelt->getHeight() / 2);
 	if (_conveyorBelt == nullptr) {
-		CULogError("Trying to add ingredient to Dollar Scene Without Bottom Bar");
+		CULogError("Trying to add ingredient to Dollar Scene Without Conveyor Belt");
 		return;
-	} 
+	}
+	_currentIngredients.push_back(ing);
+	ing->getButton()->setPosition(_conveyorBelt->getWidth() - ing->getButton()->getWidth() / 2, _conveyorBelt->getHeight() / 2);
 	_conveyorBelt->addChild(ing->getButton());
+
 }
 
 
@@ -279,13 +290,27 @@ void DollarScene::updateConveyor() {
 	if (_bottomBar == nullptr) return;
 
 	for (auto& ingredient : _currentIngredients) {
+		if (ingredient == _currentlyHeldIngredient) continue;
 		std::shared_ptr<scene2::SceneNode> button = ingredient->getButton();
-		button->setPositionX(button->getPositionX() - CONVEYOR_SPEED);
 
-		if (button->getPositionX() <= button->getWidth()) {			
-			// mark button switch to next pos
-			_ingredientToRemove = ingredient;
+		if (ingredient->isFalling()) {
+			if (button->getPositionY() <= _conveyorBelt->getHeight() / 2) {
+				ingredient->setFalling(false);
+				button->setPositionY(_conveyorBelt->getHeight() / 2);
+			}
+			else {
+				button->setPositionY(button->getPositionY() - FALL_SPEED);
+			}
 		}
+		else {
+			button->setPositionX(button->getPositionX() - CONVEYOR_SPEED);
+
+			if (button->getPositionX() <= button->getWidth()) {
+				// mark button switch to next pos
+				_ingredientToRemove = ingredient;
+			}
+		}
+		
 	}
 }
 
@@ -301,6 +326,14 @@ std::shared_ptr<Ingredient> DollarScene::popIngredient() {
 	_conveyorBelt->removeChild(removedIngredient->getButton());
 	return removedIngredient;
 }
+
+std::shared_ptr<Ingredient> DollarScene::getHeldIngredient() {
+	for (std::shared_ptr<Ingredient> ing : _currentIngredients) {
+		if (ing->getBeingHeld() == true) return ing;
+	}
+	return nullptr;
+}
+
 //draws a boundary rectangle
 //void DollarScene::draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint) {
 //

@@ -60,6 +60,8 @@ protected:
 
 	std::vector<std::shared_ptr<Ingredient>> _ingredients; 
 
+	std::shared_ptr<Ingredient> _heldIngredient;
+
 	std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
 
     /* This is the name of the dish we are making for the day, to display */
