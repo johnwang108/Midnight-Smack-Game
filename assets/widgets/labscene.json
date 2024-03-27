@@ -12,7 +12,7 @@
             ],
             "size": [
                 1280,
-                720
+                800
             ],
             "angle": 0,
             "position": [
@@ -22,72 +22,39 @@
             "visible": true
         },
         "children": {
-            "background": {
-                "type": "Image",
-                "data": {
-                    "texture": "background",
-                    "anchor": [
-                        0,
-                        0.5
-                    ],
-                    "size": [
-                        2560,
-                        720
-                    ],
-                    "angle": 0,
-                    "position": [
-                        0,
-                        0
-                    ],
-                    "visible": true
-                },
-                "layout": {
-                    "x_anchor": "left",
-                    "y_anchor": "fill",
-                    "absolute": false,
-                    "x_offset": 0,
-                    "y_offset": 0
-                }
-            },
-            "slider" : {
-                "type" : "Widget",
-                "data" : {
-                    "key" : "slider"
-                }
-            },
-            "startmenu": {
+            "kitchenbar": {
                 "type": "Node",
                 "format": {
                     "type": "Anchored"
                 },
                 "data": {
                     "anchor": [
-                        0.5,
+                        0,
                         1
                     ],
                     "size": [
-                        522.4,
-                        488
+                        906,
+                        185
                     ],
                     "angle": 0,
                     "position": [
-                        379,
-                        232
+                        187,
+                        0
                     ],
                     "visible": true
                 },
                 "children": {
-                    "menuboard": {
+                    "NotepadBar": {
                         "type": "Image",
                         "data": {
-                            "texture": "menuboard",
+                            "texture": "NotepadBar",
                             "anchor": [
-                                0,
-                                1
+                                0.5,
+                                0
                             ],
                             "size": [
-                                522.4,
-                                488
+                                906,
+                                185
                             ],
                             "angle": 0,
                             "position": [
@@ -97,6 +64,658 @@
                             "visible": true
                         },
                         "layout": {
+                            "x_anchor": "fill",
+                            "y_anchor": "bottom",
+                            "absolute": false,
+                            "x_offset": 0,
+                            "y_offset": 0
+                        }
+                    },
+                    "Conveyor": {
+                        "type": "Node",
+                        "format": {
+                            "type": "Anchored"
+                        },
+                        "data": {
+                            "anchor": [
+                                1,
+                                1
+                            ],
+                            "size": [
+                                540.5,
+                                92.5
+                            ],
+                            "angle": 0,
+                            "position": [
+                                365,
+                                31.5
+                            ],
+                            "visible": true
+                        },
+                        "children": {
+                            "ConveyorBelt": {
+                                "type": "Image",
+                                "data": {
+                                    "texture": "ConveyorBelt",
+                                    "anchor": [
+                                        0.5,
+                                        0.5
+                                    ],
+                                    "size": [
+                                        540.5,
+                                        92.5
+                                    ],
+                                    "angle": 0,
+                                    "position": [
+                                        0,
+                                        0
+                                    ],
+                                    "visible": true
+                                },
+                                "layout": {
+                                    "x_anchor": "center",
+                                    "y_anchor": "middle",
+                                    "absolute": false,
+                                    "x_offset": 0,
+                                    "y_offset": 0
+                                }
+                            },
+                            "Foods": {
+                                "type": "Node",
+                                "format": {
+                                    "type": "Anchored"
+                                },
+                                "data": {
+                                    "anchor": [
+                                        0.5,
+                                        0.5
+                                    ],
+                                    "size": [
+                                        416.8,
+                                        90.2
+                                    ],
+                                    "angle": 0,
+                                    "position": [
+                                        62,
+                                        -0.7
+                                    ],
+                                    "visible": true
+                                },
+                                "children": {},
+                                "layout": {
+                                    "x_anchor": "center",
+                                    "y_anchor": "middle",
+                                    "absolute": false,
+                                    "x_offset": 0,
+                                    "y_offset": -0.02
+                                }
+                            }
+                        },
+                        "layout": {
+                            "x_anchor": "right",
+                            "y_anchor": "top",
+                            "absolute": false,
+                            "x_offset": 0,
+                            "y_offset": -0.33
+                        }
+                    },
+                    "Item": {
+                        "type": "Node",
+                        "format": {
+                            "type": "Anchored"
+                        },
+                        "data": {
+                            "anchor": [
+                                0,
+                                0.5
+                            ],
+                            "size": [
+                                324.25,
+                                92
+                            ],
+                            "angle": 0,
+                            "position": [
+                                18,
+                                29
+                            ],
+                            "visible": true
+                        },
+                        "children": {
+                            "Item": {
+                                "type": "Node",
+                                "format": {
+                                    "type": "Float",
+                                    "x_alignment": "center",
+                                    "y_alignment": "middle",
+                                    "orientation": "horizontal"
+                                },
+                                "data": {
+                                    "anchor": [
+                                        0,
+                                        1
+                                    ],
+                                    "size": [
+                                        284.39,
+                                        78.2
+                                    ],
+                                    "angle": 0,
+                                    "position": [
+                                        40,
+                                        -0.2
+                                    ],
+                                    "visible": true
+                                },
+                                "children": {
+                                    "RecipeBook": {
+                                        "type": "Button",
+                                        "format": {
+                                            "type": "Anchored"
+                                        },
+                                        "data": {
+                                            "anchor": [
+                                                0.5,
+                                                0.5
+                                            ],
+                                            "size": [
+                                                91.16,
+                                                77.78
+                                            ],
+                                            "angle": 0,
+                                            "position": [
+                                                45.58124923706055,
+                                                39.10002517700195
+                                            ],
+                                            "visible": true,
+                                            "upnode": "RecipeBook"
+                                        },
+                                        "children": {
+                                            "RecipeBook": {
+                                                "type": "Image",
+                                                "data": {
+                                                    "texture": "RecipeBook",
+                                                    "anchor": [
+                                                        0,
+                                                        1
+                                                    ],
+                                                    "size": [
+                                                        91.16,
+                                                        77.78
+                                                    ],
+                                                    "angle": 0,
+                                                    "position": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "visible": true
+                                                },
+                                                "layout": {
+                                                    "x_anchor": "left",
+                                                    "y_anchor": "top",
+                                                    "absolute": false,
+                                                    "x_offset": 0,
+                                                    "y_offset": 0
+                                                }
+                                            }
+                                        },
+                                        "layout": {
+                                            "priority": 0,
+                                            "padding": [
+                                                0,
+                                                0,
+                                                25,
+                                                0
+                                            ]
+                                        }
+                                    },
+                                    "CookTimer": {
+                                        "type": "Image",
+                                        "data": {
+                                            "texture": "CookTimer",
+                                            "anchor": [
+                                                0.5,
+                                                0.5
+                                            ],
+                                            "size": [
+                                                70.55,
+                                                78.2
+                                            ],
+                                            "angle": 0,
+                                            "position": [
+                                                151.43750762939453,
+                                                39.099998474121094
+                                            ],
+                                            "visible": true
+                                        },
+                                        "layout": {
+                                            "priority": 1,
+                                            "padding": [
+                                                0,
+                                                0,
+                                                25,
+                                                0
+                                            ]
+                                        }
+                                    },
+                                    "Gesture": {
+                                        "type": "Button",
+                                        "format": {
+                                            "type": "Anchored"
+                                        },
+                                        "data": {
+                                            "anchor": [
+                                                0.5,
+                                                0.5
+                                            ],
+                                            "size": [
+                                                72.68,
+                                                74.21
+                                            ],
+                                            "angle": 0,
+                                            "position": [
+                                                248.04999542236328,
+                                                39.099998474121094
+                                            ],
+                                            "visible": true,
+                                            "upnode": "Gesture"
+                                        },
+                                        "children": {
+                                            "Gesture": {
+                                                "type": "Image",
+                                                "data": {
+                                                    "texture": "Gesture",
+                                                    "anchor": [
+                                                        0,
+                                                        1
+                                                    ],
+                                                    "size": [
+                                                        72.68,
+                                                        74.21
+                                                    ],
+                                                    "angle": 0,
+                                                    "position": [
+                                                        0,
+                                                        0
+                                                    ],
+                                                    "visible": true
+                                                },
+                                                "layout": {
+                                                    "x_anchor": "left",
+                                                    "y_anchor": "top",
+                                                    "absolute": false,
+                                                    "x_offset": 0,
+                                                    "y_offset": 0
+                                                }
+                                            }
+                                        },
+                                        "layout": {
+                                            "priority": 2,
+                                            "padding": [
+                                                0,
+                                                0,
+                                                0,
+                                                0
+                                            ]
+                                        }
+                                    }
+                                },
+                                "layout": {
+                                    "x_anchor": "left",
+                                    "y_anchor": "top",
+                                    "absolute": false,
+                                    "x_offset": 0.12,
+                                    "y_offset": -0.15
+                                }
+                            }
+                        },
+                        "layout": {
+                            "x_anchor": "left",
+                            "y_anchor": "middle",
+                            "absolute": false,
+                            "x_offset": 0.02,
+                            "y_offset": -0.09
+                        }
+                    }
+                },
+                "layout": {
+                    "x_anchor": "left",
+                    "y_anchor": "top",
+                    "absolute": false,
+                    "x_offset": 0.15,
+                    "y_offset": -0.77
+                }
+            },
+            "Map": {
+                "type": "Node",
+                "format": {
+                    "type": "Anchored"
+                },
+                "data": {
+                    "anchor": [
+                        1,
+                        1
+                    ],
+                    "size": [
+                        303.75,
+                        203.4
+                    ],
+                    "angle": 0,
+                    "position": [
+                        960,
+                        580.6
+                    ],
+                    "visible": true
+                },
+                "children": {
+                    "Minimap": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "Minimap",
+                            "anchor": [
+                                1,
+                                1
+                            ],
+                            "size": [
+                                303.75,
+                                203.4
+                            ],
+                            "angle": 0,
+                            "position": [
+                                0,
+                                0
+                            ],
+                            "visible": true
+                        },
+                        "layout": {
+                            "x_anchor": "right",
+                            "y_anchor": "top",
+                            "absolute": false,
+                            "x_offset": 0,
+                            "y_offset": 0
+                        }
+                    },
+                    "Pot": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "Pot",
+                            "anchor": [
+                                0.5,
+                                1
+                            ],
+                            "size": [
+                                52.8,
+                                42
+                            ],
+                            "angle": 0,
+                            "position": [
+                                124,
+                                147.4
+                            ],
+                            "visible": true
+                        },
+                        "layout": {
+                            "x_anchor": "center",
+                            "y_anchor": "top",
+                            "absolute": false,
+                            "x_offset": 0,
+                            "y_offset": -0.07
+                        }
+                    },
+                    "Sink": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "Sink",
+                            "anchor": [
+                                0,
+                                0.5
+                            ],
+                            "size": [
+                                48.8,
+                                43.2
+                            ],
+                            "angle": 0,
+                            "position": [
+                                28,
+                                80.2
+                            ],
+                            "visible": true
+                        },
+                        "layout": {
+                            "x_anchor": "left",
+                            "y_anchor": "middle",
+                            "absolute": false,
+                            "x_offset": 0.09,
+                            "y_offset": 0
+                        }
+                    },
+                    "Knife": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "Knife",
+                            "anchor": [
+                                1,
+                                0.5
+                            ],
+                            "size": [
+                                67.6,
+                                43.2
+                            ],
+                            "angle": 0,
+                            "position": [
+                                219,
+                                80.2
+                            ],
+                            "visible": true
+                        },
+                        "layout": {
+                            "x_anchor": "right",
+                            "y_anchor": "middle",
+                            "absolute": false,
+                            "x_offset": -0.06,
+                            "y_offset": 0
+                        }
+                    },
+                    "Pan": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "Pan",
+                            "anchor": [
+                                0.5,
+                                0.5
+                            ],
+                            "size": [
+                                59.2,
+                                48
+                            ],
+                            "angle": 0,
+                            "position": [
+                                124,
+                                77.4
+                            ],
+                            "visible": true
+                        },
+                        "layout": {
+                            "x_anchor": "center",
+                            "y_anchor": "middle",
+                            "absolute": false,
+                            "x_offset": 0.01,
+                            "y_offset": 0
+                        }
+                    },
+                    "Mixer": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "Mixer",
+                            "anchor": [
+                                0.5,
+                                0
+                            ],
+                            "size": [
+                                46.8,
+                                46.8
+                            ],
+                            "angle": 0,
+                            "position": [
+                                129,
+                                9.6
+                            ],
+                            "visible": true
+                        },
+                        "layout": {
+                            "x_anchor": "center",
+                            "y_anchor": "bottom",
+                            "absolute": false,
+                            "x_offset": 0,
+                            "y_offset": 0.05
+                        }
+                    }
+                },
+                "layout": {
+                    "x_anchor": "right",
+                    "y_anchor": "top",
+                    "absolute": false,
+                    "x_offset": -0.01,
+                    "y_offset": -0.02
+                }
+            },
+            "Status": {
+                "type": "Node",
+                "format": {
+                    "type": "Anchored"
+                },
+                "data": {
+                    "anchor": [
+                        0,
+                        1
+                    ],
+                    "size": [
+                        302.5,
+                        85
+                    ],
+                    "angle": 0,
+                    "position": [
+                        15,
+                        702
+                    ],
+                    "visible": true
+                },
+                "children": {
+                    "Status": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "Status",
+                            "anchor": [
+                                0,
+                                1
+                            ],
+                            "size": [
+                                302.5,
+                                82.5
+                            ],
+                            "angle": 0,
+                            "position": [
+                                0,
+                                0.5
+                            ],
+                            "visible": true
+                        },
+                        "layout": {
+                            "x_anchor": "left",
+                            "y_anchor": "top",
+                            "absolute": false,
+                            "x_offset": 0,
+                            "y_offset": -0.02
+                        }
+                    },
+                    "Sunny": {
+                        "type": "Node",
+                        "format": {
+                            "type": "Anchored"
+                        },
+                        "data": {
+                            "anchor": [
+                                0,
+                                1
+                            ],
+                            "size": [
+                                85,
+                                85
+                            ],
+                            "angle": 0,
+                            "position": [
+                                0,
+                                0
+                            ],
+                            "visible": true
+                        },
+                        "children": {
+                            "Sun": {
+                                "type": "Image",
+                                "data": {
+                                    "texture": "Sun",
+                                    "anchor": [
+                                        0.5,
+                                        0.5
+                                    ],
+                                    "size": [
+                                        85,
+                                        85
+                                    ],
+                                    "angle": 0,
+                                    "position": [
+                                        0,
+                                        0
+                                    ],
+                                    "visible": true
+                                },
+                                "layout": {
+                                    "x_anchor": "fill",
+                                    "y_anchor": "fill",
+                                    "absolute": false,
+                                    "x_offset": 0,
+                                    "y_offset": 0
+                                }
+                            },
+                            "Time": {
+                                "type": "Label",
+                                "data": {
+                                    "anchor": [
+                                        0.5,
+                                        0.5
+                                    ],
+                                    "size": [
+                                        37,
+                                        20
+                                    ],
+                                    "position": [
+                                        24,
+                                        32
+                                    ],
+                                    "angle": 0,
+                                    "visible": true,
+                                    "font": "winter drinkRegular20",
+                                    "text": "6:00",
+                                    "foreground": "#000000ff",
+                                    "background": "#00000000",
+                                    "padding": [
+                                        0,
+                                        0,
+                                        0,
+                                        0
+                                    ],
+                                    "valign": "top",
+                                    "halign": "center"
+                                },
+                                "children": {},
+                                "layout": {
+                                    "x_anchor": "center",
+                                    "y_anchor": "middle",
+                                    "absolute": false,
+                                    "x_offset": 0,
+                                    "y_offset": -0.01
+                                }
+                            }
+                        },
+                        "layout": {
                             "x_anchor": "left",
                             "y_anchor": "top",
                             "absolute": false,
@@ -104,13 +723,13 @@
                             "y_offset": 0
                         }
                     },
-                    "menu": {
+                    "StatusText": {
                         "type": "Node",
                         "format": {
                             "type": "Float",
                             "x_alignment": "center",
                             "y_alignment": "middle",
-                            "orientation": "vertical"
+                            "orientation": "horizontal"
                         },
                         "data": {
                             "anchor": [
@@ -118,70 +737,211 @@
                                 1
                             ],
                             "size": [
-                                320,
-                                302
+                                174,
+                                33
                             ],
                             "angle": 0,
                             "position": [
-                                101,
-                                49
+                                95,
+                                9
                             ],
                             "visible": true
                         },
                         "children": {
-                            "button1": {
-                                "type": "Widget",
+                            "level": {
+                                "type": "Node",
+                                "format": {
+                                    "type": "Anchored"
+                                },
                                 "data": {
-                                    "key": "textbutton",
-                                    "variables": {
-                                        "text": "first",
-                                        "size": [220,60]
+                                    "anchor": [
+                                        0.5,
+                                        0.5
+                                    ],
+                                    "size": [
+                                        82,
+                                        33
+                                    ],
+                                    "angle": 0,
+                                    "position": [
+                                        41,
+                                        16.5
+                                    ],
+                                    "visible": true
+                                },
+                                "children": {
+                                    "TextBack": {
+                                        "type": "Image",
+                                        "data": {
+                                            "texture": "TextBack",
+                                            "anchor": [
+                                                0,
+                                                1
+                                            ],
+                                            "size": [
+                                                82,
+                                                33
+                                            ],
+                                            "angle": 0,
+                                            "position": [
+                                                0,
+                                                0
+                                            ],
+                                            "visible": true
+                                        },
+                                        "layout": {
+                                            "x_anchor": "left",
+                                            "y_anchor": "top",
+                                            "absolute": false,
+                                            "x_offset": 0,
+                                            "y_offset": 0
+                                        }
+                                    },
+                                    "DAY": {
+                                        "type": "Label",
+                                        "data": {
+                                            "anchor": [
+                                                0,
+                                                1
+                                            ],
+                                            "size": [
+                                                47,
+                                                24
+                                            ],
+                                            "position": [
+                                                17,
+                                                4
+                                            ],
+                                            "angle": 0,
+                                            "visible": true,
+                                            "font": "winter drinkRegular20",
+                                            "text": "MON.",
+                                            "foreground": "#000000ff",
+                                            "background": "#00000000",
+                                            "padding": [
+                                                0,
+                                                0,
+                                                0,
+                                                0
+                                            ],
+                                            "valign": "top",
+                                            "halign": "left"
+                                        },
+                                        "children": {},
+                                        "layout": {
+                                            "x_anchor": "left",
+                                            "y_anchor": "top",
+                                            "absolute": false,
+                                            "x_offset": 0.21,
+                                            "y_offset": -0.15
+                                        }
                                     }
                                 },
                                 "layout": {
                                     "priority": 0,
                                     "padding": [
-                                        40,
-                                        30,
-                                        40,
-                                        31
+                                        0,
+                                        0,
+                                        10,
+                                        0
                                     ]
                                 }
                             },
-                            "button2": {
-                                "type": "Widget",
+                            "stationaction": {
+                                "type": "Node",
+                                "format": {
+                                    "type": "Anchored"
+                                },
                                 "data": {
-                                    "key": "textbutton",
-                                    "variables": {
-                                        "text": "second",
-                                        "size": [240,60]
+                                    "anchor": [
+                                        0.5,
+                                        0.5
+                                    ],
+                                    "size": [
+                                        82,
+                                        33
+                                    ],
+                                    "angle": 0,
+                                    "position": [
+                                        133,
+                                        16.5
+                                    ],
+                                    "visible": true
+                                },
+                                "children": {
+                                    "TextBack": {
+                                        "type": "Image",
+                                        "data": {
+                                            "texture": "TextBack",
+                                            "anchor": [
+                                                0,
+                                                1
+                                            ],
+                                            "size": [
+                                                82,
+                                                33
+                                            ],
+                                            "angle": 0,
+                                            "position": [
+                                                0,
+                                                0
+                                            ],
+                                            "visible": true
+                                        },
+                                        "layout": {
+                                            "x_anchor": "left",
+                                            "y_anchor": "top",
+                                            "absolute": false,
+                                            "x_offset": 0,
+                                            "y_offset": 0
+                                        }
+                                    },
+                                    "ACTION": {
+                                        "type": "Label",
+                                        "data": {
+                                            "anchor": [
+                                                0,
+                                                1
+                                            ],
+                                            "size": [
+                                                41,
+                                                24
+                                            ],
+                                            "position": [
+                                                20,
+                                                4
+                                            ],
+                                            "angle": 0,
+                                            "visible": true,
+                                            "font": "winter drinkRegular20",
+                                            "text": "BOIL!",
+                                            "foreground": "#000000ff",
+                                            "background": "#00000000",
+                                            "padding": [
+                                                0,
+                                                0,
+                                                0,
+                                                0
+                                            ],
+                                            "valign": "top",
+                                            "halign": "left"
+                                        },
+                                        "children": {},
+                                        "layout": {
+                                            "x_anchor": "left",
+                                            "y_anchor": "top",
+                                            "absolute": false,
+                                            "x_offset": 0.24,
+                                            "y_offset": -0.15
+                                        }
                                     }
                                 },
                                 "layout": {
                                     "priority": 1,
                                     "padding": [
-                                        40,
-                                        30,
-                                        40,
-                                        0
-                                    ]
-                                }
-                            },
-                            "button3": {
-                                "type": "Widget",
-                                "data": {
-                                    "key": "textbutton",
-                                    "variables": {
-                                        "text": "third",
-                                        "size": [260,60]
-                                    }
-                                },
-                                "layout": {
-                                    "priority": 2,
-                                    "padding": [
-                                        40,
-                                        31,
-                                        40,
+                                        0,
+                                        0,
+                                        0,
                                         0
                                     ]
                                 }
@@ -191,135 +951,56 @@
                             "x_anchor": "left",
                             "y_anchor": "top",
                             "absolute": false,
-                            "x_offset": 0.19,
-                            "y_offset": -0.28
+                            "x_offset": 0.31,
+                            "y_offset": -0.51
                         }
                     },
-                    "right": {
-                        "type": "Button",
-                        "format": {
-                            "type": "Anchored"
-                        },
+                    "STATION": {
+                        "type": "Label",
                         "data": {
                             "anchor": [
-                                0,
-                                1
+                                0.5,
+                                0.5
                             ],
                             "size": [
-                                43.2,
-                                57.6
+                                155,
+                                23
+                            ],
+                            "position": [
+                                95,
+                                47
                             ],
                             "angle": 0,
-                            "position": [
-                                429,
-                                49.4
-                            ],
                             "visible": true,
-                            "upnode": "rightarrow"
-                        },
-                        "children": {
-                            "rightarrow": {
-                                "type": "Image",
-                                "data": {
-                                    "texture": "rightarrow",
-                                    "anchor": [
-                                        1,
-                                        0
-                                    ],
-                                    "size": [
-                                        43.2,
-                                        57.6
-                                    ],
-                                    "angle": 0,
-                                    "position": [
-                                        0,
-                                        0
-                                    ],
-                                    "visible": true
-                                },
-                                "layout": {
-                                    "x_anchor": "right",
-                                    "y_anchor": "bottom",
-                                    "absolute": false,
-                                    "x_offset": 0,
-                                    "y_offset": 0
-                                }
-                            }
-                        },
-                        "layout": {
-                            "x_anchor": "left",
-                            "y_anchor": "top",
-                            "absolute": false,
-                            "x_offset": 0.82,
-                            "y_offset": -0.78
-                        }
-                    },
-                    "left": {
-                        "type": "Button",
-                        "format": {
-                            "type": "Anchored"
-                        },
-                        "data": {
-                            "anchor": [
+                            "font": "winter drinkRegular25",
+                            "text": "SOUP STATION",
+                            "foreground": "#ffffffff",
+                            "background": "#00000000",
+                            "padding": [
                                 0,
-                                1
+                                0,
+                                0,
+                                0
                             ],
-                            "size": [
-                                43.2,
-                                57.6
-                            ],
-                            "angle": 0,
-                            "position": [
-                                53,
-                                49.4
-                            ],
-                            "visible": true,
-                            "upnode": "leftarrow"
+                            "valign": "top",
+                            "halign": "left"
                         },
-                        "children": {
-                            "leftarrow": {
-                                "type": "Image",
-                                "data": {
-                                    "texture": "leftarrow",
-                                    "anchor": [
-                                        0,
-                                        0
-                                    ],
-                                    "size": [
-                                        43.2,
-                                        57.6
-                                    ],
-                                    "angle": 0,
-                                    "position": [
-                                        0,
-                                        0
-                                    ],
-                                    "visible": true
-                                },
-                                "layout": {
-                                    "x_anchor": "left",
-                                    "y_anchor": "bottom",
-                                    "absolute": false,
-                                    "x_offset": 0,
-                                    "y_offset": 0
-                                }
-                            }
-                        },
+                        "children": {},
                         "layout": {
-                            "x_anchor": "left",
-                            "y_anchor": "top",
+                            "x_anchor": "center",
+                            "y_anchor": "middle",
                             "absolute": false,
-                            "x_offset": 0.1,
-                            "y_offset": -0.78
+                            "x_offset": 0.07,
+                            "y_offset": 0.19
                         }
                     }
                 },
                 "layout": {
-                    "x_anchor": "center",
+                    "x_anchor": "left",
                     "y_anchor": "top",
                     "absolute": false,
-                    "x_offset": 0,
-                    "y_offset": 0
+                    "x_offset": 0.01,
+                    "y_offset": -0.02
                 }
             }
         }

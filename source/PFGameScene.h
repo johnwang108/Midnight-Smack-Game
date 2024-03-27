@@ -473,6 +473,7 @@ public:
     std::vector<std::shared_ptr<EnemyModel>> getEnemies() const { return _enemies; }
 
     void loadLevel(std::shared_ptr<Levels> level) {
+        _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level2);
         level->populate(*this);
         currentLevel = level;
     }

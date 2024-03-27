@@ -637,6 +637,9 @@ public:
 
     std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale);
 
+    float getLastDamageTime() { return _lastDamageTime; };
+    float getHealthCooldown() { return _healthCooldown; };
+
     float getAttackBuff() {
         if (_duration > 0) {
             return _attackBuff;

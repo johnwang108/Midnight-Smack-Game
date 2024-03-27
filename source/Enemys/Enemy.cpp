@@ -152,45 +152,46 @@ void EnemyModel::update(float dt) {
     if (_knockbackTime > 0) {
         _knockbackTime -= dt;
         return;
-    }else if (_preparetime > 0) {
+    }
+    else if (_preparetime > 0) {
         if (_preparetime < 1 && _shooted) {
             _attacktime = true;
         }
-		_preparetime-=dt;
-        _body->SetLinearVelocity(b2Vec2(0,0));
+        _preparetime -= dt;
+        _body->SetLinearVelocity(b2Vec2(0, 0));
         if (_node != nullptr) {
             _node->setPosition(getPosition() * _drawScale);
             _node->setAngle(getAngle());
         }
         return;
-	}
+    }
     //set behaviors
     if (_behaviorCounter > 0) {
-		_behaviorCounter -= 1;
-	}
+        _behaviorCounter -= 1;
+    }
     else if (_behaviorCounter == 0 || (_behaviorCounter == -1 && getNextState(_state) != _state)) {
         setState(getNextState(_state));
-	}
+    }
 
     b2Vec2 velocity = _body->GetLinearVelocity();
-    if (_state == "chasing") {
-        _node->setColor(Color4::BLACK);
-    }
-    else if (_state == "rolling"){
-        _node->setColor(Color4::RED);
-    }
-    else if (_state == "patrolling") {
-        _node->setColor(Color4::WHITE);
-    }
-    else if (_state == "stunned") {
-		_node->setColor(Color4::GRAY);
-	}
-    else if (_state == "spitting") {
-		_node->setColor(Color4::YELLOW);
-	}
-    else {
+    //   if (_state == "chasing") {
+    //       _node->setColor(Color4::BLACK);
+    //   }
+    //   else if (_state == "rolling"){
+    //       _node->setColor(Color4::RED);
+    //   }
+    //   else if (_state == "patrolling") {
+    //       _node->setColor(Color4::WHITE);
+    //   }
+    //   else if (_state == "stunned") {
+       //	_node->setColor(Color4::GRAY);
+       //}
+    //   else if (_state == "spitting") {
+       //	_node->setColor(Color4::YELLOW);
+       //}
+    //   else {
 
-	}
+//}
     //handle type specific behavior
     switch (getType()) {
     case EnemyType::shrimp:
@@ -429,7 +430,7 @@ void EnemyModel::setState(std::string state) {
                 _behaviorCounter = -1;
             }
             else if (state == "windup") {
-                _behaviorCounter = 400;
+                _behaviorCounter = 300;
             }
             else if (state == "spitting") {
                 _behaviorCounter = 1;
@@ -493,7 +494,7 @@ std::string EnemyModel::getNextState(std::string state) {
             break;
         case EnemyType::egg:
             if (state == "chasing") {
-                if (_distanceToPlayer.length() > 7) return "chasing";
+                if (_distanceToPlayer.length() > 12) return "chasing";
 				else return "windup";
             }
             if (state == "windup") {
@@ -509,7 +510,7 @@ std::string EnemyModel::getNextState(std::string state) {
                 return "patrolling";
             }
             else if (state == "spitting") {
-                if (_distanceToPlayer.length() > 7) return "chasing";
+                if (_distanceToPlayer.length() > 12) return "chasing";
                 else return "short_windup";
             }
             break;

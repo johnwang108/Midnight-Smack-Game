@@ -15,6 +15,14 @@ namespace LayoutPositions {
 	Vec2 MidRight(const Vec2& size) { return Vec2(size.x, 0); }
 	Vec2 Bottom(const Vec2& size) { return Vec2(0, -size.y); }
  }
+//
+//namespace LayoutPositions {
+//	Vec2 Top(const Vec2& size) { return Vec2(size.x/2, size.y*3/2); }
+//	Vec2 MidLeft(const Vec2& size) { return Vec2(-size.x/2, size.y/2); }
+//	Vec2 Mid(const Vec2& size) { return Vec2(size.x / 2, size.y / 2); }
+//	Vec2 MidRight(const Vec2& size) { return Vec2(size.x*3/2, size.y / 2); }
+//	Vec2 Bottom(const Vec2& size) { return Vec2(size.x/2, -size.y/2); }
+//}
 
 std::string targets[5] = { "pigtail", "circle", "vertSwipe", "horizSwipe", "v" };
 
@@ -82,20 +90,27 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_camera->update();
 
 	_assets = assets;
-
+	
 	//MULTISCREEN IS RESPONSIBLE FOR INITING THE SHARED INPUT CONTROLLER. TEMPORARY SOLUTION
 	_input = input;
 	_input->init(getBounds());
 
-	//_input = std::make_shared<PlatformInput>();
-	//_input->init(getBounds());
+	std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("json/exLevel.json");
+	readLevel(reader->readJson());
 
-	_stationMap;
 	_stationMap["pot_station"] = 0;
 	_stationMap["prep_station"] = 1;
 	_stationMap["panfry_station"] = 2;
 	_stationMap["cutting_station"] = 3;
 	_stationMap["blending_station"] = 4;
+
+	_stationIngredients[0] = std::vector<std::string>{ "Rice", "Egg"};
+	_stationIngredients[1] = std::vector<std::string>{};
+	_stationIngredients[2] = std::vector<std::string>{ "Rice", "Egg", "Shrimp", "Beef", "Carrot"};
+	_stationIngredients[3] = std::vector<std::string>{"Shrimp", "Carrot" };
+	_stationIngredients[4] = std::vector<std::string>{ "Egg" };
+
+
 
 	std::string stationTextures[5] = {"pot_station","prep_station" ,"panfry_station" ,"cutting_station" ,"blending_station"};
 	initStations(stationTextures, 5);
@@ -119,7 +134,11 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_uiScene = cugl::Scene2::alloc(_size);
 	_uiScene->init(_size);
 	_uiScene->setActive(true);
-	
+
+	//_uiNode = _assets->get<scene2::SceneNode>("lab0");
+	//_uiNode->setContentSize(_size);
+	//_uiNode->doLayout();
+
 	_timer = scene2::Label::allocWithText("godfhohofgji", _assets->get<Font>(MESSAGE_FONT));
 
 	_timer->setAnchor(Vec2::ANCHOR_CENTER);
@@ -132,18 +151,33 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_gestureFeedback->setForeground(Color4::BLACK);
 	_gestureFeedback->setVisible(false);
 
+	_progBar = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("cooktime"));
+	_progBar->setContentSize(_progBar->getSize() * .5);
+	_progBar->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
+	_progBar->setPosition(0,0);
+	
+
 	_uiScene->addChild(_timer);
 	_uiScene->addChild(_gestureFeedback);
+	_uiScene->addChild(_progBar);
+	//_uiScene->addChild(_uiNode);
 
-	tempPopulate();
-
-	_finishedOrders = false;
+	//std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("exLevel");
+	//std::shared_ptr<cugl::scene2::SceneNode> tempNode = _assets->get<scene2::SceneNode>("lab2");
+	//_scenes[1]->addChild(tempNode);
+	
 	_flag = -1;
+	_finishedIngredients = false;
 
-	setName("night");
+	_ended = false;
+
+	setName("day");
 
 	transition(false);
 	setTarget("");
+
+	_currentScore = 0;
+	_gameState = 0;
 
 	return true;
 
@@ -165,25 +199,77 @@ void MultiScreenScene::initStations(std::string textures[], int size) {
 		scene = std::make_shared<DollarScene>();
 				
 		rect = cugl::Rect(Vec2::ZERO, _size);
-		scene->init(_assets, _input, rect, textures[i]);
+		scene->init(_assets, _input, rect, textures[i], std::vector<std::string>(), Size(600, 450));
+		scene->setContentSize(SCENE_WIDTH, SCENE_HEIGHT);
 		scene->setAnchor(Vec2::ANCHOR_CENTER);
 		scene->setPosition(positions[i]);
 		scene->setVisible(true);
+		scene->setValidIngredients(_stationIngredients[i]);
+
+		std::string uiKey = "lab"; 
+		uiKey += std::to_string(i);
+		std::shared_ptr<cugl::scene2::SceneNode> tempNode = _assets->get<scene2::SceneNode>(uiKey);
+		tempNode->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
+		tempNode->setPosition(Vec2(0, 0));
+		tempNode->doLayout();
+		scene->setBottomBar(tempNode);
+		scene->addChild(tempNode);
 		setScene(i, scene);
 	}
+
+	//std::shared_ptr<scene2::PolygonNode> p = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("ninepatch"));
+	//p->setContentSize(Size(80, 80));
+	//std::shared_ptr<cugl::scene2::Button> testButton = scene2::Button::alloc(p);
+	//testButton->setAnchor(Vec2::ANCHOR_CENTER);
+	//testButton->setColor(Color4::RED);
+	//testButton->addListener([=](const std::string& name, bool down) {
+	//	CULog("Button pressed!!! !!!! !!!!:)");
+	//	CULog("");
+	//	});
+	//testButton->activate();
+	//addChild(testButton);
+	//testButton->setPosition(cugl::Vec2(0,0));
+
+
 
 	for (int i = 0; i < size; i++) {
 		addChild(_scenes[i]);
 	}
 }
 
-void MultiScreenScene::readLevel(std::shared_ptr<JsonValue> level) {
-	std::shared_ptr<JsonValue> events = level->get("events");
+void MultiScreenScene::readLevel(std::shared_ptr<JsonValue>& leveljson) {
+	_newIngredientIndex = 0;
+	_dishToPrepare = leveljson->get("cooking")->asString();
+	_quota = leveljson->get("quota")->asInt();
+	_dayDuration = leveljson->get("duration")->asInt();
+
+	std::shared_ptr<JsonValue> events = leveljson->get("ingredients");
 	if (events->type() == JsonValue::Type::ArrayType) {
 		for (int i = 0; i < events->size(); i++) {
 			std::shared_ptr<JsonValue> item = events->get(i);
-			
+			if (item != nullptr) {
+				std::shared_ptr<Ingredient> newOrder = std::make_shared<Ingredient>();
+				newOrder->setName(item->get("ingredient")->asString());
+				newOrder->setStartTime(item->get("time")->asFloat());
+				newOrder->setStation(item->get("station")->asString());
+				std::vector<std::string> gestures = {};
+				std::shared_ptr<JsonValue> jGests = item->get("gestures");
+				if (jGests->type() == JsonValue::Type::ArrayType) {
+					for (int j = 0; j < jGests->size(); j++) {
+						gestures.push_back(jGests->get(j)->asString());
+					}
+				}
+				else {
+					CULogError("Gestures is not an array type");
+				}
+
+				newOrder->setGestures(gestures);
+				_ingredients.push_back(newOrder);
+			}
 		}
+	}
+	else {
+		CULogError("Events is not an array type");
 	}
 }
  
@@ -193,6 +279,29 @@ void MultiScreenScene::update(float timestep) {
 }
 
 void MultiScreenScene::preUpdate(float timestep) {
+	_input->update(timestep);
+
+	//CULog("Camera position: %f, %f", _camera->getPosition().x, _camera->getPosition().y);
+	//CULog("Scene position: %f, %f", _scenes[_curr]->getPosition().x, _scenes[_curr]->getPosition().y);
+
+	if (_input->didExit()) {
+		CULog("Shutting down");
+		transition(true);
+		setTarget("main_menu");
+	}
+
+	if (_input->didReset()) {
+		reset();
+	}
+
+	if (_input->didTransition()) {
+		transition(true);
+		setTarget("night");
+		return;
+	}
+
+	if (_ended && !_animating) return;
+
 	Timestamp now = Timestamp();
 
 	//CULog("%llu", now.ellapsedMillis(_startTime));
@@ -200,24 +309,57 @@ void MultiScreenScene::preUpdate(float timestep) {
 	_currentTime = now.ellapsedMillis(_startTime) / 1000;
 	_timer->setText(std::to_string((int) _currentTime));
 
-	
-	if (!_finishedOrders && _orders[_newOrderIndex].getStartTime() <= _currentTime) {
-		CULog("found order, %d", _newOrderIndex);
-		Order upcomingOrder = _orders[_newOrderIndex];
-		int stationIdx = _stationMap[upcomingOrder.getStation()];
-		_scenes[stationIdx]->setTargetGestures(upcomingOrder.getGestures());
+	float reqRate = _quota / _dayDuration;
 
-		if (_newOrderIndex < _orders.size() - 1) _newOrderIndex++;
+	float reqQuotaUnits = _currentTime * reqRate;
+	float quotaFloatPercent = reqQuotaUnits / _quota;
+
+	float clipHeight = _progBar->getHeight() * quotaFloatPercent;
+	//CULog("%f", clipHeight);
+	std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, _progBar->getWidth(), clipHeight));
+	_progBar->setScissor(scissor);
+
+	if (_currentTime >= _dayDuration) {
+		endDay();
+	}
+	
+	if (!_finishedIngredients && _ingredients[_newIngredientIndex]->getStartTime() <= _currentTime) {
+		CULog("found order, %d", _newIngredientIndex);
+		std::shared_ptr<Ingredient> upcomingIngredient = _ingredients[_newIngredientIndex];
+		std::shared_ptr<Texture> tex = _assets->get<Texture>(upcomingIngredient->getName());
+		upcomingIngredient->init(tex);
+		//upcomingIngredient.getButton()->setPosition(Vec2(0, 0));
+		int stationIdx = _stationMap[upcomingIngredient->getStation()];
+
+		//todo update this when you get new widgets
+		_scenes[stationIdx]->addIngredient(upcomingIngredient);
+		_scenes[stationIdx]->setTargetGestures(upcomingIngredient->getGestures());
+
+		if (_newIngredientIndex < _ingredients.size() - 1) _newIngredientIndex++;
 		else {
-			_finishedOrders = true;
+			_finishedIngredients = true;
 		}
 	}
 
-	_input->update(timestep);
 
 	for (int i = 0; i < 5; i++) {
 		_scenes[i]->update(timestep);
+		std::shared_ptr<Ingredient> poppedIng = _scenes[i]->popIngredient();
+		if (poppedIng != nullptr) {
+			int newIndex;
+			if (i >= 4) {
+				newIndex = 0;
+			}
+			else {
+				newIndex = i + 1;
+			}
+			_scenes[newIndex]->addIngredient(poppedIng);
+		}
 	}
+
+	
+
+	
 
 	if (_scenes[_curr]->getJustCompletedGesture()) {
 		_gestureInitiatedTime = Timestamp();
@@ -236,22 +378,6 @@ void MultiScreenScene::preUpdate(float timestep) {
 	else {
 		_gestureFeedback->setText("");
 		_gestureFeedback->setVisible(false);
-	}
-
-	if (_input->didExit()) {
-		CULog("Shutting down");
-		transition(true);
-		setTarget("main_menu");
-	}
-
-	if (_input->didReset()) {
-		reset();
-	}
-
-	if (_input->didTransition()) {
-		transition(true);
-		setTarget("night");
-		return;
 	}
 
 	//if not animating, listen for screen change input. TODO for three fingered swipes to switch scenes
@@ -305,8 +431,11 @@ void MultiScreenScene::preUpdate(float timestep) {
 	}
 
 
-
+	std::shared_ptr<Ingredient> curHeld = _scenes[_curr]->getHeldIngredient();
 	
+	
+	// find current touch position, set curHeld->button to be that pos
+
 }
 
 /*
@@ -342,15 +471,12 @@ void MultiScreenScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
 
 void MultiScreenScene::tempPopulate() {
 	std::vector<std::string> newGests = { "pigtail", "circle", "v" };
-	Order order1 = Order("pot", newGests, 4.0f);
+	Ingredient order1 = Ingredient("pot", newGests, 4.0);
 	std::vector<std::string> newGests2 = { "circle", "v", "circle" };
-	Order order2 = Order("panfry", newGests2, 6.0f);
+	Ingredient order2 = Ingredient("panfry", newGests2, 6.0);
 
-	std::vector<std::string> newGests3 = { "v", "pigtail", "pigtail" };
-	Order order3 = Order("cutting", newGests3, 8.0f);
-
-	_orders = { order1, order2, order3};
-	_newOrderIndex = 0;
+	//_ingredients = { order1, order2 };
+	_newIngredientIndex = 0;
 	// TODO: Sort orders by time so we can just keep track of the index we've sent orders up to
 	// i.e. once we've sent an order in update we can update the index to be the next new order
 }
@@ -372,9 +498,12 @@ void MultiScreenScene::reset() {
 	_camera->setPosition(Vec2(0, 0));
 	_camera->update();
 	_startTime = Timestamp();
-	_finishedOrders = false;
+	_finishedIngredients = false;
 	tempPopulate();
 	_curr = 2;
+	_ended = false;
+	_startTime = Timestamp();
+
 
 	for (int i = 0; i < 5; i++) {
 		_scenes[i]->reset();
@@ -405,4 +534,15 @@ void MultiScreenScene::save() {
 void MultiScreenScene::loadSave() {
 	auto reader = JsonReader::alloc("./save.json");
 }
+
+void MultiScreenScene::endDay() {
+	_ended = true;
+	if (_currentScore >= _quota) {
+		_gameState = 1;
+	}
+	else {
+		_gameState = -1;
+	}
+}
+
 

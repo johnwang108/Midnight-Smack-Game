@@ -35,9 +35,6 @@
 
 #define WIDTH 25
 
-//hardcode :3
-#define SCENE_WIDTH 1280
-#define SCENE_HEIGHT 800
 
 #define SMALL_MSG "retrosmall"  
 
@@ -45,6 +42,8 @@
 
 #define GOOD_THRESHOLD 0.7
 #define PERFECT_THRESHOLD 0.85
+#define CONVEYOR_SPEED 1.0f
+#define FALL_SPEED 3.0f
 
 using namespace cugl;
 
@@ -89,6 +88,10 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_currentSimilarity = 0;
 	_lastResult = -1;
 	_justCompletedGesture = false;
+	_currentlyHeldIngredient = nullptr;
+	_validIngredients = std::vector<std::string>();
+	//todo fix this
+	_readyToCook = false;
 	initGestureRecognizer();
 	//reflection across the x axis is necessary for polygon path
 	/**
@@ -96,34 +99,44 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	* 0 -1
 	* transform is screen width/2, screen height/2 for mouse->screen coordinates
 	*/
-	_trans = Affine2(1, 0, 0, -1, -SCENE_WIDTH/2,SCENE_HEIGHT/2);
+	_transf = Affine2(1, 0, 0, -1, -SCENE_WIDTH / 2, SCENE_HEIGHT);
 	_poly = cugl::scene2::PolygonNode::alloc();
 	_box = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>(texture), rect);
+	_box->setAnchor(Vec2::ANCHOR_CENTER);
 
 	//default pigtail
 	_currentTargetGestures = gestures;
 
 	_header = scene2::Label::allocWithText("Gestures, Similarity: t tosdgodfho figjgoj ghkohko ", _assets->get<Font>(SMALL_MSG));
 	_header->setAnchor(Vec2::ANCHOR_CENTER);
-	_header->setPosition(cugl::Vec2(0, 200));
+	_header->setPosition(cugl::Vec2(640, 400));
 	_header->setForeground(cugl::Color4::RED);
-	_header->setVisible(false);
+	_header->setVisible(true);
 
 	_currentGestureLabel = scene2::Label::allocWithText("Current Target Gesture: filling out text bc i swear this always breaks", _assets->get<Font>(SMALL_MSG));
 	_currentGestureLabel->setAnchor(Vec2::ANCHOR_TOP_CENTER);
-	_currentGestureLabel->setPosition(cugl::Vec2(0, 100));
+	_currentGestureLabel->setPosition(cugl::Vec2(640, 300));
 	_currentGestureLabel->setForeground(cugl::Color4::BLACK);
-	_currentGestureLabel->setVisible(false);
+	_currentGestureLabel->setVisible(true);
 
 	addChild(_box);
 	addChild(_poly);
 	addChild(_header);
 	addChild(_currentGestureLabel);
+
+	CULog("_box pos, %f, %f", _box->getPosition().x, _box->getPosition().y);
 	
 
 	update(0);
 
 	return true;
+}
+
+bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector<std::string> gestures, Size hitboxSize) {
+	_stationHitbox = cugl::scene2::SceneNode::allocWithBounds(hitboxSize);
+	_stationHitbox->setAnchor(Vec2::ANCHOR_CENTER);
+	_stationHitbox->setPosition(Vec2(0, 0));
+	return init(assets, input, rect, texture, gestures);
 }
 
 
@@ -165,7 +178,7 @@ bool DollarScene::initGestureRecognizer() {
 void DollarScene::update(float timestep) {
 	//pop new path if this node is focused on and the input controller contains a nonempty path.
 	_justCompletedGesture = false;
-	if (_focus) {
+	if (_focus && _readyToCook) {
 		if (!(_input->getTouchPath().empty())) {
 			// for spline
 			_path = _input->getTouchPath();
@@ -190,22 +203,63 @@ void DollarScene::update(float timestep) {
 		}
 	}
 
-	//re-extrude path
-	_se.set(_path);
-	_se.calculate(WIDTH);
+	if (_readyToCook) {
+		CULog("drawing!");
+		//re-extrude path
+		_se.set(_path);
+		_se.calculate(WIDTH);
 
 
-	//have to reflect across x axis with _trans
-	_poly->setPolygon(_se.getPolygon() * _trans);
-	_poly->setColor(cugl::Color4::BLACK);
-	_poly->setAnchor(cugl::Vec2::ANCHOR_CENTER);
-	_poly->setScale(_scale);
+		//have to reflect across x axis with _transf
+		cugl::Affine2 t = cugl::Affine2(1, 0, 0, -1, 0,SCENE_HEIGHT);
+		_poly->setPolygon(_se.getPolygon() * t);
+		_poly->setColor(cugl::Color4::BLACK);
+		_poly->setAnchor(cugl::Vec2::ANCHOR_CENTER);
+		_poly->setScale(_scale);
+
+		_poly->setAbsolute(true);
+		_poly->setVisible(true);
+	}
+
+
+	//_box->setPosition(cugl::Vec2(0, 0));
+
+
+	//_header->setVisible(!isPending() && isSuccess());
+	updateConveyor();
+	if (_currentlyHeldIngredient != nullptr && _currentlyHeldIngredient->getBeingHeld() == false) {
+		// let go
+		_currentlyHeldIngredient->setFalling(true);
+		_currentlyHeldIngredient = nullptr;
+	}
+
+	_currentlyHeldIngredient = getHeldIngredient();
+	if (_currentlyHeldIngredient != nullptr) {
+		std::shared_ptr<scene2::Button> button = _currentlyHeldIngredient->getButton();
+		//CULog("%f, %f", _input->getTouchPos().x, _input->getTouchPos().y);
+		Vec2 transformedMouse = _input->getTouchPos() * _transf; 
+
+		button->setPositionX(transformedMouse.x);// +_currentlyHeldIngredient->getButton()->getWidth() / 2);
+		button->setPositionY(transformedMouse.y);
+	}
 	
-	_poly->setAbsolute(true);
+	for (auto ing : _currentIngredients) {
+		if (!ing->inPot() && ing->isFalling() && _stationHitbox->inContentBounds(ing->getButton()->getPosition())) {
+			_readyToCook = true;
+			//add ingredient to pot somehow lmao
+			bool isValidIng = false;
 
-	//GET RID OF HARDCODE JOHN TODO
-	//_poly->setPosition(cugl::Vec2(0,0));
-	_box->setPosition(cugl::Vec2(0, 0));
+			for (std::string ing_name : _validIngredients) {
+				if (ing->getName() == ing_name) isValidIng = true;
+			}
+
+			if (isValidIng) {
+				addIngredientToStation(ing);
+			}
+
+			break;
+		}
+	}
 };
 
 //is gesture inputting still in progress?
@@ -224,7 +278,7 @@ bool DollarScene::matchWithTouchPath() {
 		if (gesture.size() > 3) {
 			float sim = _dollarRecog->similarity(_currentTargetGestures[_currentTargetIndex], gesture);
 			if (sim >= 0) _currentSimilarity = sim;
-			
+
 		}
 		return true;
 	}
@@ -234,7 +288,7 @@ bool DollarScene::matchWithTouchPath() {
 //is gesture inputting a success?
 int DollarScene::gestureResult() {
 	//CULog("%d", (int)(_currentSimilarity > GOOD_THRESHOLD) + (int)(_currentSimilarity > PERFECT_THRESHOLD));
-	return (int) (_currentSimilarity > GOOD_THRESHOLD) + (int) (_currentSimilarity > PERFECT_THRESHOLD);
+	return (int)(_currentSimilarity > GOOD_THRESHOLD) + (int)(_currentSimilarity > PERFECT_THRESHOLD);
 };
 
 void DollarScene::setFocus(bool focus) {
@@ -244,6 +298,107 @@ void DollarScene::setFocus(bool focus) {
 	}
 }
 
+void DollarScene::setBottomBar(std::shared_ptr<cugl::scene2::SceneNode> bar) {
+	//todo fix this 
+	_readyToCook = false;
+	_bottomBar = bar;
+	if (_bottomBar != nullptr) {
+		_conveyorBelt = _bottomBar->getChildByName("kitchenbar")->getChildByName("Conveyor")->getChildByName("ConveyorBelt");
+		std::shared_ptr<cugl::scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(_bottomBar->getChildByName("kitchenbar")->getChildByName("Item")->getChildByName("Item")->getChildByName("RecipeBook"));
+		butt->addListener([=](const std::string& name, bool down) {
+			CULog("COOKBOOK PRESSED");
+		});
+		butt->activate();
+	}
+}
+
+void DollarScene::addIngredient(std::shared_ptr<Ingredient> ing) {
+	if (_bottomBar == nullptr) {
+		CULogError("Trying to add ingredient to Dollar Scene Without Bottom Bar");
+		return;
+	}
+	if (_conveyorBelt == nullptr) {
+		CULogError("Trying to add ingredient to Dollar Scene Without Conveyor Belt");
+		return;
+	}
+	_currentIngredients.push_back(ing);
+	ing->getButton()->setPosition(_conveyorBelt->getWidth() - ing->getButton()->getWidth() / 2, _conveyorBelt->getHeight() / 2);
+	_conveyorBelt->addChild(ing->getButton());
+
+}
+
+
+void DollarScene::updateConveyor() {
+	if (_bottomBar == nullptr) return;
+
+	for (auto& ingredient : _currentIngredients) {
+		if (ingredient == _currentlyHeldIngredient || ingredient->inPot()) continue;
+		std::shared_ptr<scene2::SceneNode> button = ingredient->getButton();
+
+		if (ingredient->isFalling()) {
+			if (button->getPositionY() <= _conveyorBelt->getHeight() / 2) {
+				ingredient->setFalling(false);
+				button->setPositionY(_conveyorBelt->getHeight() / 2);
+			}
+			else {
+				button->setPositionY(button->getPositionY() - FALL_SPEED);
+			}
+		}
+		else {
+			button->setPositionX(button->getPositionX() - CONVEYOR_SPEED);
+
+			if (button->getPositionX() <= button->getWidth()) {
+				// mark button switch to next pos
+				_ingredientToRemove = ingredient;
+			}
+		}
+		
+	}
+}
+
+std::shared_ptr<Ingredient> DollarScene::popIngredient() {
+	if (_ingredientToRemove == nullptr) {
+		return nullptr;
+	}
+	auto ingIt = std::remove(_currentIngredients.begin(), _currentIngredients.end(), _ingredientToRemove);
+	_currentIngredients.erase(ingIt, _currentIngredients.end());
+	
+	std::shared_ptr<Ingredient> removedIngredient = _ingredientToRemove;
+	_ingredientToRemove.reset();
+	_conveyorBelt->removeChild(removedIngredient->getButton());
+	return removedIngredient;
+}
+
+std::shared_ptr<Ingredient> DollarScene::getHeldIngredient() {
+	for (std::shared_ptr<Ingredient> ing : _currentIngredients) {
+		if (ing->getBeingHeld() == true) return ing;
+	}
+	return nullptr;
+}
+
+void DollarScene::addIngredientToStation(std::shared_ptr<Ingredient> ing) {
+	CULog("%d", _conveyorBelt->getChildCount());
+	_conveyorBelt->removeChild(ing->getButton());
+	ing->setFalling(false);
+	ing->setInPot(true);
+	CULog("added to pot");
+
+}
+
+//draws a boundary rectangle
+//void DollarScene::draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint) {
+//
+//	batch->begin();
+//
+//	batch->setColor(tint);
+//
+//	cugl::Vec2* verts = reinterpret_cast<Vec2*>(SHAPE);
+//	cugl::Poly2 poly = cugl::Poly2(verts, sizeof(SHAPE) / sizeof(float) / 2);
+//
+//	batch->fill(poly, cugl::Vec2(0,0), transform);
+//
+//	//batch->end();
+//};
 void DollarScene::reset() {
 	_currentTargetIndex = 0;
 	_header->setVisible(false);
@@ -256,4 +411,13 @@ void DollarScene::reset() {
 	_focus = false;
 	_completed = false;
 	_lastResult = -1;
+	//todo ready to cook idk if it should be false
+	_readyToCook = false;
+	for (std::shared_ptr<Ingredient> ing : _currentIngredients) {
+		_conveyorBelt->removeChild(ing->getButton());
+	}
+	_currentIngredients.clear();
+	_currentlyHeldIngredient.reset();
+	_ingredientToRemove.reset();
+	_conveyorBelt = nullptr;
 }

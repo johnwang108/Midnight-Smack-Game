@@ -112,6 +112,7 @@ using namespace cugl;
  * @return  true if the obstacle is initialized properly, false otherwise.
  */
 bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale) {
+    setEnabled(false);
     Size nsize = size;
     //nsize.width  *= DUDE_HSHRINK;
     //nsize.height *= DUDE_VSHRINK;
@@ -158,6 +159,8 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         b2Filter filter = getFilterData();
         filter.groupIndex = -1;
         setFilterData(filter);
+
+        setEnabled(true);
 
         return true;
     }

@@ -18,7 +18,7 @@
 #define EA_HSHRINK    0.7f
 #define SENSOR_HEIGHT 0.1f
 
-#define ATTACK_LIFETIME  7.0f
+#define ATTACK_LIFETIME  12.0f
 
 
 #pragma mark -

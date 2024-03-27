@@ -14,7 +14,6 @@
         "su_attack_recover": {
             "file": "textures/su_attack_recover.png"
         },
-
         "su_idle_blink": {
             "file": "textures/su_idle_blink.png"
         },
@@ -23,6 +22,18 @@
         },
         "su_run": {
             "file": "textures/su_run.png"
+        },
+        "su_jump_airborne_up": {
+            "file": "textures/su_jump_airborne_up.png"
+        },
+        "su_jump_airborne_down": {
+            "file": "textures/su_jump_airborne_down.png"
+        },
+        "su_jump_land": {
+            "file": "textures/su_jump_land.png"
+        },
+        "su_jump_ready": {
+            "file": "textures/su_jump_ready.png"
         },
         "background-1": {
             "file": "textures/background-image-1.png"
@@ -51,11 +62,14 @@
         "shrimp_rolling": {
             "file": "textures/shrimp_rolling.png"
         },
-        "rice": {
-            "file": "textures/rice.png"
+        "shrimpBoss": {
+            "file": "textures/shrimpBoss.png"
         },
-        "egg": {
-            "file": "textures/egg.png"
+        "riceEnemy": {
+            "file": "textures/riceEnemy.png"
+        },
+        "eggEnemy": {
+            "file": "textures/eggEnemy.png"
         },
         "beef": {
             "file": "textures/beef.png"
@@ -67,7 +81,7 @@
             "file": "textures/bull.png"
         },
         "shake": {
-            "file":      "textures/shake.png"
+            "file": "textures/shake.png"
         },
         "panfry_station": {
             "file": "textures/Panfry_Station.png",
@@ -94,19 +108,19 @@
             "wrapS": "repeat",
             "wrapT": "repeat"
         },
-        "unball":{
-            "file":      "textures/unball.png"
+        "unball": {
+            "file": "textures/unball.png"
         },
-        "dball":{
-            "file":      "textures/dball.png"
+        "dball": {
+            "file": "textures/dball.png"
         },
-        "P2bull":{
-            "file":      "textures/P2bull.png"
+        "P2bull": {
+            "file": "textures/P2bull.png"
         },
-        "cooktime" : {
-            "file":      "textures/cutting_board.png",
-            "wrapS":    "repeat",
-            "wrapT":    "repeat"
+        "cooktime": {
+            "file": "textures/cutting_board.png",
+            "wrapS": "repeat",
+            "wrapT": "repeat"
         },
         "dpad": {
             "file": "textures/dpad.png",
@@ -138,6 +152,66 @@
                     255
                 ]
             }
+        },
+        "background": {
+            "file": "textures/background.png"
+        },
+        "NotepadBar": {
+            "file": "textures/notepad.png"
+        },
+        "ConveyorBelt": {
+            "file": "textures/ConveyorBelt.png"
+        },
+        "RecipeBook": {
+            "file": "textures/RecipeBook.png"
+        },
+        "CookTimer": {
+            "file": "textures/CookTimer.png"
+        },
+        "Gesture": {
+            "file": "textures/Gesture.png"
+        },
+        "Shrimp": {
+            "file": "textures/Shrimp.png"
+        },
+        "Rice": {
+            "file": "textures/Rice.png"
+        },
+        "Egg": {
+            "file": "textures/Egg.png"
+        },
+        "Carrot": {
+            "file": "textures/Carrot.png"
+        },
+        "Beef": {
+            "file": "textures/Beef.png"
+        },
+        "Minimap": {
+            "file": "textures/Minimap.png"
+        },
+        "Pot": {
+            "file": "textures/Pot.png"
+        },
+        "Sink": {
+            "file": "textures/Sink.png"
+        },
+        "Knife": {
+            "file": "textures/Knife.png"
+        },
+        "Pan": {
+            "file": "textures/Pan.png"
+        },
+        "Mixer": {
+            "file": "textures/Mixer.png"
+        },
+        "Status": {
+            "file": "textures/Status.png"
+        },
+        "Sun": {
+            "file": "textures/Daytime.png"
+        },
+        "TextBack": {
+            "file": "textures/TextBack.png"
         },
         "MYbackgroundbig": {
             "file": "textures/UI/MYbackgroundbig.png"
@@ -201,6 +275,12 @@
         },
         "heartsfull": {
             "file": "textures/UI/Meters/heartsfull.png"
+        },
+        "bullbar": {
+            "file": "textures/UI/Meters/bullbar.png"
+        },
+        "bosshealth": {
+            "file": "textures/UI/Meters/bosshealth.png"
         }
     },
     "sounds": {
@@ -247,7 +327,6 @@
             "file": "fonts/RetroGame.ttf",
             "size": 16
         },
-
         "winter drinkRegular40": {
             "file": "fonts/WinterDrink.ttf",
             "size": 38
@@ -255,22 +334,25 @@
         "winter drinkRegular25": {
             "file": "fonts/WinterDrink.ttf",
             "size": 25
+        },
+        "winter drinkRegular20": {
+            "file": "fonts/WinterDrink.ttf",
+            "size": 20
         }
     },
-
-    "widgets" : {
+    "widgets": {
         "mylabscene": "widgets/mylabscene.json",
-        "mymenubutton": "widgets/mymenubutton.json"
-	},
-
-    "scene2s" : {
-        "menu" : {
-            "type"      : "Widget",
-            "comment"   : "This is the root node of the scene for the lab",
-            "format"    : {
-                "type" : "Anchored"
+        "mymenubutton": "widgets/mymenubutton.json",
+        "labscene": "widgets/labscene.json"
+    },
+    "scene2s": {
+        "menu": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
             },
-            "data":{
+            "data": {
                 "key": "mylabscene"
             }
         },
@@ -766,6 +848,165 @@
                         "absolute": false,
                         "x_offset": 0.03,
                         "y_offset": -0.05
+                    }
+                }
+            }
+        },
+        "lab0": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "labscene"
+            }
+        },
+        "lab1": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "labscene"
+            }
+        },
+        "lab2": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "labscene"
+            }
+        },
+        "lab3": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "labscene"
+            }
+        },
+        "lab4": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "labscene"
+            }
+        },
+        "bullbar": {
+            "type": "Node",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "anchor": [
+                    0,
+                    0
+                ],
+                "size": [
+                    1280,
+                    800
+                ],
+                "angle": 0,
+                "position": [
+                    0,
+                    0
+                ],
+                "visible": true
+            },
+            "children": {
+                "fullbullbar": {
+                    "type": "Node",
+                    "format": {
+                        "type": "Anchored"
+                    },
+                    "data": {
+                        "anchor": [
+                            0.5,
+                            1
+                        ],
+                        "size": [
+                            586,
+                            74
+                        ],
+                        "angle": 0,
+                        "position": [
+                            347,
+                            692
+                        ],
+                        "visible": true
+                    },
+                    "children": {
+                        "bosshealth": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "bosshealth",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    586,
+                                    73
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    1
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        },
+                        "bullbar": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "bullbar",
+                                "anchor": [
+                                    0.5,
+                                    1
+                                ],
+                                "size": [
+                                    586,
+                                    74
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "center",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        }
+                    },
+                    "layout": {
+                        "x_anchor": "center",
+                        "y_anchor": "top",
+                        "absolute": false,
+                        "x_offset": 0,
+                        "y_offset": -0.04
                     }
                 }
             }

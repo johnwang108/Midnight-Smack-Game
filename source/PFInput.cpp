@@ -152,6 +152,7 @@ bool PlatformInput::init(const Rect bounds) {
     _sbounds = bounds;
     _tbounds = Application::get()->getDisplayBounds();
     _touchPath = cugl::Path2();
+    _touchPos = Vec2(0,0);
 
     bool contSuccess = Input::activate<GameControllerInput>();
     if (contSuccess) {
@@ -183,17 +184,14 @@ bool PlatformInput::init(const Rect bounds) {
     Mouse* mouse = Input::get<Mouse>();
     mouse->setPointerAwareness(Mouse::PointerAwareness::DRAG);
     mouse ->addPressListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, Uint8 clicks, bool focus) {
-                CULog("STARTING!");
         		this->mousePressCB(event, focus);
          });
 
     mouse -> addDragListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, const Vec2& previous, bool focus) {
-        CULog("DRAGGIN!");
         		this->mouseDragCB(event, focus);
                 		});
 
     mouse->addReleaseListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, Uint8 clicks, bool focus) {
-        CULog("ENDING!");
         this->mouseReleaseCB(event, focus);
         });
 #else
@@ -453,7 +451,6 @@ void PlatformInput::swipeEndedCB(const PanEvent& event, bool focus) {
 
 /** Returns touch path.*/
 cugl::Path2 PlatformInput::getTouchPath() {
-    CULog("gotten");
     return _touchPath;
 }
 
@@ -506,7 +503,6 @@ void PlatformInput::touchEndedCB(const TouchEvent& event, bool focus) {
 }
 
 void PlatformInput::mousePressCB(const cugl::MouseEvent& event, bool focus) {
-    CULog("start");
     Vec2 pos = event.position;
     gestureStartCB(pos, focus);
 }
@@ -523,19 +519,17 @@ void PlatformInput::mouseReleaseCB(const cugl::MouseEvent& event, bool focus) {
 }
 
 void PlatformInput::gestureStartCB(Vec2 pos, bool focus) {
-    CULog("start");
     _gestureCompleted = false;
     _touchPath = cugl::Path2();
     _touchPath.push(pos);
 }
 
 void PlatformInput::gestureMoveCB(Vec2 pos, bool focus) {
-    CULog("move");
     _touchPath.push(pos);
+    _touchPos = pos;
 }
 
 void PlatformInput::gestureEndCB(Vec2 pos, bool focus) {
-    CULog("Completed cb");
     _touchPath.push(pos);
     float similarity = -1.0f;
     PathSmoother smoother = PathSmoother();

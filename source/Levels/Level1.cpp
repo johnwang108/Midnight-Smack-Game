@@ -188,6 +188,12 @@ void Level1::populate(GameScene& scene) {
 	_avatar->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 5, 18, 0.6f, true);
 	_avatar->addActionAnimation("recover", _assets->get<Texture>("su_attack_recover"), 3, 4, 10, 0.83f, true);
 	_avatar->addActionAnimation("run", _assets->get<Texture>("su_run"), 3, 4, 10, 0.83f, true);
+
+	_avatar->addActionAnimation("jump_up", _assets->get<Texture>("su_jump_airborne_up"), 2, 2, 3, 0.25f, false);
+	_avatar->addActionAnimation("jump_down", _assets->get<Texture>("su_jump_airborne_down"), 2, 2, 3, 0.25f, false);
+	_avatar->addActionAnimation("jump_land", _assets->get<Texture>("su_jump_land"), 2, 2, 3, 0.25f, false);
+	_avatar->addActionAnimation("jump_ready", _assets->get<Texture>("su_jump_ready"), 1, 2, 2, 0.16f, false);
+
 	scene.addObstacle(_avatar, spritenode); // Put this at the very front
 
 	// Play the background music on a loop.
@@ -208,27 +214,29 @@ void Level1::populate(GameScene& scene) {
 	scene.addObstacle(_enemy, sprite);
 	_enemies.push_back(_enemy);
 
-	////shrimp 2
-	//image = _assets->get<Texture>(SHRIMP_TEXTURE);
-	//_enemy = EnemyModel::alloc({30.0f, 6.0f}, image->getSize() / _scale, _scale, EnemyType::shrimp);
-	//sprite = scene2::PolygonNode::allocWithTexture(image);
-	//_enemy->setSceneNode(sprite);
-	//_enemy->setName(ENEMY_NAME);
-	//_enemy->setDebugColor(DEBUG_COLOR);
-	//scene.addObstacle(_enemy, sprite);
-	//_enemies.push_back(_enemy);
+	//shrimp 2
+	image = _assets->get<Texture>("shrimp_rolling");
+	_enemy = EnemyModel::alloc({ 30.0f, 6.0f }, shrimpSize, _scale, EnemyType::shrimp);
+	sprite = scene2::PolygonNode::allocWithTexture(image);
+	sprite->setScale(0.1f);
+	_enemy->setSceneNode(sprite);
+	_enemy->setName(ENEMY_NAME);
+	_enemy->setDebugColor(DEBUG_COLOR);
+	scene.addObstacle(_enemy, sprite);
+	_enemies.push_back(_enemy);
 
 
 
 	////shrimp 3
-	//image = _assets->get<Texture>(SHRIMP_TEXTURE);
-	//_enemy = EnemyModel::alloc({25.0f, 18.0f}, image->getSize() / _scale, _scale, EnemyType::shrimp);
-	//sprite = scene2::PolygonNode::allocWithTexture(image);
-	//_enemy->setSceneNode(sprite);
-	//_enemy->setName(ENEMY_NAME);
-	//_enemy->setDebugColor(DEBUG_COLOR);
-	//scene.addObstacle(_enemy, sprite);
-	//_enemies.push_back(_enemy);
+	image = _assets->get<Texture>("shrimp_rolling");
+	_enemy = EnemyModel::alloc({ 25.0f, 18.0f }, shrimpSize, _scale, EnemyType::shrimp);
+	sprite = scene2::PolygonNode::allocWithTexture(image);
+	sprite->setScale(0.1f);
+	_enemy->setSceneNode(sprite);
+	_enemy->setName(ENEMY_NAME);
+	_enemy->setDebugColor(DEBUG_COLOR);
+	scene.addObstacle(_enemy, sprite);
+	_enemies.push_back(_enemy);
 
 	cugl::Size riceSize = cugl::Size(1.0f, 2.0f);
 
@@ -244,24 +252,26 @@ void Level1::populate(GameScene& scene) {
 	_enemies.push_back(_enemy);
 
 	////rice 2
-	//image = _assets->get<Texture>(RICE_TEXTURE);
-	//_enemy = EnemyModel::alloc({ 27.0f, 28.0f }, image->getSize() / _scale, _scale, EnemyType::rice);
-	//sprite = scene2::PolygonNode::allocWithTexture(image);
-	//_enemy->setSceneNode(sprite);
-	//_enemy->setName(ENEMY_NAME);
-	//_enemy->setDebugColor(DEBUG_COLOR);
-	//scene.addObstacle(_enemy, sprite);
-	//_enemies.push_back(_enemy);
+	image = _assets->get<Texture>(RICE_TEXTURE);
+	_enemy = EnemyModel::alloc({27.0f, 28.0f}, riceSize, _scale, EnemyType::rice);
+	sprite = scene2::PolygonNode::allocWithTexture(image);
+	sprite->setScale(0.12f);
+	_enemy->setSceneNode(sprite);
+	_enemy->setName(ENEMY_NAME);
+	_enemy->setDebugColor(DEBUG_COLOR);
+	scene.addObstacle(_enemy, sprite);
+	_enemies.push_back(_enemy);
 
 	////rice 3
-	//image = _assets->get<Texture>(RICE_TEXTURE);
-	//_enemy = EnemyModel::alloc({ 35.0f, 30.0f }, image->getSize() / _scale, _scale, EnemyType::rice);
-	//sprite = scene2::PolygonNode::allocWithTexture(image);
-	//_enemy->setSceneNode(sprite);
-	//_enemy->setName(ENEMY_NAME);
-	//_enemy->setDebugColor(DEBUG_COLOR);
-	//scene.addObstacle(_enemy, sprite);
-	//_enemies.push_back(_enemy);
+	image = _assets->get<Texture>(RICE_TEXTURE);
+	_enemy = EnemyModel::alloc({ 35.0f, 37.0f }, riceSize, _scale, EnemyType::rice);
+	sprite = scene2::PolygonNode::allocWithTexture(image);
+	sprite->setScale(0.12f);
+	_enemy->setSceneNode(sprite);
+	_enemy->setName(ENEMY_NAME);
+	_enemy->setDebugColor(DEBUG_COLOR);
+	scene.addObstacle(_enemy, sprite);
+	_enemies.push_back(_enemy);
 
 
 
@@ -289,15 +299,15 @@ void Level1::populate(GameScene& scene) {
 
 	////egg 3
 
-	//image = _assets->get<Texture>(EGG_TEXTURE);
-	//_enemy = EnemyModel::alloc({30.0f, 30.0f}, image->getSize() / (_scale), _scale, EnemyType::egg);
-	//sprite = scene2::PolygonNode::allocWithTexture(image);
-	//_enemy->setSceneNode(sprite);
-	//_enemy->setName(ENEMY_NAME);
-	//_enemy->setDebugColor(DEBUG_COLOR);
-	//scene.addObstacle(_enemy, sprite);
-	//_enemies.push_back(_enemy);
-
+	image = _assets->get<Texture>(EGG_TEXTURE);
+	_enemy = EnemyModel::alloc({30.0f, 30.0f}, eggSize, _scale, EnemyType::egg);
+	sprite = scene2::PolygonNode::allocWithTexture(image);
+	sprite->setScale(0.1f);
+	_enemy->setSceneNode(sprite);
+	_enemy->setName(ENEMY_NAME);
+	_enemy->setDebugColor(DEBUG_COLOR);
+	scene.addObstacle(_enemy, sprite);
+	_enemies.push_back(_enemy);
 
 	scene.setAssets(_assets);
 	scene.setScale(_scale);

@@ -1,16 +1,48 @@
 {
-  "events": [
+  "quota": 3,
+  "duration": 30,
+  "cooking": "Shrimp Fried Rice",
+  "ingredients": [
     {
-      "station": "pot",
-      "time": 2
+      "ingredient": "Shrimp",
+      "time": 2,
+      "gestures": [
+        "v",
+        "v",
+        "pigtail"
+      ],
+      "station": "prep"
     },
     {
-      "station": "panfry",
-      "time": 4
+      "ingredient": "Rice",
+      "time": 4,
+      "gestures": [
+        "circle",
+        "v",
+        "pigtail"
+      ],
+      "station": "pot"
     },
     {
-      "station": "cutting",
-      "time": 6
+      "ingredient": "Carrot",
+      "time": 4,
+      "gestures": [
+        "circle",
+        "v",
+        "v"
+      ],
+      "station": "cutting"
+    },
+    {
+      "ingredient": "Egg",
+      "time": 5,
+      "gestures": [
+        "circle",
+        "circle",
+        "pigtail"
+      ],
+      "station": "blending"
     }
-  ]
+  ],
+  "goals": []
 }

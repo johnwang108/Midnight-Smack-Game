@@ -215,7 +215,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode = std::make_shared<DollarScene>();
     //_dollarnode->init(_assets, _input, cugl::Rect(Vec2::ZERO, computeActiveSize()/2), "cooktime");
     _dollarnode->init(_assets, _input, "cooktime");
-    _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_BOTTOM_LEFT);
+    _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
+    _dollarnode->setPosition(0,0);
     _dollarnode->setVisible(false);
 
 
@@ -224,7 +225,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_leftnode);
     addChild(_rightnode);
 
-    addChild(_dollarnode);
+    
 
 #pragma mark: UI
 
@@ -253,6 +254,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
         _cookBarIcons[s] = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("boost")->getChildByName(s));
         _cookBarIcons[s]->setVisible(false);
     }
+    std::shared_ptr<cugl::scene2::SceneNode> _bullBarNode;
+    _bullBarNode = _assets->get<scene2::SceneNode>("bullbar");
+
+    auto healthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
+    auto healthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
+    _uiScene->addChild(_bullBarNode);
 
     //auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
     //auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
@@ -274,6 +281,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     //_uiScene->addChild(_pauseButton);
     _uiScene->addChild(_meterUINode);
+    _uiScene->addChild(_dollarnode);
 //    _uiScene->addChild(_healthBarForeground);
 //    _uiScene->addChild(_buffLabel);
 //
@@ -300,7 +308,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     _target = std::make_shared<EnemyModel>();
 
-    currentLevel = level1;
+    currentLevel = level2;
     loadLevel(currentLevel);
 
     save();
@@ -360,6 +368,7 @@ void GameScene::reset() {
     _worldnode->removeAllChildren();
     _world->clear();
     _debugnode->removeAllChildren();
+    _avatar->dispose();
     _avatar = nullptr;
     _goalDoor = nullptr;
     _background = nullptr;
@@ -373,6 +382,8 @@ void GameScene::reset() {
     setComplete(false);
 
     loadLevel(currentLevel);
+
+    CULog("Resetted!");
 }
 
 /**
@@ -503,6 +514,7 @@ void GameScene::preUpdate(float dt) {
     }
 
     //handle animations
+    CULog("active action: %s", _avatar->getActiveAction().c_str());
     _actionManager->update(dt);
     //start running if idle or recovering and moving
     if ((_actionManager->isActive("idle") || _actionManager->isActive("recover")) && (_input->getHorizontal() != 0)) {
@@ -518,6 +530,29 @@ void GameScene::preUpdate(float dt) {
         auto idleAction = _avatar->getAction("idle");
         _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
     }
+
+    if(_avatar->isJumping() && _avatar->isGrounded()){
+        _avatar->animate("jump_ready");
+		auto jumpAction = _avatar->getAction("jump_ready");
+        _actionManager->clearAllActions(_avatar->getSceneNode());
+		_actionManager->activate("jump_ready", jumpAction, _avatar->getSceneNode());
+    }
+
+
+    //animate jumps if not attacking or taking damage
+    if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && _avatar->getLinearVelocity().y > 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+        _avatar->animate("jump_up");
+        auto jumpAction = _avatar->getAction("jump_up");
+        _actionManager->clearAllActions(_avatar->getSceneNode());
+        _actionManager->activate("jump_up", jumpAction, _avatar->getSceneNode());
+    }
+    if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && _avatar->getLinearVelocity().y < 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+        _avatar->animate("jump_down");
+        auto jumpAction = _avatar->getAction("jump_down");
+        _actionManager->clearAllActions(_avatar->getSceneNode());
+        _actionManager->activate("jump_down", jumpAction, _avatar->getSceneNode());
+    }
+
 
     //handle expired actions
     if (!_actionManager->isActive(_avatar->getActiveAction())) {
@@ -558,6 +593,7 @@ void GameScene::preUpdate(float dt) {
     }
     else {
         _dollarnode->setVisible(true);
+        _dollarnode->setReadyToCook(true);
         if (!(_dollarnode->isFocus())) {
             _dollarnode->setFocus(true);
         }
@@ -644,7 +680,7 @@ void GameScene::preUpdate(float dt) {
                     enemy->setshooted(false);
                 }
             }
-            else if (distance >= CHASE_THRESHOLD * 3 && enemy->isChasing()) {
+            else if (distance >= CHASE_THRESHOLD * 2 && enemy->isChasing()) {
                 enemy->setIsChasing(false);
             }
             if (enemy->getHealth() <= 0) {
@@ -744,7 +780,14 @@ void GameScene::fixedUpdate(float step) {
     }
     //camera logic
     if (CAMERA_FOLLOWS_PLAYER) {
-        _camera->setZoom(1.5);
+
+        if (currentLevel == level1) {
+            _camera->setZoom(2.0);
+        }
+        else {
+            _camera->setZoom(1.4);
+        }
+        
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
         cugl::Vec3 pos = _camera->getPosition();
 
@@ -764,7 +807,7 @@ void GameScene::fixedUpdate(float step) {
         //cugl::Vec3 pos = _avatar->getPosition() * _scale;
         _camera->setPosition(pos);
 		_camera->update();
-        _dollarnode->setPosition(pos);
+        //_dollarnode->setPosition(pos);
     }
     if (_avatar->getHealth()<=0) {
         setFailure(true);
