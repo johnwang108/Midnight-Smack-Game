@@ -170,10 +170,9 @@ void Level1::populate(GameScene& scene) {
 #pragma mark : Dude
 	Vec2 dudePos = DUDE_POS;
 	// node = scene2::SceneNode::alloc();
+
 	image = _assets->get<Texture>("su_idle");
-
-
-	//hardcoded player size
+	//hardcoded size
 	cugl::Size s = PLAYER_SIZE_DEFAULT;
 	_avatar = DudeModel::alloc(dudePos, s, _scale);
 	std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4,16);
@@ -184,9 +183,10 @@ void Level1::populate(GameScene& scene) {
 	spritenode->setPosition(dudePos);
 	_avatar->setSceneNode(spritenode);
 	_avatar->setDebugColor(DEBUG_COLOR);
-	_avatar->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 4, 16, 2.0f, true);
+	_avatar->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 4, 16, 1.0f, true);
 	_avatar->addActionAnimation("idle_blink", _assets->get<Texture>("su_idle_blink"), 4, 5, 18, 2.0f, true);
-	_avatar->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 4, 15, 1.0f, true);
+	_avatar->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 5, 18, 0.6f, true);
+	_avatar->addActionAnimation("recover", _assets->get<Texture>("su_attack_recover"), 3, 4, 10, 0.83f, true);
 	//CULog(scene.getActionManager()->isActive("") ? "active" : "inactive");
 	scene.addObstacle(_avatar, spritenode); // Put this at the very front
 
@@ -195,10 +195,13 @@ void Level1::populate(GameScene& scene) {
 	AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
 
+	cugl::Size shrimpSize = cugl::Size(2.0f, 2.0f);
+
 	Vec2 shrimp_pos = SHRIMP_POS;
-	image = _assets->get<Texture>(SHRIMP_TEXTURE);
-	std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc(shrimp_pos, image->getSize() / _scale, _scale, EnemyType::shrimp);
+	image = _assets->get<Texture>("shrimp_rolling");
+	std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc(shrimp_pos, shrimpSize, _scale, EnemyType::shrimp);
 	sprite = scene2::PolygonNode::allocWithTexture(image);
+	sprite->setScale(0.1f);
 	_enemy->setSceneNode(sprite);
 	_enemy->setName(ENEMY_NAME);
 	_enemy->setDebugColor(DEBUG_COLOR);
@@ -227,10 +230,13 @@ void Level1::populate(GameScene& scene) {
 	//scene.addObstacle(_enemy, sprite);
 	//_enemies.push_back(_enemy);
 
+	cugl::Size riceSize = cugl::Size(1.0f, 2.0f);
+
 	Vec2 rice_pos = RICE_POS;
 	image = _assets->get<Texture>(RICE_TEXTURE);
-	_enemy = EnemyModel::alloc(rice_pos, image->getSize() / _scale, _scale, EnemyType::rice);
+	_enemy = EnemyModel::alloc(rice_pos, riceSize, _scale, EnemyType::rice);
 	sprite = scene2::PolygonNode::allocWithTexture(image);
+	sprite->setScale(0.12f);
 	_enemy->setSceneNode(sprite);
 	_enemy->setName(ENEMY_NAME);
 	_enemy->setDebugColor(DEBUG_COLOR);
@@ -259,10 +265,12 @@ void Level1::populate(GameScene& scene) {
 
 
 
+	cugl::Size eggSize = cugl::Size(1.5f, 4.5f);
 	Vec2 egg_pos = EGG_POS;
 	image = _assets->get<Texture>(EGG_TEXTURE);
-	_enemy = EnemyModel::alloc(egg_pos, image->getSize() / (_scale), _scale, EnemyType::egg);
+	_enemy = EnemyModel::alloc(egg_pos, eggSize, _scale, EnemyType::egg);
 	sprite = scene2::PolygonNode::allocWithTexture(image);
+	sprite->setScale(0.1f);
 	_enemy->setSceneNode(sprite);
 	_enemy->setName(ENEMY_NAME);
 	_enemy->setDebugColor(DEBUG_COLOR);

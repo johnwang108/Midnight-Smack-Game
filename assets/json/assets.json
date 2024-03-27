@@ -9,7 +9,10 @@
             "file": "textures/dude.png"
         },
         "su_attack_sheet": {
-            "file": "textures/su_attack_test_sheet.png"
+            "file": "textures/su_attack.png"
+        },
+        "su_attack_recover": {
+            "file": "textures/su_attack_recover.png"
         },
 
         "su_idle_blink": {
@@ -39,14 +42,23 @@
         "goal": {
             "file": "textures/goaldoor.png"
         },
-        "shrimp": {
-            "file": "textures/shrimp.png"
+        "shrimp_standing": {
+            "file": "textures/shrimp_standing.png"
+        },
+        "shrimp_rolling": {
+            "file": "textures/shrimp_rolling.png"
         },
         "rice": {
             "file": "textures/rice.png"
         },
         "egg": {
             "file": "textures/egg.png"
+        },
+        "beef": {
+            "file": "textures/beef.png"
+        },
+        "carrot": {
+            "file": "textures/carrot.png"
         },
         "bull": {
             "file": "textures/bull.png"

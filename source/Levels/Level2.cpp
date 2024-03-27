@@ -143,13 +143,22 @@ void Level2::populate(GameScene& scene) {
 #pragma mark : Dude
 	Vec2 dudePos = DUDE_POS;
 	// node = scene2::SceneNode::alloc();
-	image = _assets->get<Texture>("su_attack_sheet");
-	_avatar = DudeModel::alloc(dudePos, image->getSize() / (2 + _scale), _scale);
-	std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4,15);
+	//hardcoded player size
+	cugl::Size s = PLAYER_SIZE_DEFAULT;
+	_avatar = DudeModel::alloc(dudePos, s, _scale);
+	std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
+
+	//CALCULATE sue sprite size from sue obstacle size. Goal: su's feet line up with foot sensor, and head (not hat) with top of obstacle. Todo still
+	//float scalar = (s.width *_scale) / spritenode->getSize().width;
+	spritenode->setAnchor(Vec2(0.5, 0.35));
+	spritenode->setPosition(dudePos);
 	_avatar->setSceneNode(spritenode);
 	_avatar->setDebugColor(DEBUG_COLOR);
-	_avatar->setName(DUDE_TEXTURE);
-	scene.addObstacle(_avatar, sprite); // Put this at the very front
+	_avatar->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 4, 16, 2.0f, true);
+	_avatar->addActionAnimation("idle_blink", _assets->get<Texture>("su_idle_blink"), 4, 5, 18, 2.0f, true);
+	_avatar->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 4, 15, 1.0f, true);
+	//CULog(scene.getActionManager()->isActive("") ? "active" : "inactive");
+	scene.addObstacle(_avatar, spritenode); // Put this at the very front
 
 	// Play the background music on a loop.
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);

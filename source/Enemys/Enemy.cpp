@@ -30,8 +30,13 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
     if (CapsuleObstacle::init(pos, scaledSize)) {
         setDensity(ENEMY_DENSITY);
         setFriction(0.0f); // Prevent sticking to walls
-        setFixedRotation(true); // Avoid tumbling
-
+        if (_type != EnemyType::shrimp){
+            setFixedRotation(true); // Avoid tumbling
+        }
+        else {
+            setFixedRotation(false);
+            setFriction(1.0f);
+        }
         _isChasing = false;
         _isGrounded = false;
         _direction = -1; 
@@ -198,6 +203,7 @@ void EnemyModel::update(float dt) {
                 spd *= 2.5;
 			}
             velocity.x = velocity.x + spd;
+            _body->ApplyAngularImpulse((_direction * -0.05f), true);
         }
         else if (_state == "stunned") {
 			velocity.x = 0;
@@ -242,6 +248,9 @@ void EnemyModel::update(float dt) {
         else if (_state == "patrolling") {
             velocity.x = ENEMY_FORCE * _direction;
         }
+        else if (_state == "short_windup") {
+            velocity.x = 0;
+        }
         else {
             CULog("error: egg");
             CULog(_state.c_str());
@@ -253,6 +262,7 @@ void EnemyModel::update(float dt) {
         break;
     }
     
+    //_body->SetLinearVelocity(handleMovement(velocity));
     _body->SetLinearVelocity(handleMovement(velocity));
 
     //if (_isGrounded) {
@@ -326,7 +336,6 @@ b2Vec2 EnemyModel::handleMovement(b2Vec2 velocity) {
         }
         _lastDirection = _direction; // Update last direction
     }
-
     return velocity;
 }
 
@@ -376,9 +385,6 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> EnemyM
 
     /*std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
     AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);*/
-
-
-
 }
 
 //begins the aggro behavior, maintains player location information
@@ -425,7 +431,7 @@ void EnemyModel::setState(std::string state) {
                 _behaviorCounter = 400;
             }
             else if (state == "spitting") {
-                _behaviorCounter = 2;
+                _behaviorCounter = 1;
             }
             else if (state == "short_windup") {
                 _behaviorCounter = 180;

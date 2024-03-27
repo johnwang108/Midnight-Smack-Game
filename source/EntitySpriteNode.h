@@ -24,7 +24,7 @@ public:
         _bounds.size.height /= rows;
         setPolygon(_bounds);
         setTexture(texture);
-        setFrame(1);
+        setFrame(0);
 	}
 };
 

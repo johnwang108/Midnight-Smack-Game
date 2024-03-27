@@ -493,8 +493,6 @@ public:
     //creates a popup message that dissapates. Position is in word coords, not physics.
     void popup(std::string s, Vec2 pos);
 
-    void animate(std::shared_ptr<cugl::scene2::Animate>& animation, std::shared_ptr<cugl::scene2::Action>& action, std::shared_ptr<cugl::scene2::SpriteNode>& target);
-  
     std::shared_ptr<cugl::scene2::ActionManager> getActionManager() { return _actionManager; };
 
     void setPaused(bool paused) { _paused = paused; };

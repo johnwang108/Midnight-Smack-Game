@@ -164,7 +164,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     // Create the world and attach the listeners.
     _world = physics2::ObstacleWorld::alloc(rect,gravity);
     _world->activateCollisionCallbacks(true);
-    b2Filter* filter = new b2Filter();
     _world->onBeginContact = [this](b2Contact* contact) {
       beginContact(contact);
     };
@@ -232,10 +231,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     addChild(_dollarnode);
 
-
-   /* addChild(healthBarBackground);
-    addChild(healthBarForeground);*/
-
 #pragma mark: UI
 
     // ui stuff
@@ -282,10 +277,11 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _bgScene->addChild(_background);
     
-
     _target = std::make_shared<EnemyModel>();
 
     loadSave();
+
+    save();
 
     _actionManager = cugl::scene2::ActionManager::alloc();
 
@@ -475,7 +471,7 @@ void GameScene::preUpdate(float dt) {
                     minDist = (e->getPosition() - _avatar->getPosition()).length();
                 }
             }
-            if (minDist < COOKTIME_MAX_DIST) {
+            if (minDist < COOKTIME_MAX_DIST && _avatar->useMeter()) {
                 _slowed = true;
                 _dollarnode->setTargetGestures(_target->getGestureSeq1());
             }
@@ -488,9 +484,16 @@ void GameScene::preUpdate(float dt) {
     _actionManager->update(dt);
     //activate idle animation if no active animation
     if (!_actionManager->isActive(_avatar->getActiveAction())) {
-        _avatar->animate("idle");
-        auto idleAction = _avatar->getAction("idle");
-        _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
+        if (_avatar->getActiveAction() == "attack") {
+            _avatar->animate("recover");
+            auto recoverAction = _avatar->getAction("recover");
+            _actionManager->activate("recover", recoverAction, _avatar->getSceneNode());
+        }
+        else {
+            _avatar->animate("idle");
+            auto idleAction = _avatar->getAction("idle");
+            _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
+        }
 	}
 
     _dollarnode->update(dt);
@@ -533,9 +536,9 @@ void GameScene::preUpdate(float dt) {
                     _target->takeDamage(_avatar->getAttack(), 0);
 
                     //DEFAULT: APPLY DURATION BUFF 
-                    _avatar->applyBuff(EnemyModel::enemyToBuff(_target->getType()), modifier::effect);
+                    _avatar->applyBuff(EnemyModel::typeToBuff(_target->getType()), modifier::effect);
                     //set buff label
-                    _buffLabel->setText(DudeModel::getStrForBuff(EnemyModel::enemyToBuff(_target->getType())));
+                    _buffLabel->setText(DudeModel::getStrForBuff(EnemyModel::typeToBuff(_target->getType())));
                     _buffLabel->setVisible(true);
                 }
                 else {
@@ -686,6 +689,7 @@ void GameScene::fixedUpdate(float step) {
     }
     //camera logic
     if (CAMERA_FOLLOWS_PLAYER) {
+        _camera->setZoom(1.5);
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
         cugl::Vec3 pos = _camera->getPosition();
 
@@ -694,8 +698,8 @@ void GameScene::fixedUpdate(float step) {
             pos.y + viewport.size.height / 2 - 50);
 
 
-        cugl::Vec3 mapMin = Vec3(SCENE_WIDTH / 2, SCENE_HEIGHT / 2, 0);
-        cugl::Vec3 mapMax = Vec3(1400 - SCENE_WIDTH / 2, 900 - SCENE_HEIGHT / 2, 0); //replace magic numbers
+        cugl::Vec3 mapMin = Vec3(SCENE_WIDTH / (2 * _camera->getZoom()), SCENE_HEIGHT / (2 * _camera->getZoom()), 0);
+        cugl::Vec3 mapMax = Vec3(1400 - SCENE_WIDTH / (2 * _camera->getZoom()), 900 - SCENE_HEIGHT / (2 * _camera->getZoom()), 0); //replace magic numbers
         target.clamp(mapMin, mapMax);
 
         //magic number 0.2 are for smoothness
@@ -746,7 +750,11 @@ void GameScene::postUpdate(float remain) {
     // Otherwise, it looks like bullet appears far away
     _avatar->setShooting(_input->didFire());
     if (_avatar->isShooting() && !_actionManager->isActive("attack")) {
-        createAttack(false);
+        //createAttack(false);
+        auto att = _avatar->createAttack(getAssets(), _scale);
+        addObstacle(std::get<0>(att), std::get<1>(att), true);
+        _attacks.push_back(std::get<0>(att));
+
         auto attackAction = _avatar->getAction("attack");
         _avatar->animate("attack");
         _actionManager->clearAllActions(_avatar->getSceneNode());
@@ -756,7 +764,6 @@ void GameScene::postUpdate(float remain) {
 
 
     //iterate through physics objects and delete any timed-out attacks
-    //BAD CODE ALEART
     for (auto it = _attacks.begin(); it != _attacks.end();) {
         if ((*it)->killMe()) {
             removeAttack((*it).get());
@@ -868,6 +875,7 @@ void GameScene::createAttack(bool display) {
 	std::shared_ptr<Attack> attack = Attack::alloc(pos, 
         cugl::Size(0.6*ATTACK_W * image->getSize().width / _scale, 
         ATTACK_H * image->getSize().height / _scale));
+
 	attack->setName(ATTACK_NAME);
     attack->setDensity(HEAVY_DENSITY);
     attack->setBullet(true);
@@ -1071,7 +1079,6 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 attackerPos = ((EnemyModel*)bd1)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
 
-        _avatar->addTouching();
         _avatar->takeDamage(34, direction);
     }
 }
@@ -1136,6 +1143,10 @@ void GameScene::endContact(b2Contact* contact) {
         int damage = ((EnemyModel*)bd2)->getHealth();
         ((EnemyModel*)bd2)->takeDamage(_avatar->getAttack(), direction);
         damage -= ((EnemyModel*)bd2)->getHealth();
+
+        _avatar->addMeter(10.0f);
+        removeAttack((Attack*)bd1);
+
         if (damage > 0) popup(std::to_string((int)damage), enemyPos * _scale);
         if (((EnemyModel*)bd2)->getHealth() <= 50){
             ((EnemyModel*)bd2)->setVulnerable(true);
@@ -1147,7 +1158,12 @@ void GameScene::endContact(b2Contact* contact) {
         int damage = ((EnemyModel*)bd1)->getHealth();
         ((EnemyModel*)bd1)->takeDamage(_avatar->getAttack(), direction);
         damage -= ((EnemyModel*)bd1)->getHealth();
+
+        _avatar->addMeter(10.0f);
+        removeAttack((Attack*)bd2);
+
         if (damage > 0) popup(std::to_string((int)damage), enemyPos * _scale);
+
         if (((EnemyModel*)bd1)->getHealth() <= 50) {
             ((EnemyModel*)bd1)->setVulnerable(true);
         }
@@ -1183,8 +1199,6 @@ void GameScene::endContact(b2Contact* contact) {
         Vec2 enemyPos = _avatar->getPosition();
         Vec2 attackerPos = ((EnemyModel*)bd1)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-
-        _avatar->addTouching();
     }
 
 }
@@ -1247,11 +1261,24 @@ void GameScene::popup(std::string s, cugl::Vec2 pos) {
     _popups.push_back(std::make_tuple(popup, now));
 }
 
-void GameScene::animate(std::shared_ptr<cugl::scene2::Animate>& animation, std::shared_ptr<cugl::scene2::Action>& action, std::shared_ptr<cugl::scene2::SpriteNode>& target){
-    
-
-
+/**Potentially saves and/or modifies the following information:
+chapter - int
+level - int
+night: {
+    location_x_player - float
+	location_y_player - float
+	health_player - float
+    meter_player - float
+	for each enemy type:
+        location_x_type - float array
+		location_y_type - float array 
+		health_enemy_type - float array
 }
+
+Retains the following from previous save file: 
+day { ... }
+persistent { ... }
+*/
 
 void GameScene::save() {
     /*std::string root = cugl::Application::get()->getSaveDirectory();
@@ -1259,42 +1286,70 @@ void GameScene::save() {
 
     //Should only change nighttime save data unless level was completed, in which case change level/chapter accordingly.
     auto reader = JsonReader::alloc("./save.json");
-    auto writer = JsonWriter::alloc("./save.json");
 
-    std::shared_ptr<JsonValue> json = JsonValue::allocObject();
+    std::shared_ptr<JsonValue> prev_json = reader->readJson();
+    reader->close();
 
     //write basic info.
     //placeholders
 
+    std::shared_ptr<JsonValue> json = JsonValue::allocObject();
 
     json->appendValue("chapter", 1.0f);
     json->appendValue("level", 1.0f);
     
-
     std::shared_ptr<JsonValue> night = JsonValue::allocObject();
     
     night->appendValue("location_x_player", _avatar->getPosition().x);
     night->appendValue("location_y_player", _avatar->getPosition().y);
     night->appendValue("health_player", _avatar->getHealth());
-    //Todo:: save buff, enemy status
 
-   /* for (auto& e : _enemies) {
+    std::vector<std::string> types = { "egg", "carrot", "shrimp", "rice", "beef" };
+    for (auto t = types.begin(); t != types.end(); t++) {
+        std::string type = *t;
+        night->appendArray("location_x_" + type);
+        night->appendArray("location_y_" + type);
+        night->appendArray("health_" + type);
+    }
+    
+    for (auto& e : _enemies) {
         if (e->isRemoved()) {
 			continue;
 		}
-		std::shared_ptr<JsonValue> enemy = JsonValue::allocObject();
-		enemy->appendValue("location_x_enemy", e->getPosition().x);
-		enemy->appendValue("location_y_enemy", e->getPosition().y);
-		enemy->appendValue("health_enemy", e->getHealth());
-        night->appendChild(enemy);
-	}*/
-
+        std::string type = EnemyModel::typeToStr(e->getType());
+		night->insertValue(0, "location_x_" + type, e->getPosition().x);
+        night->insertValue(0, "location_y_" + type, e->getPosition().y);
+        night->insertValue(0, "health_" + type, e->getHealth());
+	}
 
     json->appendChild("night", night);
 
+    std::shared_ptr<JsonValue> day = prev_json->get("day");
+    std::shared_ptr<JsonValue> persistent = prev_json->get("persistent");
+    if (persistent == nullptr || persistent->isNull()) {
+        persistent = JsonValue::allocObject();
+    }
+    else {
+        persistent->_parent = nullptr;
+    }
+    if (day == nullptr || day->isNull()) {
+        day = JsonValue::allocObject();
+    }
+    else {
+        day->_parent = nullptr;
+    }
+
+    json->appendChild("day", day);
+    json->appendChild("persistent", persistent);
+
+    CULog("appended");
+    json->appendValue("test", 0.0f);
+
+    auto writer = JsonWriter::alloc("./save.json");
+
     writer->writeJson(json);
-
-
+    
+    writer->close();
 }
 
 void GameScene::loadSave() {
@@ -1316,6 +1371,7 @@ void GameScene::loadSave() {
 
     loadLevel(chapter, level);
 
+    reader->close();
     
 }
 

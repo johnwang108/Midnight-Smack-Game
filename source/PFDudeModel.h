@@ -48,6 +48,7 @@
 #include <cugl/physics2/CUCapsuleObstacle.h>
 #include <cugl/scene2/graph/CUWireNode.h>
 #include "EntitySpriteNode.h"
+#include "Attack.h"
 
 #pragma mark -
 #pragma mark Drawing Constants
@@ -67,6 +68,10 @@
 #define DUDE_DAMPING    10.0f
 /** The maximum character speed */
 #define DUDE_MANUEL_MAXSPEED   5.0f
+
+#define MAX_METER 100.0f
+
+#define METER_COST 60.0f
 
 
 #pragma mark -
@@ -110,6 +115,15 @@ enum class modifier {
 #define SUPER_SPEED_BUFF 5.0f
 
 #define BASE_DURATION 10.0f
+
+/** The keys for the attack texture in asset manager*/
+#define ATTACK_TEXTURE_R  "attack_r"
+#define ATTACK_TEXTURE_L  "attack_l"
+/**Scalar for height of a box attack, hacky*/
+#define ATTACK_H        0.5f
+
+#define ATTACK_OFFSET_X 0.5f
+#define ATTACK_OFFSET_Y 0.5f
 
 class DudeModel : public cugl::physics2::CapsuleObstacle {
 private:
@@ -195,6 +209,15 @@ protected:
 
     //the last action that was animated
     std::string _activeAction;
+
+    float _meter;
+
+    const float _maxMeter = MAX_METER;
+
+    float _healthUpgrade;
+    float _dashUpgrade;
+    float _meterGainUpgrade;
+    float _hitStunUpgrade;
 
 	/**
 	* Redraws the outline of the physics fixtures to the debug node
@@ -599,9 +622,20 @@ public:
 
     void DudeModel::resetBuff();
 
-    void addTouching() { _numberOfTouchingEnemies++; };
+    void addTouching() { _numberOfTouchingEnemies += 1; };
 
-    void removeTouching() { _numberOfTouchingEnemies--; };
+    void removeTouching() { _numberOfTouchingEnemies -= 1; };
+
+    void addMeter(float f) {_meter += f; if (_meter > _maxMeter) _meter = _maxMeter; };
+
+    float getMeter() { return _meter; };
+
+    void setMeter(float f) { _meter = std::min(_maxMeter, f); };
+
+    //uses a variable amount of meter, returns true if possible, returns false and doesn't do anything if not.
+    bool useMeter(float f = METER_COST);
+
+    std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale);
 
     float getAttackBuff() {
         if (_duration > 0) {

@@ -17,7 +17,7 @@
 #define EA_HSHRINK    0.7f
 #define SENSOR_HEIGHT 0.1f
 
-#define ATTACK_LIFETIME  5
+#define ATTACK_LIFETIME  7.0f
 
 
 #pragma mark -
@@ -168,7 +168,9 @@ public:
     std::string* getSensorName() { return &_sensorName; };
     void setrand(bool rand=false) { _rand = rand; }
     void setstraight(cugl::Vec2 straight) { _straight = straight; }
-    void setGo(bool go) { _go = go; }
+    void setGo(bool go) { _go = go; };
+
+    void setShoot(bool shoot) { _shoot = shoot; };
 };
 
 #endif /* __ATTACK_H__ */
