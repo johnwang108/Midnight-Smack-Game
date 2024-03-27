@@ -284,7 +284,8 @@
         "mylabscene": "widgets/mylabscene.json",
         "mymenubutton": "widgets/mymenubutton.json",
         "labscene": "widgets/labscene.json",
-        "quotaBar": "widgets/quota.json"
+        "quotaBar": "widgets/quota.json",
+        "uiWidget": "widgets/uiWidget.json"
     },
     "scene2s": {
         "menu": {
@@ -305,6 +306,16 @@
             },
             "data": {
                 "key": "quotaBar"
+            }
+        },
+        "uiScene": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "uiWidget"
             }
         },
         "lab0": {

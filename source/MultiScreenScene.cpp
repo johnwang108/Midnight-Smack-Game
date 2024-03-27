@@ -159,11 +159,14 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_progBar->setContentSize(_progBar->getSize() * .5);
 	_progBar->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 	_progBar->setPosition(0,0);
+
+	std::shared_ptr<scene2::SceneNode> uiRoot = _assets->get<scene2::SceneNode>("uiScene");
 	
 
 	_uiScene->addChild(_timer);
 	_uiScene->addChild(_gestureFeedback);
 	_uiScene->addChild(quotaRoot);
+	_uiScene->addChild(uiRoot);
 	//_uiScene->addChild(_uiNode);
 
 	//std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("exLevel");
