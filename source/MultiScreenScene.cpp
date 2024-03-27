@@ -15,6 +15,14 @@ namespace LayoutPositions {
 	Vec2 MidRight(const Vec2& size) { return Vec2(size.x, 0); }
 	Vec2 Bottom(const Vec2& size) { return Vec2(0, -size.y); }
  }
+//
+//namespace LayoutPositions {
+//	Vec2 Top(const Vec2& size) { return Vec2(size.x/2, size.y*3/2); }
+//	Vec2 MidLeft(const Vec2& size) { return Vec2(-size.x/2, size.y/2); }
+//	Vec2 Mid(const Vec2& size) { return Vec2(size.x / 2, size.y / 2); }
+//	Vec2 MidRight(const Vec2& size) { return Vec2(size.x*3/2, size.y / 2); }
+//	Vec2 Bottom(const Vec2& size) { return Vec2(size.x/2, -size.y/2); }
+//}
 
 std::string targets[5] = { "pigtail", "circle", "vertSwipe", "horizSwipe", "v" };
 
@@ -82,16 +90,13 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_camera->update();
 
 	_assets = assets;
-
-	std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("json/exLevel.json");
-	readLevel(reader->readJson());
-
+	
 	//MULTISCREEN IS RESPONSIBLE FOR INITING THE SHARED INPUT CONTROLLER. TEMPORARY SOLUTION
 	_input = input;
 	_input->init(getBounds());
 
-	//_input = std::make_shared<PlatformInput>();
-	//_input->init(getBounds());
+	std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("json/exLevel.json");
+	readLevel(reader->readJson());
 
 	_stationMap["pot_station"] = 0;
 	_stationMap["prep_station"] = 1;
@@ -122,9 +127,9 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_uiScene->init(_size);
 	_uiScene->setActive(true);
 
-	/*_uiNode = _assets->get<scene2::SceneNode>("lab");
-	_uiNode->setContentSize(_size);
-	_uiNode->doLayout();*/
+	//_uiNode = _assets->get<scene2::SceneNode>("lab0");
+	//_uiNode->setContentSize(_size);
+	//_uiNode->doLayout();
 
 	_timer = scene2::Label::allocWithText("godfhohofgji", _assets->get<Font>(MESSAGE_FONT));
 
@@ -158,7 +163,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 
 	_ended = false;
 
-	setName("night");
+	setName("day");
 
 	transition(false);
 	setTarget("");
@@ -187,6 +192,7 @@ void MultiScreenScene::initStations(std::string textures[], int size) {
 				
 		rect = cugl::Rect(Vec2::ZERO, _size);
 		scene->init(_assets, _input, rect, textures[i], std::vector<std::string>(), Size(600, 450));
+		scene->setContentSize(SCENE_WIDTH, SCENE_HEIGHT);
 		scene->setAnchor(Vec2::ANCHOR_CENTER);
 		scene->setPosition(positions[i]);
 		scene->setVisible(true);
@@ -194,12 +200,28 @@ void MultiScreenScene::initStations(std::string textures[], int size) {
 		std::string uiKey = "lab"; 
 		uiKey += std::to_string(i);
 		std::shared_ptr<cugl::scene2::SceneNode> tempNode = _assets->get<scene2::SceneNode>(uiKey);
-		tempNode->setAnchor(Vec2::ANCHOR_CENTER);
+		tempNode->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 		tempNode->setPosition(Vec2(0, 0));
+		tempNode->doLayout();
 		scene->setBottomBar(tempNode);
 		scene->addChild(tempNode);
 		setScene(i, scene);
 	}
+
+	std::shared_ptr<scene2::PolygonNode> p = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("ninepatch"));
+	p->setContentSize(Size(80, 80));
+	std::shared_ptr<cugl::scene2::Button> testButton = scene2::Button::alloc(p);
+	testButton->setAnchor(Vec2::ANCHOR_CENTER);
+	testButton->setColor(Color4::RED);
+	testButton->addListener([=](const std::string& name, bool down) {
+		CULog("Button pressed!!! !!!! !!!!:)");
+		CULog("");
+		});
+	testButton->activate();
+	addChild(testButton);
+	testButton->setPosition(cugl::Vec2(0,0));
+
+
 
 	for (int i = 0; i < size; i++) {
 		addChild(_scenes[i]);
@@ -249,6 +271,9 @@ void MultiScreenScene::update(float timestep) {
 
 void MultiScreenScene::preUpdate(float timestep) {
 	_input->update(timestep);
+
+	CULog("Camera position: %f, %f", _camera->getPosition().x, _camera->getPosition().y);
+	CULog("Scene position: %f, %f", _scenes[_curr]->getPosition().x, _scenes[_curr]->getPosition().y);
 
 	if (_input->didExit()) {
 		CULog("Shutting down");
@@ -432,7 +457,7 @@ void MultiScreenScene::transition(bool t) {
 }
 
 void MultiScreenScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
-	_uiScene->render(batch);
+	//_uiScene->render(batch);
 }
 
 void MultiScreenScene::tempPopulate() {

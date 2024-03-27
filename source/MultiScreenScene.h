@@ -35,7 +35,7 @@ protected:
 	/** The individual scenes */
 	std::shared_ptr<DollarScene> _scenes[5];
 
-	std::shared_ptr<Scene2> _uiScene;
+	//std::shared_ptr<Scene2> _uiScene;
 
 	///** The textures to display each scene, not sure if needed */
 	//std::shared_ptr<cugl::Texture> _texture[5];
