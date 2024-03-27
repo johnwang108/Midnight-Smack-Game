@@ -711,9 +711,11 @@ void GameScene::fixedUpdate(float step) {
 		_camera->update();
         _dollarnode->setPosition(pos);
     }
+    /*
     if (_avatar->getHealth()<=0) {
         setFailure(true);
 	}
+     */
     if (_Bull!=nullptr && _Bull->getHealth() <= 0) {
         setComplete(true);
     }
