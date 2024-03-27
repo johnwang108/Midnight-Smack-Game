@@ -30,8 +30,14 @@
 #include <box2d/b2_fixture.h>
 #include <unordered_set>
 #include <vector>
+#include <deque>
 #include "PFInput.h"
 #include "PFDudeModel.h"
+#include "Ingredient.h"
+
+//hardcode :3
+#define SCENE_WIDTH 1280
+#define SCENE_HEIGHT 800
 
 /**
 * 
@@ -47,7 +53,6 @@ protected:
     std::shared_ptr<cugl::GestureRecognizer> _dollarRecog;
 
 
-    //Todo: turn these into nodes
     cugl::Path2 _path;
 
     std::shared_ptr<cugl::scene2::PolygonNode> _poly;
@@ -62,12 +67,14 @@ protected:
 
   
     //transform for poly
-    cugl::Affine2 _trans;
+    cugl::Affine2 _transf;
 
     //temp
     cugl::Spline2 _spline;
 
     bool _focus;
+
+    bool _readyForGestures;
 
     std::vector<std::string> _currentTargetGestures;
 
@@ -84,6 +91,20 @@ protected:
 
     float _currentSimilarity; 
 
+    std::vector<std::string> _validIngredients;
+
+    std::shared_ptr<cugl::scene2::SceneNode> _bottomBar;
+    std::shared_ptr<cugl::scene2::SceneNode> _conveyorBelt;
+    std::shared_ptr<cugl::scene2::SceneNode> _stationHitbox;
+
+    std::deque<std::shared_ptr<Ingredient>> _currentIngredients;
+
+    std::shared_ptr<Ingredient> _ingredientToRemove; 
+    std::shared_ptr<Ingredient> _currentlyHeldIngredient;
+
+    bool _readyToCook;
+
+    
     //Todo: need library of existing predetermined inputs to check against
 
 public:
@@ -106,6 +127,7 @@ public:
     }
 
     bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector <std::string> gestures);
+    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector<std::string> gestures, cugl::Size hitboxSize);
 
     void update(float timestep);
 
@@ -123,6 +145,8 @@ public:
         _completed = false;
     }
 
+    void setValidIngredients(std::vector<std::string> ingredients) { _validIngredients = ingredients; };
+
     bool isFocus() { return _focus; };
 
     bool initGestureRecognizer();
@@ -130,6 +154,18 @@ public:
     bool matchWithTouchPath();
 
     bool getJustCompletedGesture() { return _justCompletedGesture; }
+
+    std::shared_ptr<cugl::scene2::SceneNode> getBottomBar() { return _bottomBar; }
+    void setBottomBar(std::shared_ptr<cugl::scene2::SceneNode> bar);
+
+    void addIngredient(std::shared_ptr<Ingredient> ingredient);
+    std::shared_ptr<Ingredient> DollarScene::popIngredient();
+
+
+    void updateConveyor();
+    std::shared_ptr<Ingredient> getHeldIngredient();
+
+    void addIngredientToStation(std::shared_ptr<Ingredient>);
 
     void reset();
 };

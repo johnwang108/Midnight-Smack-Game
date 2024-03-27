@@ -7,9 +7,9 @@
 #include "../PFDudeModel.h"
 
 #define ENEMY_SENSOR_NAME     "enemysensor"
-#define SHRIMP_TEXTURE    "shrimp"
-#define EGG_TEXTURE    "egg"
-#define RICE_TEXTURE    "rice"
+#define SHRIMP_TEXTURE    "shrimpBoss"
+#define EGG_TEXTURE    "eggEnemy"
+#define RICE_TEXTURE    "riceEnemy"
 #define BEEF_TEXTURE    "beef"
 #define CARROT_TEXTURE    "carrot"
 

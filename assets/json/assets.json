@@ -1,5 +1,17 @@
 {
     "textures": {
+        "Ramsay": {
+            "file": "textures/Ramsay.png"
+        },
+        "Bar": {
+            "file": "textures/Bar.png"
+        },
+        "ConveyorUIBar": {
+            "file": "textures/ConveyorUIBar.png"
+        },
+        "updateConveyorBelt": {
+            "file": "textures/updateConveyorBelt.png"
+        },
         "earth": {
             "file": "textures/placeholder_block.png",
             "wrapS": "repeat",
@@ -11,7 +23,9 @@
         "su_attack_sheet": {
             "file": "textures/su_attack_test_sheet.png"
         },
-
+        "su_run": {
+            "file": "textures/su_run.png"
+        },
         "su_idle_blink": {
             "file": "textures/su_idle_blink.png"
         },
@@ -39,20 +53,20 @@
         "goal": {
             "file": "textures/goaldoor.png"
         },
-        "shrimp": {
-            "file": "textures/shrimp.png"
+        "shrimpBoss": {
+            "file": "textures/shrimpBoss.png"
         },
-        "rice": {
-            "file": "textures/rice.png"
+        "riceEnemy": {
+            "file": "textures/riceEnemy.png"
         },
-        "egg": {
-            "file": "textures/egg.png"
+        "eggEnemy": {
+            "file": "textures/eggEnemy.png"
         },
         "bull": {
             "file": "textures/bull.png"
         },
         "shake": {
-            "file":      "textures/shake.png"
+            "file": "textures/shake.png"
         },
         "bosshealth": {
             "file": "textures/bosshealth.png"
@@ -85,19 +99,19 @@
             "wrapS": "repeat",
             "wrapT": "repeat"
         },
-        "unball":{
-            "file":      "textures/unball.png"
+        "unball": {
+            "file": "textures/unball.png"
         },
-        "dball":{
-            "file":      "textures/dball.png"
+        "dball": {
+            "file": "textures/dball.png"
         },
-        "P2bull":{
-            "file":      "textures/P2bull.png"
+        "P2bull": {
+            "file": "textures/P2bull.png"
         },
-        "cooktime" : {
-            "file":      "textures/cutting_board.png",
-            "wrapS":    "repeat",
-            "wrapT":    "repeat"
+        "cooktime": {
+            "file": "textures/cutting_board.png",
+            "wrapS": "repeat",
+            "wrapT": "repeat"
         },
         "dpad": {
             "file": "textures/dpad.png",
@@ -130,6 +144,66 @@
                 ]
             }
         },
+        "background": {
+            "file": "textures/background.png"
+        },
+        "NotepadBar": {
+            "file": "textures/notepad.png"
+        },
+        "ConveyorBelt": {
+            "file": "textures/ConveyorBelt.png"
+        },
+        "RecipeBook": {
+            "file": "textures/RecipeBook.png"
+        },
+        "CookTimer": {
+            "file": "textures/CookTimer.png"
+        },
+        "Gesture": {
+            "file": "textures/Gesture.png"
+        },
+        "Shrimp": {
+            "file": "textures/Shrimp.png"
+        },
+        "Rice": {
+            "file": "textures/Rice.png"
+        },
+        "Egg": {
+            "file": "textures/Egg.png"
+        },
+        "Carrot": {
+            "file": "textures/Carrot.png"
+        },
+        "Beef": {
+            "file": "textures/Beef.png"
+        },
+        "Minimap": {
+            "file": "textures/Minimap.png"
+        },
+        "Pot": {
+            "file": "textures/Pot.png"
+        },
+        "Sink": {
+            "file": "textures/Sink.png"
+        },
+        "Knife": {
+            "file": "textures/Knife.png"
+        },
+        "Pan": {
+            "file": "textures/Pan.png"
+        },
+        "Mixer": {
+            "file": "textures/Mixer.png"
+        },
+        "Status": {
+            "file": "textures/Status.png"
+        },
+        "Sun": {
+            "file": "textures/Daytime.png"
+        },
+        "TextBack": {
+            "file": "textures/TextBack.png"
+        },
         "MYbackgroundbig": {
             "file": "textures/UI/MYbackgroundbig.png"
         },
@@ -151,11 +225,14 @@
         "GameTitle": {
             "file": "textures/UI/GameTitle.png"
         },
-        "heartsbroken":{
-            "file":      "textures/UI/heartsbroken.png"
+        "heartsbroken": {
+            "file": "textures/UI/heartsbroken.png"
         },
-        "heartsfull":{
-            "file":      "textures/UI/heartsfull.png"
+        "heartsfull": {
+            "file": "textures/UI/heartsfull.png"
+        },
+        "ninepatch": {
+            "file": "textures/greynine.png"
         }
     },
     "sounds": {
@@ -202,7 +279,6 @@
             "file": "fonts/RetroGame.ttf",
             "size": 16
         },
-
         "winter drinkRegular40": {
             "file": "fonts/WinterDrink.ttf",
             "size": 38
@@ -210,23 +286,98 @@
         "winter drinkRegular25": {
             "file": "fonts/WinterDrink.ttf",
             "size": 25
+        },
+        "winter drinkRegular20": {
+            "file": "fonts/WinterDrink.ttf",
+            "size": 20
         }
     },
-
-    "widgets" : {
+    "widgets": {
         "mylabscene": "widgets/mylabscene.json",
-        "mymenubutton": "widgets/mymenubutton.json"
-	},
-
-    "scene2s" : {
-        "menu" : {
-            "type"      : "Widget",
-            "comment"   : "This is the root node of the scene for the lab",
-            "format"    : {
-                "type" : "Anchored"
+        "mymenubutton": "widgets/mymenubutton.json",
+        "quotaBar": "widgets/quota.json",
+        "uiWidget": "widgets/uiWidget.json",
+        "barWidget": "widgets/bottomBarWidget.json"
+    },
+    "scene2s": {
+        "menu": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
             },
-            "data":{
+            "data": {
                 "key": "mylabscene"
+            }
+        },
+        "quotaScene": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "quotaBar"
+            }
+        },
+        "uiScene": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "uiWidget"
+            }
+        },
+        "lab0": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "barWidget"
+            }
+        },
+        "lab1": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "barWidget"
+            }
+        },
+        "lab2": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "barWidget"
+            }
+        },
+        "lab3": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "barWidget"
+            }
+        },
+        "lab4": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "barWidget"
             }
         }
     }

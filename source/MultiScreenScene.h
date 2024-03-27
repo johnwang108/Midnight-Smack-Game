@@ -4,8 +4,7 @@
 #include <cugl/cugl.h>
 #include "PFInput.h"
 #include "PFDollarScene.h"
-#include "Order.h"
-#include <cugl/cugl.h>
+#include "Ingredient.h"
 #include <box2d/b2_world_callbacks.h>
 #include <box2d/b2_fixture.h>
 #include <unordered_set>
@@ -19,11 +18,17 @@ private:
 	// current time, in seconds with decimals
 	float _currentTime;
 	std::map<std::string, int> _stationMap;
-	bool _finishedOrders;
+	std::map<int, std::vector<std::string>> _stationIngredients;
+	bool _finishedIngredients;
+
+
 
 
 protected:
 	std::shared_ptr<cugl::AssetManager> _assets;
+	std::shared_ptr<cugl::scene2::SceneNode> _uiNode;
+	std::shared_ptr<cugl::scene2::SceneNode> _progBar;
+
 
 	std::shared_ptr<PlatformInput> _input;
 
@@ -57,12 +62,26 @@ protected:
 
 	cugl::Timestamp _gestureInitiatedTime;
 
-	std::vector<Order> _orders; 
+	std::vector<std::shared_ptr<Ingredient>> _ingredients; 
+
+	std::shared_ptr<Ingredient> _heldIngredient;
 
 	std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
-	// the index in the _orders vector where we will find the first new order
-	int _newOrderIndex;
 
+    /* This is the name of the dish we are making for the day, to display */
+	std::string _dishToPrepare;
+	float _dayDuration;
+	int _quota;
+	int _currentScore; 
+	
+	// 0 = playing, 1 = win, -1 = lose
+	int _gameState;
+
+	
+	/* If the day has ended*/
+	bool _ended;
+	// the index in the _orders vector where we will find the first new order
+	int _newIngredientIndex;
 	float _flag;
 public:
 	MultiScreenScene();
@@ -91,7 +110,7 @@ public:
 
 	int determineSwipeDirection();
 
-	void readLevel(std::shared_ptr<cugl::JsonValue> level);
+	void readLevel(std::shared_ptr<cugl::JsonValue>& level);
 
 	void renderUI(std::shared_ptr<cugl::SpriteBatch> batch);
 
@@ -100,6 +119,8 @@ public:
 	void unfocusAll();
 
 	void focusCurr();
+	void endDay();
+
 
 	void reset();
 
