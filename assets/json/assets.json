@@ -6,6 +6,12 @@
         "Bar": {
             "file": "textures/Bar.png"
         },
+        "ConveyorUIBar": {
+            "file": "textures/ConveyorUIBar.png"
+        },
+        "updateConveyorBelt": {
+            "file": "textures/updateConveyorBelt.png"
+        },
         "earth": {
             "file": "textures/placeholder_block.png",
             "wrapS": "repeat",
@@ -283,9 +289,9 @@
     "widgets": {
         "mylabscene": "widgets/mylabscene.json",
         "mymenubutton": "widgets/mymenubutton.json",
-        "labscene": "widgets/labscene.json",
         "quotaBar": "widgets/quota.json",
-        "uiWidget": "widgets/uiWidget.json"
+        "uiWidget": "widgets/uiWidget.json",
+        "barWidget": "widgets/bottomBarWidget.json"
     },
     "scene2s": {
         "menu": {
@@ -325,7 +331,7 @@
                 "type": "Anchored"
             },
             "data": {
-                "key": "labscene"
+                "key": "barWidget"
             }
         },
         "lab1": {
@@ -335,7 +341,7 @@
                 "type": "Anchored"
             },
             "data": {
-                "key": "labscene"
+                "key": "barWidget"
             }
         },
         "lab2": {
@@ -345,7 +351,7 @@
                 "type": "Anchored"
             },
             "data": {
-                "key": "labscene"
+                "key": "barWidget"
             }
         },
         "lab3": {
@@ -355,7 +361,7 @@
                 "type": "Anchored"
             },
             "data": {
-                "key": "labscene"
+                "key": "barWidget"
             }
         },
         "lab4": {
@@ -365,7 +371,7 @@
                 "type": "Anchored"
             },
             "data": {
-                "key": "labscene"
+                "key": "barWidget"
             }
         }
     }

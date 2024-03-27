@@ -305,7 +305,7 @@ void DollarScene::setBottomBar(std::shared_ptr<cugl::scene2::SceneNode> bar) {
 	_readyToCook = false;
 	_bottomBar = bar;
 	if (_bottomBar != nullptr) {
-		_conveyorBelt = _bottomBar->getChildByName("kitchenbar")->getChildByName("Conveyor")->getChildByName("ConveyorBelt");
+		_conveyorBelt = _bottomBar->getChildByName("kitchenbar")->getChildByName("updateConveyorBelt");
 		std::shared_ptr<cugl::scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(_bottomBar->getChildByName("kitchenbar")->getChildByName("Item")->getChildByName("Item")->getChildByName("RecipeBook"));
 		butt->addListener([=](const std::string& name, bool down) {
 			CULog("COOKBOOK PRESSED");
