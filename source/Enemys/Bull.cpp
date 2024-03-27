@@ -148,7 +148,7 @@ void BullModel::update(float dt) {
                 yyy=-25*(dt/10);
             }
  
-            setPosition(getPosition()+Vec2(-_direction*(38-_CAcount*2)*(dt/10),yyy));
+            setPosition(getPosition()+Vec2(-_direction*(38-_CAcount*3)*(dt/10),yyy));
 
             if (_CA <= 0) {
                 _running = true;

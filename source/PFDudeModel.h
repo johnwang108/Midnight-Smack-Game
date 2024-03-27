@@ -475,7 +475,7 @@ public:
     void setContactingWall(bool val) { _contactingWall = val;  }
 
     int getIsOnDangerousGround() { return _isOnDangerousGround; }
-    void getIsOnDangerousGround(bool val) { _isOnDangerousGround = val; }
+    void settIsOnDangerousGround(bool val) { _isOnDangerousGround = val; }
     
     /**
      * Returns true if the dude is actively jumping.

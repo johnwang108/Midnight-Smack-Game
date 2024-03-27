@@ -57,7 +57,7 @@ static float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
 	// {1.0f, 4.0f, 1.0f, 2.0f, 4.0f, 2.0f, 4.0f, 4.0f},
 	{1.0f, 4.0f, 1.0f, 0.0f, 55.0f, 0.0f, 55.0f, 4.0f},
 	{42.5f, 8.0f, 42.5f, 7.0f, 47.5f, 7.0f, 47.5f, 8.0f},
-	{42.5f, 18.0f, 42.5f, 17.0f, 47.5f, 17.0f, 47.5f, 18.0f},
+	{42.5f, 15.0f, 42.5f, 14.0f, 47.5f, 14.0f, 47.5f, 15.0f},
 	{30.0f, 11.0f, 30.0f, 10.5f, 40.0f, 10.5f, 40.0f, 11.0f},
 	{15.0f, 15.0f, 15.0f, 14.5f, 29.0f, 14.5f, 29.0f, 15.0f},
 	{13.0f, 20.0f, 13.0f, 19.0f, 20.0f, 19.0f, 20.0f, 20.0f},
@@ -128,7 +128,7 @@ void Level1::populate(GameScene& scene) {
 		std::vector<Vec3> path;
 		path = { Vec3(0,100,120), Vec3(100,100,120), Vec3(100,0,120), Vec3(0,-30,120) };
 		if (ii % 3 == 1) {
-			platObj->initiatePath(path,2.0f);
+			platObj->initiatePath(path, 2.0f);
 		}
 		things.push_back(platObj);
 		scene.addObstacle(platObj->getObj(), platObj->getSprite(), 1);

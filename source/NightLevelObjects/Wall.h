@@ -37,7 +37,7 @@ public:
     std::shared_ptr<physics2::PolygonObstacle> getObj();
     Poly2 getCollisionPoly();
     std::shared_ptr<scene2::SceneNode> Wall::getSprite();
-    
+
     void initiatePath(std::vector<Vec3> path, int movementForce);
     void update(float dt);
     Vec3 queryPath(int temp);

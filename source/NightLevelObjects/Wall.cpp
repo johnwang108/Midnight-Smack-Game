@@ -8,7 +8,7 @@ Wall::Wall() {
 	BASIC_DENSITY = 0.0;
 	BASIC_FRICTION = 0.0;
 	BASIC_RESTITUTION = 0.0,
-	DEBUG_COLOR = Color4::YELLOW;
+		DEBUG_COLOR = Color4::YELLOW;
 	WALL_POS = nullptr;
 	WALL_VERTS = 1;
 	name = "";
@@ -23,7 +23,7 @@ Wall::Wall() {
 	ogY = 0;
 }
 
-bool Wall::init(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION, 
+bool Wall::init(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION,
 	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name,
 	int breakableCooldown, bool doesDamage) {
 	Poly2 _collisionPoly(WALL_POS, WALL_VERTS / 2);
@@ -76,10 +76,10 @@ bool Wall::init(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSIT
 	return true;
 }
 
-std::shared_ptr<Wall> Wall::alloc(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION, 
+std::shared_ptr<Wall> Wall::alloc(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION,
 	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, int breakableCooldown, bool doesDamage) {
 	std::shared_ptr<Wall> result = std::make_shared<Wall>();
-	return (result->init(image, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, DEBUG_COLOR, WALL_POS, WALL_VERTS, name, 
+	return (result->init(image, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, DEBUG_COLOR, WALL_POS, WALL_VERTS, name,
 		breakableCooldown, doesDamage) ? result : nullptr);
 }
 
@@ -103,8 +103,7 @@ void Wall::initiatePath(std::vector<Vec3> paath, int movementForce)
 	pathNodeCoolDown = -1;
 	std::vector<Vec3> temp;
 	for (Vec3 pathNode : paath) {
-		pathNode.set(pathNode.x/_scale + getOGX(), pathNode.y / _scale + getOGY(), pathNode.z);
-		pathNode.set(pathNode.x + getOGX(), pathNode.y + getOGY(), 0);
+		pathNode.set(pathNode.x / _scale + getOGX(), pathNode.y / _scale + getOGY(), pathNode.z);
 		temp.push_back(pathNode);
 	}
 	path.clear();
@@ -121,25 +120,11 @@ Vec3 Wall::queryPath(int temp) {
 }
 
 void Wall::applyPathMovement(float step) {
-	//CULog("print");
-	//CULog("%f",_obj->getX());
 	Vec3 target = this->queryPath(currentPathNode);
 	Vec3 pos = Vec3(_obj->getX(), _obj->getY(), 0);
-	//magic number 0.2 are for smoothness
-	//float smooth = std::min(0.2f, (target - pos).length());
-	float smooth = 0.2;
-	//cugl::Vec3 pos = _avatar->getPosition() * _scale;
-	//_obj->ApplyLinearImpulse(force, _body->GetPosition(), true);
-	//float activeVX = target.x;
-	//float activeVY = target.y;
-	float activeVX = std::min(movementForce, abs(target.x - pos.x));
-	float activeVY = std::min(movementForce, abs(target.y - pos.y));
-	//_obj->applyForce(target);
-	CULog("targX %f", activeVX);
-	CULog("Peice fo SHit X %f", activeVY);
 
-	float distanceX = std::min(movementForce*step, std::abs(target.x - pos.x));
-	float distanceY = std::min(movementForce*step, std::abs(target.y - pos.y));
+	float distanceX = std::min(movementForce * step, std::abs(target.x - pos.x));
+	float distanceY = std::min(movementForce * step, std::abs(target.y - pos.y));
 
 	if (pos.x < target.x) {
 		pos.x += distanceX;
@@ -156,7 +141,6 @@ void Wall::applyPathMovement(float step) {
 
 	_obj->setPosition(pos.x, pos.y);
 
-	_obj->setPosition(activeVX+pos.x, activeVY+pos.y);
 	scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(sprite.get());
 	image->setPositionX(this->_obj->getX());
 	image->setPositionY(this->_obj->getY());
@@ -175,18 +159,9 @@ void Wall::applyPathMovement(float step) {
 				pathNodeCoolDown = -1;
 			}
 
-	if (pos.x < (target.x+.1) || (pos.x > (target.x - .1))
-	   && (pos.y < (target.y+.1) || pos.y > (target.y - .1))) {
-		CULog("%f", this->currentPathNode);
-		this->currentPathNode = (this->currentPathNode + 1) % path.size();
 		}
 
 	}
-	//float activeVX = std::min(.5f, path[currentPathNode].x - pos.x);
-	//float activeVY = std::min(.5f, path[currentPathNode].y - pos.y);
-	////subject->applyForce(target);
-	//subject->setPosition(subject->getX() + activeVX, subject->getY() + activeVY);
-	//scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(sprite.get());
 }
 
 

@@ -30,11 +30,16 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
     if (CapsuleObstacle::init(pos, scaledSize)) {
         setDensity(ENEMY_DENSITY);
         setFriction(0.0f); // Prevent sticking to walls
-        setFixedRotation(true); // Avoid tumbling
-
+        if (_type != EnemyType::shrimp) {
+            setFixedRotation(true); // Avoid tumbling
+        }
+        else {
+            setFixedRotation(false);
+            setFriction(1.0f);
+        }
         _isChasing = false;
         _isGrounded = false;
-        _direction = -1; 
+        _direction = -1;
         _lastDirection = _direction;
         _changeDirectionInterval = 3.0f;
         _nextChangeTime = _changeDirectionInterval + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * _changeDirectionInterval;
@@ -42,7 +47,7 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
         _healthCooldown = 0.2f;
         _lastDamageTime = 0;
         _attacktime = false;
-        _preparetime= 0;
+        _preparetime = 0;
         _shooted = false;
         _vulnerable = false;
         _state = "patrolling";
@@ -77,8 +82,8 @@ void EnemyModel::createFixtures() {
 
 
     b2FixtureDef sensorDef;
-    sensorDef.density = 0;  
-    sensorDef.isSensor = true;  
+    sensorDef.density = 0;
+    sensorDef.isSensor = true;
 
     b2PolygonShape sensorShape;
     b2Vec2 sensorVertices[4];
@@ -103,7 +108,7 @@ void EnemyModel::createFixtures() {
 
 void EnemyModel::takeDamage(float damage, const int attackDirection) {
     if (_lastDamageTime >= _healthCooldown) {
-        _lastDamageTime= 0;
+        _lastDamageTime = 0;
         _health -= damage;
         if (_health < 0) {
             _health = 0;
@@ -147,45 +152,46 @@ void EnemyModel::update(float dt) {
     if (_knockbackTime > 0) {
         _knockbackTime -= dt;
         return;
-    }else if (_preparetime > 0) {
+    }
+    else if (_preparetime > 0) {
         if (_preparetime < 1 && _shooted) {
             _attacktime = true;
         }
-		_preparetime-=dt;
-        _body->SetLinearVelocity(b2Vec2(0,0));
+        _preparetime -= dt;
+        _body->SetLinearVelocity(b2Vec2(0, 0));
         if (_node != nullptr) {
             _node->setPosition(getPosition() * _drawScale);
             _node->setAngle(getAngle());
         }
         return;
-	}
+    }
     //set behaviors
     if (_behaviorCounter > 0) {
-		_behaviorCounter -= 1;
-	}
+        _behaviorCounter -= 1;
+    }
     else if (_behaviorCounter == 0 || (_behaviorCounter == -1 && getNextState(_state) != _state)) {
         setState(getNextState(_state));
-	}
+    }
 
     b2Vec2 velocity = _body->GetLinearVelocity();
     if (_state == "chasing") {
         _node->setColor(Color4::BLACK);
     }
-    else if (_state == "rolling"){
+    else if (_state == "rolling") {
         _node->setColor(Color4::RED);
     }
     else if (_state == "patrolling") {
         _node->setColor(Color4::WHITE);
     }
     else if (_state == "stunned") {
-		_node->setColor(Color4::GRAY);
-	}
+        _node->setColor(Color4::GRAY);
+    }
     else if (_state == "spitting") {
-		_node->setColor(Color4::YELLOW);
-	}
+        _node->setColor(Color4::YELLOW);
+    }
     else {
 
-	}
+    }
     //handle type specific behavior
     switch (getType()) {
     case EnemyType::shrimp:
@@ -196,16 +202,17 @@ void EnemyModel::update(float dt) {
             float spd = CHASE_SPEED * _direction;
             if (SIGNUM(_direction) != SIGNUM(velocity.x)) {
                 spd *= 2.5;
-			}
+            }
             velocity.x = velocity.x + spd;
+            _body->ApplyAngularImpulse((_direction * -0.05f), true);
         }
         else if (_state == "stunned") {
-			velocity.x = 0;
+            velocity.x = 0;
         }
         else if (_state == "patrolling") {
-			velocity.x = ENEMY_FORCE * _direction;
+            velocity.x = ENEMY_FORCE * _direction;
 
-		}
+        }
         else {
             CULog("error: shrimp");
         }
@@ -242,6 +249,9 @@ void EnemyModel::update(float dt) {
         else if (_state == "patrolling") {
             velocity.x = ENEMY_FORCE * _direction;
         }
+        else if (_state == "short_windup") {
+            velocity.x = 0;
+        }
         else {
             CULog("error: egg");
             CULog(_state.c_str());
@@ -252,7 +262,8 @@ void EnemyModel::update(float dt) {
     case EnemyType::beef:
         break;
     }
-    
+
+    //_body->SetLinearVelocity(handleMovement(velocity));
     _body->SetLinearVelocity(handleMovement(velocity));
 
     //if (_isGrounded) {
@@ -296,8 +307,8 @@ void EnemyModel::update(float dt) {
 
     //    _body->SetLinearVelocity(velocity);
     //}
-    _lastDamageTime+= dt;
-    
+    _lastDamageTime += dt;
+
 
     // Update scene node position and rotation to match physics body
     if (_node != nullptr) {
@@ -326,7 +337,6 @@ b2Vec2 EnemyModel::handleMovement(b2Vec2 velocity) {
         }
         _lastDirection = _direction; // Update last direction
     }
-
     return velocity;
 }
 
@@ -355,8 +365,8 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> EnemyM
 
 
     if (getDirection() > 0) {
-		attack->setFaceRight(true);
-	}
+        attack->setFaceRight(true);
+    }
     attack->setName("enemy_attack");
     attack->setBullet(true);
     attack->setGravityScale(0.2);
@@ -376,26 +386,23 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> EnemyM
 
     /*std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
     AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);*/
-
-
-
 }
 
 //begins the aggro behavior, maintains player location information
-void EnemyModel::setIsChasing(bool isChasing) { 
-    _isChasing = isChasing; 
+void EnemyModel::setIsChasing(bool isChasing) {
+    _isChasing = isChasing;
     if (isChasing) {
         if (_state == "patrolling") {
             setState("chasing");
         }
-	}
+    }
     else {
         setState("patrolling");
-	}
+    }
 }
 
 void EnemyModel::updatePlayerDistance(cugl::Vec2 playerPosition) {
-	_distanceToPlayer = playerPosition - getPosition();
+    _distanceToPlayer = playerPosition - getPosition();
     //CULog("Distance to player: %f", _distanceToPlayer.length());
 }
 
@@ -403,113 +410,112 @@ void EnemyModel::updatePlayerDistance(cugl::Vec2 playerPosition) {
 void EnemyModel::setState(std::string state) {
     _state = state;
     switch (_type) {
-        case EnemyType::shrimp:
-            if (state == "chasing") {
-                _behaviorCounter = 30;
-            }
-            else if (state == "rolling") {
-                _behaviorCounter = -1;
-            }
-            else if (state == "stunned") {
-                _behaviorCounter = 60;
-            }
-            else if (state == "patrollling") {
-                _behaviorCounter = -1;
-            }
-			break;
-        case EnemyType::egg:
-            if (state == "chasing") {
-                _behaviorCounter = -1;
-            }
-            else if (state == "windup") {
-                _behaviorCounter = 400;
-            }
-            else if (state == "spitting") {
-                _behaviorCounter = 2;
-            }
-            else if (state == "short_windup") {
-                _behaviorCounter = 180;
-            }
-            else if (state == "stunned") {
-                _behaviorCounter = 30;
-            }
-            else if (state == "patrollling") {
-                _behaviorCounter = -1;
-            }
-            break;
-        case EnemyType::rice:
-            if (state == "yelling") {
-                _behaviorCounter = 30;
-            }
-            else if (state == "stunned") {
-                _behaviorCounter = 60;
-            }
-            else if (state == "patrollling") {
-                _behaviorCounter = -1;
-            }
-            break;
-        default:
+    case EnemyType::shrimp:
+        if (state == "chasing") {
+            _behaviorCounter = 30;
+        }
+        else if (state == "rolling") {
             _behaviorCounter = -1;
-            break;
+        }
+        else if (state == "stunned") {
+            _behaviorCounter = 60;
+        }
+        else if (state == "patrollling") {
+            _behaviorCounter = -1;
+        }
+        break;
+    case EnemyType::egg:
+        if (state == "chasing") {
+            _behaviorCounter = -1;
+        }
+        else if (state == "windup") {
+            _behaviorCounter = 400;
+        }
+        else if (state == "spitting") {
+            _behaviorCounter = 1;
+        }
+        else if (state == "short_windup") {
+            _behaviorCounter = 180;
+        }
+        else if (state == "stunned") {
+            _behaviorCounter = 30;
+        }
+        else if (state == "patrollling") {
+            _behaviorCounter = -1;
+        }
+        break;
+    case EnemyType::rice:
+        if (state == "yelling") {
+            _behaviorCounter = 30;
+        }
+        else if (state == "stunned") {
+            _behaviorCounter = 60;
+        }
+        else if (state == "patrollling") {
+            _behaviorCounter = -1;
+        }
+        break;
+    default:
+        _behaviorCounter = -1;
+        break;
     }
 }
 
 std::string EnemyModel::getNextState(std::string state) {
     switch (_type) {
-		case EnemyType::shrimp:
-            if (state == "chasing") {
-				return "rolling";
-			}
-            else if (state == "rolling") {
-                return "rolling";
-			}
-            else if (state == "stunned") {
-                return "chasing";
-            }
-            else if (state == "patrolling") {
-				return "patrolling";
-			}
-			break;
-        case EnemyType::rice:
-            if (state == "chasing") {
-                return "chasing";
-            }
-            else if (state == "yelling") {
-                return "chasing";
-            }
-            else if (state == "stunned") {
-                return "chasing";
-            }
-            else if (state == "patrolling") {
-                return "patrolling";
-            }
-            break;
-        case EnemyType::egg:
-            if (state == "chasing") {
-                if (_distanceToPlayer.length() > 7) return "chasing";
-				else return "windup";
-            }
-            if (state == "windup") {
-				return "spitting";
-			}
-            if (state == "short_windup") {
-                return "spitting";
-            }
-            else if (state == "stunned") {
-                return "chasing";
-            }
-            else if (state == "patrolling") {
-                return "patrolling";
-            }
-            else if (state == "spitting") {
-                if (_distanceToPlayer.length() > 7) return "chasing";
-                else return "short_windup";
-            }
-            break;
-
-        default:
+    case EnemyType::shrimp:
+        if (state == "chasing") {
+            return "rolling";
+        }
+        else if (state == "rolling") {
+            return "rolling";
+        }
+        else if (state == "stunned") {
+            return "chasing";
+        }
+        else if (state == "patrolling") {
             return "patrolling";
-	}
+        }
+        break;
+    case EnemyType::rice:
+        if (state == "chasing") {
+            return "chasing";
+        }
+        else if (state == "yelling") {
+            return "chasing";
+        }
+        else if (state == "stunned") {
+            return "chasing";
+        }
+        else if (state == "patrolling") {
+            return "patrolling";
+        }
+        break;
+    case EnemyType::egg:
+        if (state == "chasing") {
+            if (_distanceToPlayer.length() > 7) return "chasing";
+            else return "windup";
+        }
+        if (state == "windup") {
+            return "spitting";
+        }
+        if (state == "short_windup") {
+            return "spitting";
+        }
+        else if (state == "stunned") {
+            return "chasing";
+        }
+        else if (state == "patrolling") {
+            return "patrolling";
+        }
+        else if (state == "spitting") {
+            if (_distanceToPlayer.length() > 7) return "chasing";
+            else return "short_windup";
+        }
+        break;
+
+    default:
+        return "patrolling";
+    }
     return "none";
 }
-
