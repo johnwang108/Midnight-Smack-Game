@@ -114,6 +114,7 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 enemyPos = _Bull->getPosition();
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        _avatar->addMeter(5.0f);
         if (_Bull->getHealth() == 74.5f) {
             _Bull->takeDamage(_avatar->getAttack() / 4, direction, true);
             _Bull->setsummoned(true);
@@ -261,6 +262,9 @@ void GameScene::endContact(b2Contact* contact) {
         int damage = ((EnemyModel*)bd2)->getHealth();
         ((EnemyModel*)bd2)->takeDamage(_avatar->getAttack(), direction);
         damage -= ((EnemyModel*)bd2)->getHealth();
+
+        _avatar->addMeter(5.0f);
+
         if (damage > 0) popup(std::to_string((int)damage), enemyPos * _scale);
         if (((EnemyModel*)bd2)->getHealth() <= 50){
             ((EnemyModel*)bd2)->setVulnerable(true);
@@ -272,6 +276,9 @@ void GameScene::endContact(b2Contact* contact) {
         int damage = ((EnemyModel*)bd1)->getHealth();
         ((EnemyModel*)bd1)->takeDamage(_avatar->getAttack(), direction);
         damage -= ((EnemyModel*)bd1)->getHealth();
+
+        _avatar->addMeter(5.0f);
+
         if (damage > 0) popup(std::to_string((int)damage), enemyPos * _scale);
         if (((EnemyModel*)bd1)->getHealth() <= 50) {
             ((EnemyModel*)bd1)->setVulnerable(true);

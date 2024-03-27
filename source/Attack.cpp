@@ -24,6 +24,7 @@ bool Attack::init(cugl::Vec2 pos, const cugl::Size& size) {
 		_straight = Vec2(-87,-87);
 		_go = false;
         _norotate= false;
+		_speed = DEFAULT_SPEED;
 
         return true;
     }
@@ -70,7 +71,7 @@ void Attack::update(float dt) {
 		else if (_straight != Vec2(-87, -87)) {
 			b2Vec2 targetDirection = b2Vec2(_straight.x - getPosition().x, _straight.y - getPosition().y);
 			targetDirection.Normalize();
-			_body->ApplyLinearImpulseToCenter(b2Vec2(targetDirection.x * 120, targetDirection.y * 120), true);
+			_body->ApplyLinearImpulseToCenter(b2Vec2(targetDirection.x * _speed, targetDirection.y * _speed), true);
             _body->SetTransform(_body->GetPosition(), atan2(_straight.y - getPosition().y, _straight.x - getPosition().x) + M_PI);
 		}
 		else {

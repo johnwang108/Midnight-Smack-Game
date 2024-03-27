@@ -120,10 +120,10 @@ enum class modifier {
 #define ATTACK_TEXTURE_R  "attack_r"
 #define ATTACK_TEXTURE_L  "attack_l"
 /**Scalar for height of a box attack, hacky*/
-#define ATTACK_H        0.5f
+#define ATTACK_H        1.0f
 
-#define ATTACK_OFFSET_X 0.5f
-#define ATTACK_OFFSET_Y 0.5f
+#define ATTACK_OFFSET_X 0.6f
+#define ATTACK_OFFSET_Y 0.6f
 
 class DudeModel : public cugl::physics2::CapsuleObstacle {
 private:

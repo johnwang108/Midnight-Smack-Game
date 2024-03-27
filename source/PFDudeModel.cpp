@@ -277,14 +277,14 @@ void DudeModel::createFixtures() {
 
 
 
-    corners[0].x = -getWidth() / 2.0f;
-    corners[0].y = getHeight()/ 2.0f;
-    corners[1].x = -getWidth() / 2.0f;
-    corners[1].y = -getHeight()/ 2.0f;
-    corners[2].x = getWidth() / 2.0f;
-    corners[2].y = -getHeight() /2.0f;
-    corners[3].x = getWidth() / 2.0f;
-    corners[3].y = getHeight() / 2.0f;
+    corners[0].x = -getWidth()*0.85 / 2.0f;
+    corners[0].y = getHeight() * 0.85 / 2.0f;
+    corners[1].x = -getWidth() * 0.85 / 2.0f;
+    corners[1].y = -getHeight() * 0.85 / 2.0f;
+    corners[2].x = getWidth() * 0.85 / 2.0f;
+    corners[2].y = -getHeight() * 0.85 /2.0f;
+    corners[3].x = getWidth() * 0.85 / 2.0f;
+    corners[3].y = getHeight() * 0.85 / 2.0f;
 
     sensorShape.Set(corners, 4);
     sensorDef.shape = &sensorShape;
@@ -611,7 +611,7 @@ void DudeModel::resetBuff() {
 std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeModel::createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale) {
     Vec2 pos = getPosition();
     pos.x += (_faceRight ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
-    pos.y += ATTACK_OFFSET_Y;
+    pos.y += 0;
 
     std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE_L);
     std::shared_ptr<Attack> attack = Attack::alloc(pos,

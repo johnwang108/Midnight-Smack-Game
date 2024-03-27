@@ -235,15 +235,34 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
 
-    auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
-    auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
-    _healthBarForeground = healthBarForeground;
-    _healthBarBackground = healthBarBackground;
 
-    _healthBarForeground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
-    _healthBarForeground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarBackground->getHeight());
-    _healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
-    _healthBarBackground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarForeground->getHeight());
+    std::shared_ptr<cugl::scene2::SceneNode> _meterUINode;
+    _meterUINode = _assets->get<scene2::SceneNode>("night_meters");
+
+    _healthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("healthbar")->getChildByName("heartsbroken"));
+    _healthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("healthbar")->getChildByName("heartsfull"));
+
+    _cookBarOutline = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifeoutline"));
+    _cookBarFill = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifefill"));
+    //_cookBarGlow = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifeglow"));
+    for (std::string s : {"attackfill", "shieldfill", "speedfill", "healthfill", "jumpfill"}) {
+		_cookBarIcons[s] = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("boost")->getChildByName(s));
+        _cookBarIcons[s]->setVisible(false);
+	}
+    for (std::string s : {"attackready", "shieldready", "speedready", "healthready", "jumpready"}) {
+        _cookBarIcons[s] = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("boost")->getChildByName(s));
+        _cookBarIcons[s]->setVisible(false);
+    }
+
+    //auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
+    //auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
+    //_healthBarForeground = healthBarForeground;
+    //_healthBarBackground = healthBarBackground;
+
+    //_healthBarForeground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
+    //_healthBarForeground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarBackground->getHeight());
+    //_healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
+    //_healthBarBackground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarForeground->getHeight());
 
     _buffLabel = scene2::Label::allocWithText("NO BUFF", _assets->get<Font>(MESSAGE_FONT));
     _buffLabel->setAnchor(Vec2::ANCHOR_CENTER);
@@ -254,9 +273,16 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _paused = false;
     
     //_uiScene->addChild(_pauseButton);
-    _uiScene->addChild(_healthBarBackground);
-    _uiScene->addChild(_healthBarForeground);
-    _uiScene->addChild(_buffLabel);
+    _uiScene->addChild(_meterUINode);
+//    _uiScene->addChild(_healthBarForeground);
+//    _uiScene->addChild(_buffLabel);
+//
+//    _uiScene->addChild(_cookBarOutline);
+//    _uiScene->addChild(_cookBarFill);
+////_uiScene->addChild(_cookBarGlow);
+//    for (auto& tpl : _cookBarIcons) {
+//		_uiScene->addChild(tpl.second);
+//	}
 
     _uiScene->addChild(_winnode);
     _uiScene->addChild(_losenode);
@@ -274,7 +300,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     _target = std::make_shared<EnemyModel>();
 
-    currentLevel = level2;
+    currentLevel = level1;
     loadLevel(currentLevel);
 
     save();
@@ -478,12 +504,33 @@ void GameScene::preUpdate(float dt) {
 
     //handle animations
     _actionManager->update(dt);
-    //activate idle animation if no active animation
+    //start running if idle or recovering and moving
+    if ((_actionManager->isActive("idle") || _actionManager->isActive("recover")) && (_input->getHorizontal() != 0)) {
+        CULog("animating run");
+        _avatar->animate("run");
+        auto runAction = _avatar->getAction("run");
+        _actionManager->clearAllActions(_avatar->getSceneNode());
+        _actionManager->activate("run", runAction, _avatar->getSceneNode());
+    }
+    //cancel run animation if stopped running
+    if (_actionManager->isActive("run") && _input->getHorizontal() == 0) {
+        _avatar->animate("idle");
+        auto idleAction = _avatar->getAction("idle");
+        _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
+    }
+
+    //handle expired actions
     if (!_actionManager->isActive(_avatar->getActiveAction())) {
         if (_avatar->getActiveAction() == "attack") {
             _avatar->animate("recover");
             auto recoverAction = _avatar->getAction("recover");
             _actionManager->activate("recover", recoverAction, _avatar->getSceneNode());
+        }
+        else if (_avatar->getActiveAction() == "run" && _input->getHorizontal() != 0) {
+            _avatar->animate("run");
+            auto runAction = _avatar->getAction("run");
+            _actionManager->clearAllActions(_avatar->getSceneNode());
+            _actionManager->activate("run", runAction, _avatar->getSceneNode());
         }
         else {
             _avatar->animate("idle");
@@ -504,11 +551,6 @@ void GameScene::preUpdate(float dt) {
         _avatar->setDash(_input->didDash());
         _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
 
-        if (_input->getHorizontal() != 0) {
-            _avatar->animate("run");
-            auto runAction = _avatar->getAction("run");
-            _actionManager->activate("run", runAction, _avatar->getSceneNode());
-        }
         if (_avatar->isJumping() && _avatar->isGrounded()) {
             std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
             AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
@@ -682,12 +724,20 @@ void GameScene::fixedUpdate(float step) {
         return;
     }
     if (_healthBarForeground != nullptr) {
-        healthPercentage = _avatar->getHealth() / 100;
+        _healthPercentage = _avatar->getHealth() / 100;
         float totalWidth = _healthBarForeground->getWidth();
         float height = _healthBarForeground->getHeight();
-        float clipWidth = totalWidth * healthPercentage;
+        float clipWidth = totalWidth * _healthPercentage;
         std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
         _healthBarForeground->setScissor(scissor);
+    }
+    if (_cookBarFill != nullptr) {
+        float meterPercentage = _avatar->getMeter() / 100.0f;
+        float totalWidth = _cookBarFill->getWidth();
+        float height = _cookBarFill->getHeight();
+        float clipWidth = totalWidth * meterPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _cookBarFill->setScissor(scissor);
     }
     if (_slowed) { 
         step = step / 15;

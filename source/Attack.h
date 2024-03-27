@@ -12,6 +12,7 @@
 #define EA_MAXSPEED        5.0f         // A reasonable max speed for the Bull, ensuring it's fast but manageable
 #define EA_KNOCKBACK_FORCE 5.0f        // Increased knockback force due to the Bull's strength
 #define EA_KNOCKBACK_FORCE_UP 15.0f      // Vertical knockback component
+#define DEFAULT_SPEED      120.0f
 
 #define EA_VSHRINK    0.8f
 #define EA_HSHRINK    0.7f
@@ -59,6 +60,8 @@ protected:
   //  float _angle;
 
     bool _go;
+
+    float _speed;
 
 public:
 #pragma mark Constructors
@@ -171,6 +174,9 @@ public:
     void setGo(bool go) { _go = go; }
     void setnorotate(bool norotate){_norotate=norotate;}
     void setShoot(bool shoot) { _shoot = shoot; };
+
+    void setSpeed(float speed) { _speed = speed; }
+    float getSpeed() { return _speed; }
 };
 
 #endif /* __ATTACK_H__ */

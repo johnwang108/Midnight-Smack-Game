@@ -142,9 +142,14 @@ protected:
     /** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
     bool _transitionScenes;
     std::string _targetScene;
-    float healthPercentage;
+    float _healthPercentage;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarBackground;
+
+    std::shared_ptr<cugl::scene2::PolygonNode> _cookBarFill;
+    std::shared_ptr<cugl::scene2::PolygonNode> _cookBarOutline;
+    std::unordered_map<std::string, std::shared_ptr<cugl::scene2::PolygonNode>> _cookBarIcons;
+    std::unordered_map<std::string, std::shared_ptr<cugl::scene2::PolygonNode>> _cookBarGlows;
 
     std::shared_ptr<cugl::scene2::Label> _buffLabel;
 
