@@ -289,6 +289,8 @@ void MultiScreenScene::preUpdate(float timestep) {
 
 	
 
+	
+
 	if (_scenes[_curr]->getJustCompletedGesture()) {
 		_gestureInitiatedTime = Timestamp();
 		_gestureInitiatedTime.mark();
@@ -366,8 +368,9 @@ void MultiScreenScene::preUpdate(float timestep) {
 	}
 
 
+	std::shared_ptr<Ingredient> curHeld = _scenes[_curr]->getHeldIngredient();
+	// find current touch position, set curHeld->button to be that pos
 
-	
 }
 
 

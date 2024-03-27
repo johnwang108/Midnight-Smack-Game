@@ -158,8 +158,6 @@ public:
 
     void updateConveyor();
     std::shared_ptr<Ingredient> getHeldIngredient();
-
-    void letGoOfIngredient();
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */
