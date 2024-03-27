@@ -19,11 +19,11 @@ bool Attack::init(cugl::Vec2 pos, const cugl::Size& size) {
 		_killme = false;
 		_lifetime = ATTACK_LIFETIME;
 		_faceright = false;
-		_facerightog = false;
 		_direction = -1;
 		_shoot = true;
 		_straight = Vec2(-87,-87);
 		_go = false;
+        _norotate= false;
 
         return true;
     }
@@ -39,13 +39,18 @@ bool Attack::init(cugl::Vec2 pos, const cugl::Size& size) {
  */
 void Attack::update(float dt) {
 	BoxObstacle::update(dt);
+    
+    if (_faceright) {
+        scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
+        if (image != nullptr) {
+            image->flipHorizontal(!image->isFlipHorizontal());
+        }
+        _direction = 1;
+        _faceright = false;
+    }
+    
 	if (_go) {
-		if (_facerightog) {
-			_body->SetLinearVelocity(b2Vec2(8, 0));
-		}
-		else {
-			_body->SetLinearVelocity(b2Vec2(-8, 0));
-		}
+        _body->SetLinearVelocity(b2Vec2(8*_direction, 0));
 	}
 	else {
 		if (_lifetime == 0) {
@@ -57,14 +62,6 @@ void Attack::update(float dt) {
 	}
 
 
-	if (_faceright) {
-		scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
-		if (image != nullptr) {
-			image->flipHorizontal(!image->isFlipHorizontal());
-		}
-		_direction = 1;
-		_faceright = false;
-	}
 	if (_shoot) {
 		_shoot = false;
 		if (_rand) {
@@ -73,17 +70,17 @@ void Attack::update(float dt) {
 		else if (_straight != Vec2(-87, -87)) {
 			b2Vec2 targetDirection = b2Vec2(_straight.x - getPosition().x, _straight.y - getPosition().y);
 			targetDirection.Normalize();
-			_body->ApplyLinearImpulseToCenter(b2Vec2(targetDirection.x * 30, targetDirection.y * 30), true);
-			_angle = atan2(_straight.y - getPosition().y, _straight.x - getPosition().x) + M_PI;
+			_body->ApplyLinearImpulseToCenter(b2Vec2(targetDirection.x * 120, targetDirection.y * 120), true);
+            _body->SetTransform(_body->GetPosition(), atan2(_straight.y - getPosition().y, _straight.x - getPosition().x) + M_PI);
 		}
 		else {
-			_body->ApplyLinearImpulseToCenter(b2Vec2(2 * _direction, 3), true);
+			_body->ApplyLinearImpulseToCenter(b2Vec2(3 * _direction, 10), true);
 		}
 	}
 
 	float currentAngle = _body->GetAngle();
 	b2Vec2 velocity = _body->GetLinearVelocity();
-	if (_straight== Vec2(-87, -87)) {
+	if (_straight== Vec2(-87, -87)&& !_norotate) {
 		if (velocity.x < 0) {
 			_body->SetTransform(_body->GetPosition(), currentAngle + M_PI * dt);
 		}
@@ -91,10 +88,9 @@ void Attack::update(float dt) {
 			_body->SetTransform(_body->GetPosition(), currentAngle - M_PI * dt);
 		}
 	}
-	else {
-		_body->SetTransform(_body->GetPosition(), _angle);
+	else if(!_norotate) {
+		_body->SetTransform(_body->GetPosition(), currentAngle);
 	}
-
 
 
 	if (_node != nullptr) {

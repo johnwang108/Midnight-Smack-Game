@@ -28,6 +28,9 @@
 #include <cugl/cugl.h>
 #include <box2d/b2_world_callbacks.h>
 #include <box2d/b2_fixture.h>
+#include <box2d/b2_world.h>
+#include <box2d/b2_contact.h>
+#include <box2d/b2_collision.h>
 #include <unordered_set>
 #include <vector>
 #include "PFInput.h"
@@ -492,6 +495,9 @@ public:
 
     //creates a popup message that dissapates. Position is in word coords, not physics.
     void popup(std::string s, Vec2 pos);
+    
+    std::shared_ptr<Scene2> getuiScene() { return _uiScene; }
+    void setuiScene(std::shared_ptr<Scene2> scene) { _uiScene = scene; }
 
     std::shared_ptr<cugl::scene2::ActionManager> getActionManager() { return _actionManager; };
 
@@ -512,5 +518,6 @@ public:
     void save();
     void loadSave();
 };
+
 
 #endif /* __PF_GAME_SCENE_H__ */

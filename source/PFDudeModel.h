@@ -618,9 +618,9 @@ public:
 
     float getDuration() { return _duration; };
 
-    bool hasSuper() { return _hasSuper; };
+    void resetBuff();
 
-    void DudeModel::resetBuff();
+    bool hasSuper() { return _hasSuper; };
 
     void addTouching() { _numberOfTouchingEnemies += 1; };
 

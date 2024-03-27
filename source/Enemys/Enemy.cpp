@@ -516,5 +516,6 @@ std::string EnemyModel::getNextState(std::string state) {
         default:
             return "patrolling";
 	}
+    return "none";
 }
 

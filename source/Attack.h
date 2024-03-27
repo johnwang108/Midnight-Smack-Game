@@ -41,8 +41,6 @@ protected:
 
     bool _faceright;
 
-    bool _facerightog;
-
     std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
 
     int _direction;
@@ -50,13 +48,15 @@ protected:
     bool _shoot;
 
     bool _rand;
+    
+    bool _norotate;
 
     std::string _sensorName;
 
     b2Fixture* _sensorFixture;
     cugl::Vec2 _straight;
 
-    float _angle;
+  //  float _angle;
 
     bool _go;
 
@@ -168,8 +168,8 @@ public:
     std::string* getSensorName() { return &_sensorName; };
     void setrand(bool rand=false) { _rand = rand; }
     void setstraight(cugl::Vec2 straight) { _straight = straight; }
-    void setGo(bool go) { _go = go; };
-
+    void setGo(bool go) { _go = go; }
+    void setnorotate(bool norotate){_norotate=norotate;}
     void setShoot(bool shoot) { _shoot = shoot; };
 };
 

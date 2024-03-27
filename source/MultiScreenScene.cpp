@@ -309,7 +309,7 @@ void MultiScreenScene::preUpdate(float timestep) {
 	
 }
 
-
+/*
 int MultiScreenScene::determineSwipeDirection() {
 	Vec2 swipeDelta = _input->getSwipeDelta();
 
@@ -321,7 +321,7 @@ int MultiScreenScene::determineSwipeDirection() {
 		}
 	}
 }
-
+*/
 void MultiScreenScene::fixedUpdate(float timestep) {
 
 
@@ -405,3 +405,4 @@ void MultiScreenScene::save() {
 void MultiScreenScene::loadSave() {
 	auto reader = JsonReader::alloc("./save.json");
 }
+

@@ -143,7 +143,9 @@ void Level2::populate(GameScene& scene) {
 #pragma mark : Dude
 	Vec2 dudePos = DUDE_POS;
 	// node = scene2::SceneNode::alloc();
-	//hardcoded player size
+
+	image = _assets->get<Texture>("su_idle");
+	//hardcoded size
 	cugl::Size s = PLAYER_SIZE_DEFAULT;
 	_avatar = DudeModel::alloc(dudePos, s, _scale);
 	std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
@@ -154,9 +156,10 @@ void Level2::populate(GameScene& scene) {
 	spritenode->setPosition(dudePos);
 	_avatar->setSceneNode(spritenode);
 	_avatar->setDebugColor(DEBUG_COLOR);
-	_avatar->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 4, 16, 2.0f, true);
+	_avatar->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 4, 16, 1.0f, true);
 	_avatar->addActionAnimation("idle_blink", _assets->get<Texture>("su_idle_blink"), 4, 5, 18, 2.0f, true);
-	_avatar->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 4, 15, 1.0f, true);
+	_avatar->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 5, 18, 0.6f, true);
+	_avatar->addActionAnimation("recover", _assets->get<Texture>("su_attack_recover"), 3, 4, 10, 0.83f, true);
 	//CULog(scene.getActionManager()->isActive("") ? "active" : "inactive");
 	scene.addObstacle(_avatar, spritenode); // Put this at the very front
 
@@ -172,6 +175,7 @@ void Level2::populate(GameScene& scene) {
 	_bull->setName(BULL_TEXTURE);
 	_bull->setDebugColor(DEBUG_COLOR);
 	_bull->setassets(_assets);
+	_bull->sethealthbar(scene);
 	scene.addObstacle(_bull, sprite);
 	/*
 	Vec2 egg_pos = EGG_POS;

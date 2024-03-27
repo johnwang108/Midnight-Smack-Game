@@ -21,6 +21,13 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         _bull_attack_chance= BULL_ATTACK_CHANCE;
         _P2start = false;
         _shoot = false;
+        _summoned = false;
+        _running = false;
+        _CA=0;
+        _CAcount = 0;
+        b2Filter filter = getFilterData();
+        filter.groupIndex = -1;
+        setFilterData(filter);
         setDensity(BULL_DENSITY);
         setFriction(0.0f);
         setFixedRotation(true);
@@ -29,25 +36,33 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
     }
     return false;
 }
-void BullModel::sethealthbar(){
+void BullModel::sethealthbar(GameScene& scene){
+    std::shared_ptr<Scene2> UI=scene.getuiScene();
     auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
     auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
-    healthBarBackground->setPosition(Vec2(10, 10));
-    healthBarForeground->setPosition(Vec2(10, 10));
-    _node->addChild(healthBarBackground);
-    _node->addChild(healthBarForeground);
+    healthBarForeground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
+    healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
+    healthBarBackground->setPosition(Vec2(500, 750));
+    healthBarForeground->setPosition(Vec2(500, 750));
+    UI->addChild(healthBarBackground);
+    UI->addChild(healthBarForeground);
     _healthBarForeground = healthBarForeground;
+    scene.setuiScene(UI);
 }
 void BullModel::update(float dt) {
 
     CapsuleObstacle::update(dt);
     if (_body == nullptr) return;
-    /*
+    
     if (_healthBarForeground != nullptr) {
         healthPercentage = _health / 100;
-        _healthBarForeground->setScale(healthPercentage);
+        float totalWidth = _healthBarForeground->getWidth();
+        float height = _healthBarForeground->getHeight();
+        float clipWidth = totalWidth * healthPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _healthBarForeground->setScissor(scissor);
     }
-    */
+    
     b2Vec2 velocity = _body->GetLinearVelocity();
     velocity.x = BULL_FORCE * _direction;
 
@@ -92,12 +107,32 @@ void BullModel::update(float dt) {
             _node->setPosition(getPosition() * _drawScale);
             _node->setAngle(getAngle());
         }
-        _bull_attack_chance = BULL_ATTACK_CHANCE*2;
+
         return;
+    }
+
+    if (_running) {
+        _running = false;
+        _node->setVisible(true);
+        _body->SetEnabled(true);
+        setPosition(getPosition() + -_direction * Vec2(40, 0));
     }
 
     if (_isChasing) {
         velocity.x *= BULL_CHASE_SPEED;
+        if (_CAcount > 0) {
+            velocity.x *= _CAcount/1.5;
+            _bull_attack_chance = BULL_ATTACK_CHANCE*2;
+        }
+        if (_CA > 0) {
+			_CA -= dt;
+            _node->setVisible(false);
+            _body->SetEnabled(false);
+            if (_CA <= 0) {
+                _running = true;
+            }
+            return;
+		}
     }
 
 
@@ -240,7 +275,7 @@ void BullModel::createAttack2(GameScene& scene) {
     std::shared_ptr<Texture> image = _assets->get<Texture>(SHAKE_TEXTURE);
     Vec2 pos = getPosition();
     pos.x += ATTACK_OFFSET_X*6;
-    pos.y -= ATTACK_OFFSET_Y * 3;
+    pos.y -= ATTACK_OFFSET_Y * 4.5;
     std::shared_ptr<Attack> attack = Attack::alloc(pos,
         cugl::Size(0.9*image->getSize().width / _scale,
             ATTACK_H * image->getSize().height / _scale));
@@ -259,6 +294,7 @@ void BullModel::createAttack2(GameScene& scene) {
     attack->setDrawScale(_scale);
     attack->setEnabled(false);
     attack->setGo(true);
+    attack->setnorotate(true);
 
     attack2->setFaceRight(false);
     attack2->setName("shake");
@@ -268,6 +304,8 @@ void BullModel::createAttack2(GameScene& scene) {
     attack2->setDrawScale(_scale);
     attack2->setEnabled(false);
     attack2->setGo(true);
+    attack2->setnorotate(true);
+    
 
 
 
@@ -280,7 +318,6 @@ void BullModel::createAttack2(GameScene& scene) {
     std::shared_ptr<scene2::PolygonNode> sprite2 = scene2::PolygonNode::allocWithTexture(image);
     attack2->setSceneNode(sprite2);
     sprite2->setPosition(pos2);
-    sprite2->flipHorizontal(true);
 
     scene.addObstacle(attack2, sprite2, true);
 
@@ -300,10 +337,6 @@ void BullModel::createAttack3(GameScene& scene) {
     std::shared_ptr<Attack> attack = Attack::alloc(pos,
         cugl::Size(0.8 * image->getSize().width / _scale,
             0.8 * image->getSize().height / _scale) * 1.3);
-
-    //pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
-    //pos.y += ATTACK_OFFSET_Y;
-
 
 
     attack->setName("enemy_attack");
@@ -325,4 +358,31 @@ void BullModel::createAttack3(GameScene& scene) {
     std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
     AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);
 
+}
+void BullModel::Summon(GameScene& scene) {
+
+    std::vector<std::shared_ptr<EnemyModel>> Enemies=scene.getEnemies();
+    std::shared_ptr<Texture> image = _assets->get<Texture>("shrimp_rolling");
+    std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc({ getPosition() + Vec2(5.0f, 10.0f) }, image->getSize() / scene.getScale(), scene.getScale(), EnemyType::shrimp);
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    _enemy->setSceneNode(sprite);
+    _enemy->setName(ENEMY_NAME);
+    _enemy->setDebugColor(DEBUG_COLOR);
+    scene.addObstacle(_enemy, sprite);
+    Enemies.push_back(_enemy);
+
+    image = _assets->get<Texture>("shrimp_rolling");
+    _enemy = EnemyModel::alloc({ getPosition() + Vec2(-5.0f, 10.0f) }, image->getSize() / scene.getScale(), scene.getScale(), EnemyType::shrimp);
+    sprite = scene2::PolygonNode::allocWithTexture(image);
+    _enemy->setSceneNode(sprite);
+    _enemy->setName(ENEMY_NAME);
+    _enemy->setDebugColor(DEBUG_COLOR);
+    scene.addObstacle(_enemy, sprite);
+    Enemies.push_back(_enemy);
+
+    scene.setEnemies(Enemies);
+}
+
+void BullModel::circleattack(GameScene& scene) {
+    _CA = 5;
 }
