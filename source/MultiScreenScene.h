@@ -110,7 +110,7 @@ public:
 
 	int determineSwipeDirection();
 
-	void readLevel(std::shared_ptr<cugl::JsonValue>& level);
+	void readLevel(std::shared_ptr<cugl::JsonValue> level);
 
 	void renderUI(std::shared_ptr<cugl::SpriteBatch> batch);
 

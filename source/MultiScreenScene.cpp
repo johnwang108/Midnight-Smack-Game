@@ -244,7 +244,7 @@ void MultiScreenScene::initStations(std::string textures[], int size) {
 	}
 }
 
-void MultiScreenScene::readLevel(std::shared_ptr<JsonValue>& leveljson) {
+void MultiScreenScene::readLevel(std::shared_ptr<JsonValue> leveljson) {
 	_newIngredientIndex = 0;
 	_dishToPrepare = leveljson->get("cooking")->asString();
 	_quota = leveljson->get("quota")->asInt();

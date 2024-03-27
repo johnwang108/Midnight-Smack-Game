@@ -159,7 +159,7 @@ public:
     void setBottomBar(std::shared_ptr<cugl::scene2::SceneNode> bar);
 
     void addIngredient(std::shared_ptr<Ingredient> ingredient);
-    std::shared_ptr<Ingredient> DollarScene::popIngredient();
+    std::shared_ptr<Ingredient> popIngredient();
 
 
     void updateConveyor();
