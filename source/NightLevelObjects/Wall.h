@@ -18,6 +18,8 @@ private:
     int WALL_VERTS;
     int breakableCoolDown;
     bool doesDamage;
+    float ogX;
+    float ogY;
 
     std::vector<Vec3> path;
     float movementForce;
@@ -37,8 +39,10 @@ public:
     
     void initiatePath(std::vector<Vec3> path, int movementForce);
     void update(float dt);
-    bool queryActivePath();
+    Vec3 queryPath(int temp);
     void applyPathMovement(float step);
+    float getOGX();
+    float getOGY();
 };
 
 #endif /* __WALL_H__ */

@@ -17,6 +17,9 @@ Wall::Wall() {
 	movementForce = 0;
 	currentPathNode = 0;
 	path.push_back(Vec3(-1, -1, -1));
+
+	ogX = 0;
+	ogY = 0;
 }
 
 bool Wall::init(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION, 
@@ -61,6 +64,8 @@ bool Wall::init(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSIT
 	this->WALL_POS = WALL_POS;
 	this->WALL_VERTS = WALL_VERTS;
 
+	ogX = _obj->getX();
+	ogY = _obj->getY();
 
 	this->breakableCoolDown = breakableCoolDown;
 	this->doesDamage = doesDamage;
@@ -94,8 +99,13 @@ std::shared_ptr<scene2::SceneNode> Wall::getSprite()
 
 void Wall::initiatePath(std::vector<Vec3> paath, int movementForce)
 {
+	std::vector<Vec3> temp;
+	for (Vec3 pathNode : paath) {
+		pathNode.set(pathNode.x + getOGX(), pathNode.y + getOGY(), 0);
+		temp.push_back(pathNode);
+	}
 	path.clear();
-	path = paath;
+	path = temp;
 	this->movementForce = movementForce;
 }
 
@@ -103,25 +113,55 @@ void Wall::update(float dt) {
 	applyPathMovement(dt);
 }
 
-bool Wall::queryActivePath() {
-	return path.front().z != -1;
+Vec3 Wall::queryPath(int temp) {
+	return this->path[temp];
 }
 
 void Wall::applyPathMovement(float step) {
 	//CULog("print");
 	//CULog("%f",_obj->getX());
-	Vec3 target = path[currentPathNode];
+	Vec3 target = this->queryPath(currentPathNode);
 	Vec3 pos = Vec3(_obj->getX(), _obj->getY(), 0);
-
 	//magic number 0.2 are for smoothness
 	//float smooth = std::min(0.2f, (target - pos).length());
 	float smooth = 0.2;
-	pos.smooth(target, step, smooth);
 	//cugl::Vec3 pos = _avatar->getPosition() * _scale;
 	//_obj->ApplyLinearImpulse(force, _body->GetPosition(), true);
-	float activeVX = std::min(5.0f, path[currentPathNode].x - pos.x);
-	float activeVY = std::min(5.0f, path[currentPathNode].y - pos.y);
+	//float activeVX = target.x;
+	//float activeVY = target.y;
+	float activeVX = std::min(movementForce, abs(target.x - pos.x));
+	float activeVY = std::min(movementForce, abs(target.y - pos.y));
 	//_obj->applyForce(target);
+	CULog("targX %f", activeVX);
+	CULog("Peice fo SHit X %f", activeVY);
+
+
+	_obj->setPosition(activeVX+pos.x, activeVY+pos.y);
+	scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(sprite.get());
+	image->setPositionX(this->_obj->getX());
+	image->setPositionY(this->_obj->getY());
+	image->setPosition(this->_obj->getPosition() * _scale);
+
+	if (pos.x < (target.x+.1) || (pos.x > (target.x - .1))
+	   && (pos.y < (target.y+.1) || pos.y > (target.y - .1))) {
+		CULog("%f", this->currentPathNode);
+		this->currentPathNode = (this->currentPathNode + 1) % path.size();
+	}
+
+	//float activeVX = std::min(.5f, path[currentPathNode].x - pos.x);
+	//float activeVY = std::min(.5f, path[currentPathNode].y - pos.y);
+	////subject->applyForce(target);
+	//subject->setPosition(subject->getX() + activeVX, subject->getY() + activeVY);
+	//scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(sprite.get());
+}
+
+float Wall::getOGX()
+{
+	return ogX;
+}
+float Wall::getOGY()
+{
+	return ogY;
 }
 
 
