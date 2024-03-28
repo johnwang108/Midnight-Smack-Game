@@ -32,14 +32,16 @@ void GameScene::beginContact(b2Contact* contact) {
         return;
     }
 
-    // Check if the player hits a wall NOT PLATFORM (not implemented for that atm)
-    if ((bd1 == _avatar.get() && bd2->getName() == WALL_NAME) ||
-        (bd2 == _avatar.get() && bd1->getName() == WALL_NAME)) {
+    if ((bd1 == _avatar.get() && (bd2->getName().find("wall") != std::string::npos || bd2->getName().find("platform") != std::string::npos)) ||
+        (bd2 == _avatar.get() && (bd1->getName().find("wall") != std::string::npos || bd2->getName().find("platform") != std::string::npos))) {
         _avatar->setContactingWall(true);
         _avatar->setVX(0);
     }
 
-
+    if ((bd1 == _avatar.get() && bd2->getName().find("dd") != std::string::npos) ||
+        (bd2 == _avatar.get() && bd1->getName().find("dd") != std::string::npos)) {
+        _avatar->settIsOnDangerousGround(true);
+    }
 
     // See if we have landed on the ground.
     if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
@@ -270,6 +272,7 @@ void GameScene::endContact(b2Contact* contact) {
         _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
         if (_sensorFixtures.empty()) {
             _avatar->setGrounded(false);
+            _avatar->settIsOnDangerousGround(false);
         }
     }
     //bull collision
@@ -281,12 +284,13 @@ void GameScene::endContact(b2Contact* contact) {
         _avatar->takeDamage(34, direction);
     }
 
-    // Check if the player is no longer in contact with any walls
+    // Check if the player is no longer in contact with any wallsbool 
     bool p1 = (_avatar->getSensorName() == fd2);
-    bool p2 = (bd1->getName() != WALL_NAME);
+    bool p2 = (bd1->getName().find("wall") == std::string::npos) && (bd1->getName().find("platform") == std::string::npos);
     bool p3 = (_avatar->getSensorName() == fd1);
-    bool p4 = (bd2->getName() != WALL_NAME);
+    bool p4 = (bd2->getName().find("wall") == std::string::npos) && (bd2->getName().find("platform") == std::string::npos);
     bool p5 = _avatar->contactingWall();
+    
     if (!(p1 || p2 || p3) && p4 && p5) {
         _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
         _avatar->setContactingWall(false);
