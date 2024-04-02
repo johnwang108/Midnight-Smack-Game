@@ -206,7 +206,6 @@ void DollarScene::update(float timestep) {
 	}
 
 	if (_readyToCook) {
-		CULog("drawing!");
 		//re-extrude path
 		_se.set(_path);
 		_se.calculate(WIDTH);
@@ -221,10 +220,14 @@ void DollarScene::update(float timestep) {
 
 		_poly->setAbsolute(true);
 		_poly->setVisible(true);
+
+		//TODO animate station
+		//TODO show ingredient indicator
 	}
 
 	if (_completed) {
 		_readyToCook = false;
+		//TODO spit out ingredient
 	}
 
 
@@ -388,9 +391,14 @@ void DollarScene::addIngredientToStation(std::shared_ptr<Ingredient> ing) {
 	ing->setInPot(true);
 
 	_readyToCook = true;
+	//add a delay to ready to cook somehow?
+
 	_currentTargetGestures = ing->getGestures();
 	_currentTargetIndex = 0;
 	_completed = false;
+
+	//TODO actually show the ingredient indicator
+	_input->popTouchPath();
 }
 
 //draws a boundary rectangle
