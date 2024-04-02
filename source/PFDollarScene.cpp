@@ -435,5 +435,7 @@ void DollarScene::reset() {
 	_currentIngredients.clear();
 	_currentlyHeldIngredient.reset();
 	_ingredientToRemove.reset();
-	_conveyorBelt = nullptr;
+
+	// Don't do this so we don't have to re-init bottom bar
+	//_conveyorBelt = nullptr;
 }
