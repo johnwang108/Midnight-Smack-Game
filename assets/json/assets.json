@@ -6,6 +6,9 @@
         "Bar": {
             "file": "textures/Bar.png"
         },
+        "BarFilled": {
+            "file": "textures/barFilled.png"
+        },
         "ConveyorUIBar": {
             "file": "textures/ConveyorUIBar.png"
         },
@@ -371,17 +374,6 @@
                 "key": "mylabscene"
             }
         },
-        "quotaScene": {
-            "type": "Widget",
-            "comment": "This is the root node of the scene for the lab",
-            "format": {
-                "type": "Anchored"
-            },
-            "data": {
-                "key": "quotaBar"
-            }
-        },
-
         "night_meters": {
             "type": "Node",
             "format": {
