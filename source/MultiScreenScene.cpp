@@ -154,10 +154,10 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	std::shared_ptr<scene2::SceneNode> quotaRoot = _assets->get<scene2::SceneNode>("quotaScene");
 	
 
-	_progBar = quotaRoot->getChildByName("Quota")->getChildByName("Bar");
-	_progBar->setContentSize(_progBar->getSize() * .5);
+	_progBar = quotaRoot->getChildByName("Quota")->getChildByName("BarFilled");
+	_progBar->setContentSize(_progBar->getSize());
 	_progBar->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
-	_progBar->setPosition(0,0);
+	_progBar->setPosition(5,0);
 
 	std::shared_ptr<scene2::SceneNode> uiRoot = _assets->get<scene2::SceneNode>("uiScene");
 	
