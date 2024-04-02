@@ -96,6 +96,7 @@ protected:
     std::shared_ptr<cugl::scene2::SceneNode> _bottomBar;
     std::shared_ptr<cugl::scene2::SceneNode> _conveyorBelt;
     std::shared_ptr<cugl::scene2::SceneNode> _stationHitbox;
+    std::shared_ptr<cugl::scene2::SceneNode> _indicatorGroup;
 
     std::deque<std::shared_ptr<Ingredient>> _currentIngredients;
 

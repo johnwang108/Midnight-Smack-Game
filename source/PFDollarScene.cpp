@@ -119,10 +119,21 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_currentGestureLabel->setForeground(cugl::Color4::BLACK);
 	_currentGestureLabel->setVisible(true);
 
+	_indicatorGroup = scene2::SceneNode::alloc();
+	_indicatorGroup->setPosition(Vec2(640, 400));
+	std::shared_ptr<scene2::PolygonNode> indicator = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("Indicator"));
+	indicator->setAnchor(Vec2::ANCHOR_CENTER);
+	indicator->setContentSize(indicator->getSize() * .3);
+	indicator->setPosition(-25, 50);
+	_indicatorGroup->addChild(indicator);
+	_indicatorGroup->setVisible(false);
+
+
 	addChild(_box);
 	addChild(_poly);
 	addChild(_header);
 	addChild(_currentGestureLabel);
+	addChild(_indicatorGroup);
 
 	CULog("_box pos, %f, %f", _box->getPosition().x, _box->getPosition().y);
 	
@@ -133,7 +144,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 }
 
 bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector<std::string> gestures, Size hitboxSize) {
-	_stationHitbox = cugl::scene2::SceneNode::allocWithBounds(hitboxSize);
+	_stationHitbox = scene2::SceneNode::allocWithBounds(hitboxSize);
 	_stationHitbox->setAnchor(Vec2::ANCHOR_CENTER);
 	_stationHitbox->setPosition(Vec2(0, 0));
 	return init(assets, input, rect, texture, gestures);
@@ -227,6 +238,8 @@ void DollarScene::update(float timestep) {
 
 	if (_completed) {
 		_readyToCook = false;
+		_indicatorGroup->setVisible(false);
+
 		//TODO spit out ingredient
 	}
 
@@ -389,6 +402,8 @@ void DollarScene::addIngredientToStation(std::shared_ptr<Ingredient> ing) {
 	_conveyorBelt->removeChild(ing->getButton());
 	ing->setFalling(false);
 	ing->setInPot(true);
+
+	_indicatorGroup->setVisible(true);
 
 	_readyToCook = true;
 	//add a delay to ready to cook somehow?

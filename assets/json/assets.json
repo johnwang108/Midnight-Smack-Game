@@ -9,6 +9,9 @@
         "BarFilled": {
             "file": "textures/barFilled.png"
         },
+        "Indicator": {
+            "file": "textures/indicator.png"
+        },
         "ConveyorUIBar": {
             "file": "textures/ConveyorUIBar.png"
         },
