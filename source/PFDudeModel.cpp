@@ -112,6 +112,7 @@ using namespace cugl;
  * @return  true if the obstacle is initialized properly, false otherwise.
  */
 bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale) {
+    setEnabled(false);
     Size nsize = size;
     //nsize.width  *= DUDE_HSHRINK;
     //nsize.height *= DUDE_VSHRINK;
@@ -154,9 +155,13 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         _activeAction = "";
         _numberOfTouchingEnemies = 0;
 
+        _meter = 0;
+
         b2Filter filter = getFilterData();
         filter.groupIndex = -1;
         setFilterData(filter);
+
+        setEnabled(true);
 
         return true;
     }
@@ -174,15 +179,15 @@ void DudeModel::addActionAnimation(std::string action_name, std::shared_ptr<cugl
     _info[action_name] = std::make_tuple(rows, cols, size, duration, isPassive);
 }
 
-/**Unsure if override needed. Begins an animation.*/
+/**Unsure if override needed. Begins an animation, switching the sheet if needed.*/
 void DudeModel::animate(std::string action_name) {
     //first, switch the sheet
     changeSheet(action_name);
     if (action_name == "idle") {
-        _node->setScale(0.45 / 4);
+        _node->setScale(0.35/4);
     }
     else {
-        _node->setScale(0.45);
+        _node->setScale(0.35/4);
     }
     _activeAction = action_name;
 
@@ -276,14 +281,14 @@ void DudeModel::createFixtures() {
 
 
 
-    corners[0].x = -getWidth() / 2.0f;
-    corners[0].y = getHeight() / 2.0f;
-    corners[1].x = -getWidth() / 2.0f;
-    corners[1].y = -getHeight() / 2.0f;
-    corners[2].x = getWidth() / 2.0f;
-    corners[2].y = -getHeight() / 2.0f;
-    corners[3].x = getWidth() / 2.0f;
-    corners[3].y = getHeight() / 2.0f;
+    corners[0].x = -getWidth()*0.85 / 2.0f;
+    corners[0].y = getHeight() * 0.85 / 2.0f;
+    corners[1].x = -getWidth() * 0.85 / 2.0f;
+    corners[1].y = -getHeight() * 0.85 / 2.0f;
+    corners[2].x = getWidth() * 0.85 / 2.0f;
+    corners[2].y = -getHeight() * 0.85 /2.0f;
+    corners[3].x = getWidth() * 0.85 / 2.0f;
+    corners[3].y = getHeight() * 0.85 / 2.0f;
 
     sensorShape.Set(corners, 4);
     sensorDef.shape = &sensorShape;
@@ -308,6 +313,9 @@ void DudeModel::releaseFixtures() {
     if (_sensorFixture != nullptr) {
         _body->DestroyFixture(_sensorFixture);
         _sensorFixture = nullptr;
+
+        _body->DestroyFixture(_bodySensorFixture);
+        _bodySensorFixture = nullptr;
     }
 }
 
@@ -321,6 +329,7 @@ void DudeModel::dispose() {
     _core = nullptr;
     _node = nullptr;
     _sensorNode = nullptr;
+    _bodySensorNode = nullptr;
 }
 
 /**
@@ -410,8 +419,8 @@ void DudeModel::update(float dt) {
     }
 
 
-   // CULog("Number of touching enemies: %d", _numberOfTouchingEnemies);
     if (_numberOfTouchingEnemies > 0) {
+        CULog("Number of touching enemies: %f", _numberOfTouchingEnemies);
         takeDamage(34, 0);
     }
 
@@ -493,7 +502,9 @@ void DudeModel::resetDebug() {
 
     _sensorNode = scene2::WireNode::allocWithTraversal(poly, poly2::Traversal::INTERIOR);
     _sensorNode->setColor(DEBUG_COLOR);
-    _sensorNode->setPosition(Vec2(_debug->getContentSize().width / 2.0f, 0.0f));
+    _sensorNode->setPosition(Vec2(_debug->getContentSize().width/2.0f, 0.0f));
+
+
 }
 
 
@@ -510,6 +521,17 @@ void DudeModel::takeDamage(float damage, const int attackDirection) {
             _body->SetLinearVelocity(impulse);
             _knockbackTime = 2;
         }
+    }
+}
+
+bool DudeModel::useMeter(float f) {
+    CULog("Meter: %f", _meter);
+    if (_meter > f) {
+        _meter -= f;
+		return true;
+    }
+    else {
+        return false;
     }
 }
 
@@ -595,4 +617,39 @@ void DudeModel::resetBuff() {
     _duration = 0;
     _hasSuper = false;
     _node->setColor(Color4::WHITE);
+}
+
+std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeModel::createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale) {
+    Vec2 pos = getPosition();
+    pos.x += (_faceRight ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
+    pos.y += 0;
+
+    std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE_L);
+    std::shared_ptr<Attack> attack = Attack::alloc(pos,
+        cugl::Size(image->getSize().width * 1.5 / scale,
+            ATTACK_H * image->getSize().height / scale));
+
+    if (_faceRight) {
+        attack->setFaceRight(true);
+    }
+
+    attack->setName("attack");
+    attack->setGravityScale(0);
+    attack->setDebugColor(DEBUG_COLOR);
+    attack->setDrawScale(scale);
+    attack->setDensity(10.0f);
+    attack->setBullet(true);
+    attack->setrand(false);
+    attack->setShoot(false);
+    attack->setnorotate(true);
+   
+
+
+
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    attack->setSceneNode(sprite);
+    sprite->setVisible(false);
+    sprite->setPosition(pos);
+
+    return std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>>(attack, sprite);
 }

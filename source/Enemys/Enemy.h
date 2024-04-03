@@ -7,9 +7,9 @@
 #include "../PFDudeModel.h"
 
 #define ENEMY_SENSOR_NAME     "enemysensor"
-#define SHRIMP_TEXTURE    "shrimp"
-#define EGG_TEXTURE    "egg"
-#define RICE_TEXTURE    "rice"
+#define SHRIMP_TEXTURE    "shrimpBoss"
+#define EGG_TEXTURE    "eggEnemy"
+#define RICE_TEXTURE    "riceEnemy"
 #define BEEF_TEXTURE    "beef"
 #define CARROT_TEXTURE    "carrot"
 
@@ -149,6 +149,8 @@ public:
      */
     static std::shared_ptr<EnemyModel> alloc(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type);
 
+    static std::shared_ptr<EnemyModel> alloc(const cugl::Vec2& pos, EnemyType type) {};
+
     /**
      * Sets the scene graph node representing this enemy.
      *
@@ -260,46 +262,59 @@ public:
 
     std::string getNextState(std::string state);
 
+    static std::string typeToStr(EnemyType type) {
+        switch (type) {
+        case EnemyType::shrimp:
+            return "shrimp";
+        case EnemyType::rice:
+            return "rice";
+        case EnemyType::egg:
+            return "egg";
+        case EnemyType::carrot:
+            return "carrot";
+        case EnemyType::beef:
+            return "beef";
+        default:
+            return "";
+        }
+    };
+
+    /**
+    Gives the default sequence of gestures for each enemy type. 
+    */
+    static std::vector<std::string> defaultSeq(EnemyType type) {
+        switch (type) {
+        case EnemyType::shrimp:
+            return { "pigtail", "v", "circle" };
+        case EnemyType::rice:
+            return { "circle", "circle", "pigtail" };
+        case EnemyType::egg:
+            return { "v", "v", "v", };
+        case EnemyType::carrot:
+            return { "horizswipe", "vertswipe", "horizswipe" };
+        case EnemyType::beef:
+            return { "v", "circle", "pigtail" };
+        default:
+            return {};
+        }
+    };
+
     //Dict for enemy type to buff 
-    static buff enemyToBuff(EnemyType type) {
+    static buff typeToBuff(EnemyType type) {
         switch (type) {
         case EnemyType::shrimp:
             return buff::attack;
         case EnemyType::rice:
             return buff::defense;
-
-            //switch egg and carrot
         case EnemyType::egg:
             return buff::jump;
         case EnemyType::carrot:
             return buff::speed;
         case EnemyType::beef:
             return buff::health;
-        default:
-            return buff::none;
         }
-    }
-
-    /**
-    Gives the default sequence of gestures for each enemy type. 
-    */
-    static std::vector <std::string> defaultSeq(EnemyType type) {
-		switch (type) {
-		case EnemyType::shrimp:
-			return { "pigtail", "v", "circle"};
-		case EnemyType::rice:
-			return { "circle", "circle", "pigtail"};
-		case EnemyType::egg:
-			return { "v", "v", "v", };
-		case EnemyType::carrot:
-			return { "horizswipe", "vertswipe", "horizswipe" };
-		case EnemyType::beef:
-			return { "v", "circle", "pigtail" };
-		default:
-			return {};
-		}
-	}
+        return buff::none;
+    };
 
 };
-
 #endif /* __ENEMY_MODEL_H__ */

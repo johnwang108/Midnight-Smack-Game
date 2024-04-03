@@ -30,7 +30,7 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
     if (CapsuleObstacle::init(pos, scaledSize)) {
         setDensity(ENEMY_DENSITY);
         setFriction(0.0f); // Prevent sticking to walls
-        if (_type != EnemyType::shrimp) {
+        if (_type != EnemyType::shrimp){
             setFixedRotation(true); // Avoid tumbling
         }
         else {
@@ -174,24 +174,24 @@ void EnemyModel::update(float dt) {
     }
 
     b2Vec2 velocity = _body->GetLinearVelocity();
-    if (_state == "chasing") {
-        _node->setColor(Color4::BLACK);
-    }
-    else if (_state == "rolling") {
-        _node->setColor(Color4::RED);
-    }
-    else if (_state == "patrolling") {
-        _node->setColor(Color4::WHITE);
-    }
-    else if (_state == "stunned") {
-        _node->setColor(Color4::GRAY);
-    }
-    else if (_state == "spitting") {
-        _node->setColor(Color4::YELLOW);
-    }
-    else {
+    //   if (_state == "chasing") {
+    //       _node->setColor(Color4::BLACK);
+    //   }
+    //   else if (_state == "rolling"){
+    //       _node->setColor(Color4::RED);
+    //   }
+    //   else if (_state == "patrolling") {
+    //       _node->setColor(Color4::WHITE);
+    //   }
+    //   else if (_state == "stunned") {
+       //	_node->setColor(Color4::GRAY);
+       //}
+    //   else if (_state == "spitting") {
+       //	_node->setColor(Color4::YELLOW);
+       //}
+    //   else {
 
-    }
+//}
     //handle type specific behavior
     switch (getType()) {
     case EnemyType::shrimp:
@@ -262,7 +262,7 @@ void EnemyModel::update(float dt) {
     case EnemyType::beef:
         break;
     }
-
+    
     //_body->SetLinearVelocity(handleMovement(velocity));
     _body->SetLinearVelocity(handleMovement(velocity));
 
@@ -375,6 +375,7 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> EnemyM
     attack->setstraight(_distanceToPlayer + getPosition());
     attack->setEnabled(true);
     attack->setrand(false);
+    attack->setSpeed(30.0f);
 
 
 
@@ -410,109 +411,109 @@ void EnemyModel::updatePlayerDistance(cugl::Vec2 playerPosition) {
 void EnemyModel::setState(std::string state) {
     _state = state;
     switch (_type) {
-    case EnemyType::shrimp:
-        if (state == "chasing") {
-            _behaviorCounter = 30;
-        }
-        else if (state == "rolling") {
+        case EnemyType::shrimp:
+            if (state == "chasing") {
+                _behaviorCounter = 30;
+            }
+            else if (state == "rolling") {
+                _behaviorCounter = -1;
+            }
+            else if (state == "stunned") {
+                _behaviorCounter = 60;
+            }
+            else if (state == "patrollling") {
+                _behaviorCounter = -1;
+            }
+			break;
+        case EnemyType::egg:
+            if (state == "chasing") {
+                _behaviorCounter = -1;
+            }
+            else if (state == "windup") {
+                _behaviorCounter = 300;
+            }
+            else if (state == "spitting") {
+                _behaviorCounter = 1;
+            }
+            else if (state == "short_windup") {
+                _behaviorCounter = 180;
+            }
+            else if (state == "stunned") {
+                _behaviorCounter = 30;
+            }
+            else if (state == "patrollling") {
+                _behaviorCounter = -1;
+            }
+            break;
+        case EnemyType::rice:
+            if (state == "yelling") {
+                _behaviorCounter = 30;
+            }
+            else if (state == "stunned") {
+                _behaviorCounter = 60;
+            }
+            else if (state == "patrollling") {
+                _behaviorCounter = -1;
+            }
+            break;
+        default:
             _behaviorCounter = -1;
-        }
-        else if (state == "stunned") {
-            _behaviorCounter = 60;
-        }
-        else if (state == "patrollling") {
-            _behaviorCounter = -1;
-        }
-        break;
-    case EnemyType::egg:
-        if (state == "chasing") {
-            _behaviorCounter = -1;
-        }
-        else if (state == "windup") {
-            _behaviorCounter = 400;
-        }
-        else if (state == "spitting") {
-            _behaviorCounter = 1;
-        }
-        else if (state == "short_windup") {
-            _behaviorCounter = 180;
-        }
-        else if (state == "stunned") {
-            _behaviorCounter = 30;
-        }
-        else if (state == "patrollling") {
-            _behaviorCounter = -1;
-        }
-        break;
-    case EnemyType::rice:
-        if (state == "yelling") {
-            _behaviorCounter = 30;
-        }
-        else if (state == "stunned") {
-            _behaviorCounter = 60;
-        }
-        else if (state == "patrollling") {
-            _behaviorCounter = -1;
-        }
-        break;
-    default:
-        _behaviorCounter = -1;
-        break;
+            break;
     }
 }
 
 std::string EnemyModel::getNextState(std::string state) {
     switch (_type) {
-    case EnemyType::shrimp:
-        if (state == "chasing") {
-            return "rolling";
-        }
-        else if (state == "rolling") {
-            return "rolling";
-        }
-        else if (state == "stunned") {
-            return "chasing";
-        }
-        else if (state == "patrolling") {
-            return "patrolling";
-        }
-        break;
-    case EnemyType::rice:
-        if (state == "chasing") {
-            return "chasing";
-        }
-        else if (state == "yelling") {
-            return "chasing";
-        }
-        else if (state == "stunned") {
-            return "chasing";
-        }
-        else if (state == "patrolling") {
-            return "patrolling";
-        }
-        break;
-    case EnemyType::egg:
-        if (state == "chasing") {
-            if (_distanceToPlayer.length() > 7) return "chasing";
-            else return "windup";
-        }
-        if (state == "windup") {
-            return "spitting";
-        }
-        if (state == "short_windup") {
-            return "spitting";
-        }
-        else if (state == "stunned") {
-            return "chasing";
-        }
-        else if (state == "patrolling") {
-            return "patrolling";
-        }
-        else if (state == "spitting") {
-            if (_distanceToPlayer.length() > 7) return "chasing";
-            else return "short_windup";
-        }
-        break;
+		case EnemyType::shrimp:
+            if (state == "chasing") {
+				return "rolling";
+			}
+            else if (state == "rolling") {
+                return "rolling";
+			}
+            else if (state == "stunned") {
+                return "chasing";
+            }
+            else if (state == "patrolling") {
+				return "patrolling";
+			}
+			break;
+        case EnemyType::rice:
+            if (state == "chasing") {
+                return "chasing";
+            }
+            else if (state == "yelling") {
+                return "chasing";
+            }
+            else if (state == "stunned") {
+                return "chasing";
+            }
+            else if (state == "patrolling") {
+                return "patrolling";
+            }
+            break;
+        case EnemyType::egg:
+            if (state == "chasing") {
+                if (_distanceToPlayer.length() > 12) return "chasing";
+				else return "windup";
+            }
+            if (state == "windup") {
+				return "spitting";
+			}
+            if (state == "short_windup") {
+                return "spitting";
+            }
+            else if (state == "stunned") {
+                return "chasing";
+            }
+            else if (state == "patrolling") {
+                return "patrolling";
+            }
+            else if (state == "spitting") {
+                if (_distanceToPlayer.length() > 12) return "chasing";
+                else return "short_windup";
+            }
+            break;
 
     default:
         return "patrolling";

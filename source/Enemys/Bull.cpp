@@ -39,15 +39,6 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
 }
 void BullModel::sethealthbar(GameScene& scene){
     std::shared_ptr<Scene2> UI=scene.getuiScene();
-    auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("bullbar"));
-    auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("bosshealth"));
-    healthBarForeground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
-    healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
-    healthBarBackground->setPosition(Vec2(350, 730));
-    healthBarForeground->setPosition(Vec2(350, 730));
-    UI->addChild(healthBarBackground);
-    UI->addChild(healthBarForeground);
-    _healthBarForeground = healthBarForeground;
     scene.setuiScene(UI);
 }
 void BullModel::update(float dt) {
@@ -104,6 +95,7 @@ void BullModel::update(float dt) {
             if (image->getTexture() != _assets->get<Texture>("P2bull")) {
                 image->setTexture(_assets->get<Texture>("P2bull"));
             }
+            image->setScale(0.75);
 
             _node->setPosition(getPosition() * _drawScale);
             _node->setAngle(getAngle());
@@ -384,19 +376,23 @@ void BullModel::createAttack3(GameScene& scene) {
 }
 void BullModel::Summon(GameScene& scene) {
 
+    cugl::Size shrimpSize = cugl::Size(2.0f, 2.0f);
+
     std::vector<std::shared_ptr<EnemyModel>> Enemies=scene.getEnemies();
-    std::shared_ptr<Texture> image = _assets->get<Texture>(SHRIMP_TEXTURE);
-    std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc({ getPosition() + Vec2(5.0f, 10.0f) }, image->getSize() / scene.getScale(), scene.getScale(), EnemyType::shrimp);
+    std::shared_ptr<Texture> image = _assets->get<Texture>("shrimp_rolling");
+    std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc({ getPosition() + Vec2(5.0f, 10.0f) }, shrimpSize, scene.getScale(), EnemyType::shrimp);
     std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    sprite->setScale(0.1f);
     _enemy->setSceneNode(sprite);
     _enemy->setName(ENEMY_NAME);
     _enemy->setDebugColor(DEBUG_COLOR);
     scene.addObstacle(_enemy, sprite);
     Enemies.push_back(_enemy);
 
-    image = _assets->get<Texture>(SHRIMP_TEXTURE);
-    _enemy = EnemyModel::alloc({ getPosition() + Vec2(-5.0f, 10.0f) }, image->getSize() / scene.getScale(), scene.getScale(), EnemyType::shrimp);
+    image = _assets->get<Texture>("shrimp_rolling");
+    _enemy = EnemyModel::alloc({ getPosition() + Vec2(-5.0f, 10.0f) }, shrimpSize, scene.getScale(), EnemyType::shrimp);
     sprite = scene2::PolygonNode::allocWithTexture(image);
+    sprite->setScale(0.1f);
     _enemy->setSceneNode(sprite);
     _enemy->setName(ENEMY_NAME);
     _enemy->setDebugColor(DEBUG_COLOR);

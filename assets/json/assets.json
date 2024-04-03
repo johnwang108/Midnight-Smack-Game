@@ -1,5 +1,17 @@
 {
     "textures": {
+        "Ramsay": {
+            "file": "textures/Ramsay.png"
+        },
+        "Bar": {
+            "file": "textures/Bar.png"
+        },
+        "ConveyorUIBar": {
+            "file": "textures/ConveyorUIBar.png"
+        },
+        "updateConveyorBelt": {
+            "file": "textures/updateConveyorBelt.png"
+        },
         "earth": {
             "file": "textures/placeholder_block.png",
             "wrapS": "repeat",
@@ -9,14 +21,31 @@
             "file": "textures/dude.png"
         },
         "su_attack_sheet": {
-            "file": "textures/su_attack_test_sheet.png"
+            "file": "textures/su_attack.png"
         },
-
+        "su_attack_recover": {
+            "file": "textures/su_attack_recover.png"
+        },
         "su_idle_blink": {
             "file": "textures/su_idle_blink.png"
         },
         "su_idle": {
             "file": "textures/su_idle.png"
+        },
+        "su_run": {
+            "file": "textures/su_run.png"
+        },
+        "su_jump_airborne_up": {
+            "file": "textures/su_jump_airborne_up.png"
+        },
+        "su_jump_airborne_down": {
+            "file": "textures/su_jump_airborne_down.png"
+        },
+        "su_jump_land": {
+            "file": "textures/su_jump_land.png"
+        },
+        "su_jump_ready": {
+            "file": "textures/su_jump_ready.png"
         },
         "background-1": {
             "file": "textures/background-image-1.png"
@@ -39,26 +68,32 @@
         "goal": {
             "file": "textures/goaldoor.png"
         },
-        "shrimp": {
-            "file": "textures/shrimp.png"
+        "shrimp_standing": {
+            "file": "textures/shrimp_standing.png"
         },
-        "rice": {
-            "file": "textures/rice.png"
+        "shrimp_rolling": {
+            "file": "textures/shrimp_rolling.png"
         },
-        "egg": {
-            "file": "textures/egg.png"
+        "shrimpBoss": {
+            "file": "textures/shrimpBoss.png"
+        },
+        "riceEnemy": {
+            "file": "textures/riceEnemy.png"
+        },
+        "eggEnemy": {
+            "file": "textures/eggEnemy.png"
+        },
+        "beef": {
+            "file": "textures/beef.png"
+        },
+        "carrot": {
+            "file": "textures/carrot.png"
         },
         "bull": {
             "file": "textures/bull.png"
         },
         "shake": {
-            "file":      "textures/shake.png"
-        },
-        "bosshealth": {
-            "file": "textures/bosshealth.png"
-        },
-        "bullbar": {
-            "file": "textures/bullbar.png"
+            "file": "textures/shake.png"
         },
         "panfry_station": {
             "file": "textures/Panfry_Station.png",
@@ -85,19 +120,19 @@
             "wrapS": "repeat",
             "wrapT": "repeat"
         },
-        "unball":{
-            "file":      "textures/unball.png"
+        "unball": {
+            "file": "textures/unball.png"
         },
-        "dball":{
-            "file":      "textures/dball.png"
+        "dball": {
+            "file": "textures/dball.png"
         },
-        "P2bull":{
-            "file":      "textures/P2bull.png"
+        "P2bull": {
+            "file": "textures/P2bull.png"
         },
-        "cooktime" : {
-            "file":      "textures/cutting_board.png",
-            "wrapS":    "repeat",
-            "wrapT":    "repeat"
+        "cooktime": {
+            "file": "textures/cutting_board.png",
+            "wrapS": "repeat",
+            "wrapT": "repeat"
         },
         "dpad": {
             "file": "textures/dpad.png",
@@ -130,6 +165,66 @@
                 ]
             }
         },
+        "background": {
+            "file": "textures/background.png"
+        },
+        "NotepadBar": {
+            "file": "textures/notepad.png"
+        },
+        "ConveyorBelt": {
+            "file": "textures/ConveyorBelt.png"
+        },
+        "RecipeBook": {
+            "file": "textures/RecipeBook.png"
+        },
+        "CookTimer": {
+            "file": "textures/CookTimer.png"
+        },
+        "Gesture": {
+            "file": "textures/Gesture.png"
+        },
+        "Shrimp": {
+            "file": "textures/Shrimp.png"
+        },
+        "Rice": {
+            "file": "textures/Rice.png"
+        },
+        "Egg": {
+            "file": "textures/Egg.png"
+        },
+        "Carrot": {
+            "file": "textures/Carrot.png"
+        },
+        "Beef": {
+            "file": "textures/Beef.png"
+        },
+        "Minimap": {
+            "file": "textures/Minimap.png"
+        },
+        "Pot": {
+            "file": "textures/Pot.png"
+        },
+        "Sink": {
+            "file": "textures/Sink.png"
+        },
+        "Knife": {
+            "file": "textures/Knife.png"
+        },
+        "Pan": {
+            "file": "textures/Pan.png"
+        },
+        "Mixer": {
+            "file": "textures/Mixer.png"
+        },
+        "Status": {
+            "file": "textures/Status.png"
+        },
+        "Sun": {
+            "file": "textures/Daytime.png"
+        },
+        "TextBack": {
+            "file": "textures/TextBack.png"
+        },
         "MYbackgroundbig": {
             "file": "textures/UI/MYbackgroundbig.png"
         },
@@ -151,11 +246,53 @@
         "GameTitle": {
             "file": "textures/UI/GameTitle.png"
         },
-        "heartsbroken":{
-            "file":      "textures/UI/heartsbroken.png"
+        "knifeoutline": {
+            "file": "textures/UI/Meters/knifeoutline.png"
         },
-        "heartsfull":{
-            "file":      "textures/UI/heartsfull.png"
+        "knifefill": {
+            "file": "textures/UI/Meters/knifefill.png"
+        },
+        "attackfill": {
+            "file": "textures/UI/Meters/attackfill.png"
+        },
+        "shieldfill": {
+            "file": "textures/UI/Meters/shieldfill.png"
+        },
+        "speedfill": {
+            "file": "textures/UI/Meters/speedfill.png"
+        },
+        "healthfill": {
+            "file": "textures/UI/Meters/healthfill.png"
+        },
+        "jumpfill": {
+            "file": "textures/UI/Meters/jumpfill.png"
+        },
+        "attackready": {
+            "file": "textures/UI/Meters/attackready.png"
+        },
+        "shieldready": {
+            "file": "textures/UI/Meters/shieldready.png"
+        },
+        "speedready": {
+            "file": "textures/UI/Meters/speedready.png"
+        },
+        "healthready": {
+            "file": "textures/UI/Meters/healthready.png"
+        },
+        "jumpready": {
+            "file": "textures/UI/Meters/jumpready.png"
+        },
+        "heartsbroken": {
+            "file": "textures/UI/Meters/heartsbroken.png"
+        },
+        "heartsfull": {
+            "file": "textures/UI/Meters/heartsfull.png"
+        },
+        "bullbar": {
+            "file": "textures/UI/Meters/bullbar.png"
+        },
+        "bosshealth": {
+            "file": "textures/UI/Meters/bosshealth.png"
         }
     },
     "sounds": {
@@ -202,7 +339,6 @@
             "file": "fonts/RetroGame.ttf",
             "size": 16
         },
-
         "winter drinkRegular40": {
             "file": "fonts/WinterDrink.ttf",
             "size": 38
@@ -210,23 +346,714 @@
         "winter drinkRegular25": {
             "file": "fonts/WinterDrink.ttf",
             "size": 25
+        },
+        "winter drinkRegular20": {
+            "file": "fonts/WinterDrink.ttf",
+            "size": 20
         }
     },
-
-    "widgets" : {
+    "widgets": {
         "mylabscene": "widgets/mylabscene.json",
-        "mymenubutton": "widgets/mymenubutton.json"
-	},
-
-    "scene2s" : {
-        "menu" : {
-            "type"      : "Widget",
-            "comment"   : "This is the root node of the scene for the lab",
-            "format"    : {
-                "type" : "Anchored"
+        "mymenubutton": "widgets/mymenubutton.json",
+        "labscene": "widgets/labscene.json",
+        "quotaBar": "widgets/quota.json",
+        "uiWidget": "widgets/uiWidget.json",
+        "barWidget": "widgets/bottomBarWidget.json"
+    },
+    "scene2s": {
+        "menu": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
             },
-            "data":{
+            "data": {
                 "key": "mylabscene"
+            }
+        },
+        "quotaScene": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "quotaBar"
+            }
+        },
+
+        "night_meters": {
+            "type": "Node",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "anchor": [
+                    0,
+                    0
+                ],
+                "size": [
+                    1280,
+                    800
+                ],
+                "angle": 0,
+                "position": [
+                    0,
+                    0
+                ],
+                "visible": true
+            },
+            "children": {
+                "gainingboost": {
+                    "type": "Node",
+                    "format": {
+                        "type": "Anchored"
+                    },
+                    "data": {
+                        "anchor": [
+                            0,
+                            1
+                        ],
+                        "size": [
+                            239.26,
+                            77.54
+                        ],
+                        "angle": 0,
+                        "position": [
+                            33,
+                            605.46
+                        ],
+                        "visible": true
+                    },
+                    "children": {
+                        "knifeoutline": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "knifeoutline",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    239.26,
+                                    77.54
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        },
+                        "knifefill": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "knifefill",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    239,
+                                    77.46
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0.08
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        }
+                    },
+                    "layout": {
+                        "x_anchor": "left",
+                        "y_anchor": "top",
+                        "absolute": false,
+                        "x_offset": 0.03,
+                        "y_offset": -0.15
+                    }
+                },
+                "boost": {
+                    "type": "Node",
+                    "format": {
+                        "type": "Anchored"
+                    },
+                    "data": {
+                        "anchor": [
+                            0,
+                            1
+                        ],
+                        "size": [
+                            239,
+                            77.46
+                        ],
+                        "angle": 0,
+                        "position": [
+                            33,
+                            605.54
+                        ],
+                        "visible": true
+                    },
+                    "children": {
+                        "attackfill": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "attackfill",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    239,
+                                    77.46
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        },
+                        "shieldfill": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "shieldfill",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    239,
+                                    77.46
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        },
+                        "speedfill": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "speedfill",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    239,
+                                    77.46
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        },
+                        "healthfill": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "healthfill",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    239,
+                                    77.46
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        },
+                        "jumpfill": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "jumpfill",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    239,
+                                    77.46
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        },
+                        "attackready": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "attackready",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    239,
+                                    77.46
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        },
+                        "shieldready": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "shieldready",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    239,
+                                    77.46
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        },
+                        "speedready": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "speedready",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    239,
+                                    77.46
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        },
+                        "healthready": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "healthready",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    239,
+                                    77.46
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        },
+                        "jumpready": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "jumpready",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    239,
+                                    77.46
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        }
+                    },
+                    "layout": {
+                        "x_anchor": "left",
+                        "y_anchor": "top",
+                        "absolute": false,
+                        "x_offset": 0.03,
+                        "y_offset": -0.15
+                    }
+                },
+                "healthbar": {
+                    "type": "Node",
+                    "format": {
+                        "type": "Anchored"
+                    },
+                    "data": {
+                        "anchor": [
+                            0,
+                            1
+                        ],
+                        "size": [
+                            228,
+                            58.73
+                        ],
+                        "angle": 0,
+                        "position": [
+                            36,
+                            700.27
+                        ],
+                        "visible": true
+                    },
+                    "children": {
+                        "heartsbroken": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "heartsbroken",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    228,
+                                    58.73
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        },
+                        "heartsfull": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "heartsfull",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    228,
+                                    58.73
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        }
+                    },
+                    "layout": {
+                        "x_anchor": "left",
+                        "y_anchor": "top",
+                        "absolute": false,
+                        "x_offset": 0.03,
+                        "y_offset": -0.05
+                    }
+                }
+            }
+        },
+        "quotaScene": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "quotaBar"
+            }
+        },
+        "uiScene": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "uiWidget"
+            }
+        },
+        "lab0": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "barWidget"
+            }
+        },
+        "lab1": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "barWidget"
+            }
+        },
+        "lab2": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "barWidget"
+            }
+        },
+        "lab3": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "barWidget"
+            }
+        },
+        "lab4": {
+            "type": "Widget",
+            "comment": "This is the root node of the scene for the lab",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "key": "barWidget"
+            }
+        },
+        "bullbar": {
+            "type": "Node",
+            "format": {
+                "type": "Anchored"
+            },
+            "data": {
+                "anchor": [
+                    0,
+                    0
+                ],
+                "size": [
+                    1280,
+                    800
+                ],
+                "angle": 0,
+                "position": [
+                    0,
+                    0
+                ],
+                "visible": true
+            },
+            "children": {
+                "fullbullbar": {
+                    "type": "Node",
+                    "format": {
+                        "type": "Anchored"
+                    },
+                    "data": {
+                        "anchor": [
+                            0.5,
+                            1
+                        ],
+                        "size": [
+                            586,
+                            74
+                        ],
+                        "angle": 0,
+                        "position": [
+                            347,
+                            692
+                        ],
+                        "visible": true
+                    },
+                    "children": {
+                        "bosshealth": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "bosshealth",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    586,
+                                    73
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    1
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        },
+                        "bullbar": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "bullbar",
+                                "anchor": [
+                                    0.5,
+                                    1
+                                ],
+                                "size": [
+                                    586,
+                                    74
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "center",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        }
+                    },
+                    "layout": {
+                        "x_anchor": "center",
+                        "y_anchor": "top",
+                        "absolute": false,
+                        "x_offset": 0,
+                        "y_offset": -0.04
+                    }
+                }
             }
         }
     }

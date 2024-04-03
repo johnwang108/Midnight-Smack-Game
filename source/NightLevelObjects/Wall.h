@@ -36,7 +36,7 @@ public:
         Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, int breakableCooldown = -1, bool doesDamage = false);
     std::shared_ptr<physics2::PolygonObstacle> getObj();
     Poly2 getCollisionPoly();
-    std::shared_ptr<scene2::SceneNode> Wall::getSprite();
+    std::shared_ptr<scene2::SceneNode> getSprite();
 
     void initiatePath(std::vector<Vec3> path, int movementForce);
     void update(float dt);

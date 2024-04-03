@@ -142,9 +142,14 @@ protected:
     /** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
     bool _transitionScenes;
     std::string _targetScene;
-    float healthPercentage;
+    float _healthPercentage;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarBackground;
+
+    std::shared_ptr<cugl::scene2::PolygonNode> _cookBarFill;
+    std::shared_ptr<cugl::scene2::PolygonNode> _cookBarOutline;
+    std::unordered_map<std::string, std::shared_ptr<cugl::scene2::PolygonNode>> _cookBarIcons;
+    std::unordered_map<std::string, std::shared_ptr<cugl::scene2::PolygonNode>> _cookBarGlows;
 
     std::shared_ptr<cugl::scene2::Label> _buffLabel;
 
@@ -468,6 +473,7 @@ public:
     std::vector<std::shared_ptr<EnemyModel>> getEnemies() const { return _enemies; }
 
     void loadLevel(std::shared_ptr<Levels> level) {
+        _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level2);
         level->populate(*this);
         currentLevel = level;
     }
@@ -499,8 +505,6 @@ public:
     std::shared_ptr<Scene2> getuiScene() { return _uiScene; }
     void setuiScene(std::shared_ptr<Scene2> scene) { _uiScene = scene; }
 
-    void animate(std::shared_ptr<cugl::scene2::Animate>& animation, std::shared_ptr<cugl::scene2::Action>& action, std::shared_ptr<cugl::scene2::SpriteNode>& target);
-  
     std::shared_ptr<cugl::scene2::ActionManager> getActionManager() { return _actionManager; };
 
     void setPaused(bool paused) { _paused = paused; };
