@@ -35,7 +35,7 @@ public:
 	void setStartTime(float time) { _startTime = time; };
 
 
-	std::string getStation() { return _station + "_station"; }
+	std::string getStation() { return _station + "Station"; }
 
 	void setStation(std::string station) { _station = station; };
 

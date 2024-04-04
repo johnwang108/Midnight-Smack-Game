@@ -98,21 +98,21 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("json/exLevel.json");
 	readLevel(reader->readJson());
 
-	_stationMap["pot_station"] = 0;
-	_stationMap["prep_station"] = 1;
-	_stationMap["panfry_station"] = 2;
-	_stationMap["cutting_station"] = 3;
-	_stationMap["blending_station"] = 4;
+	_stationMap["potStation"] = 0;
+	_stationMap["prepStation"] = 1;
+	_stationMap["panfryStation"] = 2;
+	_stationMap["cuttingStation"] = 3;
+	_stationMap["mixingStation"] = 4;
 
-	_stationIngredients[0] = std::vector<std::string>{ "Rice", "Egg"};
+	_stationIngredients[0] = std::vector<std::string>{ "rice", "egg"};
 	_stationIngredients[1] = std::vector<std::string>{};
-	_stationIngredients[2] = std::vector<std::string>{ "Rice", "Egg", "Shrimp", "Beef", "Carrot"};
-	_stationIngredients[3] = std::vector<std::string>{"Shrimp", "Carrot" };
-	_stationIngredients[4] = std::vector<std::string>{ "Egg" };
+	_stationIngredients[2] = std::vector<std::string>{ "rice", "egg", "shrimp", "beef", "carrot"};
+	_stationIngredients[3] = std::vector<std::string>{"shrimp", "carrot" };
+	_stationIngredients[4] = std::vector<std::string>{ "egg" };
 
 
 
-	std::string stationTextures[5] = {"pot_station","prep_station" ,"panfry_station" ,"cutting_station" ,"blending_station"};
+	std::string stationTextures[5] = {"potStation","prepStation" ,"panfryStation" ,"cuttingStation" ,"mixingStation"};
 	initStations(stationTextures, 5);
 
 

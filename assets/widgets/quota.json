@@ -47,7 +47,7 @@
                     "Bar": {
                         "type": "Image",
                         "data": {
-                            "texture": "Bar",
+                            "texture": "bar",
                             "anchor": [
                                 0,
                                 0
@@ -74,7 +74,7 @@
                     "BarFilled": {
                         "type": "Image",
                         "data": {
-                            "texture": "BarFilled",
+                            "texture": "barFilled",
                             "anchor": [
                                 0,
                                 0
@@ -101,7 +101,7 @@
                     "Ramsay": {
                         "type": "Image",
                         "data": {
-                            "texture": "Ramsay",
+                            "texture": "ramsay",
                             "anchor": [
                                 1,
                                 0
