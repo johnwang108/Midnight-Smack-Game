@@ -239,8 +239,21 @@ void DollarScene::update(float timestep) {
 	if (_completed) {
 		_readyToCook = false;
 		_indicatorGroup->setVisible(false);
+		
 
 		//TODO spit out ingredient
+		//remove ingredient from indicator 
+		for (std::shared_ptr<scene2::SceneNode> child : _indicatorGroup->getChildren()) {
+			std::shared_ptr<Ingredient> ing = getIngredientInStation();
+			if (ing != nullptr && child == ing->getButton()) {
+				_indicatorGroup->removeChild(child);
+			}
+		}
+
+		handleCompletedIngredient(getIngredientInStation());
+
+		//remove ingredient from station for sure
+		_ingredientInStation = nullptr;
 	}
 
 
@@ -399,21 +412,39 @@ std::shared_ptr<Ingredient> DollarScene::getHeldIngredient() {
 
 void DollarScene::addIngredientToStation(std::shared_ptr<Ingredient> ing) {
 	CULog("added to pot");
+	//Remove ingredient from conveyor belt, and remove gravity
 	_conveyorBelt->removeChild(ing->getButton());
 	ing->setFalling(false);
-	ing->setInPot(true);
 
+	//add it to the station, and let both ingredient and station know. Also store which is ing is in
+	ing->setInPot(true);
+	setIngredientInStation(ing);
+	_readyToCook = true;
+
+
+	//indicator positioning
+	std::shared_ptr<scene2::Button> button = ing->getButton();
+	
+	button->deactivate();
+	//content size isn't changing??
+	//button->setContentSize(button->getContentSize() / 4);
+	button->setPosition(-button->getWidth()/2, button->getHeight()/2);
+	
+	//add the ingredient to indicator and show indicator
+	_indicatorGroup->addChild(ing->getButton());
 	_indicatorGroup->setVisible(true);
 
-	_readyToCook = true;
-	//add a delay to ready to cook somehow?
+	// make sure it tosses out dragging from moving ingredient first
+	_input->popTouchPath();
 
+	//prep gestures and flag ready
 	_currentTargetGestures = ing->getGestures();
 	_currentTargetIndex = 0;
 	_completed = false;
+}
 
-	//TODO actually show the ingredient indicator
-	_input->popTouchPath();
+void DollarScene::handleCompletedIngredient(std::shared_ptr<Ingredient> ing) {
+
 }
 
 //draws a boundary rectangle
@@ -444,9 +475,24 @@ void DollarScene::reset() {
 	_lastResult = -1;
 	//todo ready to cook idk if it should be false
 	_readyToCook = false;
-	for (std::shared_ptr<Ingredient> ing : _currentIngredients) {
-		_conveyorBelt->removeChild(ing->getButton());
+
+	// clear conveyor
+	for (std::shared_ptr<scene2::SceneNode> child : _conveyorBelt->getChildren()) {
+		_conveyorBelt->removeChild(child);
 	}
+
+
+	//clear indicator and station
+	for (std::shared_ptr<scene2::SceneNode> child : _indicatorGroup->getChildren()) {
+		std::shared_ptr<Ingredient> ing = getIngredientInStation();
+		if (ing != nullptr && child == ing->getButton()) {
+			_indicatorGroup->removeChild(child);
+		}
+	}
+	_ingredientInStation = nullptr;
+
+
+	//clear all ingredients
 	_currentIngredients.clear();
 	_currentlyHeldIngredient.reset();
 	_ingredientToRemove.reset();
