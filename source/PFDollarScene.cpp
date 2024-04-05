@@ -121,7 +121,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 
 	_indicatorGroup = scene2::SceneNode::alloc();
 	_indicatorGroup->setPosition(Vec2(640, 400));
-	std::shared_ptr<scene2::PolygonNode> indicator = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("Indicator"));
+	std::shared_ptr<scene2::PolygonNode> indicator = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("indicator"));
 	indicator->setAnchor(Vec2::ANCHOR_CENTER);
 	indicator->setContentSize(indicator->getSize() * .3);
 	indicator->setPosition(-25, 50);
