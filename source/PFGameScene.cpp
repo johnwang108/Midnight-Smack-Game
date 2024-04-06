@@ -308,7 +308,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     _target = std::make_shared<EnemyModel>();
 
-    currentLevel = level2;
+    currentLevel = level3;
     loadLevel(currentLevel);
 
     save();
@@ -724,6 +724,24 @@ void GameScene::preUpdate(float dt) {
             }
         }
         _Bull->update(dt);
+    }
+    if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
+        if (_ShrimpRice->getHealth() <= 0) {
+            _worldnode->removeChild(_ShrimpRice->getSceneNode());
+            _ShrimpRice->setDebugScene(nullptr);
+            _ShrimpRice->markRemoved(true);
+        }
+        
+        if (!_ShrimpRice->isChasing()) {
+            Vec2 BullPos = _ShrimpRice->getPosition();
+            float distance = avatarPos.distance(BullPos);
+            if (_ShrimpRice->getnextchangetime() < 0) {
+                int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
+                _ShrimpRice->setDirection(direction);
+                _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+            }
+        }
+        _ShrimpRice->update(dt);
     }
 }
 

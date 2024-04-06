@@ -39,6 +39,7 @@
 #include "PFDollarScene.h"
 #include "Levels/Level1.h"
 #include "Levels/Level2.h"
+#include "Levels/Level3.h"
 // #include "Levels/Level3.h"
 
 
@@ -135,9 +136,13 @@ protected:
 
     std::shared_ptr<BullModel>			  _Bull;
 
+    std::shared_ptr<ShrimpRice>			  _ShrimpRice;
+
     std::shared_ptr<Level2> level2 = std::make_shared<Level2>();
 
     std::shared_ptr<Level1> level1 = std::make_shared<Level1>();
+
+    std::shared_ptr<Level3> level3 = std::make_shared<Level3>();
 
     /** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
     bool _transitionScenes;
@@ -492,6 +497,9 @@ public:
 
     std::shared_ptr<BullModel> getBull() const { return _Bull; }
     void setBull(const std::shared_ptr<BullModel>& bull) { _Bull = bull; }
+
+    std::shared_ptr<ShrimpRice> getShrimpRice() const { return _ShrimpRice; }
+    void setShrimpRice(const std::shared_ptr<ShrimpRice>& ShrimpRice) { _ShrimpRice = ShrimpRice; }
 
     void transition(bool t);
 

@@ -239,6 +239,28 @@ void GameScene::beginContact(b2Contact* contact) {
         _avatar->addTouching();
         _avatar->takeDamage(34, direction);
     }
+
+    if (_ShrimpRice != nullptr && bd1->getName() == ATTACK_NAME && bd2->getName() == "shrimpBoss" && _ShrimpRice->getknockbacktime() <= 0) {
+        Vec2 enemyPos = _ShrimpRice->getPosition();
+        Vec2 attackerPos = ((Attack*)bd1)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        _avatar->addMeter(5.0f);
+
+        _ShrimpRice->takeDamage(_avatar->getAttack() / 4, direction, false);
+
+        popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
+        CULog("shrimpBoss: %f", _ShrimpRice->getHealth());
+    }
+    else if (_ShrimpRice != nullptr && bd2->getName() == ATTACK_NAME && bd1->getName() == "shrimpBoss" && _ShrimpRice->getknockbacktime() <= 0) {
+        Vec2 enemyPos = _ShrimpRice->getPosition();
+        Vec2 attackerPos = ((Attack*)bd2)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+
+        _ShrimpRice->takeDamage(_avatar->getAttack() / 4, direction, false);
+
+        popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
+        CULog("shrimpBoss: %f", _ShrimpRice->getHealth());
+    }
 }
 
 

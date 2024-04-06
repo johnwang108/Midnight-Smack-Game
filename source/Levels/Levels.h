@@ -7,6 +7,7 @@
 #include "../PFDudeModel.h"
 #include "../Enemys/Enemy.h"
 #include "../Enemys/Bull.h"
+#include "../Enemys/ShrimpRice.h"
 #include "../NightLevelObjects/Wall.h"
 
 
