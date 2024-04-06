@@ -4,7 +4,7 @@
   "cooking": "Shrimp Fried Rice",
   "ingredients": [
     {
-      "ingredient": "Shrimp",
+      "ingredient": "shrimp",
       "time": 2,
       "gestures": [
         "v",
@@ -14,7 +14,7 @@
       "station": "prep"
     },
     {
-      "ingredient": "Rice",
+      "ingredient": "rice",
       "time": 4,
       "gestures": [
         "circle",
@@ -24,7 +24,7 @@
       "station": "pot"
     },
     {
-      "ingredient": "Carrot",
+      "ingredient": "carrot",
       "time": 4,
       "gestures": [
         "circle",
@@ -34,14 +34,14 @@
       "station": "cutting"
     },
     {
-      "ingredient": "Egg",
+      "ingredient": "egg",
       "time": 5,
       "gestures": [
         "circle",
         "circle",
         "pigtail"
       ],
-      "station": "blending"
+      "station": "mixing"
     }
   ],
   "goals": []

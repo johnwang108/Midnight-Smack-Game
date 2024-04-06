@@ -18,8 +18,8 @@ Ingredient::Ingredient(std::string station, std::vector<std::string> gestures, f
 
 void Ingredient::init(std::shared_ptr<Texture> texture) {
 	_inPot = false;
-	std::shared_ptr<PolygonNode> texturedPoly =  PolygonNode::allocWithTexture(texture);
-	_button = Button::alloc(texturedPoly);
+	_poly =  PolygonNode::allocWithTexture(texture);
+	_button = Button::alloc(_poly);
 	_button->addListener([=](const std::string& name, bool down) {
 		_beingHeld = down;
 	});

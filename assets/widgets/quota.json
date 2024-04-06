@@ -47,7 +47,7 @@
                     "Bar": {
                         "type": "Image",
                         "data": {
-                            "texture": "Bar",
+                            "texture": "bar",
                             "anchor": [
                                 0,
                                 0
@@ -71,10 +71,37 @@
                             "y_offset": 0
                         }
                     },
+                    "BarFilled": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "barFilled",
+                            "anchor": [
+                                0,
+                                0
+                            ],
+                            "size": [
+                                40.625,
+                                266.875
+                            ],
+                            "angle": 0,
+                            "position": [
+                                0,
+                                0
+                            ],
+                            "visible": true
+                        },
+                        "layout": {
+                            "x_anchor": "left",
+                            "y_anchor": "bottom",
+                            "absolute": false,
+                            "x_offset": 0,
+                            "y_offset": 0
+                        }
+                    },
                     "Ramsay": {
                         "type": "Image",
                         "data": {
-                            "texture": "Ramsay",
+                            "texture": "ramsay",
                             "anchor": [
                                 1,
                                 0

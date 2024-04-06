@@ -1,16 +1,106 @@
 {
     "textures": {
-        "Ramsay": {
-            "file": "textures/Ramsay.png"
+        "panfryStation": {
+            "file": "textures/day/backgrounds/panfryStation.png"
         },
-        "Bar": {
-            "file": "textures/Bar.png"
+        "potStation": {
+            "file": "textures/day/backgrounds/potStation.png"
         },
-        "ConveyorUIBar": {
-            "file": "textures/ConveyorUIBar.png"
+        "prepStation": {
+            "file": "textures/day/backgrounds/prepStation.png"
+        },
+        "cuttingStation": {
+            "file": "textures/day/backgrounds/cuttingStation.png"
+        },
+        "mixingStation": {
+            "file": "textures/day/backgrounds/mixingStation.png"
+        },
+        "shrimp": {
+            "file": "textures/day/food/shrimp.png"
+        },
+        "cookedShrimp": {
+            "file": "textures/day/food/cookedShrimp.png"
+        },
+        "rice": {
+            "file": "textures/day/food/rice.png"
+        },
+        "boiledRice": {
+            "file": "textures/day/food/cookedRice.png"
+        },
+        "egg": {
+            "file": "textures/day/food/egg.png"
+        },
+        "boiledEgg": {
+            "file": "textures/day/food/boiledEgg.png"
+        },
+        "carrot": {
+            "file": "textures/day/food/carrot.png"
+        },
+        "cutCarrot": {
+            "file": "textures/day/food/carrot.png"
+        },
+        "beef": {
+            "file": "textures/day/food/beef.png"
+        },
+        "cookedBeef": {
+            "file": "textures/day/food/beef.png"
+        },
+        "bar": {
+            "file": "textures/day/bar.png"
+        },
+        "barFilled": {
+            "file": "textures/day/barFilled.png"
+        },
+        "conveyorBar": {
+            "file": "textures/day/conveyorBar.png"
         },
         "updateConveyorBelt": {
-            "file": "textures/updateConveyorBelt.png"
+            "file": "textures/day/updateConveyorBelt.png"
+        },
+        "conveyorBelt": {
+            "file": "textures/day/conveyorBelt.png"
+        },
+        "recipeBook": {
+            "file": "textures/day/recipeBook.png"
+        },
+        "cookTimer": {
+            "file": "textures/day/cookTimerEmpty.png"
+        },
+        "gesture": {
+            "file": "textures/day/gesture.png"
+        },
+        "miniMap": {
+            "file": "textures/day/miniMap.png"
+        },
+        "pot": {
+            "file": "textures/day/pot.png"
+        },
+        "sink": {
+            "file": "textures/day/Sink.png"
+        },
+        "knife": {
+            "file": "textures/day/knife.png"
+        },
+        "pan": {
+            "file": "textures/day/pan.png"
+        },
+        "mixer": {
+            "file": "textures/day/mixer.png"
+        },
+        "status": {
+            "file": "textures/day/status.png"
+        },
+        "textBack": {
+            "file": "textures/day/textBack.png"
+        },
+        "sun": {
+            "file": "textures/day/sun.png"
+        },
+        "ramsay": {
+            "file": "textures/day/ramsay.png"
+        },
+        "indicator": {
+            "file": "textures/day/indicator.png"
         },
         "earth": {
             "file": "textures/placeholder_block.png",
@@ -83,42 +173,11 @@
         "eggEnemy": {
             "file": "textures/eggEnemy.png"
         },
-        "beef": {
-            "file": "textures/beef.png"
-        },
-        "carrot": {
-            "file": "textures/carrot.png"
-        },
         "bull": {
             "file": "textures/bull.png"
         },
         "shake": {
             "file": "textures/shake.png"
-        },
-        "panfry_station": {
-            "file": "textures/Panfry_Station.png",
-            "wrapS": "repeat",
-            "wrapT": "repeat"
-        },
-        "pot_station": {
-            "file": "textures/Pot_Station.png",
-            "wrapS": "repeat",
-            "wrapT": "repeat"
-        },
-        "prep_station": {
-            "file": "textures/PrepSink_Station.png",
-            "wrapS": "repeat",
-            "wrapT": "repeat"
-        },
-        "cutting_station": {
-            "file": "textures/Cutting_Station.png",
-            "wrapS": "repeat",
-            "wrapT": "repeat"
-        },
-        "blending_station": {
-            "file": "textures/Blending_Station.png",
-            "wrapS": "repeat",
-            "wrapT": "repeat"
         },
         "unball": {
             "file": "textures/unball.png"
@@ -167,63 +226,6 @@
         },
         "background": {
             "file": "textures/background.png"
-        },
-        "NotepadBar": {
-            "file": "textures/notepad.png"
-        },
-        "ConveyorBelt": {
-            "file": "textures/ConveyorBelt.png"
-        },
-        "RecipeBook": {
-            "file": "textures/RecipeBook.png"
-        },
-        "CookTimer": {
-            "file": "textures/CookTimer.png"
-        },
-        "Gesture": {
-            "file": "textures/Gesture.png"
-        },
-        "Shrimp": {
-            "file": "textures/Shrimp.png"
-        },
-        "Rice": {
-            "file": "textures/Rice.png"
-        },
-        "Egg": {
-            "file": "textures/Egg.png"
-        },
-        "Carrot": {
-            "file": "textures/Carrot.png"
-        },
-        "Beef": {
-            "file": "textures/Beef.png"
-        },
-        "Minimap": {
-            "file": "textures/Minimap.png"
-        },
-        "Pot": {
-            "file": "textures/Pot.png"
-        },
-        "Sink": {
-            "file": "textures/Sink.png"
-        },
-        "Knife": {
-            "file": "textures/Knife.png"
-        },
-        "Pan": {
-            "file": "textures/Pan.png"
-        },
-        "Mixer": {
-            "file": "textures/Mixer.png"
-        },
-        "Status": {
-            "file": "textures/Status.png"
-        },
-        "Sun": {
-            "file": "textures/Daytime.png"
-        },
-        "TextBack": {
-            "file": "textures/TextBack.png"
         },
         "MYbackgroundbig": {
             "file": "textures/UI/MYbackgroundbig.png"
@@ -371,17 +373,6 @@
                 "key": "mylabscene"
             }
         },
-        "quotaScene": {
-            "type": "Widget",
-            "comment": "This is the root node of the scene for the lab",
-            "format": {
-                "type": "Anchored"
-            },
-            "data": {
-                "key": "quotaBar"
-            }
-        },
-
         "night_meters": {
             "type": "Node",
             "format": {

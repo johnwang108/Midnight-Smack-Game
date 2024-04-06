@@ -96,11 +96,16 @@ protected:
     std::shared_ptr<cugl::scene2::SceneNode> _bottomBar;
     std::shared_ptr<cugl::scene2::SceneNode> _conveyorBelt;
     std::shared_ptr<cugl::scene2::SceneNode> _stationHitbox;
+    std::shared_ptr<cugl::scene2::SceneNode> _indicatorGroup;
 
     std::deque<std::shared_ptr<Ingredient>> _currentIngredients;
 
     std::shared_ptr<Ingredient> _ingredientToRemove; 
     std::shared_ptr<Ingredient> _currentlyHeldIngredient;
+
+
+    //technically unnecessary because ingredient knows if it is in pot but also easier to just store pointer
+    std::shared_ptr<Ingredient> _ingredientInStation;
 
     bool _readyToCook;
 
@@ -147,6 +152,10 @@ public:
 
     void setValidIngredients(std::vector<std::string> ingredients) { _validIngredients = ingredients; };
 
+    void setIngredientInStation(std::shared_ptr<Ingredient> ing) { _ingredientInStation = ing; }
+    
+    std::shared_ptr<Ingredient> getIngredientInStation() { return _ingredientInStation; }
+
     bool isFocus() { return _focus; };
 
     bool initGestureRecognizer();
@@ -166,6 +175,8 @@ public:
     std::shared_ptr<Ingredient> getHeldIngredient();
 
     void addIngredientToStation(std::shared_ptr<Ingredient>);
+
+    void handleCompletedIngredient(std::shared_ptr<Ingredient>);
 
     void reset();
 

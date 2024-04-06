@@ -302,7 +302,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     cugl::Rect rectB = cugl::Rect(Vec2::ZERO, computeActiveSize());
 
-    _background = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>("cutting_station"), rectB);
+    _background = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>("cuttingStation"), rectB);
 
     _bgScene->addChild(_background);
     

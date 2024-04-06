@@ -13,8 +13,6 @@
 
 class MultiScreenScene : public cugl::Scene2 {
 private:
-	cugl::Timestamp _startTime;
-
 	// current time, in seconds with decimals
 	float _currentTime;
 	std::map<std::string, int> _stationMap;
@@ -60,7 +58,7 @@ protected:
 
 	std::shared_ptr<cugl::scene2::Label> _gestureFeedback;
 
-	cugl::Timestamp _gestureInitiatedTime;
+	float _gestureInitiatedTime;
 
 	std::vector<std::shared_ptr<Ingredient>> _ingredients; 
 
@@ -93,6 +91,8 @@ public:
 	bool init(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input);
 
 	void initStations(std::string arr[], int size);
+
+	void initializeBottomBar(std::shared_ptr<DollarScene> scene, int sceneNum);
 
 	void setScene(Uint32 slot, std::shared_ptr<DollarScene> scene) { _scenes[slot] = scene; }
 

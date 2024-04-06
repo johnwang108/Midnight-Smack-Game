@@ -13,7 +13,7 @@ private:
 	float _startTime;
 	bool _falling;
 	bool _inPot;
-
+	std::shared_ptr<cugl::scene2::PolygonNode> _poly;
 	std::shared_ptr<cugl::scene2::Button> _button;
 	bool _beingHeld;
 public: 
@@ -35,7 +35,7 @@ public:
 	void setStartTime(float time) { _startTime = time; };
 
 
-	std::string getStation() { return _station + "_station"; }
+	std::string getStation() { return _station + "Station"; }
 
 	void setStation(std::string station) { _station = station; };
 

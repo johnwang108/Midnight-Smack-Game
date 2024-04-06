@@ -119,10 +119,21 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_currentGestureLabel->setForeground(cugl::Color4::BLACK);
 	_currentGestureLabel->setVisible(true);
 
+	_indicatorGroup = scene2::SceneNode::alloc();
+	_indicatorGroup->setPosition(Vec2(640, 400));
+	std::shared_ptr<scene2::PolygonNode> indicator = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("indicator"));
+	indicator->setAnchor(Vec2::ANCHOR_CENTER);
+	indicator->setContentSize(indicator->getSize() * .3);
+	indicator->setPosition(-25, 50);
+	_indicatorGroup->addChild(indicator);
+	_indicatorGroup->setVisible(false);
+
+
 	addChild(_box);
 	addChild(_poly);
 	addChild(_header);
 	addChild(_currentGestureLabel);
+	addChild(_indicatorGroup);
 
 	CULog("_box pos, %f, %f", _box->getPosition().x, _box->getPosition().y);
 	
@@ -133,7 +144,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 }
 
 bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector<std::string> gestures, Size hitboxSize) {
-	_stationHitbox = cugl::scene2::SceneNode::allocWithBounds(hitboxSize);
+	_stationHitbox = scene2::SceneNode::allocWithBounds(hitboxSize);
 	_stationHitbox->setAnchor(Vec2::ANCHOR_CENTER);
 	_stationHitbox->setPosition(Vec2(0, 0));
 	return init(assets, input, rect, texture, gestures);
@@ -206,7 +217,6 @@ void DollarScene::update(float timestep) {
 	}
 
 	if (_readyToCook) {
-		CULog("drawing!");
 		//re-extrude path
 		_se.set(_path);
 		_se.calculate(WIDTH);
@@ -221,10 +231,29 @@ void DollarScene::update(float timestep) {
 
 		_poly->setAbsolute(true);
 		_poly->setVisible(true);
+
+		//TODO animate station
+		//TODO show ingredient indicator
 	}
 
 	if (_completed) {
 		_readyToCook = false;
+		_indicatorGroup->setVisible(false);
+		
+
+		//TODO spit out ingredient
+		//remove ingredient from indicator 
+		for (std::shared_ptr<scene2::SceneNode> child : _indicatorGroup->getChildren()) {
+			std::shared_ptr<Ingredient> ing = getIngredientInStation();
+			if (ing != nullptr && child == ing->getButton()) {
+				_indicatorGroup->removeChild(child);
+			}
+		}
+
+		handleCompletedIngredient(getIngredientInStation());
+
+		//remove ingredient from station for sure
+		_ingredientInStation = nullptr;
 	}
 
 
@@ -383,14 +412,39 @@ std::shared_ptr<Ingredient> DollarScene::getHeldIngredient() {
 
 void DollarScene::addIngredientToStation(std::shared_ptr<Ingredient> ing) {
 	CULog("added to pot");
+	//Remove ingredient from conveyor belt, and remove gravity
 	_conveyorBelt->removeChild(ing->getButton());
 	ing->setFalling(false);
-	ing->setInPot(true);
 
+	//add it to the station, and let both ingredient and station know. Also store which is ing is in
+	ing->setInPot(true);
+	setIngredientInStation(ing);
 	_readyToCook = true;
+
+
+	//indicator positioning
+	std::shared_ptr<scene2::Button> button = ing->getButton();
+	
+	button->deactivate();
+	//content size isn't changing??
+	//button->setContentSize(button->getContentSize() / 4);
+	button->setPosition(-button->getWidth()/2, button->getHeight()/2);
+	
+	//add the ingredient to indicator and show indicator
+	_indicatorGroup->addChild(ing->getButton());
+	_indicatorGroup->setVisible(true);
+
+	// make sure it tosses out dragging from moving ingredient first
+	_input->popTouchPath();
+
+	//prep gestures and flag ready
 	_currentTargetGestures = ing->getGestures();
 	_currentTargetIndex = 0;
 	_completed = false;
+}
+
+void DollarScene::handleCompletedIngredient(std::shared_ptr<Ingredient> ing) {
+
 }
 
 //draws a boundary rectangle
@@ -421,11 +475,28 @@ void DollarScene::reset() {
 	_lastResult = -1;
 	//todo ready to cook idk if it should be false
 	_readyToCook = false;
-	for (std::shared_ptr<Ingredient> ing : _currentIngredients) {
-		_conveyorBelt->removeChild(ing->getButton());
+
+	// clear conveyor
+	for (std::shared_ptr<scene2::SceneNode> child : _conveyorBelt->getChildren()) {
+		_conveyorBelt->removeChild(child);
 	}
+
+
+	//clear indicator and station
+	for (std::shared_ptr<scene2::SceneNode> child : _indicatorGroup->getChildren()) {
+		std::shared_ptr<Ingredient> ing = getIngredientInStation();
+		if (ing != nullptr && child == ing->getButton()) {
+			_indicatorGroup->removeChild(child);
+		}
+	}
+	_ingredientInStation = nullptr;
+
+
+	//clear all ingredients
 	_currentIngredients.clear();
 	_currentlyHeldIngredient.reset();
 	_ingredientToRemove.reset();
-	_conveyorBelt = nullptr;
+
+	// Don't do this so we don't have to re-init bottom bar
+	//_conveyorBelt = nullptr;
 }

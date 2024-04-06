@@ -47,7 +47,7 @@
                     "Minimap": {
                         "type": "Image",
                         "data": {
-                            "texture": "Minimap",
+                            "texture": "miniMap",
                             "anchor": [
                                 1,
                                 1
@@ -74,7 +74,7 @@
                     "Pot": {
                         "type": "Image",
                         "data": {
-                            "texture": "Pot",
+                            "texture": "pot",
                             "anchor": [
                                 0.5,
                                 1
@@ -101,7 +101,7 @@
                     "Sink": {
                         "type": "Image",
                         "data": {
-                            "texture": "Sink",
+                            "texture": "sink",
                             "anchor": [
                                 0,
                                 0.5
@@ -128,7 +128,7 @@
                     "Knife": {
                         "type": "Image",
                         "data": {
-                            "texture": "Knife",
+                            "texture": "knife",
                             "anchor": [
                                 1,
                                 0.5
@@ -155,7 +155,7 @@
                     "Pan": {
                         "type": "Image",
                         "data": {
-                            "texture": "Pan",
+                            "texture": "pan",
                             "anchor": [
                                 0.5,
                                 0.5
@@ -182,7 +182,7 @@
                     "Mixer": {
                         "type": "Image",
                         "data": {
-                            "texture": "Mixer",
+                            "texture": "mixer",
                             "anchor": [
                                 0.5,
                                 0
@@ -240,7 +240,7 @@
                     "Status": {
                         "type": "Image",
                         "data": {
-                            "texture": "Status",
+                            "texture": "status",
                             "anchor": [
                                 0,
                                 1
@@ -289,7 +289,7 @@
                             "Sun": {
                                 "type": "Image",
                                 "data": {
-                                    "texture": "Sun",
+                                    "texture": "sun",
                                     "anchor": [
                                         0.5,
                                         0.5
@@ -411,7 +411,7 @@
                                     "TextBack": {
                                         "type": "Image",
                                         "data": {
-                                            "texture": "TextBack",
+                                            "texture": "textBack",
                                             "anchor": [
                                                 0,
                                                 1
@@ -510,7 +510,7 @@
                                     "TextBack": {
                                         "type": "Image",
                                         "data": {
-                                            "texture": "TextBack",
+                                            "texture": "textBack",
                                             "anchor": [
                                                 0,
                                                 1
