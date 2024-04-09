@@ -20,6 +20,16 @@ void GameScene::beginContact(b2Contact* contact) {
     b2Body* body1 = fix1->GetBody();
     b2Body* body2 = fix2->GetBody();
 
+    Wall* bd1Wall = nullptr;
+    Wall* bd2Wall = nullptr;
+
+    if (std::is_same<decltype(body1), Wall>::value) {
+        bd1Wall = reinterpret_cast<Wall*>(body1);
+    }
+
+    if (std::is_same<decltype(body2), Wall>::value) {
+        bd2Wall = reinterpret_cast<Wall*>(body2);
+    }
 
     std::string* fd1 = reinterpret_cast<std::string*>(fix1->GetUserData().pointer);
     std::string* fd2 = reinterpret_cast<std::string*>(fix2->GetUserData().pointer);
@@ -32,15 +42,10 @@ void GameScene::beginContact(b2Contact* contact) {
         return;
     }
 
-    if ((bd1 == _avatar.get() && (bd2->getName().find("wall") != std::string::npos || bd2->getName().find("platform") != std::string::npos)) ||
-        (bd2 == _avatar.get() && (bd1->getName().find("wall") != std::string::npos || bd2->getName().find("platform") != std::string::npos))) {
+    if ((bd1 == _avatar.get() && ((bd2->getName().find("wall") != std::string::npos || bd2->getName().find("platform") != std::string::npos))) ||
+        (bd2 == _avatar.get() && ((bd1->getName().find("wall") != std::string::npos || bd2->getName().find("platform") != std::string::npos)))) {
         _avatar->setContactingWall(true);
         _avatar->setVX(0);
-    }
-
-    if ((bd1 == _avatar.get() && bd2->getName().find("dd") != std::string::npos) ||
-        (bd2 == _avatar.get() && bd1->getName().find("dd") != std::string::npos)) {
-        _avatar->settIsOnDangerousGround(true);
     }
 
     // See if we have landed on the ground.
@@ -56,6 +61,17 @@ void GameScene::beginContact(b2Contact* contact) {
 
         // Could have more than one ground
         _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
+
+        if ((bd1 == _avatar.get() && bd2->getName().find("dd") != std::string::npos) ||
+            (bd2 == _avatar.get() && bd1->getName().find("dd") != std::string::npos)) {
+            _avatar->setIsOnDangerousGround(true);
+        }
+        if (_avatar->getSensorName() == fd2) {
+            _avatar->setFloor(bd1Wall);
+        }
+        else {
+            _avatar->setFloor(bd2Wall);
+        }
     }
 
     for (auto& _enemy : _enemies) {
@@ -164,7 +180,7 @@ void GameScene::beginContact(b2Contact* contact) {
     if (bd1->getName() == "shake" && bd2 == _avatar.get()) {
         Vec2 enemyPos = ((Attack*)bd1)->getPosition();
         Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x < enemyPos.x) ? -1 : 1;
+        int direction = (attackerPos.x < enemyPos.x) ? -1 : 1; //double check this direction value, might need to swap 1 and -1 as with the spatula attack from egg it pulled the player closer b/c inverted
         _avatar->takeDamage(34, direction);
     }
     else if (bd2->getName() == "shake" && bd1 == _avatar.get()) {
@@ -176,14 +192,14 @@ void GameScene::beginContact(b2Contact* contact) {
     if (bd1->getName() == "enemy_attack" && bd2 == _avatar.get()) {
         Vec2 enemyPos = ((Attack*)bd1)->getPosition();
         Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         _avatar->takeDamage(34, direction);
         removeAttack((Attack*)bd1);
     }
     else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
         Vec2 enemyPos = ((Attack*)bd2)->getPosition();
         Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         _avatar->takeDamage(34, direction);
         removeAttack((Attack*)bd2);
     }
@@ -272,7 +288,8 @@ void GameScene::endContact(b2Contact* contact) {
         _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
         if (_sensorFixtures.empty()) {
             _avatar->setGrounded(false);
-            _avatar->settIsOnDangerousGround(false);
+            _avatar->setIsOnDangerousGround(false);
+            _avatar->setFloor(nullptr);
         }
     }
     //bull collision

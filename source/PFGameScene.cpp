@@ -514,11 +514,11 @@ void GameScene::preUpdate(float dt) {
     }
 
     //handle animations
-    CULog("active action: %s", _avatar->getActiveAction().c_str());
+    //CULog("active action: %s", _avatar->getActiveAction().c_str());
     _actionManager->update(dt);
     //start running if idle or recovering and moving
     if ((_actionManager->isActive("idle") || _actionManager->isActive("recover")) && (_input->getHorizontal() != 0)) {
-        CULog("animating run");
+        //CULog("animating run");
         _avatar->animate("run");
         auto runAction = _avatar->getAction("run");
         _actionManager->clearAllActions(_avatar->getSceneNode());

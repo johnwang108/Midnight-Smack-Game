@@ -124,6 +124,7 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         setFixedRotation(true); // OTHERWISE, HE IS A WEEBLE WOBBLE
         // Gameplay attributes
         _isGrounded = false;
+        _currentFloor = nullptr;
         _isShooting = false;
         _isJumping = false;
         _faceRight = true;

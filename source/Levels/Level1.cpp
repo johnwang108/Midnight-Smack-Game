@@ -19,7 +19,7 @@ static float RICE_POS[] = { 25.0f, 6.0f };
 
 static float BACKGROUND_POS[] = { 16.0f, 10.0f };
 
-std::vector<std::shared_ptr<Wall>> things;
+std::vector<std::shared_ptr<Wall>> lvlObjects;
 
 
 //static float WALL[WALL_COUNT][WALL_VERTS] = {
@@ -117,20 +117,24 @@ void Level1::populate(GameScene& scene) {
 	for (int ii = 0; ii < WALL_COUNT; ii++) {
 		std::shared_ptr<Wall> wallobj = Wall::alloc(image, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, DEBUG_COLOR,
 			reinterpret_cast<Vec2*>(WALL[ii]), WALL_VERTS, wname);
-		things.push_back(wallobj);
-		scene.addObstacle(wallobj->getObj(), wallobj->getSprite(), 1);  // All walls share the same texture
+		//MOVING WALL DEMO
+		//std::vector<Vec3> pathTP = { Vec3(1000,0,0) };
+		//wallobj->initPath(pathTP, 3.0f);
+		lvlObjects.push_back(wallobj);
+		//scene.addObstacle(wallobj->getObj(), wallobj->getSprite(), 1);  // All walls share the same texture
 	}
 
 #pragma mark : Platforms
-	for (int ii = 0; ii < PLATFORM_COUNT; ii++) {
+	for (int ii = 0; ii < 1/*PLATFORM_COUNT*/; ii++) {
 		std::shared_ptr<Wall> platObj = Wall::alloc(image, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, Color4::BLUE,
 			reinterpret_cast<Vec2*>(PLATFORMS[ii]), PLATFORM_VERTS, std::string(PLATFORM_NAME) + cugl::strtool::to_string(ii));
 		std::vector<Vec3> path;
 		path = { Vec3(0,100,120), Vec3(100,100,120), Vec3(100,0,120), Vec3(0,-30,120) };
 		if (ii % 3 == 1) {
-			platObj->initiatePath(path, 2.0f);
+			//platObj->initPath(path, 2.0f);
 		}
-		things.push_back(platObj);
+		platObj->initBreakable(120, 120);
+		lvlObjects.push_back(platObj);
 		scene.addObstacle(platObj->getObj(), platObj->getSprite(), 1);
 	}
 
@@ -171,7 +175,7 @@ void Level1::populate(GameScene& scene) {
 	cugl::Size shrimpSize = cugl::Size(2.0f, 2.0f);
 
 	Vec2 shrimp_pos = SHRIMP_POS;
-	image = _assets->get<Texture>("shrimp_rolling");
+	image = _assets->get<Texture>("shrimp_rolling"); //They see me rollin' They hatin' Patrollin' and tryna catch me ridin' dirty
 	std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc(shrimp_pos, shrimpSize, _scale, EnemyType::shrimp);
 	sprite = scene2::PolygonNode::allocWithTexture(image);
 	sprite->setScale(0.1f);
@@ -285,10 +289,16 @@ void Level1::populate(GameScene& scene) {
 
 }
 void Level1::update(float step) {
-	//CULog("cry");
-	for (const auto& obj : things) {
+	Wall* floor = _avatar->queryFloor();
+	for (const auto& obj : lvlObjects) {
 		if (obj->queryPath(0).z > -1) {
 			obj->update(step);
 		}
 	}
+	if (floor != nullptr) {
+		if (floor ->getBreakingClock() != -1) {
+			floor->applyBreaking();
+		}
+	}
+
 }

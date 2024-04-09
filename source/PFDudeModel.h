@@ -49,6 +49,7 @@
 #include <cugl/scene2/graph/CUWireNode.h>
 #include "EntitySpriteNode.h"
 #include "Attack.h"
+#include "NightLevelObjects/Wall.h"
 
 #pragma mark -
 #pragma mark Drawing Constants
@@ -168,6 +169,7 @@ protected:
     float _dashCooldown;
     bool _contactingWall;
     bool _isOnDangerousGround;
+    Wall* _currentFloor;
 
     float _health;
 
@@ -498,7 +500,7 @@ public:
     void setContactingWall(bool val) { _contactingWall = val;  }
 
     int getIsOnDangerousGround() { return _isOnDangerousGround; }
-    void settIsOnDangerousGround(bool val) { _isOnDangerousGround = val; }
+    void setIsOnDangerousGround(bool val) { _isOnDangerousGround = val; }
     
     /**
      * Returns true if the dude is actively jumping.
@@ -520,6 +522,13 @@ public:
      * @return true if the dude is on the ground.
      */
     bool isGrounded() const { return _isGrounded; }
+
+    Wall* queryFloor() {
+        return _currentFloor;
+    }
+    void setFloor(Wall* val) {
+        _currentFloor = val;
+    }
     
     /**
      * Sets whether the dude is on the ground.

@@ -2,5 +2,4 @@
 
 void Levels::update(float step)
 {
-	//CULog("fry");
 }
