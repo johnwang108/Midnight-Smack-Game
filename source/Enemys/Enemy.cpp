@@ -27,7 +27,7 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
     _drawScale = scale;
     _type = type;
 
-    if (CapsuleObstacle::init(pos, scaledSize)) {
+    if (Entity::init(pos, scaledSize)) {
         setDensity(ENEMY_DENSITY);
         setFriction(0.0f); // Prevent sticking to walls
         if (_type != EnemyType::shrimp){
@@ -78,7 +78,7 @@ void EnemyModel::createFixtures() {
         return;
     }
 
-    CapsuleObstacle::createFixtures();
+    Entity::createFixtures();
 
 
     b2FixtureDef sensorDef;
@@ -130,7 +130,7 @@ void EnemyModel::releaseFixtures() {
         return;
     }
 
-    CapsuleObstacle::releaseFixtures();
+    Entity::releaseFixtures();
     if (_sensorFixture != nullptr) {
         _body->DestroyFixture(_sensorFixture);
         _sensorFixture = nullptr;
@@ -143,7 +143,7 @@ void EnemyModel::releaseFixtures() {
 
 //Todo: make deterministic
 void EnemyModel::update(float dt) {
-    CapsuleObstacle::update(dt);
+    Entity::update(dt);
     if (_body == nullptr) {
         return;
     }

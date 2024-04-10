@@ -48,6 +48,7 @@
 #include <cugl/physics2/CUCapsuleObstacle.h>
 #include <cugl/scene2/graph/CUWireNode.h>
 #include "EntitySpriteNode.h"
+#include "Entity.h"
 #include "Attack.h"
 
 #pragma mark -
@@ -125,7 +126,7 @@ enum class modifier {
 #define ATTACK_OFFSET_X 0.6f
 #define ATTACK_OFFSET_Y 0.6f
 
-class DudeModel : public cugl::physics2::CapsuleObstacle {
+class DudeModel : public Entity {
 private:
 	/** This macro disables the copy constructor (not allowed on physics objects) */
 	CU_DISALLOW_COPY_AND_ASSIGN(DudeModel);
@@ -142,7 +143,7 @@ protected:
 	/** How long until we can shoot again */
 	int  _shootCooldown;
 	/** Whether our feet are on the ground */
-	bool _isGrounded;
+	//bool _isGrounded;
 	/** Whether we are actively shooting */
 	bool _isShooting;
 	/** Ground sensor to represent our feet */
@@ -158,10 +159,10 @@ protected:
 
     std::shared_ptr<cugl::scene2::WireNode> _bodySensorNode;
 
-	/** The scene graph node for the Dude. */
-	std::shared_ptr<EntitySpriteNode> _node;
-	/** The scale between the physics world and the screen (MUST BE UNIFORM) */
-	float _drawScale;
+	///** The scene graph node for the Dude. */
+	//std::shared_ptr<EntitySpriteNode> _node;
+	///** The scale between the physics world and the screen (MUST BE UNIFORM) */
+	//float _drawScale;
 
     bool _dash;
     int _dashNum;
@@ -169,16 +170,16 @@ protected:
     bool _contactingWall;
     bool _isOnDangerousGround;
 
-    float _health;
+    //float _health;
 
-    float _healthCooldown;
+    //float _healthCooldown;
     float _knockbackTime;
-    float _lastDamageTime;
+    //float _lastDamageTime;
 
     float healthPercentage;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
 
-    float _attack;
+    //float _attack;
 
     //attack damage buff
     float _attackBuff;
@@ -200,16 +201,16 @@ protected:
     float _numberOfTouchingEnemies;
 
 
-    std::unordered_map<std::string, std::shared_ptr<cugl::scene2::Animate>> _actions;
+    //std::unordered_map<std::string, std::shared_ptr<cugl::scene2::Animate>> _actions;
 
-    //unordered map of strings -> sprite sheets for the corresponding action
-    std::unordered_map<std::string, std::shared_ptr<cugl::Texture>> _sheets;
+    ////unordered map of strings -> sprite sheets for the corresponding action
+    //std::unordered_map<std::string, std::shared_ptr<cugl::Texture>> _sheets;
 
-    //info about each action's sheet: rows, cols, size, duration
-    std::unordered_map<std::string, std::tuple<int,int,int,float,bool>> _info;
+    ////info about each action's sheet: rows, cols, size, duration
+    //std::unordered_map<std::string, std::tuple<int,int,int,float,bool>> _info;
 
     //the last action that was animated
-    std::string _activeAction;
+   // std::string _activeAction;
 
     float _meter;
 
@@ -238,7 +239,7 @@ public:
      * This constructor does not initialize any of the dude values beyond
      * the defaults.  To use a DudeModel, you must call init().
      */
-    DudeModel() : CapsuleObstacle(), _sensorName(SENSOR_NAME), _bodySensorName(BODY_SENSOR_NAME) { }
+    DudeModel() : Entity(), _sensorName(SENSOR_NAME), _bodySensorName(BODY_SENSOR_NAME) { }
     
     /**
      * Destroys this DudeModel, releasing all resources.
@@ -404,16 +405,6 @@ public:
 
 #pragma mark -
 #pragma mark Animation
-    /**
-     * Returns the scene graph node representing this DudeModel.
-     *
-     * By storing a reference to the scene graph node, the model can update
-     * the node to be in sync with the physics info. It does this via the
-     * {@link Obstacle#update(float)} method.
-     *
-     * @return the scene graph node representing this DudeModel.
-     */
-	const std::shared_ptr<cugl::scene2::SceneNode> getSceneNode() { return _node; }
 
     /**
      * Sets the scene graph node representing this DudeModel.
@@ -433,22 +424,18 @@ public:
      *
      * @param node  The scene graph node representing this DudeModel, which has been added to the world node already.
      */
-	void setSceneNode(const std::shared_ptr<EntitySpriteNode> node) {
-        _node = node;
-        _node->setPosition(getPosition() * _drawScale);
-    }
 
-    void addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool isPassive = true);
+    //void addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool isPassive = true);
 
-    void animate(std::string action_name);
+    //void animate(std::string action_name);
 
-    void changeSheet(std::string action_name);
+    //void changeSheet(std::string action_name);
 
-    std::shared_ptr<cugl::scene2::Animate> getAction(std::string action_name) { return _actions[action_name]; };
+    //std::shared_ptr<cugl::scene2::Animate> getAction(std::string action_name) { return _actions[action_name]; };
 
-    void getInfo(std::string action_name) {};
+    //void getInfo(std::string action_name) {};
 
-    std::string getActiveAction() { return _activeAction; };
+    //std::string getActiveAction() { return _activeAction; };
 
     
 #pragma mark -
