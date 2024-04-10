@@ -163,6 +163,9 @@ void Level1::populate(GameScene& scene) {
 
 	scene.addObstacle(_avatar, spritenode); // Put this at the very front
 
+	//CULog("Dude position: %f %f", _avatar->getPosition().x, _avatar->getPosition().y);
+	//CULog("Dude anchor: %f %f", _avatar->getAnchor().x, _avatar->getAnchor().y);
+
 	// Play the background music on a loop.
 	//std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
 	//AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);

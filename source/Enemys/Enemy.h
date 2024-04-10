@@ -5,6 +5,8 @@
 #include <cugl/physics2/CUCapsuleObstacle.h>
 #include "../Attack.h"
 #include "../PFDudeModel.h"
+#include "../EntitySpriteNode.h"
+#include "../Entity.h"
 
 #define ENEMY_SENSOR_NAME     "enemysensor"
 #define SHRIMP_TEXTURE    "shrimpBoss"
@@ -52,7 +54,7 @@ enum class EnemyType {
     beef
 };
 
-class EnemyModel : public cugl::physics2::CapsuleObstacle {
+class EnemyModel : public Entity {
 private:
     /** This macro disables the copy constructor (not allowed on physics objects) */
     CU_DISALLOW_COPY_AND_ASSIGN(EnemyModel);
@@ -63,7 +65,7 @@ protected:
     /** The current horizontal movement direction of the enemy (-1 for left, 1 for right) */
     int _direction;
     /** Whether the enemy is currently on the ground */
-    bool _isGrounded;
+    //bool _isGrounded;
     /** The node for visual representation of the enemy */
     std::shared_ptr<cugl::scene2::SceneNode> _node;
     /** Whether the enemy is aggroed*/
@@ -75,7 +77,7 @@ protected:
     /** The node for debugging the sensor */
  //   std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
     /** The scale between the physics world and the screen (MUST BE UNIFORM) */
-    float _drawScale;
+    //float _drawScale;
 
     std::string _sensorName;
 
@@ -86,10 +88,9 @@ protected:
     float _changeDirectionInterval; 
     float _nextChangeTime;
 
-    float _health;
+    //float _health;
 
-    float _healthCooldown;
-    float _lastDamageTime;
+    //float _healthCooldown;
 
     float _knockbackTime;
 
@@ -118,7 +119,7 @@ protected:
 
 
 public:
-    EnemyModel() : CapsuleObstacle(), _sensorName(ENEMY_SENSOR_NAME) { }
+    EnemyModel() : Entity(), _sensorName(ENEMY_SENSOR_NAME) { }
 
     /**
      * Initializes a new enemy at the given position with the specified size and type.

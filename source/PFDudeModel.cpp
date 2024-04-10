@@ -118,10 +118,13 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
     //nsize.height *= DUDE_VSHRINK;
     _drawScale = scale;
 
-    if (CapsuleObstacle::init(pos, nsize)) {
+    if (Entity::init(pos, nsize)) {
         setDensity(DUDE_DENSITY);
         setFriction(0.0f);      // HE WILL STICK TO WALLS IF YOU FORGET
         setFixedRotation(true); // OTHERWISE, HE IS A WEEBLE WOBBLE
+
+        setPosition(pos);
+        //setAnchor(Vec2::ANCHOR_CENTER);
         // Gameplay attributes
         _isGrounded = false;
         _isShooting = false;
@@ -160,7 +163,7 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         b2Filter filter = getFilterData();
         filter.groupIndex = -1;
         setFilterData(filter);
-
+        setName("avatar");
         setEnabled(true);
 
         return true;
@@ -168,44 +171,44 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
     return false;
 }
 
-/** Register a new animation in the dict*/
-void DudeModel::addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool isPassive) {
-    std::vector<int> forward;
-    for (int ii = 0; ii < size; ii++) {
-        forward.push_back(ii);
-    }
-    _actions[action_name] = cugl::scene2::Animate::alloc(forward, duration);
-    _sheets[action_name] = sheet;
-    _info[action_name] = std::make_tuple(rows, cols, size, duration, isPassive);
-}
+///** Register a new animation in the dict*/
+//void DudeModel::addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool isPassive) {
+//    std::vector<int> forward;
+//    for (int ii = 0; ii < size; ii++) {
+//        forward.push_back(ii);
+//    }
+//    _actions[action_name] = cugl::scene2::Animate::alloc(forward, duration);
+//    _sheets[action_name] = sheet;
+//    _info[action_name] = std::make_tuple(rows, cols, size, duration, isPassive);
+//}
 
-/**Unsure if override needed. Begins an animation, switching the sheet if needed.*/
-void DudeModel::animate(std::string action_name) {
-    //first, switch the sheet
-    changeSheet(action_name);
-    if (action_name == "idle") {
-        _node->setScale(0.35/4);
-    }
-    else {
-        _node->setScale(0.35/4);
-    }
-    _activeAction = action_name;
+///**Unsure if override needed. Begins an animation, switching the sheet if needed.*/
+//void DudeModel::animate(std::string action_name) {
+//    //first, switch the sheet
+//    changeSheet(action_name);
+//    if (action_name == "idle") {
+//        _node->setScale(0.35/4);
+//    }
+//    else {
+//        _node->setScale(0.35/4);
+//    }
+//    _activeAction = action_name;
+//
+//    //info = {int rows, int cols, int size, float duration, bool isPassive}
+//    auto info = _info[action_name];
+//}
 
-    //info = {int rows, int cols, int size, float duration, bool isPassive}
-    auto info = _info[action_name];
-}
-
-void DudeModel::changeSheet(std::string action_name) {
-    //info = {int rows, int cols, int size, float duration, bool isPassive}
-    try {
-        auto info = _info[action_name];
-        _node->changeSheet(_sheets[action_name], std::get<0>(info), std::get<1>(info), std::get<2>(info));
-    }
-    catch (int e) {
-        CULog("Error changing sheets. Is the action registered?");
-    }
-
-}
+//void DudeModel::changeSheet(std::string action_name) {
+//    //info = {int rows, int cols, int size, float duration, bool isPassive}
+//    try {
+//        auto info = _info[action_name];
+//        _node->changeSheet(_sheets[action_name], std::get<0>(info), std::get<1>(info), std::get<2>(info));
+//    }
+//    catch (int e) {
+//        CULog("Error changing sheets. Is the action registered?");
+//    }
+//
+//}
 
 void DudeModel::sethealthbar(std::shared_ptr<cugl::AssetManager> asset) {
     auto healthBarBackground = scene2::PolygonNode::allocWithTexture(asset->get<Texture>("heartsbroken"));
@@ -253,7 +256,7 @@ void DudeModel::createFixtures() {
         return;
     }
 
-    CapsuleObstacle::createFixtures();
+    Entity::createFixtures();
     b2FixtureDef sensorDef;
     sensorDef.density = DUDE_DENSITY;
     sensorDef.isSensor = true;
@@ -309,7 +312,7 @@ void DudeModel::releaseFixtures() {
         return;
     }
 
-    CapsuleObstacle::releaseFixtures();
+    Entity::releaseFixtures();
     if (_sensorFixture != nullptr) {
         _body->DestroyFixture(_sensorFixture);
         _sensorFixture = nullptr;
@@ -398,7 +401,7 @@ void DudeModel::applyForce(float h, float v) {
  */
 void DudeModel::update(float dt) {
 
-    CapsuleObstacle::update(dt);
+    Entity::update(dt);
 
     if (_duration > 0) {
         _duration -= dt;
@@ -495,7 +498,7 @@ void DudeModel::update(float dt) {
  * the texture (e.g. a circular shape attached to a square texture).
  */
 void DudeModel::resetDebug() {
-    CapsuleObstacle::resetDebug();
+    Entity::resetDebug();
     float w = DUDE_SSHRINK * _dimension.width;
     float h = SENSOR_HEIGHT;
     Poly2 poly(Rect(-w / 2.0f, -h / 2.0f, w, h));
