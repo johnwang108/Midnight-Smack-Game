@@ -141,7 +141,7 @@ void Level1::populate(GameScene& scene) {
 	image = _assets->get<Texture>("su_idle");
 	//hardcoded size
 	cugl::Size s = PLAYER_SIZE_DEFAULT;
-	_avatar = DudeModel::alloc(dudePos, s, _scale);
+	_avatar = DudeModel::alloc(dudePos, s, _scale, _assets);
 	std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4,16);
 
 	//CALCULATE sue sprite size from sue obstacle size. Goal: su's feet line up with foot sensor, and head (not hat) with top of obstacle. Todo still
@@ -150,16 +150,6 @@ void Level1::populate(GameScene& scene) {
 	spritenode->setPosition(dudePos);
 	_avatar->setSceneNode(spritenode);
 	_avatar->setDebugColor(DEBUG_COLOR);
-	_avatar->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 4, 16, 1.0f, true);
-	_avatar->addActionAnimation("idle_blink", _assets->get<Texture>("su_idle_blink"), 4, 5, 18, 2.0f, true);
-	_avatar->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 5, 18, 0.6f, true);
-	_avatar->addActionAnimation("recover", _assets->get<Texture>("su_attack_recover"), 3, 4, 10, 0.83f, true);
-	_avatar->addActionAnimation("run", _assets->get<Texture>("su_run"), 3, 4, 10, 0.83f, true);
-
-	_avatar->addActionAnimation("jump_up", _assets->get<Texture>("su_jump_airborne_up"), 2, 2, 3, 0.25f, false);
-	_avatar->addActionAnimation("jump_down", _assets->get<Texture>("su_jump_airborne_down"), 2, 2, 3, 0.25f, false);
-	_avatar->addActionAnimation("jump_land", _assets->get<Texture>("su_jump_land"), 2, 2, 3, 0.25f, false);
-	_avatar->addActionAnimation("jump_ready", _assets->get<Texture>("su_jump_ready"), 1, 2, 2, 0.16f, false);
 
 	scene.addObstacle(_avatar, spritenode); // Put this at the very front
 

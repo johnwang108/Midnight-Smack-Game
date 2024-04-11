@@ -118,8 +118,7 @@ enum class modifier {
 #define BASE_DURATION 10.0f
 
 /** The keys for the attack texture in asset manager*/
-#define ATTACK_TEXTURE_R  "attack_r"
-#define ATTACK_TEXTURE_L  "attack_l"
+#define ATTACK_TEXTURE  "attack_l"
 /**Scalar for height of a box attack, hacky*/
 #define ATTACK_H        1.0f
 
@@ -401,6 +400,27 @@ public:
 		std::shared_ptr<DudeModel> result = std::make_shared<DudeModel>();
 		return (result->init(pos, size, scale) ? result : nullptr);
 	}
+
+    /** Alloc with assets that automatically populates actions. Use this as the default alloc */
+    static std::shared_ptr<DudeModel> alloc(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::shared_ptr<AssetManager> _assets) {
+        std::shared_ptr<DudeModel> result = std::make_shared<DudeModel>();
+        bool res = result->init(pos, size, scale);
+
+        if (res) {
+            result->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 4, 16, 1.0f, true);
+            result->addActionAnimation("idle_blink", _assets->get<Texture>("su_idle_blink"), 4, 5, 18, 2.0f, true);
+            result->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 5, 18, 0.6f, true);
+            result->addActionAnimation("recover", _assets->get<Texture>("su_attack_recover"), 3, 4, 10, 0.83f, true);
+            result->addActionAnimation("run", _assets->get<Texture>("su_run"), 3, 4, 10, 0.83f, true);
+
+            result->addActionAnimation("jump_up", _assets->get<Texture>("su_jump_airborne_up"), 2, 2, 3, 0.25f, false);
+            result->addActionAnimation("jump_down", _assets->get<Texture>("su_jump_airborne_down"), 2, 2, 3, 0.25f, false);
+            result->addActionAnimation("jump_land", _assets->get<Texture>("su_jump_land"), 2, 2, 3, 0.25f, false);
+            result->addActionAnimation("jump_ready", _assets->get<Texture>("su_jump_ready"), 1, 2, 2, 0.16f, false);
+        }
+
+        return res ? result : nullptr;
+    }
     
 
 #pragma mark -

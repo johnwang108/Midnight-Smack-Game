@@ -552,6 +552,12 @@ void GameScene::preUpdate(float dt) {
         _actionManager->clearAllActions(_avatar->getSceneNode());
         _actionManager->activate("jump_down", jumpAction, _avatar->getSceneNode());
     }
+    if (_avatar->isGrounded() && (_actionManager->isActive("jump_down") || _actionManager->isActive("jump_up"))) {
+        _avatar->animate("jump_land");
+        auto jumpAction = _avatar->getAction("jump_land");
+        _actionManager->clearAllActions(_avatar->getSceneNode());
+        _actionManager->activate("jump_land", jumpAction, _avatar->getSceneNode());
+    }
 
 
     //handle expired actions
@@ -624,7 +630,6 @@ void GameScene::preUpdate(float dt) {
                 }
                 else {
                     CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
-                    
                 }
                 message = _feedbackMessages[_dollarnode->getLastResult()];
 
@@ -964,49 +969,6 @@ void GameScene::setFailure(bool value) {
 		_losenode->setVisible(false);
 		_countdown = -1;
 	}
-}
-
-
-/**
- * Scuffed attack for the player.
- */
-void GameScene::createAttack(bool display) {
-	Vec2 pos = _avatar->getPosition();
-	pos.x += (_avatar->isFacingRight() ? ATTACK_OFFSET_H : -ATTACK_OFFSET_H);
-    pos.y += ATTACK_OFFSET_V;
-    std::shared_ptr<Texture> image;
-    if (_avatar->isFacingRight()) {
-        image = _assets->get<Texture>(ATTACK_TEXTURE_R);
-    }
-    else {
-        image = _assets->get<Texture>(ATTACK_TEXTURE_L);
-    }
-
-
-	std::shared_ptr<Attack> attack = Attack::alloc(pos, 
-        cugl::Size(0.6*ATTACK_W * image->getSize().width / _scale, 
-        ATTACK_H * image->getSize().height / _scale));
-
-	attack->setName(ATTACK_NAME);
-    attack->setDensity(HEAVY_DENSITY);
-    attack->setBullet(true);
-    attack->setGravityScale(0);
-    attack->setDebugColor(DEBUG_COLOR);
-    attack->setDrawScale(_scale);
-
-
-
-	std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
-    attack->setSceneNode(sprite);
-    sprite->setVisible(display);
-    sprite->setPosition(pos);
-
-	addObstacle(attack, sprite, true);
-
-	std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
-	AudioEngine::get()->play(PEW_EFFECT,source, false, EFFECT_VOLUME, true);
-
-    _attacks.push_back(attack);
 }
 
 template<typename T>

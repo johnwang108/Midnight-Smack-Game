@@ -442,11 +442,6 @@ public:
     void reset();
 
     /**
-    * Adds a new bullet to the world and sends it in the right direction.
-    */
-    void createAttack(bool display = true);
-
-    /**
     * Removes the input Bullet from the world.
     *
     * @param  bullet   the bullet to remove

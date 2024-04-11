@@ -355,7 +355,7 @@ void EnemyModel::dispose() {
 std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> EnemyModel::createAttack(std::shared_ptr<AssetManager> _assets, float scale) {
     Vec2 pos = getPosition();
 
-    std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE_L);
+    std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE);
     std::shared_ptr<Attack> attack = Attack::alloc(pos,
         cugl::Size(image->getSize().width / scale,
             ATTACK_H * image->getSize().height / scale));
@@ -462,6 +462,8 @@ void EnemyModel::setState(std::string state) {
     }
 }
 
+/**Chasing is mostly an intermediate state between passive and aggro behavior. The exception is rice.
+For example the only time beef is chasing is when it first spots the player or after it is stunned.*/
 std::string EnemyModel::getNextState(std::string state) {
     switch (_type) {
 		case EnemyType::shrimp:
@@ -492,6 +494,14 @@ std::string EnemyModel::getNextState(std::string state) {
                 return "patrolling";
             }
             break;
+        case EnemyType::rice_follower:
+            if (state == "chasing") {
+                return "chasing";
+            }
+            else if (state == "patrolling") {
+                return "patrolling";
+            }
+            break;
         case EnemyType::egg:
             if (state == "chasing") {
                 if (_distanceToPlayer.length() > 12) return "chasing";
@@ -506,14 +516,46 @@ std::string EnemyModel::getNextState(std::string state) {
             else if (state == "stunned") {
                 return "chasing";
             }
-            else if (state == "patrolling") {
-                return "patrolling";
-            }
             else if (state == "spitting") {
                 if (_distanceToPlayer.length() > 12) return "chasing";
                 else return "short_windup";
             }
+            else if (state == "patrolling") {
+                return "patrolling";
+            }
             break;
+        case EnemyType::beef:
+            if (state == "chasing") {
+                return "burrowing";
+            }
+            if (state == "burrowing") {
+                return "tracking";
+            }
+            if (state == "tracking") {
+                return "attacking";
+            }
+            else if (state == "stunned") {
+                return "burrowing";
+            }
+            else if (state == "patrolling") {
+                return "patrolling";
+            }
+            break;
+
+        case EnemyType::carrot:
+            if (state == "chasing") {
+                return "windup";
+            }
+            else if (state == "windup") {
+                return "jumping";
+            }
+            else if (state == "jumping") {
+                return "windup";
+            }
+            else if (state == "patrolling") {
+				return "patrolling";
+			}
+			break;
 
     default:
         return "patrolling";

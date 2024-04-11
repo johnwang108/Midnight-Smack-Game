@@ -49,6 +49,7 @@ class GameScene;
 enum class EnemyType {
     shrimp, 
     rice, 
+    rice_follower,
     egg,
     carrot,
     beef
@@ -307,6 +308,8 @@ public:
             return buff::attack;
         case EnemyType::rice:
             return buff::defense;
+        case EnemyType::rice_follower:
+            return buff::defense;
         case EnemyType::egg:
             return buff::jump;
         case EnemyType::carrot:
@@ -314,6 +317,7 @@ public:
         case EnemyType::beef:
             return buff::health;
         }
+
         return buff::none;
     };
 

@@ -21,6 +21,9 @@ void Entity::addActionAnimation(std::string action_name, std::shared_ptr<cugl::T
 
 /**Unsure if override needed. Begins an animation, switching the sheet if needed.*/
 void Entity::animate(std::string action_name) {
+    //info = {int rows, int cols, int size, float duration, bool isPassive}
+    auto info = _info[action_name];
+
     //first, switch the sheet
     changeSheet(action_name);
     if (action_name == "idle") {
@@ -30,9 +33,6 @@ void Entity::animate(std::string action_name) {
         _node->setScale(0.35 / 4);
     }
     _activeAction = action_name;
-
-    //info = {int rows, int cols, int size, float duration, bool isPassive}
-    auto info = _info[action_name];
 }
 
 void Entity::changeSheet(std::string action_name) {

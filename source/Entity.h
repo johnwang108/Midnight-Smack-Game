@@ -69,6 +69,7 @@ public:
 
 	std::shared_ptr<cugl::scene2::Animate> getAction(std::string action_name) { return _actions[action_name]; };
 
+	/**Unused*/
 	void getInfo(std::string action_name) {};
 
 	std::string getActiveAction() { return _activeAction; };
