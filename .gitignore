@@ -1,4 +1,3 @@
 build/
 .vs/
 ./CppProperties.json
-/build/windows/Smack/LevelModel.cpp

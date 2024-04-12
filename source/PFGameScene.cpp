@@ -37,16 +37,22 @@ using namespace cugl;
 #pragma mark Level Geography
 
 /** This is adjusted by screen aspect ratio to get the height */
-#define SCENE_WIDTH 1024
-#define SCENE_HEIGHT 576
+// #define SCENE_WIDTH 1024
+// #define SCENE_HEIGHT 576
+
+#define SCENE_WIDTH 1280 // 1024
+#define SCENE_HEIGHT 800 // 576
+
 
 /** This is the aspect ratio for physics */
 #define SCENE_ASPECT 10.0/16.0
 
 /** Width of the game world in Box2d units */
-#define DEFAULT_WIDTH   32.0f
+
+#define DEFAULT_WIDTH   40.0f
+
 /** Height of the game world in Box2d units */
-#define DEFAULT_HEIGHT  18.0f
+#define DEFAULT_HEIGHT  25.0f
 
 #define INCLUDE_ROPE_BRIDGE false
 
@@ -153,7 +159,16 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _world = physics2::ObstacleWorld::alloc(rect,gravity);
 
     //Here, we are going to set our level's world equal to world
+    // _assets->load<LevelModel>("long-level", "long-level.json");
+    // _level_model = _assets->get<LevelModel>("long-level");
 
+    // _level_model->setFilePath("long-level.json");
+
+    /*if (_level_model == nullptr) {
+        CULog("failed to load level!");
+        return false;
+    }*/
+    // _level_model->setWorld(_world);
 
     _world->activateCollisionCallbacks(true);
     _world->onBeginContact = [this](b2Contact* contact) {
@@ -232,13 +247,15 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
     _dollarnode->setVisible(false);
 
-
-    loadLevel(level1);
+    // Right now we are manually adding in the json here
+    _level_model->setFilePath("json/test_level_v2.json");
+    // loadLevel(level1);
+    loadLevel(_level_model);
 
     _active = true;
     _complete = false;
     setDebug(false);
-    
+    zoomCamera(0.15);
     // XNA nostalgia
     // Application::get()->setClearColor(Color4f::CORNFLOWER);
     Application::get()->setClearColor(Color4::YELLOW);
@@ -289,7 +306,7 @@ void GameScene::reset() {
     setFailure(false);
     setComplete(false);
 
-    loadLevel(level1);
+    loadLevel(_level_model);
 }
 
 /**
@@ -375,6 +392,10 @@ void GameScene::addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj
 void GameScene::preUpdate(float dt) {
     _input->update(dt);
 
+
+    //ADDED 03/26
+    //has the level loaded yet
+
     // Process the toggled key commands
     if (_input->didDebug()) { setDebug(!isDebug()); }
     if (_input->didReset()) { reset(); }
@@ -384,12 +405,15 @@ void GameScene::preUpdate(float dt) {
     }
 
     //_slowed = _input->didSlow();
+
+    // commenting all this out for now
+
     if (_input->didSlow()) {
         _slowed = !_slowed;
     }
     if (!_slowed) {
         _dollarnode->setVisible(false);
-
+        CULog("we get here without an error!");
         _avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
         _avatar->setJumping(_input->didJump());
         _avatar->setDash(_input->didDash());
@@ -484,6 +508,9 @@ void GameScene::fixedUpdate(float step) {
         step = step / 5;
     }
     //camera logic
+    // 
+    // Commented out 03/27 4:30AM to check level editor
+    // 
     if (CAMERA_FOLLOWS_PLAYER) {
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
         cugl::Vec3 pos = _camera->getPosition();
@@ -492,7 +519,7 @@ void GameScene::fixedUpdate(float step) {
         //float smooth = std::min(0.2f, (target - pos).length());
         float smooth = 0.2;
         pos.smooth(target, step, smooth);
-        //cugl::Vec3 pos = _avatar->getPosition() * _scale;
+        pos = _avatar->getPosition() * _scale;
         _camera->setPosition(pos);
 		_camera->update();
     }
@@ -536,6 +563,9 @@ void GameScene::postUpdate(float remain) {
 
     // Add a bullet AFTER physics allows it to hang in front
     // Otherwise, it looks like bullet appears far away
+
+    //commented out avatar stuff, 03/27 4:30 AM
+
     _avatar->setShooting(_input->didFire());
     if (_avatar->isShooting()) {
         createAttack();
@@ -569,9 +599,14 @@ void GameScene::postUpdate(float remain) {
     }
 
     // Record failure if necessary.
+
+    //COMMENTED OUT 4:30AM 03/27
+
     if (!_failed && _avatar->getY() < 0) {
         setFailure(true);
     }
+
+    // THIS SHOULD REMAIN COMMENTED OUT
 
     // Reset the game if we win or lose.
    /* if (_countdown > 0) {

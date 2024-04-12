@@ -38,6 +38,7 @@
 #include "PFDollarScene.h"
 #include "Levels/Level1.h"
 #include "Levels/Level2.h"
+#include "Levels/LevelModel.h"
 
 
 /**
@@ -129,6 +130,8 @@ protected:
     std::shared_ptr<Level2> level2 = std::make_shared<Level2>();
 
     std::shared_ptr<Level1> level1 = std::make_shared<Level1>();
+
+    std::shared_ptr<LevelModel> _level_model = std::make_shared<LevelModel>();
 
 #pragma mark Internal Object Management
     /**
