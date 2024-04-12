@@ -377,7 +377,6 @@ void LevelModel::populate(GameScene& scene) {
 
 
 	std::shared_ptr<cugl::JsonReader> levelReader;
-
 	//have to set the filepath before this
 
 	levelReader = cugl::JsonReader::allocWithAsset(getFilePath());
@@ -491,6 +490,16 @@ void LevelModel::populate(GameScene& scene) {
 	std::shared_ptr<cugl::JsonValue> objects;
 	std::shared_ptr<cugl::JsonValue> properties;
 	std::shared_ptr<cugl::physics2::BoxObstacle> background_item;
+
+
+	/*image = _assets->get<Texture>("textures\\dream-background.png");
+	std::shared_ptr<cugl::scene2::PolygonNode> back_back_ground = cugl::scene2::PolygonNode::allocWithTexture(image);
+	scene.addChild(back_back_ground);*/
+	CULog("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ");
+	image = _assets->get<Texture>("textures\\main_platform.png");
+	_background = cugl::scene2::PolygonNode::allocWithTexture(image);
+	scene.addChild(_background);
+
 	//initialize our backgrounds variable
 	// _drawings = {};
 	if (layers != nullptr && layers->isArray()) {
@@ -502,31 +511,7 @@ void LevelModel::populate(GameScene& scene) {
 			//type will be stored in class property of tile layer
 			properties = layer->get("properties");
 
-			if (objects != nullptr && objects->isArray()) {
-				//we are looking at the object layer now
-				CULog("we are now looking at the object layer");
-				for (int i = 0; i < objects->size(); i++) {
-					//here we are just initializing boundaries, not images or anything like that
-					std::shared_ptr<JsonValue> object = objects->get(i);
-					/*if (object->getString("name") == "avatar") {
-						loadAvatar(object);
-					}*/
-					if (object->getString("name") == "Floating_Platform") {
-						CULog("We are in loadFloatingBox!");
-						loadFloatingBoxPlatform(object, scene, sprite, window_height * 32.0f);
-					}
-					else if (object->getString("name") == "Main_Platform") {
-						CULog("We are in loadMainPlatform!");
-						loadMainPlatform(object, scene, sprite, window_height * 32.0f);
-					}
-					else {
-						CULog(object->getString("name").c_str());
-						CULog("We not doing anything right now");
-					}
-				}
-			}
-
-			else if (data != nullptr && data->isArray()) {
+			if (data != nullptr && data->isArray()) {
 				//we are looking at image layer, only adding backgrounds
 				for (int j = 0; j < data->size(); j++) {
 					colNum = j % static_cast<int>(window_width);
@@ -568,28 +553,84 @@ void LevelModel::populate(GameScene& scene) {
 
 						if (type == "background") {
 							CULog("identified class field as background");
+
+							//what we need to do: commented out right now because background is appearing later
+							// _background = cugl::scene2::PolygonNode::allocWithTexture(image);
+							// scene.addChild(_background);
+							//---------------------------------------------------------------------
+
 							// we gonna make this a nullptr
 
-							int rowPos = ((window_height - rowNum) % window_height + window_height) % window_height;
-							Vec2 backgroundPos = Vec2(colNum, rowPos);
+							// int rowPos = ((window_height - rowNum) % window_height + window_height) % window_height;
+							// Vec2 backgroundPos = Vec2(colNum, rowPos);
 
-							Vec2 b2Pos = Vec2(40.0f, 12.5f);
+							// _background = cugl::scene2::PolygonNode::allocWithTexture(image);
+							// scene.addChild(_background);
 
-							sprite = scene2::PolygonNode::allocWithTexture(image);
-							Size background_size(image->getSize().width / scene.getScale(), image->getSize().height / scene.getScale());
-							CULog(std::to_string(image->getSize().width / scene.getScale()).c_str());
-							CULog(std::to_string(image->getSize().height / scene.getScale()).c_str());
-							// _background = physics2::BoxObstacle::alloc(Vec2(0,window_height), background_size);
-							// _background = physics2::BoxObstacle::alloc((Vec2(colNum * 32, window_height - (rowNum * 32))), background_size);
-							_background = physics2::BoxObstacle::alloc(b2Pos, background_size);
-							_background->setName(BACKGROUND_NAME);
+							// Vec2 b2Pos = Vec2(40.0f, 12.5f);
+
+							// sprite = scene2::PolygonNode::allocWithTexture(image);
+							// Size background_size(image->getSize().width / scene.getScale(), image->getSize().height / scene.getScale());
+							// CULog(std::to_string(image->getSize().width / scene.getScale()).c_str());
+							// CULog(std::to_string(image->getSize().height / scene.getScale()).c_str());
+
+							// _background = physics2::BoxObstacle::alloc(b2Pos, background_size);
+							// _background->setName(BACKGROUND_NAME);
+							// _background->setBodyType(b2_staticBody);
+							// _background->setDensity(0.0f);
+							// _background->setFriction(0.0f);
+							// _background->setRestitution(0.0f);
+							// _background->setEnabled(false);
+							// _background->setSensor(true);
+							// scene.addObstacle(_background, sprite);
+
+							/*float startingX = colNum;
+							float startingY = rowPos;*/
+
+							// sprite = scene2::PolygonNode::allocWithTexture(image);
+
+							// float backgroundWidth = image->getWidth();
+
+							// float backgroundHeight = image->getHeight();
+
+							// In the future, compare sprite with image
+							// sprite->getWidth();
+							// sprite->getHeight();
+
+							// float DIMENSIONS[8] = { startingX, window_height - startingY, startingX, window_height - startingY - backgroundHeight, startingX + backgroundWidth, window_height - startingY - backgroundHeight, startingX + backgroundWidth, window_height - startingY };
+
+							// float DIMENSIONS[8] = {8.0f, 4.0f, 8.0f, 3.0f, 20.0f, 3.0f, 20.0f, 4.0f};
+
+							/*for (int i = 0; i < 8; i++) {
+								std::string val = "Point " + std::to_string(i) + ": " + std::to_string(DIMENSIONS[i]);
+								CULog(val.c_str());
+							}
+							CULog("Did we get here?");
+							Poly2 platform(reinterpret_cast<Vec2*>(DIMENSIONS), sizeof(DIMENSIONS) / sizeof(float) / 2);
+
+							EarclipTriangulator triangulator;
+							triangulator.set(platform.vertices);
+							triangulator.calculate();
+							platform.setIndices(triangulator.getTriangulation());
+							triangulator.clear();
+
+							_background = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_BOTTOM_LEFT);
+							_background->setName(std::string(PLATFORM_NAME));
+
 							_background->setBodyType(b2_staticBody);
-							_background->setDensity(0.0f);
-							_background->setFriction(0.0f);
-							_background->setRestitution(0.0f);
-							_background->setEnabled(false);
-							_background->setSensor(true);
-							scene.addObstacle(_background, sprite);
+							_background->setDensity(BASIC_DENSITY);
+							_background->setFriction(BASIC_FRICTION);
+							_background->setRestitution(BASIC_RESTITUTION);
+							_background->setDebugColor(DEBUG_COLOR);
+
+							platform *= scene.getScale();*/
+							//null texture because it is included in our main platform background
+
+							// std::shared_ptr<Texture> image = _assets->get<Texture>("textures\\placeholder_block_PLATFORM.png");
+
+							// sprite = scene2::PolygonNode::allocWithTexture(nullptr, platform);
+
+							// scene.addObstacle(_background, sprite, 1);
 						}
 						else if (type == "golden_door") {
 							CULog("identified class field as golden door");
@@ -616,6 +657,7 @@ void LevelModel::populate(GameScene& scene) {
 						}
 						else if (type == "avatar") {
 							CULog("identified class field as avatar");
+							CULog("TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
 							sprite = scene2::PolygonNode::allocWithTexture(image);
 							// harcoded window_height to 25
 
@@ -633,7 +675,7 @@ void LevelModel::populate(GameScene& scene) {
 							CULog("row number: ");
 							// % 25
 							CULog(std::to_string(rowPos).c_str());
-							_avatar = DudeModel::alloc(dudePos, image->getSize() / (2+scene.getScale()), scene.getScale());
+							_avatar = DudeModel::alloc(dudePos, image->getSize() / (2 + scene.getScale()), scene.getScale());
 							// _avatar = DudeModel::alloc(dudePos, image->getSize(), scene.getScale());
 							CULog(std::to_string(_avatar->getWidth()).c_str());
 							CULog(std::to_string(_avatar->getHeight()).c_str());
@@ -656,6 +698,32 @@ void LevelModel::populate(GameScene& scene) {
 					}
 				}
 			}
+
+			else if (objects != nullptr && objects->isArray()) {
+				//we are looking at the object layer now
+				CULog("we are now looking at the object layer");
+				for (int i = 0; i < objects->size(); i++) {
+					//here we are just initializing boundaries, not images or anything like that
+					std::shared_ptr<JsonValue> object = objects->get(i);
+					/*if (object->getString("name") == "avatar") {
+						loadAvatar(object);
+					}*/
+					if (object->getString("name") == "Floating_Platform") {
+						CULog("We are in loadFloatingBox!");
+						loadFloatingBoxPlatform(object, scene, sprite, window_height * 32.0f);
+					}
+					else if (object->getString("name") == "Main_Platform") {
+						CULog("We are in loadMainPlatform!");
+						loadMainPlatform(object, scene, sprite, window_height * 32.0f);
+					}
+					else {
+						CULog(object->getString("name").c_str());
+						CULog("We not doing anything right now");
+					}
+				}
+			}
+
+			
 		}
 	}
 
@@ -706,6 +774,10 @@ void LevelModel::populate(GameScene& scene) {
 	//scene.addObstacle(_avatar, sprite);
 
 	CULog("we have reached the end of populate in levelModel!!!!!!");
+}
+
+std::string LevelModel::getLevelScenery(std::string levelNumber) {
+	return "textures\\dream-background.png";
 }
 
 void LevelModel::loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height) {

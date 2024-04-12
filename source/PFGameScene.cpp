@@ -45,9 +45,9 @@ using namespace cugl;
 // #define SCENE_ASPECT 10.0/16.0
 
 /** Width of the game world in Box2d units */
-#define DEFAULT_WIDTH   50.0f
+#define DEFAULT_WIDTH   40.0f
 /** Height of the game world in Box2d units */
-#define DEFAULT_HEIGHT  40.0f
+#define DEFAULT_HEIGHT  25.0f
 
 #define INCLUDE_ROPE_BRIDGE false
 
@@ -281,14 +281,17 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     cugl::Rect rectB = cugl::Rect(Vec2::ZERO, computeActiveSize());
 
-    _background = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>("cutting_station"), rectB);
-
-    _bgScene->addChild(_background);
+    // _background = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>("cutting_station"), rectB);
+    // _background = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>(_level_model->getLevelScenery("1")));
+    // _bgScene->addChild(_background);
+    // _bgScene->addChild(_background);
     
 
     _target = std::make_shared<EnemyModel>();
-    currentLevel = level2;
-    loadLevel(currentLevel);
+    // i just changed level2 to _level_model
+    // this will change for boss battle levels and so forth
+    currentLevel = _level_model;
+    // loadLevel(currentLevel);
 
     //App class will set active true
     setActive(false);
@@ -296,10 +299,10 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _active = true;
     _complete = false;
     setDebug(false);
-    zoomCamera(0.15);
+    zoomCamera(0.25);
     // XNA nostalgia
     // Application::get()->setClearColor(Color4f::CORNFLOWER);
-    Application::get()->setClearColor(Color4::YELLOW);
+    Application::get()->setClearColor(Color4::BLACK);
     return true;
 }
 

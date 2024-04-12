@@ -39,8 +39,7 @@ public:
 	// Reference to the goal door
 	std::shared_ptr<cugl::physics2::BoxObstacle> _goalDoor;
 	// Reference to the background image
-	//std::unordered_map<std::shared_ptr<cugl::physics2::Obstacle>, std::shared_ptr<scene2::PolygonNode>> _drawings;
-	std::shared_ptr<cugl::physics2::BoxObstacle> _background;
+	std::shared_ptr<cugl::scene2::PolygonNode> _background;
 	// Reference to the number of enemies that make up a level
 	std::vector<std::shared_ptr<EnemyModel>> _enemies;
 	//The main platform image
@@ -79,6 +78,9 @@ public:
 
 	/** Clears the root scene graph node for the level*/
 	// void clearRootNode();
+
+	/**gives levelsceneray keyword*/
+	std::string getLevelScenery(const std::string levelNumber);
 
 	/**
 	 * Adds the physics object to the physics world and loosely couples it to the scene graph

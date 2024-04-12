@@ -1,69 +1,69 @@
 #include "Level1.h"
-//#include "../PFGameScene.h"
-//
-///** The goal door position */
-//static float GOAL_POS[] = { 4.0f,14.0f };
-//// float GOAL_POS[] = { 6.0f, 5.0f };
-///** The position of the spinning barrier */
-//static float SPIN_POS[] = { 13.0f,12.5f };
-///** The initial position of the dude */
-//static float DUDE_POS[] = { 2.5f, 5.0f };
-///** The position of the rope bridge */
-//static float BRIDGE_POS[] = { 9.0f, 3.8f };
-//
-//static float SHRIMP_POS[] = { 22.0f, 16.0f };
-//
-//static float EGG_POS[] = { 14.0f, 18.0f };
-//
-//static float RICE_POS[] = { 25.0f, 14.0f };
-//
-//static float BACKGROUND_POS[] = { 16.0f, 10.0f };
-//
-//
-//static float WALL[WALL_COUNT][WALL_VERTS] = {
-//	{16.0f, 20.0f,  0.0f, 20.0f,  0.0f,  0.0f,
-//	  1.0f,  0.0f,  1.0f, 19.5f, 16.0f, 19.5f },
-//	{32.0f, 20.0f, 16.0f, 20.0f, 16.0f, 19.5f,
-//	 31.0f, 19.5f, 31.0f,  0.0f, 32.0f,  0.0f }
-//};
-//
-//
-//
-///** The outlines of all of the platforms */
-//
-////float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
-////	{ 1.0f, 3.0f, 1.0f, 2.5f, 6.0f, 2.5f, 6.0f, 3.0f},
-////	{ 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
-////	{23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
-////	{26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
-////	{29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
-////	{24.0f, 8.5f,24.0f, 8.0f,27.0f, 8.0f,27.0f, 8.5f},
-////	{29.0f,10.0f,29.0f, 9.5f,31.0f, 9.5f,31.0f,10.0f},
-////	{23.0f,11.5f,23.0f,11.0f,27.0f,11.0f,27.0f,11.5f},
-////	{19.0f,12.5f,19.0f,12.0f,23.0f,12.0f,23.0f,12.5f},
-////	{ 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
-////};
-//
-//static float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
-//	{1.0f, 4.0f, 1.0f, 2.0f, 4.0f, 2.0f, 4.0f, 4.0f},
+#include "../PFGameScene.h"
+
+/** The goal door position */
+static float GOAL_POS[] = { 4.0f,14.0f };
+// float GOAL_POS[] = { 6.0f, 5.0f };
+/** The position of the spinning barrier */
+static float SPIN_POS[] = { 13.0f,12.5f };
+/** The initial position of the dude */
+static float DUDE_POS[] = { 2.5f, 5.0f };
+/** The position of the rope bridge */
+static float BRIDGE_POS[] = { 9.0f, 3.8f };
+
+static float SHRIMP_POS[] = { 22.0f, 16.0f };
+
+static float EGG_POS[] = { 14.0f, 18.0f };
+
+static float RICE_POS[] = { 25.0f, 14.0f };
+
+static float BACKGROUND_POS[] = { 16.0f, 10.0f };
+
+
+static float WALL[WALL_COUNT][WALL_VERTS] = {
+	{16.0f, 20.0f,  0.0f, 20.0f,  0.0f,  0.0f,
+	  1.0f,  0.0f,  1.0f, 19.5f, 16.0f, 19.5f },
+	{32.0f, 20.0f, 16.0f, 20.0f, 16.0f, 19.5f,
+	 31.0f, 19.5f, 31.0f,  0.0f, 32.0f,  0.0f }
+};
+
+
+
+/** The outlines of all of the platforms */
+
+//float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
+//	{ 1.0f, 3.0f, 1.0f, 2.5f, 6.0f, 2.5f, 6.0f, 3.0f},
 //	{ 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
-//	{9.5f, 6.0f, 9.5f, 5.0f, 12.5f, 5.0f, 12.5f, 6.0f},
-//	{15.0f, 8.5f, 15.0f, 7.0f, 20.0f, 4.5f, 20.0f, 6.0f},
-//	{23.0f, 4.0f, 23.0f, 3.0f, 27.0f, 3.0f, 27.0f, 4.0f},
-//	{28.0f, 5.0f, 28.0f, 4.0f, 30.0f, 8.0f, 30.0f, 9.0f},
-//	{23.0f, 10.0f, 23.0f, 9.f, 27.0f, 9.f, 27.0f, 10.f},
-//	{16.0f, 12.f, 16.0f, 10.0f, 22.0f, 12.0f, 22.0f, 10.f},
-//	{6.0f, 15.0f, 6.0f, 14.5f, 14.0f, 12.5f, 14.0f, 13.0f},
+//	{23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
+//	{26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
+//	{29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
+//	{24.0f, 8.5f,24.0f, 8.0f,27.0f, 8.0f,27.0f, 8.5f},
+//	{29.0f,10.0f,29.0f, 9.5f,31.0f, 9.5f,31.0f,10.0f},
+//	{23.0f,11.5f,23.0f,11.0f,27.0f,11.0f,27.0f,11.5f},
+//	{19.0f,12.5f,19.0f,12.0f,23.0f,12.0f,23.0f,12.5f},
 //	{ 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
 //};
-//
-///** The outlines of all of the platforms */
-//static float ALT_PLATFORMS[ALT_PLATFORM_COUNT][ALT_PLATFORM_VERTS] = {
-//	{ 1.0f, .5f, 1.0f, .0f, 33.0f, .0f, 33.0f, .50f}
-//};
-//
-//
-//void Level1::populate(GameScene& scene) {
+
+static float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
+	{1.0f, 4.0f, 1.0f, 2.0f, 4.0f, 2.0f, 4.0f, 4.0f},
+	{ 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
+	{9.5f, 6.0f, 9.5f, 5.0f, 12.5f, 5.0f, 12.5f, 6.0f},
+	{15.0f, 8.5f, 15.0f, 7.0f, 20.0f, 4.5f, 20.0f, 6.0f},
+	{23.0f, 4.0f, 23.0f, 3.0f, 27.0f, 3.0f, 27.0f, 4.0f},
+	{28.0f, 5.0f, 28.0f, 4.0f, 30.0f, 8.0f, 30.0f, 9.0f},
+	{23.0f, 10.0f, 23.0f, 9.f, 27.0f, 9.f, 27.0f, 10.f},
+	{16.0f, 12.f, 16.0f, 10.0f, 22.0f, 12.0f, 22.0f, 10.f},
+	{6.0f, 15.0f, 6.0f, 14.5f, 14.0f, 12.5f, 14.0f, 13.0f},
+	{ 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
+};
+
+/** The outlines of all of the platforms */
+static float ALT_PLATFORMS[ALT_PLATFORM_COUNT][ALT_PLATFORM_VERTS] = {
+	{ 1.0f, .5f, 1.0f, .0f, 33.0f, .0f, 33.0f, .50f}
+};
+
+
+void Level1::populate(GameScene& scene) {
 //	_assets = scene.getAssets();
 //	_scale = scene.getScale();
 //	_background = scene.getBackground();
@@ -214,102 +214,102 @@
 //				// breaks as we don't want to do anything else in this case
 //				continue;
 //			}
-//			// in this example, our display size is 1280 by 800, where the width is 40 tiles and the height is 25
-//			// so, there will 40 columns and 25 rows
+			// in this example, our display size is 1280 by 800, where the width is 40 tiles and the height is 25
+			// so, there will 40 columns and 25 rows
+
+			// rowNum, colNum now will represent gridMapping of tiles
+			// now, we have to iterate through data array and see what our 
+			// values are there
+
+			//in our level_designer, there will be enums of possible things to add in
+			// WALL, PLATFORM, BACKGROUND, DUDE, ENEMY, AND OTHERS THAT ARISE.
+			// Each of our images in assets/textures will thus end in _BACKGROUND, or _ENEMY, or etc.
+
+
+			//if (data != nullptr && data->isArray()) {
+			//	for (int j = 0; j < data->size(); j++) {
+			//		colNum = j % width;
+			//		if (colNum == 0 && j != 0) {
+			//			rowNum += 1;
+			//		}
+			//		int tileId = data->get(j)->asInt();
+
+
+			//		if (idToImage.find(tileId) != idToImage.end()) {
+			//			std::string value = idToImage.at(tileId);
+
+			//			//checking what type exists here
+			//			if (value.find("_ENEMY.tsj") != std::string::npos) {
+			//				createEnemy(value, assets, scene, rowNum, colNum);
+			//			}
+			//			else if (value.find("_GOAL_DOOR.tsj") != std::string::npos) {
+			//				createGoalDoor(value, assets, scene, rowNum, colNum);
+			//			}
+			//			else if (value.find("_DUDE.tsj") != std::string::npos) {
+			//				CULog("CHECKING IN ON THE DUDE");
+			//				createDude(value, assets, scene, rowNum, colNum);
+			//			}
+			//			else if (value.find("_BORDER.tsj") != std::string::npos) {
+			//				borderNumber = borderNumber + 1;
+			//				createPlatform(value, assets, scene, rowNum, colNum, borderNumber);
+			//				
+			//			}
+			//			else if (value.find("_PLATFORM.tsj") != std::string::npos) {
+			//				platformNumber = platformNumber + 1;
+			//				createPlatform(value, assets, scene, rowNum, colNum, platformNumber);
+			//			}
+			//			// WE WILL NEED TO ADD MORE?
+			//			CULog("UH-OH");
+
+			//		}
+
+
+			//	}
+			//}
+
+		// }
+	// }
+
+
+}
+
+//COME BACK TO THIS ONE
+//void Level1::createBorder(std::string path, std::shared_ptr<AssetManager>& assets, GameScene& scene, int row, int col, int borderNumber) {
 //
-//			// rowNum, colNum now will represent gridMapping of tiles
-//			// now, we have to iterate through data array and see what our 
-//			// values are there
+//	assets->load<Texture>(path, path);
+//	image = assets->get<Texture>(path);
 //
-//			//in our level_designer, there will be enums of possible things to add in
-//			// WALL, PLATFORM, BACKGROUND, DUDE, ENEMY, AND OTHERS THAT ARISE.
-//			// Each of our images in assets/textures will thus end in _BACKGROUND, or _ENEMY, or etc.
+//	std::string wname = "border";
+//	//for (int ii = 0; ii < WALL_COUNT; ii++) {
+//	//	std::shared_ptr<physics2::PolygonObstacle> wallobj;
 //
+//	//	Poly2 wall(reinterpret_cast<Vec2*>(WALL[ii]), WALL_VERTS / 2);
+//	//	// Call this on a polygon to get a solid shape
+//	//	EarclipTriangulator triangulator;
+//	//	triangulator.set(wall.vertices);
+//	//	triangulator.calculate();
+//	//	wall.setIndices(triangulator.getTriangulation());
+//	//	triangulator.clear();
 //
-//			//if (data != nullptr && data->isArray()) {
-//			//	for (int j = 0; j < data->size(); j++) {
-//			//		colNum = j % width;
-//			//		if (colNum == 0 && j != 0) {
-//			//			rowNum += 1;
-//			//		}
-//			//		int tileId = data->get(j)->asInt();
+//	//	wallobj = physics2::PolygonObstacle::allocWithAnchor(wall, Vec2::ANCHOR_CENTER);
+//	//	// You cannot add constant "".  Must stringify
+//	//	wallobj->setName(std::string(WALL_NAME) + cugl::strtool::to_string(ii));
+//	//	wallobj->setName(wname);
 //
+//	//	// Set the physics attributes
+//	//	wallobj->setBodyType(b2_staticBody);
+//	//	wallobj->setDensity(BASIC_DENSITY);
+//	//	wallobj->setFriction(BASIC_FRICTION);
+//	//	wallobj->setRestitution(BASIC_RESTITUTION);
+//	//	wallobj->setDebugColor(DEBUG_COLOR);
 //
-//			//		if (idToImage.find(tileId) != idToImage.end()) {
-//			//			std::string value = idToImage.at(tileId);
-//
-//			//			//checking what type exists here
-//			//			if (value.find("_ENEMY.tsj") != std::string::npos) {
-//			//				createEnemy(value, assets, scene, rowNum, colNum);
-//			//			}
-//			//			else if (value.find("_GOAL_DOOR.tsj") != std::string::npos) {
-//			//				createGoalDoor(value, assets, scene, rowNum, colNum);
-//			//			}
-//			//			else if (value.find("_DUDE.tsj") != std::string::npos) {
-//			//				CULog("CHECKING IN ON THE DUDE");
-//			//				createDude(value, assets, scene, rowNum, colNum);
-//			//			}
-//			//			else if (value.find("_BORDER.tsj") != std::string::npos) {
-//			//				borderNumber = borderNumber + 1;
-//			//				createPlatform(value, assets, scene, rowNum, colNum, borderNumber);
-//			//				
-//			//			}
-//			//			else if (value.find("_PLATFORM.tsj") != std::string::npos) {
-//			//				platformNumber = platformNumber + 1;
-//			//				createPlatform(value, assets, scene, rowNum, colNum, platformNumber);
-//			//			}
-//			//			// WE WILL NEED TO ADD MORE?
-//			//			CULog("UH-OH");
-//
-//			//		}
-//
-//
-//			//	}
-//			//}
-//
-//		}
-//	}
-//
-//
+//	//	wall *= _scale;
+//	//	sprite = scene2::PolygonNode::allocWithTexture(image, wall);
+//	//	scene.addObstacle(wallobj, sprite, 1);  // All walls share the same texture
+//	//}
 //}
-//
-////COME BACK TO THIS ONE
-////void Level1::createBorder(std::string path, std::shared_ptr<AssetManager>& assets, GameScene& scene, int row, int col, int borderNumber) {
-////
-////	assets->load<Texture>(path, path);
-////	image = assets->get<Texture>(path);
-////
-////	std::string wname = "border";
-////	//for (int ii = 0; ii < WALL_COUNT; ii++) {
-////	//	std::shared_ptr<physics2::PolygonObstacle> wallobj;
-////
-////	//	Poly2 wall(reinterpret_cast<Vec2*>(WALL[ii]), WALL_VERTS / 2);
-////	//	// Call this on a polygon to get a solid shape
-////	//	EarclipTriangulator triangulator;
-////	//	triangulator.set(wall.vertices);
-////	//	triangulator.calculate();
-////	//	wall.setIndices(triangulator.getTriangulation());
-////	//	triangulator.clear();
-////
-////	//	wallobj = physics2::PolygonObstacle::allocWithAnchor(wall, Vec2::ANCHOR_CENTER);
-////	//	// You cannot add constant "".  Must stringify
-////	//	wallobj->setName(std::string(WALL_NAME) + cugl::strtool::to_string(ii));
-////	//	wallobj->setName(wname);
-////
-////	//	// Set the physics attributes
-////	//	wallobj->setBodyType(b2_staticBody);
-////	//	wallobj->setDensity(BASIC_DENSITY);
-////	//	wallobj->setFriction(BASIC_FRICTION);
-////	//	wallobj->setRestitution(BASIC_RESTITUTION);
-////	//	wallobj->setDebugColor(DEBUG_COLOR);
-////
-////	//	wall *= _scale;
-////	//	sprite = scene2::PolygonNode::allocWithTexture(image, wall);
-////	//	scene.addObstacle(wallobj, sprite, 1);  // All walls share the same texture
-////	//}
-////}
-//
-//
+
+
 //void Level1::createPlatform(std::string path, std::shared_ptr<AssetManager>& assets, GameScene& scene, int row, int col, int platformNumber) {
 //
 //
@@ -508,5 +508,5 @@
 //	scene.setAvatar(_avatar);
 //	scene.setEnemies(_enemies);
 //	scene.setGoalDoor(_goalDoor);
-//
-//}
+
+// }
