@@ -40,6 +40,7 @@ bool EnemyModel::init(const Vec2& pos, const Size& size, float scale, EnemyType 
         _attacktime = false;
         _preparetime= 0;
         _shooted = false;
+        _vulnerable = false;
 
         return true;
     }
@@ -94,7 +95,11 @@ void EnemyModel::takeDamage(float damage, const int attackDirection) {
         _health -= damage;
         if (_health < 0) {
             _health = 0;
-        }else {
+        }
+        else {
+            if (_health == 1) {
+                setVulnerable(true);
+            }
             b2Vec2 impulse = b2Vec2(-attackDirection * 5, 10);
             _body->ApplyLinearImpulseToCenter(impulse, true);
             _knockbackTime = 1;
@@ -124,7 +129,7 @@ void EnemyModel::update(float dt) {
         return;
     }
     
-    if (_knockbackTime > 1) {
+    if (_knockbackTime > 0) {
         _knockbackTime -= dt;
         return;
     }else if (_preparetime > 0) {
@@ -213,7 +218,7 @@ void EnemyModel::createAttack(GameScene& scene) {
     Vec2 pos = getPosition();
 
     std::shared_ptr<EnemyAttack> attack = EnemyAttack::alloc(pos,
-        cugl::Size(ATTACK_W * image->getSize().width / _scale,
+        cugl::Size(image->getSize().width / _scale,
             ATTACK_H * image->getSize().height / _scale));
 
     pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
@@ -226,10 +231,11 @@ void EnemyModel::createAttack(GameScene& scene) {
 	}
     attack->setName("enemy_attack");
     attack->setBullet(true);
-    attack->setGravityScale(0.1);
+    attack->setGravityScale(0.2);
     attack->setDebugColor(DEBUG_COLOR);
     attack->setDrawScale(_scale);
     attack->setEnabled(true);
+    attack->setrand(false);
 
 
 
@@ -242,7 +248,7 @@ void EnemyModel::createAttack(GameScene& scene) {
     std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
     AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);
 
-    _attacks.push_back(attack);
+
 }
 
 

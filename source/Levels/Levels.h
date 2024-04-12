@@ -51,6 +51,7 @@
 /** The keys for the attack texture in asset manager*/
 #define ATTACK_TEXTURE_R  "attack_r"
 #define ATTACK_TEXTURE_L  "attack_l"
+#define SHAKE_TEXTURE  "shake"
 /** The name of a bullet (for object identification) */
 #define ATTACK_NAME     "attack"
 /** The name of a wall (for object identification) */

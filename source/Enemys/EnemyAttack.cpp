@@ -21,6 +21,7 @@ bool EnemyAttack::init(cugl::Vec2 pos, const cugl::Size& size) {
 		_faceright = false;
 		_direction = -1;
 		_shoot = true;
+		_straight = Vec2(-87,-87);
 
         return true;
     }
@@ -54,11 +55,35 @@ void EnemyAttack::update(float dt) {
 	}
 	if (_shoot) {
 		_shoot = false;
-		_body->ApplyLinearImpulseToCenter(b2Vec2(3* _direction, 6), true);
+		if (_rand) {
+			_body->ApplyLinearImpulseToCenter(b2Vec2(10*static_cast<float>(rand()) / static_cast<float>(RAND_MAX)-5, 15), true);
+		}
+		else if (_straight!= Vec2(-87, -87)) {
+			b2Vec2 targetDirection = b2Vec2(_straight.x - getPosition().x, _straight.y - getPosition().y);
+			targetDirection.Normalize();
+			_body->ApplyLinearImpulseToCenter(b2Vec2(targetDirection.x * 30, targetDirection.y * 30), true);
+			_angle = atan2(_straight.y - getPosition().y, _straight.x - getPosition().x) + M_PI;
+		}
+		else {
+			_body->ApplyLinearImpulseToCenter(b2Vec2(2 * _direction, 3), true);
+		}
 	}
 
 	float currentAngle = _body->GetAngle();
-	_body->SetTransform(_body->GetPosition(), currentAngle + M_PI * dt);
+	b2Vec2 velocity = _body->GetLinearVelocity();
+	if (_straight== Vec2(-87, -87)) {
+		if (velocity.x < 0) {
+			_body->SetTransform(_body->GetPosition(), currentAngle + M_PI * dt);
+		}
+		else {
+			_body->SetTransform(_body->GetPosition(), currentAngle - M_PI * dt);
+		}
+	}
+	else {
+		_body->SetTransform(_body->GetPosition(), _angle);
+	}
+
+
 
 	if (_node != nullptr) {
 		_node->setPosition(getPosition()*_drawScale);
@@ -73,6 +98,7 @@ void EnemyAttack::update(float dt) {
  * disposed, a Attack may not be used until it is initialized again.
  */
 void EnemyAttack::dispose() {
+	_geometry = nullptr;
 	_node = nullptr;
 }
 

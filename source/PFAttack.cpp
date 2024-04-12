@@ -21,7 +21,23 @@ using namespace cugl;
 
 //lifetime in frames
 
+bool Attack::init(cugl::Vec2 pos, const cugl::Size& size) {
+	Size scaledSize = size;
+	scaledSize.width *= 1;
+	scaledSize.height *= 1;
+	if (BoxObstacle::init(pos, scaledSize)) {
+		setDensity(1);
+		_killme = false;
+		_lifetime = 3;
+		_faceright = false;
+		_go = false;
+		_faceright = false;
 
+		return true;
+	}
+
+	return false;
+}
 /**
  * Updates the object's physics state (NOT GAME LOGIC).
  *
@@ -31,12 +47,23 @@ using namespace cugl;
  */
 void Attack::update(float dt) {
 	BoxObstacle::update(dt);
-	if (_lifetime == 0) {
-		_killme = true;
+	if (_go) {
+		if (_faceright) {
+			_body->SetLinearVelocity(b2Vec2(8, 0));
+		}
+		else {
+			_body->SetLinearVelocity(b2Vec2(-8, 0));
+		}
 	}
 	else {
-		_lifetime = (_lifetime > 0 ? _lifetime - 1 : 0);
+		if (_lifetime == 0) {
+			_killme = true;
+		}
+		else {
+			_lifetime = (_lifetime > 0 ? _lifetime - 1 : 0);
+		}
 	}
+
 
 	if (_node != nullptr) {
 		_node->setPosition(getPosition()*_drawScale);

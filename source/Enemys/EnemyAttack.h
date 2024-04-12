@@ -45,9 +45,14 @@ protected:
 
     bool _shoot;
 
+    bool _rand;
+
     std::string _sensorName;
 
     b2Fixture* _sensorFixture;
+    cugl::Vec2 _straight;
+
+    float _angle;
 
 public:
 #pragma mark Constructors
@@ -97,7 +102,7 @@ public:
         return (result->init(pos, size) ? result : nullptr);
     }
 
-    bool EnemyAttack::init(cugl::Vec2 pos, const cugl::Size& size);
+    bool init(cugl::Vec2 pos, const cugl::Size& size);
 #pragma mark -
 #pragma mark Animation
     /**
@@ -155,6 +160,8 @@ public:
     void releaseFixtures();
     void createFixtures();
     std::string* getSensorName() { return &_sensorName; };
+    void setrand(bool rand=false) { _rand = rand; }
+    void setstraight(cugl::Vec2 straight) { _straight = straight; }
 };
 
 #endif /* __PF_ENEMY_ATTACK_MODEL_H__ */

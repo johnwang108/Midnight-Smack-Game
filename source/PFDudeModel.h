@@ -59,11 +59,11 @@
 #pragma mark -
 #pragma mark Physics Constants
 /** The factor to multiply by the input */
-#define DUDE_FORCE      sqrt(2 * (9.8) * getHeight() * 1 ) * getMass()
+#define DUDE_FORCE      sqrt(2 * (9.8) * getHeight() * 30 ) * getMass()
 /** The amount to slow the character down */
-#define DUDE_DAMPING    5.0f
+#define DUDE_DAMPING    10.0f
 /** The maximum character speed */
-#define DUDE_MANUEL_MAXSPEED   7.0f
+#define DUDE_MANUEL_MAXSPEED   5.0f
 
 
 #pragma mark -
@@ -111,6 +111,15 @@ protected:
     int _dashNum;
     float _dashCooldown;
     bool _contactingWall;
+
+    float _health;
+
+    float _healthCooldown;
+    float _knockbackTime;
+    float _lastDamageTime;
+
+    float healthPercentage;
+    std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
 
 	/**
 	* Redraws the outline of the physics fixtures to the debug node
@@ -483,8 +492,11 @@ public:
      */
     void applyForce(float h, float v);
 
-
+    void DudeModel::takeDamage(float damage, const int attackDirection);
 	
+    float getHealth() { return _health; }
+
+    void DudeModel::sethealthbar(std::shared_ptr<cugl::AssetManager> asset);
 };
 
 #endif /* __PF_DUDE_MODEL_H__ */

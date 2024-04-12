@@ -1,4 +1,4 @@
-#include "Level2.h"
+#include "Level3.h"
 #include "../PFGameScene.h"
 
 /** The goal door position */
@@ -53,7 +53,7 @@ static float ALT_PLATFORMS[ALT_PLATFORM_COUNT][ALT_PLATFORM_VERTS] = {
 	{ 1.0f, .5f, 1.0f, .0f, 33.0f, .0f, 33.0f, .50f}
 };
 
-void Level2::populate(GameScene& scene) {
+void Level3::populate(GameScene& scene) {
 	_assets = scene.getAssets();
 	_scale = scene.getScale();
 	_background = scene.getBackground();
@@ -62,19 +62,19 @@ void Level2::populate(GameScene& scene) {
 	_goalDoor = scene.getGoalDoor();
 
 # pragma mark: Background
-	//Vec2 background_pos = BACKGROUND_POS;
+	Vec2 background_pos = BACKGROUND_POS;
 	std::shared_ptr<Texture> image = _assets->get<Texture>("background-1");
 	std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
-	//Size background_size(image->getSize().width / _scale, image->getSize().height / _scale);
-	//_background = physics2::BoxObstacle::alloc(background_pos, background_size);
-	//_background->setName(BACKGROUND_NAME);
-	//_background->setBodyType(b2_staticBody);
-	//_background->setDensity(0.0f);
-	//_background->setFriction(0.0f);
-	//_background->setRestitution(0.0f);
-	//_background->setEnabled(false);
-	//_background->setSensor(true);
-	//scene.addObstacle(_background, sprite);
+	Size background_size(image->getSize().width / _scale, image->getSize().height / _scale);
+	_background = physics2::BoxObstacle::alloc(background_pos, background_size);
+	_background->setName(BACKGROUND_NAME);
+	_background->setBodyType(b2_staticBody);
+	_background->setDensity(0.0f);
+	_background->setFriction(0.0f);
+	_background->setRestitution(0.0f);
+	_background->setEnabled(false);
+	_background->setSensor(true);
+	scene.addObstacle(_background, sprite);
 
 
 #pragma mark : Goal door
@@ -132,7 +132,7 @@ void Level2::populate(GameScene& scene) {
 	}
 
 #pragma mark : Platforms
-	for (int ii = 0; ii < ALT_PLATFORM_COUNT; ii++) {
+	for (int ii = 0; ii < PLATFORM_COUNT; ii++) {
 		std::shared_ptr<physics2::PolygonObstacle> platobj;
 		Poly2 platform(reinterpret_cast<Vec2*>(ALT_PLATFORMS[ii]), sizeof(ALT_PLATFORMS[ii]) / sizeof(float) / 2);
 
@@ -173,6 +173,7 @@ void Level2::populate(GameScene& scene) {
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
 	AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
+
 	Vec2 shrimp_pos = SHRIMP_POS;
 	image = _assets->get<Texture>(BULL_TEXTURE);
 	std::shared_ptr<BullModel> _bull = BullModel::alloc(shrimp_pos, image->getSize() / _scale, _scale);
@@ -180,7 +181,6 @@ void Level2::populate(GameScene& scene) {
 	_bull->setSceneNode(sprite);
 	_bull->setName(BULL_TEXTURE);
 	_bull->setDebugColor(DEBUG_COLOR);
-	_bull->setassets(_assets);
 	scene.addObstacle(_bull, sprite);
 	/*
 	Vec2 egg_pos = EGG_POS;

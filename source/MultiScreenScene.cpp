@@ -1,10 +1,23 @@
 #include "MultiScreenScene.h"
 #include "PFDollarScene.h"
 #include <algorithm> 
+#include "Levels/Levels.h"
 
-#define CAMERA_MOVE_SPEED 10.0f
+#define CAMERA_MOVE_SPEED 50.0f
+#define FEEDBACK_DURATION 2.0f
 
 using namespace cugl;
+
+namespace LayoutPositions {
+	Vec2 Top(const Vec2& size) { return Vec2(0, size.y); }
+	Vec2 MidLeft(const Vec2& size) { return Vec2(-size.x, 0); }
+	Vec2 Mid(const Vec2& size) { return Vec2(0, 0); }
+	Vec2 MidRight(const Vec2& size) { return Vec2(size.x, 0); }
+	Vec2 Bottom(const Vec2& size) { return Vec2(0, -size.y); }
+ }
+
+std::string targets[5] = { "pigtail", "circle", "vertSwipe", "horizSwipe", "v" };
+
 
 //basic math funcs
 float abs_min(float a, float b) {
@@ -55,7 +68,7 @@ void MultiScreenScene::dispose() {
 	_scenes[4] = nullptr;
 }
 
-bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets) {
+bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
 	_size = Application::get()->getDisplaySize();
 	if (assets == nullptr) {
 		return false;
@@ -69,133 +82,203 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets) {
 
 	_assets = assets;
 
-	CULog("Size: %f %f", _size.width, _size.height);
-	_input = std::make_shared<PlatformInput>();
+	//MULTISCREEN IS RESPONSIBLE FOR INITING THE SHARED INPUT CONTROLLER. TEMPORARY SOLUTION
+	_input = input;
 	_input->init(getBounds());
 
-	std::shared_ptr<DollarScene> scene = std::make_shared<DollarScene>();
-	float x_offset = 0;
-	float y_offset = _size.height;
-	cugl::Rect rect = cugl::Rect(Vec2::ZERO, _size);
-	std::string texture = "panfry_station";
-	scene->init(_assets, _input, rect, texture);
-	scene->setAnchor(Vec2::ANCHOR_CENTER);
-	scene->setPosition(x_offset, y_offset);
-	scene->setVisible(true);
-	setScene(0, scene);
+	//_input = std::make_shared<PlatformInput>();
+	//_input->init(getBounds());
 
-	x_offset = -(_size.width);
-	y_offset = 0;
-	rect = cugl::Rect(Vec2::ZERO, _size);
-	texture = "panfry_station";
-	scene = std::make_shared<DollarScene>();
-	scene->init(_assets, _input, rect, texture);
-	scene->setAnchor(Vec2::ANCHOR_CENTER);
-	scene->setPosition(x_offset, y_offset);
-	scene->setVisible(true);
-	setScene(1, scene);
+	_stationMap;
+	_stationMap["pot_station"] = 0;
+	_stationMap["prep_station"] = 1;
+	_stationMap["panfry_station"] = 2;
+	_stationMap["cutting_station"] = 3;
+	_stationMap["blending_station"] = 4;
 
-	x_offset = 0;
-	y_offset = 0;
-	rect = cugl::Rect(Vec2::ZERO, _size);
-	texture = "panfry_station";
-	scene = std::make_shared<DollarScene>();
-	scene->init(_assets, _input, rect, texture);
-	scene->setAnchor(Vec2::ANCHOR_CENTER);
-	scene->setPosition(x_offset, y_offset);
-	scene->setVisible(true);
-	setScene(2, scene);
+	std::string stationTextures[5] = {"pot_station","prep_station" ,"panfry_station" ,"cutting_station" ,"blending_station"};
+	initStations(stationTextures, 5);
 
-	x_offset = _size.width;
-	y_offset = 0;
-	rect = cugl::Rect(Vec2::ZERO, _size);
-	texture = "panfry_station";
-	scene = std::make_shared<DollarScene>();
-	scene->init(_assets, _input, rect, texture);
-	scene->setAnchor(Vec2::ANCHOR_CENTER);
-	scene->setPosition(x_offset, y_offset);
-	scene->setVisible(true);
-	setScene(3, scene);
 
-	x_offset = 0;
-	y_offset = -(_size.height);
-	rect = cugl::Rect(Vec2::ZERO, _size);
-	texture = "panfry_station";
-	scene = std::make_shared<DollarScene>();
-	scene->init(_assets, _input, rect, texture);
-	scene->setAnchor(Vec2::ANCHOR_CENTER);
-	scene->setPosition(x_offset, y_offset);
-	scene->setVisible(true);
-	setScene(4, scene);
+	_scenes[2]->setFocus(true);
 
-	addChild(_scenes[0]);
-	addChild(_scenes[1]);
-	addChild(_scenes[2]);
-	addChild(_scenes[3]);
-	addChild(_scenes[4]);
 
-	_active = true;
-
+	//init inactive
+	setActive(false);
+	_transitionScenes = false;
+	
 	_curr = 2;
 	_animating = false;
 	Application::get()->setClearColor(Color4::BLACK);
+
+
+	_startTime = Timestamp();
+
+	_uiScene = cugl::Scene2::alloc(_size);
+	_uiScene->init(_size);
+	_uiScene->setActive(true);
+	
+	_timer = scene2::Label::allocWithText("godfhohofgji", _assets->get<Font>(MESSAGE_FONT));
+
+	_timer->setAnchor(Vec2::ANCHOR_CENTER);
+	_timer->setPosition(_size.width/2, _size.height - _timer->getHeight());
+	_timer->setForeground(Color4::BLACK);
+
+	_gestureFeedback = scene2::Label::allocWithText("Perfect", _assets->get<Font>(MESSAGE_FONT));
+	_gestureFeedback->setAnchor(Vec2::ANCHOR_TOP_CENTER);
+	_gestureFeedback->setPosition(_size.width / 2, _size.height - _gestureFeedback->getHeight());
+	_gestureFeedback->setForeground(Color4::BLACK);
+	_gestureFeedback->setVisible(false);
+
+	_uiScene->addChild(_timer);
+	_uiScene->addChild(_gestureFeedback);
+
+	tempPopulate();
+
+	_finishedOrders = false;
 
 	return true;
 
 }
 
+void MultiScreenScene::initStations(std::string textures[], int size) {
+	std::shared_ptr<DollarScene> scene;
+	
+	cugl::Rect rect;
+	std::vector<Vec2> positions = {
+		LayoutPositions::Top(_size),
+		LayoutPositions::MidLeft(_size),
+		LayoutPositions::Mid(_size),
+		LayoutPositions::MidRight(_size),
+		LayoutPositions::Bottom(_size)
+	};
+
+	for (int i = 0; i < size; i++) {
+		scene = std::make_shared<DollarScene>();
+				
+		rect = cugl::Rect(Vec2::ZERO, _size);
+		scene->init(_assets, _input, rect, textures[i]);
+		scene->setAnchor(Vec2::ANCHOR_CENTER);
+		scene->setPosition(positions[i]);
+		scene->setVisible(true);
+		setScene(i, scene);
+	}
+
+	for (int i = 0; i < size; i++) {
+		addChild(_scenes[i]);
+	}
+}
+
+void MultiScreenScene::readLevel(std::shared_ptr<JsonValue> level) {
+	std::shared_ptr<JsonValue> events = level->get("events");
+	if (events->type() == JsonValue::Type::ArrayType) {
+		for (int i = 0; i < events->size(); i++) {
+			std::shared_ptr<JsonValue> item = events->get(i);
+			
+		}
+	}
+}
+ 
+
 void MultiScreenScene::update(float timestep) {
 	
-
 }
 
 void MultiScreenScene::preUpdate(float timestep) {
-	//_scenes[_curr]->update();
+	Timestamp now = Timestamp();
+
+	//CULog("%llu", now.ellapsedMillis(_startTime));
+
+	_currentTime = now.ellapsedMillis(_startTime) / 1000;
+	_timer->setText(std::to_string((int) _currentTime));
+
+	
+	if (!_finishedOrders && _orders[_newOrderIndex].getStartTime() <= _currentTime) {
+		CULog("found order, %d", _newOrderIndex);
+		Order upcomingOrder = _orders[_newOrderIndex];
+		int stationIdx = _stationMap[upcomingOrder.getStation()];
+		_scenes[stationIdx]->setTargetGestures(upcomingOrder.getGestures());
+
+		if (_newOrderIndex < _orders.size() - 1) _newOrderIndex++;
+		else {
+			_finishedOrders = true;
+		}
+	}
 
 	_input->update(timestep);
 
-	_scenes[0]->update(timestep);
-	_scenes[1]->update(timestep);
-	_scenes[2]->update(timestep);
-	_scenes[3]->update(timestep);
-	_scenes[4]->update(timestep);
+	for (int i = 0; i < 5; i++) {
+		_scenes[i]->update(timestep);
+	}
+
+	if (_scenes[_curr]->getJustCompletedGesture()) {
+		_gestureInitiatedTime = Timestamp();
+		_gestureInitiatedTime.mark();
+		_gestureFeedback->setPositionY(_size.height - _gestureFeedback->getHeight());
+	}
+	if (now.ellapsedMillis(_gestureInitiatedTime) / 1000.0f < FEEDBACK_DURATION) {
+		int lastResult = _scenes[_curr]->getLastResult();
+		if (lastResult != -1) {
+			_gestureFeedback->setText(_feedbackMessages[lastResult]);
+			_gestureFeedback->setPositionY(_gestureFeedback->getPositionY() - 1.0f);
+			_gestureFeedback->setVisible(true);
+		}
+		
+	}
+	else {
+		_gestureFeedback->setText("");
+		_gestureFeedback->setVisible(false);
+	}
 
 	if (_input->didExit()) {
 		CULog("Shutting down");
 		Application::get()->quit();
 	}
 
-	
+	if (_input->didTransition()) {
+		transition(true);
+		CULog("______________________________________________________________________________________________________");
+		return;
+	}
+
 	//if not animating, listen for screen change input. TODO for three fingered swipes to switch scenes
 	if (!_animating) {
 		if (_input->getHorizontal() > 0) {
 			if ((_curr == 1) || (_curr == 2)) {
+				_scenes[_curr]->setFocus(false);
 				_curr++;
+				_scenes[_curr]->setFocus(true);
 				_animating = true;
-				CULog("%d", _curr);
 			}
 		}
 		else if (_input->getHorizontal() < 0) {
 			if ((_curr == 2) || (_curr == 3)) {
+				_scenes[_curr]->setFocus(false);
 				_curr--;
+				_scenes[_curr]->setFocus(true);
 				_animating = true;
-				CULog("%d", _curr);
 			}
 		}
 
 		else if (_input->getVertical() > 0) {
 			if ((_curr == 2) || (_curr == 4)) {
+				_scenes[_curr]->setFocus(false);
 				_curr -= 2;
+				_scenes[_curr]->setFocus(true);
 				_animating = true;
-				CULog("%d", _curr);
 			}
 		}
 		else if (_input->getVertical() < 0) {
 			if ((_curr == 0) || (_curr == 2)) {
+				_scenes[_curr]->setFocus(false);
 				_curr += 2;
+				_scenes[_curr]->setFocus(true);
 				_animating = true;
-				CULog("%d", _curr);
 			}
+		}
+		// check for swipes now
+		if (!_animating) {
+			
 		}
 
 	}
@@ -207,14 +290,63 @@ void MultiScreenScene::preUpdate(float timestep) {
 	else {
 		_animating = false;
 	}
+
+
+
+	
 }
 
 
+int MultiScreenScene::determineSwipeDirection() {
+	Vec2 swipeDelta = _input->getSwipeDelta();
+
+	Vec2 normSwipeDelta = swipeDelta.getNormalization();
+
+	if (std::fabs(normSwipeDelta.x) > std::fabs(normSwipeDelta.y)) {
+		if (normSwipeDelta.x > 0) { 
+			return 1;
+		}
+	}
+}
 
 void MultiScreenScene::fixedUpdate(float timestep) {
+
 
 }
 
 void MultiScreenScene::postUpdate(float timestep) {
 
+}
+
+//Marks transitioning between cooking and platforming. Call this method with t = true when you want to transition away from this scene
+void MultiScreenScene::transition(bool t) {
+	_transitionScenes = t;
+}
+
+void MultiScreenScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
+	_uiScene->render(batch);
+}
+
+void MultiScreenScene::tempPopulate() {
+	std::vector<std::string> newGests = { "pigtail", "circle", "v" };
+	Order order1 = Order("pot", newGests, 4.0);
+	std::vector<std::string> newGests2 = { "circle", "v", "circle" };
+	Order order2 = Order("panfry", newGests2, 6.0);
+
+	_orders = { order1, order2 };
+	_newOrderIndex = 0;
+	// TODO: Sort orders by time so we can just keep track of the index we've sent orders up to
+	// i.e. once we've sent an order in update we can update the index to be the next new order
+}
+
+void MultiScreenScene::unfocusAll() {
+	for (int i = 0; i < 5; i++) {
+		if (_scenes[i] != nullptr) {
+			_scenes[i]->setFocus(false);
+		}
+	}
+}
+
+void MultiScreenScene::focusCurr() {
+	_scenes[_curr]->setFocus(true);
 }
