@@ -174,26 +174,23 @@ void Level2::populate(GameScene& scene) {
 	AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
 	Vec2 shrimp_pos = SHRIMP_POS;
-	image = _assets->get<Texture>(BULL_TEXTURE);
-	std::shared_ptr<BullModel> _bull = BullModel::alloc(shrimp_pos, image->getSize() / _scale, _scale);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_bull->setSceneNode(sprite);
+
+	image = _assets->get<Texture>("bullIdle");
+	std::shared_ptr<BullModel> _bull = BullModel::alloc(shrimp_pos, BULL_SIZE_DEFAULT, _scale);
+	spritenode = EntitySpriteNode::allocWithSheet(image,3,4,12);
+	spritenode->setAnchor(Vec2(0.5f, 0.43f));
+	spritenode->setPosition(shrimp_pos);
+	_bull->setSceneNode(spritenode);
 	_bull->setName(BULL_TEXTURE);
 	_bull->setDebugColor(DEBUG_COLOR);
 	_bull->setassets(_assets);
-	_bull->sethealthbar(scene);
-	scene.addObstacle(_bull, sprite);
-	/*
-	Vec2 egg_pos = EGG_POS;
-	image = _assets->get<Texture>(EGG_TEXTURE);
-	std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc(egg_pos, image->getSize() / (_scale), _scale, EnemyType::egg);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_enemy->setSceneNode(sprite);
-	_enemy->setName(ENEMY_NAME);
-	_enemy->setDebugColor(DEBUG_COLOR);
-	scene.addObstacle(_enemy, sprite);
-	_enemies.push_back(_enemy);
-	*/
+
+	_bull->addActionAnimation("bullIdle", _assets->get<Texture>("bullIdle"), 3, 4, 12, 1.0f, false);
+	_bull->addActionAnimation("bullAttack", _assets->get<Texture>("bullAttack"), 5, 5, 25, 2.0f, false);
+	_bull->addActionAnimation("bullTelegraph", _assets->get<Texture>("bullTelegraph"), 3, 4, 10, 1.0f, false);
+	
+	scene.addObstacle(_bull, spritenode);
+
 
 	scene.setAssets(_assets);
 	scene.setScale(_scale);

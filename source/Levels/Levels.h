@@ -33,8 +33,6 @@
 #define ATTACK_OFFSET_V   0.0f
 /**Scalar for width of a box attack, hacky*/
 #define ATTACK_W        2.0f
-/**Scalar for height of a box attack, hacky*/
-#define ATTACK_H        0.5f
 /** The speed of the bullet after firing */
 #define BULLET_SPEED   20.0f
 /** The number of frame to wait before reinitializing the game */
@@ -119,6 +117,8 @@
 #define WALL_COUNT  2
 
 #define PLAYER_SIZE_DEFAULT cugl::Size(1.5f, 2.0f)
+#define BULL_SIZE_DEFAULT cugl::Size(14.0f, 8.0f)
+#define SHR_SIZE_DEFAULT cugl::Size(6.5f, 7.5f)
 
 
 class GameScene;

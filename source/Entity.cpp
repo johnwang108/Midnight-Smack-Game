@@ -23,7 +23,13 @@ void Entity::addActionAnimation(std::string action_name, std::shared_ptr<cugl::T
 void Entity::animate(std::string action_name) {
     //first, switch the sheet
     changeSheet(action_name);
-    if (action_name == "idle") {
+    if (action_name.find("bull") != std::string::npos) {
+		_node->setScale(0.5/4);
+    }
+    else if (action_name.find("SFR") != std::string::npos) {
+        _node->setScale(0.3);
+    }
+    else if (action_name == "idle") {
         _node->setScale(0.35 / 4);
     }
     else {

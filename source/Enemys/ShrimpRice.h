@@ -3,6 +3,7 @@
 
 #include <cugl/cugl.h>
 #include <cugl/physics2/CUCapsuleObstacle.h>
+#include "../Entity.h"
 
 using namespace cugl;
 
@@ -20,7 +21,7 @@ using namespace cugl;
 #define SENSOR_HEIGHT 0.1f
 
 class GameScene;
-class ShrimpRice : public physics2::CapsuleObstacle {
+class ShrimpRice : public Entity {
 protected:
     float _drawScale;
     float _health;
@@ -28,16 +29,18 @@ protected:
     float _lastDamageTime;
     bool _isChasing;
     int _direction;
+    float _SFR_attack_chance;
+    float _attackcombo;
     float _knockbackTime;
     float _nextChangeTime;
-    std::shared_ptr<cugl::scene2::SceneNode> _node;
     b2Fixture* _sensorFixture;
     std::string _sensorName;
     std::shared_ptr<AssetManager> _assets;
     int _lastDirection;
 
+
 public:
-    ShrimpRice() : CapsuleObstacle(), _drawScale(1.0f), _health(100.0f), _healthCooldown(0.2f), _lastDamageTime(0), _isChasing(true), _direction(-1) {}
+    ShrimpRice() : Entity(), _drawScale(1.0f), _health(100.0f), _healthCooldown(0.2f), _lastDamageTime(0), _isChasing(true), _direction(-1) {}
 
     virtual ~ShrimpRice() { dispose(); }
 
@@ -54,22 +57,21 @@ public:
 
     void takeDamage(float damage, int attackDirection, bool knockback);
 
-    void setSceneNode(const std::shared_ptr<scene2::SceneNode>& node);
-
     void createFixtures() override;
 
     void releaseFixtures() override;
 
     std::string* getSensorName() { return &_sensorName; };
     void setassets(std::shared_ptr<AssetManager> assets) { _assets = assets; }
-    void sethealthbar(GameScene& scene);
+
     float getHealth() { return _health; }
     bool isChasing() const { return _isChasing; }
-    const std::shared_ptr<cugl::scene2::SceneNode>& getSceneNode() const { return _node; }
+
     double getnextchangetime() { return _nextChangeTime; }
     void setDirection(int d) { _direction = d; }
     void setnextchangetime(double nextChangeTime) { _nextChangeTime = nextChangeTime; }
     float getknockbacktime() { return _knockbackTime; }
+    float getattackcombo() { return _attackcombo; }
 };
 
 #endif /* __SHRIMPRICE_H__ */

@@ -174,26 +174,24 @@ void Level3::populate(GameScene& scene) {
 	AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
 	Vec2 shrimp_pos = SHRIMP_POS;
-	image = _assets->get<Texture>("shrimpBoss");
-	std::shared_ptr<ShrimpRice> _shrimprice = ShrimpRice::alloc(shrimp_pos, image->getSize() / _scale, _scale);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_shrimprice->setSceneNode(sprite);
+	image = _assets->get<Texture>("SFR_Idle");
+	std::shared_ptr<ShrimpRice> _shrimprice = ShrimpRice::alloc(shrimp_pos, SHR_SIZE_DEFAULT, _scale);
+	spritenode = EntitySpriteNode::allocWithSheet(image, 6, 6, 31);
+	spritenode->setAnchor(Vec2(0.5f, 0.55f));
+	//spritenode->setPosition(shrimp_pos);
+	_shrimprice->setSceneNode(spritenode);
 	_shrimprice->setName("shrimpBoss");
 	_shrimprice->setDebugColor(DEBUG_COLOR);
 	_shrimprice->setassets(_assets);
-	_shrimprice->sethealthbar(scene);
-	scene.addObstacle(_shrimprice, sprite);
-	/*
-	Vec2 egg_pos = EGG_POS;
-	image = _assets->get<Texture>(EGG_TEXTURE);
-	std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc(egg_pos, image->getSize() / (_scale), _scale, EnemyType::egg);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_enemy->setSceneNode(sprite);
-	_enemy->setName(ENEMY_NAME);
-	_enemy->setDebugColor(DEBUG_COLOR);
-	scene.addObstacle(_enemy, sprite);
-	_enemies.push_back(_enemy);
-	*/
+
+	_shrimprice->addActionAnimation("SFR_Idle", _assets->get<Texture>("SFR_Idle"), 6, 6, 31, 1.291f, false);
+	_shrimprice->addActionAnimation("SFR_Move", _assets->get<Texture>("SFR_Move"), 4, 4, 14, 0.583f, false);
+	_shrimprice->addActionAnimation("SFR_Attack", _assets->get<Texture>("SFR_Attack"), 6, 5, 28, 1.125f, false);
+
+	scene.addObstacle(_shrimprice, spritenode);
+
+
+
 
 	scene.setAssets(_assets);
 	scene.setScale(_scale);

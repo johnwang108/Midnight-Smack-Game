@@ -7,14 +7,19 @@ bool ShrimpRice::init(const Vec2& pos, const Size& size, float scale) {
     Size scaledSize = size;
     scaledSize.width *= SHRIMPRICE_HSHRINK;
     scaledSize.height *= SHRIMPRICE_VSHRINK;
-    _drawScale = scale;
     if (CapsuleObstacle::init(pos, scaledSize)) {
         _drawScale = scale;
         _isChasing = false;
         _direction = -1;
         _lastDirection = -1;
         _health = 100.0f;
+        _SFR_attack_chance=0.002f;
         _healthCooldown = 0.1f;
+        _knockbackTime = 0;
+        _attackcombo = 0;
+        b2Filter filter = getFilterData();
+        filter.groupIndex = -1;
+        setFilterData(filter);
         setDensity(SHRIMPRICE_DENSITY);
         setFriction(0.0f);
         setFixedRotation(true);
@@ -22,14 +27,14 @@ bool ShrimpRice::init(const Vec2& pos, const Size& size, float scale) {
     }
     return false;
 }
-void ShrimpRice::sethealthbar(GameScene& scene) {
-    std::shared_ptr<Scene2> UI = scene.getuiScene();
-    scene.setuiScene(UI);
-}
+
+
 void ShrimpRice::update(float dt) {
 
-    CapsuleObstacle::update(dt);
+    Entity::update(dt);
     if (_body == nullptr) return;
+
+
 
     if (_knockbackTime > 0) {
         _knockbackTime -= dt;
@@ -39,6 +44,13 @@ void ShrimpRice::update(float dt) {
     b2Vec2 velocity = _body->GetLinearVelocity();
     velocity.x = _direction * SHRIMPRICE_CHASE_SPEED; 
 
+    if ( static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _SFR_attack_chance) {
+        _attackcombo = 1.125;
+    }
+
+    if (_attackcombo > 0) {
+        _attackcombo -= dt;
+    }
 
     if (_direction != _lastDirection) {
         // If direction changed, flip the image
@@ -83,12 +95,6 @@ void ShrimpRice::takeDamage(float damage, int attackDirection, bool knockback) {
     }
 }
 
-void ShrimpRice::setSceneNode(const std::shared_ptr<scene2::SceneNode>& node) {
-    _node = node;
-    if (_node != nullptr) {
-        _node->setPosition(getPosition() * _drawScale);
-    }
-}
 
 void ShrimpRice::dispose() {
     _core = nullptr;

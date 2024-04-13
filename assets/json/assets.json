@@ -185,8 +185,23 @@
         "dball": {
             "file": "textures/dball.png"
         },
-        "P2bull": {
-            "file": "textures/P2bull.png"
+        "bullAttack": {
+            "file": "textures/bullAttack.png"
+        },
+        "bullIdle": {
+            "file": "textures/bullIdle.png"
+        },
+        "bullTelegraph": {
+            "file": "textures/bullTelegraph.png"
+        },
+        "SFR_Attack": {
+            "file": "textures/SFR_Attack.png"
+        },
+        "SFR_Idle": {
+            "file": "textures/SFR_Idle.png"
+        },
+        "SFR_Move": {
+            "file": "textures/SFR_Move.png"
         },
         "cooktime": {
             "file": "textures/cutting_board.png",

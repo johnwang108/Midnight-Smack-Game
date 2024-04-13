@@ -109,6 +109,7 @@ void GameScene::beginContact(b2Contact* contact) {
         _avatar->takeDamage(34, direction);
     }
 
+
     if (_Bull != nullptr && bd1->getName() == ATTACK_NAME && bd2->getName() == BULL_TEXTURE && _Bull->getknockbacktime() <= 0) {
         Vec2 enemyPos = _Bull->getPosition();
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
@@ -261,6 +262,19 @@ void GameScene::beginContact(b2Contact* contact) {
         popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
         CULog("shrimpBoss: %f", _ShrimpRice->getHealth());
     }
+    if (_ShrimpRice != nullptr && bd1 == _ShrimpRice.get() && bd2 == _ShrimpRice.get()) {
+        Vec2 avatarPos = _avatar->getPosition();
+        Vec2 bullPos = _ShrimpRice->getPosition();
+        int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
+        _avatar->addTouching();
+        _avatar->takeDamage(34, direction);
+    }
+    else if (_ShrimpRice != nullptr && bd1 == _avatar.get() && bd2 == _ShrimpRice.get()) {
+        Vec2 avatarPos = _avatar->getPosition();
+        Vec2 bullPos = _ShrimpRice->getPosition();
+        int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
+        _avatar->takeDamage(34, direction);
+    }
 }
 
 
@@ -294,14 +308,7 @@ void GameScene::endContact(b2Contact* contact) {
             _avatar->setGrounded(false);
         }
     }
-    //bull collision
-    if (_Bull != nullptr && bd1 == _Bull.get() && bd2 == _avatar.get()) {
-        Vec2 avatarPos = _avatar->getPosition();
-        Vec2 bullPos = _Bull->getPosition();
-        int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
-        _avatar->removeTouching();
-        _avatar->takeDamage(34, direction);
-    }
+    
 
     // Check if the player is no longer in contact with any walls
     bool p1 = (_avatar->getSensorName() == fd2);

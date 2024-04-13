@@ -28,8 +28,6 @@
 #define CHASE_THRESHOLD 10.0f  
 #define CHASE_SPEED 0.03f
 
-#define ATTACK_OFFSET_X 0.5f
-#define ATTACK_OFFSET_Y 0.5f
 
 #define ENEMY_ATTACK_CHANCE 0.001f
 

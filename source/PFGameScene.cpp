@@ -257,19 +257,17 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     std::shared_ptr<cugl::scene2::SceneNode> _bullBarNode;
     _bullBarNode = _assets->get<scene2::SceneNode>("bullbar");
 
-    auto healthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
-    auto healthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
+    _BullhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
+    _BullhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
     _uiScene->addChild(_bullBarNode);
 
-    //auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
-    //auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
-    //_healthBarForeground = healthBarForeground;
-    //_healthBarBackground = healthBarBackground;
+    std::shared_ptr<cugl::scene2::SceneNode> _SFRBarNode;
+    _SFRBarNode = _assets->get<scene2::SceneNode>("bullbar");
 
-    //_healthBarForeground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
-    //_healthBarForeground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarBackground->getHeight());
-    //_healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
-    //_healthBarBackground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarForeground->getHeight());
+    _SFRhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
+    _SFRhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
+    _uiScene->addChild(_SFRBarNode);
+
 
     _buffLabel = scene2::Label::allocWithText("NO BUFF", _assets->get<Font>(MESSAGE_FONT));
     _buffLabel->setAnchor(Vec2::ANCHOR_CENTER);
@@ -314,6 +312,10 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     save();
 
     _actionManager = cugl::scene2::ActionManager::alloc();
+
+    _BullactionManager = cugl::scene2::ActionManager::alloc();
+
+    _SHRactionManager = cugl::scene2::ActionManager::alloc();
 
     //15 frame attack animation
 
@@ -514,11 +516,12 @@ void GameScene::preUpdate(float dt) {
     }
 
     //handle animations
-    CULog("active action: %s", _avatar->getActiveAction().c_str());
+  //  CULog("active action: %s", _avatar->getActiveAction().c_str());
     _actionManager->update(dt);
+    
     //start running if idle or recovering and moving
     if ((_actionManager->isActive("idle") || _actionManager->isActive("recover")) && (_input->getHorizontal() != 0)) {
-        CULog("animating run");
+     //   CULog("animating run");
         _avatar->animate("run");
         auto runAction = _avatar->getAction("run");
         _actionManager->clearAllActions(_avatar->getSceneNode());
@@ -574,6 +577,8 @@ void GameScene::preUpdate(float dt) {
         }
 	}
 
+
+    
     _dollarnode->update(dt);
 
     if (!_slowed) {
@@ -722,6 +727,7 @@ void GameScene::preUpdate(float dt) {
                 _Bull->setDirection(direction);
                 _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
             }
+
         }
         _Bull->update(dt);
     }
@@ -743,6 +749,46 @@ void GameScene::preUpdate(float dt) {
         }
         _ShrimpRice->update(dt);
     }
+
+    if (_Bull != nullptr) {
+        _BullactionManager->update(dt);
+        if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+
+            if (_Bull->isChasing() && ((_Bull->getPosition().x < 20 && _Bull->getDirection() == -1) || _Bull->getPosition().x > 30 && _Bull->getDirection() == 1)) {
+                _Bull->animate("bullAttack");
+                auto bullAttack = _Bull->getAction("bullAttack");
+                _BullactionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
+            }
+            else if (_Bull->isChasing() || _Bull->getsprintpreparetime() > 0) {
+                _Bull->animate("bullTelegraph");
+                auto bullTelegraph = _Bull->getAction("bullTelegraph");
+                _BullactionManager->activate("bullTelegraph", bullTelegraph, _Bull->getSceneNode());
+            }
+            else if (_Bull->getknockbacktime() <= 0) {
+                _Bull->animate("bullIdle");
+                auto bullIdle = _Bull->getAction("bullIdle");
+                _BullactionManager->activate("bullIdle", bullIdle, _Bull->getSceneNode());
+            }
+
+        }
+    }
+
+    if (_ShrimpRice != nullptr) {
+        _SHRactionManager->update(dt);
+        if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+            if (_ShrimpRice->getattackcombo() > 0) {
+                _ShrimpRice->animate("SFR_Attack");
+                auto SFR_Attack = _ShrimpRice->getAction("SFR_Attack");
+                _SHRactionManager->activate("SFR_Attack", SFR_Attack, _ShrimpRice->getSceneNode());
+            }
+            else if (_ShrimpRice->getknockbacktime() <= 0) {
+                _ShrimpRice->animate("SFR_Move");
+                auto SFR_Move = _ShrimpRice->getAction("SFR_Move");
+                _SHRactionManager->activate("SFR_Move", SFR_Move, _ShrimpRice->getSceneNode());
+			}
+        }
+    }
+
 }
 
 
@@ -786,6 +832,22 @@ void GameScene::fixedUpdate(float step) {
         float clipWidth = totalWidth * _healthPercentage;
         std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
         _healthBarForeground->setScissor(scissor);
+    }
+    if (_BullhealthBarForeground != nullptr && _Bull!= nullptr) {
+        _healthPercentage = _Bull->getHealth() / 100;
+        float totalWidth = _BullhealthBarForeground->getWidth();
+        float height = _BullhealthBarForeground->getHeight();
+        float clipWidth = totalWidth * _healthPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _BullhealthBarForeground->setScissor(scissor);
+    }
+    if (_SFRhealthBarForeground != nullptr && _ShrimpRice != nullptr) {
+        _healthPercentage = _ShrimpRice->getHealth() / 100;
+        float totalWidth = _SFRhealthBarForeground->getWidth();
+        float height = _SFRhealthBarForeground->getHeight();
+        float clipWidth = totalWidth * _healthPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _SFRhealthBarForeground->setScissor(scissor);
     }
     if (_cookBarFill != nullptr) {
         float meterPercentage = _avatar->getMeter() / 100.0f;

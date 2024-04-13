@@ -150,6 +150,10 @@ protected:
     float _healthPercentage;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarBackground;
+    std::shared_ptr<cugl::scene2::PolygonNode> _BullhealthBarBackground;
+    std::shared_ptr<cugl::scene2::PolygonNode> _BullhealthBarForeground;
+    std::shared_ptr<cugl::scene2::PolygonNode> _SFRhealthBarBackground;
+    std::shared_ptr<cugl::scene2::PolygonNode> _SFRhealthBarForeground;
 
     std::shared_ptr<cugl::scene2::PolygonNode> _cookBarFill;
     std::shared_ptr<cugl::scene2::PolygonNode> _cookBarOutline;
@@ -162,11 +166,16 @@ protected:
 
     std::shared_ptr<cugl::scene2::ActionManager> _actionManager;
 
+    std::shared_ptr<cugl::scene2::ActionManager> _BullactionManager;
+
+    std::shared_ptr<cugl::scene2::ActionManager> _SHRactionManager;
+
     std::shared_ptr<cugl::scene2::Button> _pauseButton;
 
     bool _paused;
 
     float _flag;
+
 
 #pragma mark Internal Object Management
     /**
@@ -479,6 +488,7 @@ public:
 
     void loadLevel(std::shared_ptr<Levels> level) {
         _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level2);
+        _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level3);
         level->populate(*this);
         currentLevel = level;
     }
