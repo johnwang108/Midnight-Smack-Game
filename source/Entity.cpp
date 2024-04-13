@@ -45,3 +45,27 @@ void Entity::changeSheet(std::string action_name) {
         CULog("Error changing sheets. Is the action registered?");
     }
 }
+
+void Entity::loadAnimationsFromConstant(std::string entityName, std::shared_ptr<AssetManager> _assets) {
+    auto reader = JsonReader::allocWithAsset("./json/constants.json");
+    std::shared_ptr<JsonValue> json = reader->readJson();
+    std::shared_ptr<JsonValue> su = json->get(entityName);
+    auto children = su->children();
+    for (auto it = children.begin(); it != children.end(); ++it) {
+        std::shared_ptr<JsonValue> action = *it;
+        std::string action_name = action->key();
+        std::string sheet_name = action->getString("sheet");
+        int rows = action->getInt("rows");
+        int cols = action->getInt("cols");
+        int size = action->getInt("frames");
+        float duration = action->getFloat("duration");
+        //CULog("Info about action");
+        //CULog("Action name: %s", action_name.c_str());
+        //CULog("Sheet name: %s", sheet_name.c_str());
+        //CULog("Rows: %d", rows);
+        //CULog("Cols: %d", cols);
+        //CULog("Size: %d", size);
+        //CULog("Duration: %f", duration);
+        addActionAnimation(action_name, _assets->get<Texture>(sheet_name), rows, cols, size, duration, false);
+    }
+}

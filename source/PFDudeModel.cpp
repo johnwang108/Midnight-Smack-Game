@@ -627,7 +627,7 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeMo
     pos.x += (_faceRight ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
     pos.y += 0;
 
-    std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE_L);
+    std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE);
     std::shared_ptr<Attack> attack = Attack::alloc(pos,
         cugl::Size(image->getSize().width * 1.5 / scale,
             ATTACK_H * image->getSize().height / scale));

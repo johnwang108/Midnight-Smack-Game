@@ -401,7 +401,7 @@ public:
 		return (result->init(pos, size, scale) ? result : nullptr);
 	}
 
-    /** Alloc with assets that automatically populates actions. Use this as the default alloc */
+    /** Alloc with assets that automatically populates actions. These are the default values */
     static std::shared_ptr<DudeModel> alloc(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::shared_ptr<AssetManager> _assets) {
         std::shared_ptr<DudeModel> result = std::make_shared<DudeModel>();
         bool res = result->init(pos, size, scale);
@@ -418,6 +418,18 @@ public:
             result->addActionAnimation("jump_land", _assets->get<Texture>("su_jump_land"), 2, 2, 3, 0.25f, false);
             result->addActionAnimation("jump_ready", _assets->get<Texture>("su_jump_ready"), 1, 2, 2, 0.16f, false);
         }
+
+        return res ? result : nullptr;
+    }
+
+    /** Same as above, but allocs animations based off of the constants.json file.*/
+    static std::shared_ptr<DudeModel> allocWithConstants(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::shared_ptr<AssetManager> _assets) {
+        std::shared_ptr<DudeModel> result = std::make_shared<DudeModel>();
+        bool res = result->init(pos, size, scale);
+
+        if (res) {
+            result->loadAnimationsFromConstant("su", _assets);
+			}
 
         return res ? result : nullptr;
     }

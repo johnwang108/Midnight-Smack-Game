@@ -574,9 +574,17 @@ void GameScene::preUpdate(float dt) {
             _actionManager->activate("run", runAction, _avatar->getSceneNode());
         }
         else {
-            _avatar->animate("idle");
-            auto idleAction = _avatar->getAction("idle");
-            _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
+            if ((float)rand() / (RAND_MAX) < 0.5) {
+                _avatar->animate("idle_blink");
+                auto idleAction = _avatar->getAction("idle_blink");
+                _actionManager->activate("idle_blink", idleAction, _avatar->getSceneNode());
+            }
+            else {
+                _avatar->animate("idle");
+                auto idleAction = _avatar->getAction("idle");
+                _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
+            }
+
         }
 	}
 

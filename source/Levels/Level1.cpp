@@ -141,7 +141,7 @@ void Level1::populate(GameScene& scene) {
 	image = _assets->get<Texture>("su_idle");
 	//hardcoded size
 	cugl::Size s = PLAYER_SIZE_DEFAULT;
-	_avatar = DudeModel::alloc(dudePos, s, _scale, _assets);
+	_avatar = DudeModel::allocWithConstants(dudePos, s, _scale, _assets);
 	std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4,16);
 
 	//CALCULATE sue sprite size from sue obstacle size. Goal: su's feet line up with foot sensor, and head (not hat) with top of obstacle. Todo still

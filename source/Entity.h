@@ -79,5 +79,7 @@ public:
 
 	virtual bool init(cugl::Vec2 pos, cugl::Size size);
 
+	void loadAnimationsFromConstant(std::string entityName, std::shared_ptr<AssetManager> _assets);
+
 };
 #endif /* __ENTITY_H__ */
