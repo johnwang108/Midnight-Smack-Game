@@ -163,6 +163,12 @@ protected:
 
     float _flag;
 
+    //debug anims for Leon
+    std::shared_ptr<Entity> _debugAnimTarget;
+    std::string _debugAnimName;
+    bool _overrideAnim;
+    //end debug anims
+
 #pragma mark Internal Object Management
     /**
      * Lays out the game geography.

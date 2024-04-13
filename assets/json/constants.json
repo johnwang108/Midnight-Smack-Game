@@ -1,4 +1,6 @@
 {
+    "entity" : "su",
+    "animation" : "attack",
     "su": {
         "idle": {
             "sheet": "su_idle",

@@ -62,6 +62,9 @@ private:
 
     bool _keyTransition;
 
+    //for Leon
+    bool  _keyAnimate;
+
 
     //is the current path ready for recog and rendering
     bool _gestureCompleted;
@@ -96,6 +99,8 @@ protected:
     bool _dashPressed;
 
     bool _transitionPressed;
+
+    bool _animatePressed;
 
     bool _zoomIn;
     bool _zoomOut;
@@ -311,6 +316,8 @@ public:
     bool didDash() const { return _dashPressed; }
 
     bool didTransition() const { return _transitionPressed; }
+
+    bool didAnimate() const { return _animatePressed; }
 
     cugl::Vec2 getTouchPos() { return _touchPos; }
 
