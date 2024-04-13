@@ -260,7 +260,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     loadLevel(_level_model);
 
 
-
     auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
     auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
     _healthBarForeground = healthBarForeground;
@@ -275,12 +274,19 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _uiScene->addChild(_healthBarForeground);
 # pragma mark: Background
 
-    _bgScene = cugl::Scene2::alloc(dimen);
-    _bgScene->init(dimen);
+    _background = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>("textures\\dream-background.png"));
+    // cugl::Size backgroundSize = _background->getSize();
+
+    _bgScene = cugl::Scene2::alloc(20.0f, 20.0f);
+    _bgScene->init(20.0f, 20.0f);
     _bgScene->setActive(true);
+    // _bgScene = cugl::Scene2::alloc(cugl::Size(210, 25));
+    // _bgScene->init(cugl::Size(210, 25));
+    // _bgScene->setActive(true);
 
     cugl::Rect rectB = cugl::Rect(Vec2::ZERO, computeActiveSize());
-
+    // Q: Can we create a background that isn't the whole size of the scene?
+    // _bgScene->addChild(_background);
     // _background = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>("cutting_station"), rectB);
     // _background = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>(_level_model->getLevelScenery("1")));
     // _bgScene->addChild(_background);
@@ -291,15 +297,14 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     // i just changed level2 to _level_model
     // this will change for boss battle levels and so forth
     currentLevel = _level_model;
-    // loadLevel(currentLevel);
-
+    // loadLevel(_level_model);
     //App class will set active true
     setActive(false);
     transition(false);
     _active = true;
     _complete = false;
     setDebug(false);
-    zoomCamera(0.25);
+    zoomCamera(0.5);
     // XNA nostalgia
     // Application::get()->setClearColor(Color4f::CORNFLOWER);
     Application::get()->setClearColor(Color4::BLACK);

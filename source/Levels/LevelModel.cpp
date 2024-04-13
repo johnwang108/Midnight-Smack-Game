@@ -496,9 +496,9 @@ void LevelModel::populate(GameScene& scene) {
 	std::shared_ptr<cugl::scene2::PolygonNode> back_back_ground = cugl::scene2::PolygonNode::allocWithTexture(image);
 	scene.addChild(back_back_ground);*/
 	CULog("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ");
-	image = _assets->get<Texture>("textures\\main_platform.png");
-	_background = cugl::scene2::PolygonNode::allocWithTexture(image);
-	scene.addChild(_background);
+	// image = _assets->get<Texture>("textures\\main_platform.png");
+	// _background = cugl::scene2::PolygonNode::allocWithTexture(image);
+	// scene.addChild(_background);
 
 	//initialize our backgrounds variable
 	// _drawings = {};
@@ -526,7 +526,6 @@ void LevelModel::populate(GameScene& scene) {
 						// other things
 
 						//means that we have found a key in our unordered map
-						CULog("Now we should be drawing the background");
 						std::string pathWeWant = idToImage.at(tileId);
 						CULog(pathWeWant.c_str());
 						CULog(_getcwd(NULL, 0));
@@ -553,10 +552,15 @@ void LevelModel::populate(GameScene& scene) {
 
 						if (type == "background") {
 							CULog("identified class field as background");
-
-							//what we need to do: commented out right now because background is appearing later
-							// _background = cugl::scene2::PolygonNode::allocWithTexture(image);
-							// scene.addChild(_background);
+							std::string debugMsg = "Current image we are loading into background: " + pathWeWant;
+							CULog(debugMsg.c_str());
+							// for some reason, despite appearing first, dream-background.png
+							// writes over everything (over the avatar, main_platform, and object layers
+							if (pathWeWant != "textures\\dream-background.png") {
+								_background = cugl::scene2::PolygonNode::allocWithTexture(image);
+								_background->getSize();
+								scene.addChild(_background);
+							}
 							//---------------------------------------------------------------------
 
 							// we gonna make this a nullptr
@@ -684,8 +688,10 @@ void LevelModel::populate(GameScene& scene) {
 							// _avatar->setWidth(100.0f);
 							//----------------
 							sprite = scene2::PolygonNode::allocWithTexture(image);
+							sprite->setPriority(1.0f);
 							_avatar->setSceneNode(sprite);
 							_avatar->setDebugColor(DEBUG_COLOR);
+							// scene.addChild(sprite);
 							scene.addObstacle(_avatar, sprite);
 						}
 						else {
@@ -710,6 +716,7 @@ void LevelModel::populate(GameScene& scene) {
 					}*/
 					if (object->getString("name") == "Floating_Platform") {
 						CULog("We are in loadFloatingBox!");
+						CULog(object->getString("id").c_str());
 						loadFloatingBoxPlatform(object, scene, sprite, window_height * 32.0f);
 					}
 					else if (object->getString("name") == "Main_Platform") {
@@ -836,10 +843,10 @@ void LevelModel::loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameSc
 	// text->init();
 
 	sprite = scene2::PolygonNode::allocWithTexture(nullptr, platform);
+	sprite->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 	scene.addObstacle(platobj, sprite, 1);
 
 	CULog("we reached the end of loadMainPlatform!!");
-
 
 }
 
@@ -870,7 +877,7 @@ void LevelModel::loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json,
 	triangulator.clear();
 
 	platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_BOTTOM_LEFT);
-	platobj->setName(std::string(PLATFORM_NAME));
+	// platobj->setName(std::string(PLATFORM_NAME));
 
 	platobj->setBodyType(b2_staticBody);
 	platobj->setDensity(BASIC_DENSITY);
@@ -887,5 +894,6 @@ void LevelModel::loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json,
 	std::shared_ptr<Texture> image = _assets->get<Texture>("textures\\placeholder_block_PLATFORM.png");
 
 	sprite = scene2::PolygonNode::allocWithTexture(nullptr, platform);
+	sprite->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 	scene.addObstacle(platobj, sprite, 1);
 }

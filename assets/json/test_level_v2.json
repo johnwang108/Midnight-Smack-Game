@@ -244,7 +244,7 @@
                 {
                  "height":48.6667,
                  "id":10,
-                 "name":"",
+                 "name": "Floating_Platform",
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -255,13 +255,7 @@
                 {
                  "height":48,
                  "id":11,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"collider",
-                         "type":"string",
-                         "value":"floating platforms"
-                        }],
+                 "name": "Floating_Platform",
                  "rotation":0,
                  "type":"",
                  "visible":true,
