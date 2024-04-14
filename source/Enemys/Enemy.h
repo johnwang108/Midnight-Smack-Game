@@ -28,8 +28,6 @@
 #define CHASE_THRESHOLD 10.0f  
 #define CHASE_SPEED 0.03f
 
-#define ATTACK_OFFSET_X 0.5f
-#define ATTACK_OFFSET_Y 0.5f
 
 #define ENEMY_ATTACK_CHANCE 0.001f
 
@@ -49,7 +47,7 @@ class GameScene;
 enum class EnemyType {
     shrimp, 
     rice, 
-    rice_follower,
+    rice_soldier,
     egg,
     carrot,
     beef
@@ -113,10 +111,8 @@ protected:
     cugl::Vec2 _distanceToPlayer;
 
 
-
-
-
-
+    /**Limits on movement for egg and beef*/
+    cugl::Spline2 _limit;
 
 
 public:
@@ -136,8 +132,11 @@ public:
     /** default constructor, sets both gesture sequences to the default for that enemy type*/
     virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type);
 
+    virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type, cugl::Spline2 limit);
     /**init with gesture sequences*/
     virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type, std::vector<std::string> seq1, std::vector<std::string> seq2);
+
+    virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type, std::vector<std::string> seq1, std::vector<std::string> seq2, cugl::Spline2 limit);
 
     /**
      * Creates and returns a new enemy at the given position with the specified size and type.
@@ -153,12 +152,26 @@ public:
 
     static std::shared_ptr<EnemyModel> alloc(const cugl::Vec2& pos, EnemyType type) {};
 
+    /**Allocs with animations defined from json.
+    * 
+    * */
+    static std::shared_ptr<EnemyModel> allocWithConstants(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::shared_ptr<AssetManager> _assets,EnemyType type) {
+        std::shared_ptr<EnemyModel> result = std::make_shared<EnemyModel>();
+        bool res = result->init(pos, size, scale, type);
+
+        if (res) {
+            CULog(typeToStr(type).c_str());
+            result->loadAnimationsFromConstant(typeToStr(type), _assets);
+        }
+
+        return res ? result : nullptr;
+    }
+
     /**
      * Sets the scene graph node representing this enemy.
      *
      * @param node The scene graph node representing this enemy.
      */
-    void setSceneNode(const std::shared_ptr<cugl::scene2::SceneNode>& node);
 
     void setGrounded(bool value) { _isGrounded = value; };
 
@@ -169,8 +182,6 @@ public:
     int getDirection() const { return _direction; }
 
     void setDirection(int d) { _direction = d; }
-
-    const std::shared_ptr<cugl::scene2::SceneNode>& getSceneNode() const { return _node; }
 
     void setIsChasing(bool isChasing);
 
@@ -264,12 +275,16 @@ public:
 
     std::string getNextState(std::string state);
 
+    void setLimit(cugl::Spline2 limit) { _limit = limit; }
+
     static std::string typeToStr(EnemyType type) {
         switch (type) {
         case EnemyType::shrimp:
             return "shrimp";
         case EnemyType::rice:
             return "rice";
+        case EnemyType::rice_soldier:
+            return "rice_soldier";
         case EnemyType::egg:
             return "egg";
         case EnemyType::carrot:
@@ -290,6 +305,8 @@ public:
             return { "pigtail", "v", "circle" };
         case EnemyType::rice:
             return { "circle", "circle", "pigtail" };
+        case EnemyType::rice_soldier:
+            return { "circle", "circle", "pigtail" };
         case EnemyType::egg:
             return { "v", "v", "v", };
         case EnemyType::carrot:
@@ -308,7 +325,7 @@ public:
             return buff::attack;
         case EnemyType::rice:
             return buff::defense;
-        case EnemyType::rice_follower:
+        case EnemyType::rice_soldier:
             return buff::defense;
         case EnemyType::egg:
             return buff::jump;
@@ -317,9 +334,27 @@ public:
         case EnemyType::beef:
             return buff::health;
         }
-
         return buff::none;
     };
+
+    /**Dict for enemy type to aggro range. */
+    static float typeToAggroRange(EnemyType type) {
+		switch (type) {
+		case EnemyType::shrimp:
+			return 10.0f;
+		case EnemyType::rice:
+			return 10.0f;
+		case EnemyType::rice_soldier:
+			return 10.0f;
+		case EnemyType::egg:
+			return 12.0f;
+		case EnemyType::carrot:
+			return 10.0f;
+		case EnemyType::beef:
+			return 10.0f;
+		}
+		return 0.0f;
+	};
 
 };
 #endif /* __ENEMY_MODEL_H__ */

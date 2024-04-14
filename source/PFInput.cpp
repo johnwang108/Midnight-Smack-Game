@@ -30,7 +30,7 @@ using namespace cugl;
 #define JUMP_KEY KeyCode::SPACE
 #define DASH_KEY KeyCode::LEFT_SHIFT
 
-#define ANIMATE_KEY KeyCode::ENTER
+#define ANIMATE_KEY KeyCode::M
 
 /** Slow key */
 #define SLOW_KEY KeyCode::TAB

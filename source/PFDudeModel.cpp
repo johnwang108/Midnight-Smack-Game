@@ -49,10 +49,6 @@
 
 #define SIGNUM(x)  ((x > 0) - (x < 0))
 
-#define PASSIVE_KEY "passive_action"
-
-#define ACTIVE_KEY "active_action"
-
 
 /**Modif for the max height jump in ~(Sues +1)*/
 float jmpHeight = 1;
@@ -114,8 +110,6 @@ using namespace cugl;
 bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale) {
     setEnabled(false);
     Size nsize = size;
-    //nsize.width  *= DUDE_HSHRINK;
-    //nsize.height *= DUDE_VSHRINK;
     _drawScale = scale;
 
     if (Entity::init(pos, nsize)) {
@@ -474,6 +468,7 @@ void DudeModel::update(float dt) {
     else {
         _dashCooldown = (_dashCooldown > 0 ? _dashCooldown - 1 : 0);
         if (getDashNum() == 0 && _dashCooldown <= 0 && isGrounded()) {
+
             setDashNum(1);
             //TODO: remove hardcode limit on one dash
         }

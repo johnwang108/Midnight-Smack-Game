@@ -15,7 +15,6 @@ public:
         return (node->initWithSheet(texture, rows, cols, size) ? node : nullptr);
     }
 
-
 	void changeSheet(std::shared_ptr<cugl::Texture> texture, int rows, int cols, int size) {
         _cols = cols;
         _size = size;

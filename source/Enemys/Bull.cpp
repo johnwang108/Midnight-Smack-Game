@@ -37,33 +37,27 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
     }
     return false;
 }
-void BullModel::sethealthbar(GameScene& scene){
-    std::shared_ptr<Scene2> UI=scene.getuiScene();
-    scene.setuiScene(UI);
-}
+
 void BullModel::update(float dt) {
 
     CapsuleObstacle::update(dt);
     if (_body == nullptr) return;
-    
-    if (_healthBarForeground != nullptr) {
-        healthPercentage = _health / 100;
-        float totalWidth = _healthBarForeground->getWidth();
-        float height = _healthBarForeground->getHeight();
-        float clipWidth = totalWidth * healthPercentage;
-        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
-        _healthBarForeground->setScissor(scissor);
-    }
-    
+
     b2Vec2 velocity = _body->GetLinearVelocity();
     velocity.x = BULL_FORCE * _direction;
+
+
+    if (_knockbackTime > 0) {
+        _knockbackTime -= dt;
+        return;
+    }
 
     if (_sprintPrepareTime > 0) {
         _sprintPrepareTime -= dt;
         velocity.x = 0;
         if (_sprintPrepareTime <= 0) {
             float pa = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-         //   pa = 0.87;
+            pa = 0.2;
             if (pa<0.33) {
                 _isChasing = true;
             }
@@ -80,11 +74,6 @@ void BullModel::update(float dt) {
         }
     }else if (!_isChasing &&  static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _bull_attack_chance) {
         _sprintPrepareTime = 2;
-    }
-
-    if (_knockbackTime > 0) {
-        _knockbackTime -= dt;
-        return;
     }
 
     if (_angrytime > 0) {
@@ -131,7 +120,7 @@ void BullModel::update(float dt) {
         if (_CA > 0) {
             _CA -= dt;
            // _node->setVisible(false);
-          //  _body->SetEnabled(false);
+            _body->SetEnabled(false);
             
             float yyy;
             if(_CA>5){
@@ -140,7 +129,7 @@ void BullModel::update(float dt) {
                 yyy=-25*(dt/10);
             }
  
-            setPosition(getPosition()+Vec2(-_direction*(38-_CAcount*3)*(dt/10),yyy));
+            setPosition(getPosition()+Vec2(-_direction*(38)*(dt/10),yyy));
 
             if (_CA <= 0) {
                 _running = true;
@@ -160,7 +149,7 @@ void BullModel::update(float dt) {
     }
     _lastDirection = _direction;
     _lastDamageTime += dt;
-    _nextChangeTime -= dt;
+  //  _nextChangeTime -= dt;
     _body->SetLinearVelocity(velocity);
 
     if (_node != nullptr) {
@@ -177,22 +166,15 @@ void BullModel::takeDamage(float damage, int attackDirection,bool knockback) {
         if (_health <= 0) {
             _health = 0;
         }else if (knockback) {
-            b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE*10, BULL_KNOCKBACK_FORCE_UP * 25);
-            _body->SetLinearVelocity(b2Vec2(0, 0));
-            _body->ApplyLinearImpulseToCenter(impulse, true);
-            _knockbackTime = 4;
+          //  b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE*10, BULL_KNOCKBACK_FORCE_UP * 25);
+          //  _body->SetLinearVelocity(b2Vec2(0, 0));
+          //  _body->ApplyLinearImpulseToCenter(impulse, true);
+            _knockbackTime = 3.5;
         }else {
             b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE*5, 0);
             _body->ApplyLinearImpulseToCenter(impulse, true);
             _knockbackTime = 0.5;
         }
-    }
-}
- 
-void BullModel::setSceneNode(const std::shared_ptr<scene2::SceneNode>& node) {
-    _node = node;
-    if (_node != nullptr) {
-        _node->setPosition(getPosition() * _drawScale);
     }
 }
 
@@ -378,10 +360,10 @@ void BullModel::Summon(GameScene& scene) {
 
     cugl::Size shrimpSize = cugl::Size(2.0f, 2.0f);
 
-    std::vector<std::shared_ptr<EnemyModel>> Enemies=scene.getEnemies();
+    /*std::vector<std::shared_ptr<EnemyModel>> Enemies=scene.getEnemies();
     std::shared_ptr<Texture> image = _assets->get<Texture>("shrimp_rolling");
     std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc({ getPosition() + Vec2(5.0f, 10.0f) }, shrimpSize, scene.getScale(), EnemyType::shrimp);
-    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    std::shared_ptr<EntitySpriteNode> sprite = EntitySpriteNode::allocWithSheet(image);
     sprite->setScale(0.1f);
     _enemy->setSceneNode(sprite);
     _enemy->setName(ENEMY_NAME);
@@ -391,7 +373,7 @@ void BullModel::Summon(GameScene& scene) {
 
     image = _assets->get<Texture>("shrimp_rolling");
     _enemy = EnemyModel::alloc({ getPosition() + Vec2(-5.0f, 10.0f) }, shrimpSize, scene.getScale(), EnemyType::shrimp);
-    sprite = scene2::PolygonNode::allocWithTexture(image);
+    sprite = EntitySpriteNode::allocWithTexture(image);
     sprite->setScale(0.1f);
     _enemy->setSceneNode(sprite);
     _enemy->setName(ENEMY_NAME);
@@ -399,7 +381,7 @@ void BullModel::Summon(GameScene& scene) {
     scene.addObstacle(_enemy, sprite);
     Enemies.push_back(_enemy);
 
-    scene.setEnemies(Enemies);
+    scene.setEnemies(Enemies);*/
 }
 
 void BullModel::circleattack(GameScene& scene) {

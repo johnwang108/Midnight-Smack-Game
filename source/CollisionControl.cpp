@@ -42,15 +42,9 @@ void GameScene::beginContact(b2Contact* contact) {
 
 
     // See if we have landed on the ground.
-    if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
-        (_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
+    if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1 && bd1->getName() != "attack") ||
+        (_avatar->getSensorName() == fd1 && _avatar.get() != bd2 && bd2->getName() != "attack")) {
         _avatar->setGrounded(true);
-
-        ////animate
-        //_avatar->animate("jump_land");
-        //auto jumpAction = _avatar->getAction("jump_land");
-        //_actionManager->clearAllActions(_avatar->getSceneNode());
-        //_actionManager->activate("jump_land", jumpAction, _avatar->getSceneNode());
 
         // Could have more than one ground
         _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
@@ -58,8 +52,8 @@ void GameScene::beginContact(b2Contact* contact) {
 
     for (auto& _enemy : _enemies) {
         if (!_enemy->isRemoved()) {
-            if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
-                (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
+            if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1 && bd1->getName() != "attack") ||
+                (_enemy->getSensorName() == fd1 && _enemy.get() != bd2) && bd2->getName() != "attack") {
                     _enemy->setGrounded(true);
             }
 
@@ -108,6 +102,7 @@ void GameScene::beginContact(b2Contact* contact) {
         int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
         _avatar->takeDamage(34, direction);
     }
+
 
     if (_Bull != nullptr && bd1->getName() == ATTACK_NAME && bd2->getName() == BULL_TEXTURE && _Bull->getknockbacktime() <= 0) {
         Vec2 enemyPos = _Bull->getPosition();
@@ -162,26 +157,26 @@ void GameScene::beginContact(b2Contact* contact) {
     if (bd1->getName() == "shake" && bd2 == _avatar.get()) {
         Vec2 enemyPos = ((Attack*)bd1)->getPosition();
         Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x < enemyPos.x) ? -1 : 1;
+        int direction = (attackerPos.x < enemyPos.x) ? 1 : -1;
         _avatar->takeDamage(34, direction);
     }
     else if (bd2->getName() == "shake" && bd1 == _avatar.get()) {
         Vec2 enemyPos = ((Attack*)bd2)->getPosition();
         Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x < enemyPos.x) ? -1 : 1;
+        int direction = (attackerPos.x < enemyPos.x) ? 1 : -1;
         _avatar->takeDamage(34, direction);
     }
     if (bd1->getName() == "enemy_attack" && bd2 == _avatar.get()) {
         Vec2 enemyPos = ((Attack*)bd1)->getPosition();
         Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         _avatar->takeDamage(34, direction);
         removeAttack((Attack*)bd1);
     }
     else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
         Vec2 enemyPos = ((Attack*)bd2)->getPosition();
         Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         _avatar->takeDamage(34, direction);
         removeAttack((Attack*)bd2);
     }
@@ -239,6 +234,41 @@ void GameScene::beginContact(b2Contact* contact) {
         _avatar->addTouching();
         _avatar->takeDamage(34, direction);
     }
+
+    if (_ShrimpRice != nullptr && bd1->getName() == ATTACK_NAME && bd2->getName() == "shrimpBoss" && _ShrimpRice->getknockbacktime() <= 0) {
+        Vec2 enemyPos = _ShrimpRice->getPosition();
+        Vec2 attackerPos = ((Attack*)bd1)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        _avatar->addMeter(5.0f);
+
+        _ShrimpRice->takeDamage(_avatar->getAttack() / 4, direction, false);
+
+        popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
+        CULog("shrimpBoss: %f", _ShrimpRice->getHealth());
+    }
+    else if (_ShrimpRice != nullptr && bd2->getName() == ATTACK_NAME && bd1->getName() == "shrimpBoss" && _ShrimpRice->getknockbacktime() <= 0) {
+        Vec2 enemyPos = _ShrimpRice->getPosition();
+        Vec2 attackerPos = ((Attack*)bd2)->getPosition();
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+
+        _ShrimpRice->takeDamage(_avatar->getAttack() / 4, direction, false);
+
+        popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
+        CULog("shrimpBoss: %f", _ShrimpRice->getHealth());
+    }
+    if (_ShrimpRice != nullptr && bd1 == _ShrimpRice.get() && bd2 == _ShrimpRice.get()) {
+        Vec2 avatarPos = _avatar->getPosition();
+        Vec2 bullPos = _ShrimpRice->getPosition();
+        int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
+        _avatar->addTouching();
+        _avatar->takeDamage(34, direction);
+    }
+    else if (_ShrimpRice != nullptr && bd1 == _avatar.get() && bd2 == _ShrimpRice.get()) {
+        Vec2 avatarPos = _avatar->getPosition();
+        Vec2 bullPos = _ShrimpRice->getPosition();
+        int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
+        _avatar->takeDamage(34, direction);
+    }
 }
 
 
@@ -272,13 +302,16 @@ void GameScene::endContact(b2Contact* contact) {
             _avatar->setGrounded(false);
         }
     }
-    //bull collision
-    if (_Bull != nullptr && bd1 == _Bull.get() && bd2 == _avatar.get()) {
-        Vec2 avatarPos = _avatar->getPosition();
-        Vec2 bullPos = _Bull->getPosition();
-        int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
-        _avatar->removeTouching();
-        _avatar->takeDamage(34, direction);
+
+
+    //Todo:: MAKE THIS BETTER ONCE BEN DONE WITH LEVEL EDITOR. FOR NOW JUST LOOP OVER ALL ENEMIES.
+    for (auto& _enemy : _enemies) {
+        if (!_enemy->isRemoved()) {
+            if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1 && bd1->getName() != "attack") ||
+                (_enemy->getSensorName() == fd1 && _enemy.get() != bd2) && bd2->getName() != "attack") {
+                _enemy->setGrounded(false);
+            }
+        }
     }
 
     // Check if the player is no longer in contact with any walls

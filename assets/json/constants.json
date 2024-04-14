@@ -1,6 +1,6 @@
 {
-    "entity" : "su",
-    "animation" : "attack",
+    "entity" : "bull",
+    "animation" : "bullAttack",
     "su": {
         "idle": {
             "sheet": "su_idle",
@@ -65,5 +65,161 @@
             "frames": 2,
             "duration": 0.16
         }
-    }
+    },
+    "rice" : {
+        "riceAttack":{
+            "sheet": "riceAttack",
+            "rows": 3,
+            "cols": 4,
+            "frames": 11,
+            "duration": 1.0
+        },
+        "riceEndWalk":{
+            "sheet": "riceEndWalk",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 1.0
+        },
+        "riceFall":{
+            "sheet": "riceFall",
+            "rows": 2,
+            "cols": 2,
+            "frames": 3,
+            "duration": 1.0
+        },
+        "riceIdle":{
+            "sheet": "riceIdle",
+            "rows": 2,
+            "cols": 3,
+            "frames": 5,
+            "duration": 1.0
+        },
+        "riceJump":{
+            "sheet": "riceJump",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 1.0
+        },
+        "riceLand":{
+            "sheet": "riceLand",
+            "rows": 3,
+            "cols": 4,
+            "frames": 10,
+            "duration": 1.0
+        },
+        "riceStartJump":{
+            "sheet": "riceStartJump",
+            "rows": 2,
+            "cols": 3,
+            "frames": 6,
+            "duration": 1.0
+        },
+        "riceStartWalk":{
+            "sheet": "riceStartWalk",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 1.0
+        },
+        "riceWalk":{
+            "sheet": "riceWalk",
+            "rows": 3,
+            "cols": 3,
+            "frames": 8,
+            "duration": 1.0
+        },
+        "riceYell":{
+            "sheet": "riceLeader",
+            "rows": 3,
+            "cols": 4,
+            "frames": 12,
+            "duration": 1.0
+        }
+    },
+    "rice_soldier": {
+        "riceAttack":{
+            "sheet": "riceAttack",
+            "rows": 3,
+            "cols": 4,
+            "frames": 11,
+            "duration": 1.0
+        },
+        "riceEndWalk":{
+            "sheet": "riceEndWalk",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 1.0
+        },
+        "riceFall":{
+            "sheet": "riceFall",
+            "rows": 2,
+            "cols": 2,
+            "frames": 3,
+            "duration": 1.0
+        },
+        "riceIdle":{
+            "sheet": "riceIdle",
+            "rows": 2,
+            "cols": 3,
+            "frames": 5,
+            "duration": 1.0
+        },
+        "riceJump":{
+            "sheet": "riceJump",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 1.0
+        },
+        "riceLand":{
+            "sheet": "riceLand",
+            "rows": 3,
+            "cols": 4,
+            "frames": 10,
+            "duration": 1.0
+        },
+        "riceStartJump":{
+            "sheet": "riceStartJump",
+            "rows": 2,
+            "cols": 3,
+            "frames": 6,
+            "duration": 1.0
+        },
+        "riceStartWalk":{
+            "sheet": "riceStartWalk",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 1.0
+        },
+        "riceWalk":{
+            "sheet": "riceWalk",
+            "rows": 3,
+            "cols": 3,
+            "frames": 8,
+            "duration": 1.0
+        },
+        "riceAcknowledge":{
+            "sheet": "riceSoldier",
+            "rows": 4,
+            "cols": 4,
+            "frames": 15,
+            "duration": 1.0
+        }
+    },
+    "egg": {},
+    "shrimp": {},
+    "beef": {
+        "beefIdle": {
+            "sheet": "beefIdle",
+            "rows": 3,
+            "cols": 3,
+            "frames": 7,
+            "duration": 1.0
+        }
+    },
+    "carrot" : {}
 }

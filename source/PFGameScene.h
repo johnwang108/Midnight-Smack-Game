@@ -39,6 +39,7 @@
 #include "PFDollarScene.h"
 #include "Levels/Level1.h"
 #include "Levels/Level2.h"
+#include "Levels/Level3.h"
 // #include "Levels/Level3.h"
 
 
@@ -122,7 +123,6 @@ protected:
     int _countdown;
 
     //camera
-    //std::shared_ptr<cugl::OrthographicCamera> _camera;
     cugl::Vec3 _cameraOffset = Vec3::ZERO;
     float _smoothTime = 0.25f;
     cugl::Vec3 _velocity = Vec3::ZERO;
@@ -135,9 +135,13 @@ protected:
 
     std::shared_ptr<BullModel>			  _Bull;
 
+    std::shared_ptr<ShrimpRice>			  _ShrimpRice;
+
     std::shared_ptr<Level2> level2 = std::make_shared<Level2>();
 
     std::shared_ptr<Level1> level1 = std::make_shared<Level1>();
+
+    std::shared_ptr<Level3> level3 = std::make_shared<Level3>();
 
     /** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
     bool _transitionScenes;
@@ -145,6 +149,10 @@ protected:
     float _healthPercentage;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarBackground;
+    std::shared_ptr<cugl::scene2::PolygonNode> _BullhealthBarBackground;
+    std::shared_ptr<cugl::scene2::PolygonNode> _BullhealthBarForeground;
+    std::shared_ptr<cugl::scene2::PolygonNode> _SFRhealthBarBackground;
+    std::shared_ptr<cugl::scene2::PolygonNode> _SFRhealthBarForeground;
 
     std::shared_ptr<cugl::scene2::PolygonNode> _cookBarFill;
     std::shared_ptr<cugl::scene2::PolygonNode> _cookBarOutline;
@@ -164,6 +172,7 @@ protected:
     float _flag;
 
     //debug anims for Leon
+    std::string _debugAnimTargetName;
     std::shared_ptr<Entity> _debugAnimTarget;
     std::string _debugAnimName;
     bool _overrideAnim;
@@ -475,6 +484,7 @@ public:
 
     void loadLevel(std::shared_ptr<Levels> level) {
         _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level2);
+        _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level3);
         level->populate(*this);
         currentLevel = level;
     }
@@ -493,6 +503,9 @@ public:
 
     std::shared_ptr<BullModel> getBull() const { return _Bull; }
     void setBull(const std::shared_ptr<BullModel>& bull) { _Bull = bull; }
+
+    std::shared_ptr<ShrimpRice> getShrimpRice() const { return _ShrimpRice; }
+    void setShrimpRice(const std::shared_ptr<ShrimpRice>& ShrimpRice) { _ShrimpRice = ShrimpRice; }
 
     void transition(bool t);
 

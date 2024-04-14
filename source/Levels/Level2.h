@@ -13,13 +13,14 @@ protected:
     std::shared_ptr<DudeModel>			  _avatar;
     std::vector<std::shared_ptr<EnemyModel>> _enemies;
     std::shared_ptr<cugl::physics2::BoxObstacle> _goalDoor;
-
+    std::vector<std::shared_ptr<Wall>> _walls;
 public:
     Level2() {
 
     }
 
     void populate(GameScene& scene) override;
+
 };
 
 #endif /* __LEVEL2_H__ */

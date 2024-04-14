@@ -147,7 +147,7 @@ void Level2::populate(GameScene& scene) {
 	image = _assets->get<Texture>("su_idle");
 	//hardcoded size
 	cugl::Size s = PLAYER_SIZE_DEFAULT;
-	_avatar = DudeModel::alloc(dudePos, s, _scale, _assets);
+	_avatar = DudeModel::allocWithConstants(dudePos, s, _scale, _assets);
 	std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
 
 	//CALCULATE sue sprite size from sue obstacle size. Goal: su's feet line up with foot sensor, and head (not hat) with top of obstacle. Todo still
@@ -163,27 +163,39 @@ void Level2::populate(GameScene& scene) {
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
 	AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
-	Vec2 shrimp_pos = SHRIMP_POS;
-	image = _assets->get<Texture>(BULL_TEXTURE);
-	std::shared_ptr<BullModel> _bull = BullModel::alloc(shrimp_pos, image->getSize() / _scale, _scale);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_bull->setSceneNode(sprite);
+	/*Vec2 shrimp_pos = SHRIMP_POS;
+
+	image = _assets->get<Texture>("bullIdle");
+	std::shared_ptr<BullModel> _bull = BullModel::alloc(shrimp_pos, BULL_SIZE_DEFAULT, _scale);
+	spritenode = EntitySpriteNode::allocWithSheet(image,3,4,12);
+	spritenode->setAnchor(Vec2(0.5f, 0.43f));
+	spritenode->setPosition(shrimp_pos);
+	_bull->setSceneNode(spritenode);
 	_bull->setName(BULL_TEXTURE);
 	_bull->setDebugColor(DEBUG_COLOR);
 	_bull->setassets(_assets);
-	_bull->sethealthbar(scene);
-	scene.addObstacle(_bull, sprite);
-	/*
-	Vec2 egg_pos = EGG_POS;
-	image = _assets->get<Texture>(EGG_TEXTURE);
-	std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc(egg_pos, image->getSize() / (_scale), _scale, EnemyType::egg);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_enemy->setSceneNode(sprite);
+
+	_bull->addActionAnimation("bullIdle", _assets->get<Texture>("bullIdle"), 3, 4, 12, 1.0f, false);
+	_bull->addActionAnimation("bullAttack", _assets->get<Texture>("bullAttack"), 5, 5, 25, 2.0f, false);
+	_bull->addActionAnimation("bullTelegraph", _assets->get<Texture>("bullTelegraph"), 3, 4, 10, 1.0f, false);
+	
+	scene.addObstacle(_bull, spritenode);*/
+
+
+	Vec2 pos = SHRIMP_POS;
+	Size size = cugl::Size(2.0f, 2.0f);
+	image = _assets->get<Texture>("beefIdle");
+
+	spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
+	std::shared_ptr<EnemyModel> _enemy = EnemyModel::allocWithConstants(pos, size, _scale, _assets, EnemyType::beef);
+	spritenode->setScale(0.1f);
+	spritenode->setAnchor(Vec2(0.5, 0.35));
+	_enemy->setSceneNode(spritenode);
 	_enemy->setName(ENEMY_NAME);
 	_enemy->setDebugColor(DEBUG_COLOR);
-	scene.addObstacle(_enemy, sprite);
+	_enemy->setLimit(cugl::Spline2(Vec2(1.0f, 1.0f), Vec2(50.0f, 1.0f)));
+	scene.addObstacle(_enemy, spritenode);
 	_enemies.push_back(_enemy);
-	*/
 
 	scene.setAssets(_assets);
 	scene.setScale(_scale);
@@ -191,6 +203,6 @@ void Level2::populate(GameScene& scene) {
 	scene.setAvatar(_avatar);
 	scene.setEnemies(_enemies);
 	scene.setGoalDoor(_goalDoor);
-	scene.setBull(_bull);
+	//scene.setBull(_bull);
 
 }

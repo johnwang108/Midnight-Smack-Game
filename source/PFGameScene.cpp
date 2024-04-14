@@ -257,9 +257,17 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     std::shared_ptr<cugl::scene2::SceneNode> _bullBarNode;
     _bullBarNode = _assets->get<scene2::SceneNode>("bullbar");
 
-    auto healthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
-    auto healthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
+    _BullhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
+    _BullhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
     _uiScene->addChild(_bullBarNode);
+
+    //std::shared_ptr<cugl::scene2::SceneNode> _SFRBarNode;
+    //_SFRBarNode = _assets->get<scene2::SceneNode>("shrimpbar");
+
+    //_SFRhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
+    //_SFRhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
+    //_uiScene->addChild(_SFRBarNode);
+
 
     _buffLabel = scene2::Label::allocWithText("NO BUFF", _assets->get<Font>(MESSAGE_FONT));
     _buffLabel->setAnchor(Vec2::ANCHOR_CENTER);
@@ -289,7 +297,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     _target = std::make_shared<EnemyModel>();
 
-    currentLevel = level1;
+    currentLevel = level2;
     loadLevel(currentLevel);
 
     save();
@@ -317,16 +325,20 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     std::shared_ptr<JsonValue> js = reader->readJson();
 
-    if (js->getString("entity") == "su") {
+    _debugAnimTargetName = js->getString("entity");
+    if (_debugAnimTargetName == "su") {
         _debugAnimTarget = _avatar;
-    } /*else if(js->getString("entity") == "bull") {
+    } else if(_debugAnimTargetName == "bull") {
 		_debugAnimTarget = _Bull;
-    }*/
+    }else if (_debugAnimTargetName == "shrimp") {
+        _debugAnimTarget = _ShrimpRice;
+    }
     else {
 		_debugAnimTarget = nullptr;
 	}
 
     _debugAnimName = js->getString("animation");
+    _overrideAnim = false;
 
     setName("night");
     Application::get()->setClearColor(Color4::YELLOW);
@@ -382,7 +394,12 @@ void GameScene::reset() {
 
     loadLevel(currentLevel);
 
-    CULog("Resetted!");
+    if (_debugAnimTargetName == "bull" && _Bull != nullptr) {
+		_debugAnimTarget = _Bull;
+    }
+    else if (_debugAnimTargetName == "shrimp" && _ShrimpRice != nullptr) {
+		_debugAnimTarget = _ShrimpRice;
+	}
 }
 
 /**
@@ -514,6 +531,7 @@ void GameScene::preUpdate(float dt) {
 
     //handle animations
     _actionManager->update(dt);
+    
     //start running if idle or recovering and moving
     if (!_overrideAnim) {
         if ((_actionManager->isActive("idle") || _actionManager->isActive("recover")) && (_input->getHorizontal() != 0)) {
@@ -573,6 +591,7 @@ void GameScene::preUpdate(float dt) {
                 _actionManager->activate("run", runAction, _avatar->getSceneNode());
             }
             else {
+                //Todo:: blink idle
                 if (((float)rand() / RAND_MAX) < 0.5) {
                     _avatar->animate("idle_blink");
                     auto idleAction = _avatar->getAction("idle_blink");
@@ -587,9 +606,10 @@ void GameScene::preUpdate(float dt) {
             }
         }
 
-
+        _avatar->setShooting(_input->didFire());
         if (_avatar->isShooting() && !_actionManager->isActive("attack")) {
             //createAttack(false);
+            CULog("ATTACKING");
             auto att = _avatar->createAttack(getAssets(), _scale);
             addObstacle(std::get<0>(att), std::get<1>(att), true);
             _attacks.push_back(std::get<0>(att));
@@ -601,8 +621,7 @@ void GameScene::preUpdate(float dt) {
         }
     }
 
-    if (_input->didAnimate()) {
-
+    if (_input->didAnimate() && _debugAnimTarget != nullptr) {
         CULog("OVERRIDE ANIM");
         _overrideAnim = true;
         _debugAnimTarget->animate(_debugAnimName);
@@ -615,14 +634,8 @@ void GameScene::preUpdate(float dt) {
 		_overrideAnim = false;
 	}
 
-    //end animations
 
-
-
-
-
-
-
+    
     _dollarnode->update(dt);
 
     if (!_slowed) {
@@ -716,26 +729,24 @@ void GameScene::preUpdate(float dt) {
             Vec2 enemyPos = enemy->getPosition();
             float distance = avatarPos.distance(enemyPos);
 
-            if (distance < CHASE_THRESHOLD) {
-                enemy->setIsChasing(true);
-                enemy->updatePlayerDistance(_avatar->getPosition());
-                int direction = (avatarPos.x > enemyPos.x) ? 1 : -1;
-                enemy->setDirection(direction);
-                if (enemy->getnextchangetime() < 0) {
-                    enemy->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
-                }
-                if (enemy->getattacktime()) {
-                    auto res = enemy->createAttack(_assets, _scale);
-                    addObstacle(std::get<0>(res), std::get<1>(res));
-                    enemy->setattacktime(false);
-                    enemy->setshooted(false);
-                }
-            }
-            else if (distance >= CHASE_THRESHOLD * 2 && enemy->isChasing()) {
-                enemy->setIsChasing(false);
-            }
+            enemy->updatePlayerDistance(_avatar->getPosition());
+			if (enemy->getattacktime()) {
+				auto res = enemy->createAttack(_assets, _scale);
+				addObstacle(std::get<0>(res), std::get<1>(res));
+				enemy->setattacktime(false);
+				enemy->setshooted(false);
+			}
             if (enemy->getHealth() <= 0) {
                 removeEnemy(enemy.get());
+            }
+            else {
+            //enemy animations, TODO
+                if (enemy->getType() == EnemyType::beef && !_actionManager->isActive("beefIdle")) {
+                    CULog("Animating");
+                    enemy->animate("beefIdle");
+                    auto beefAction = enemy->getAction("beefIdle");
+                    _actionManager->activate("attack", beefAction, enemy->getSceneNode());
+                }
             }
             enemy->update(dt);
         }
@@ -771,9 +782,66 @@ void GameScene::preUpdate(float dt) {
                 _Bull->setDirection(direction);
                 _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
             }
+
         }
         _Bull->update(dt);
     }
+    if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
+        if (_ShrimpRice->getHealth() <= 0) {
+            _worldnode->removeChild(_ShrimpRice->getSceneNode());
+            _ShrimpRice->setDebugScene(nullptr);
+            _ShrimpRice->markRemoved(true);
+        }
+        
+        if (!_ShrimpRice->isChasing()) {
+            Vec2 BullPos = _ShrimpRice->getPosition();
+            float distance = avatarPos.distance(BullPos);
+            if (_ShrimpRice->getnextchangetime() < 0) {
+                int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
+                _ShrimpRice->setDirection(direction);
+                _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+            }
+        }
+        _ShrimpRice->update(dt);
+    }
+
+    if (_Bull != nullptr) {
+        if (!_actionManager->isActive(_Bull->getActiveAction())) {
+
+            if (_Bull->isChasing() && ((_Bull->getPosition().x < 20 && _Bull->getDirection() == -1) || _Bull->getPosition().x > 30 && _Bull->getDirection() == 1)) {
+                _Bull->animate("bullAttack");
+                auto bullAttack = _Bull->getAction("bullAttack");
+                _actionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
+            }
+            else if (_Bull->isChasing() || _Bull->getsprintpreparetime() > 0) {
+                _Bull->animate("bullTelegraph");
+                auto bullTelegraph = _Bull->getAction("bullTelegraph");
+                _actionManager->activate("bullTelegraph", bullTelegraph, _Bull->getSceneNode());
+            }
+            else if (_Bull->getknockbacktime() <= 0) {
+                _Bull->animate("bullIdle");
+                auto bullIdle = _Bull->getAction("bullIdle");
+                _actionManager->activate("bullIdle", bullIdle, _Bull->getSceneNode());
+            }
+
+        }
+    }
+
+    if (_ShrimpRice != nullptr) {
+        if (!_actionManager->isActive(_ShrimpRice->getActiveAction())) {
+            if (_ShrimpRice->getattackcombo() > 0) {
+                _ShrimpRice->animate("SFR_Attack");
+                auto SFR_Attack = _ShrimpRice->getAction("SFR_Attack");
+                _actionManager->activate("SFR_Attack", SFR_Attack, _ShrimpRice->getSceneNode());
+            }
+            else if (_ShrimpRice->getknockbacktime() <= 0) {
+                _ShrimpRice->animate("SFR_Move");
+                auto SFR_Move = _ShrimpRice->getAction("SFR_Move");
+                _actionManager->activate("SFR_Move", SFR_Move, _ShrimpRice->getSceneNode());
+			}
+        }
+    }
+
 }
 
 
@@ -817,6 +885,22 @@ void GameScene::fixedUpdate(float step) {
         float clipWidth = totalWidth * _healthPercentage;
         std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
         _healthBarForeground->setScissor(scissor);
+    }
+    if (_BullhealthBarForeground != nullptr && _Bull!= nullptr) {
+        _healthPercentage = _Bull->getHealth() / 100;
+        float totalWidth = _BullhealthBarForeground->getWidth();
+        float height = _BullhealthBarForeground->getHeight();
+        float clipWidth = totalWidth * _healthPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _BullhealthBarForeground->setScissor(scissor);
+    }
+    if (_SFRhealthBarForeground != nullptr && _ShrimpRice != nullptr) {
+        _healthPercentage = _ShrimpRice->getHealth() / 100;
+        float totalWidth = _SFRhealthBarForeground->getWidth();
+        float height = _SFRhealthBarForeground->getHeight();
+        float clipWidth = totalWidth * _healthPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _SFRhealthBarForeground->setScissor(scissor);
     }
     if (_cookBarFill != nullptr) {
         float meterPercentage = _avatar->getMeter() / 100.0f;
@@ -1113,7 +1197,10 @@ void GameScene::save() {
     std::string path = cugl::filetool::join_path({ root,"save.json" });*/
 
     //Should only change nighttime save data unless level was completed, in which case change level/chapter accordingly.
-    auto reader = JsonReader::alloc("./save.json");
+    std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });
+
+    auto reader = JsonReader::alloc(path);
 
     std::shared_ptr<JsonValue> prev_json = reader->readJson();
     reader->close();
@@ -1173,7 +1260,7 @@ void GameScene::save() {
     CULog("appended");
     json->appendValue("test", 0.0f);
 
-    auto writer = JsonWriter::alloc("./save.json");
+    auto writer = JsonWriter::alloc(path);
 
     writer->writeJson(json);
     
@@ -1188,7 +1275,9 @@ void GameScene::loadSave() {
     //CULog("PATH");
     //CULog(path.c_str());
 
-    auto reader = JsonReader::alloc("./save.json");
+    std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });
+    auto reader = JsonReader::alloc(path);
 
     std::shared_ptr<JsonValue> loaded_json = reader->readJson();
 

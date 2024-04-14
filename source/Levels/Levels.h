@@ -7,6 +7,7 @@
 #include "../PFDudeModel.h"
 #include "../Enemys/Enemy.h"
 #include "../Enemys/Bull.h"
+#include "../Enemys/ShrimpRice.h"
 #include "../NightLevelObjects/Wall.h"
 
 
@@ -114,6 +115,8 @@
 #define WALL_COUNT 2
 
 #define PLAYER_SIZE_DEFAULT cugl::Size(1.5f, 2.0f)
+#define BULL_SIZE_DEFAULT cugl::Size(14.0f, 8.0f)
+#define SHR_SIZE_DEFAULT cugl::Size(6.5f, 7.5f)
 
 
 class GameScene;

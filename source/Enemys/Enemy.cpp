@@ -6,6 +6,17 @@
 
 
 
+/** 
+
+
+Behavior diagram and info:
+
+https://docs.google.com/drawings/d/1TS-DFsWZOT4SpqrswI8zruaZdR78v6QIWfDNnVQA1Yo/edit?pli=1
+
+
+
+*/
+
 using namespace cugl;
 
 #pragma mark -
@@ -20,7 +31,15 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
     return init(pos, size, scale, type, EnemyModel::defaultSeq(type), EnemyModel::defaultSeq(type));
 }
 
+bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type, cugl::Spline2 limit) {
+    return init(pos, size, scale, type, EnemyModel::defaultSeq(type), EnemyModel::defaultSeq(type), limit);
+}
+
 bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type, std::vector<std::string> seq1, std::vector<std::string> seq2) {
+    	return init(pos, size, scale, type, seq1, seq2, cugl::Spline2());
+}
+
+bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type, std::vector<std::string> seq1, std::vector<std::string> seq2, cugl::Spline2 limit) {
     Size scaledSize = size;
     scaledSize.width *= ENEMY_HSHRINK;
     scaledSize.height *= ENEMY_VSHRINK;
@@ -56,6 +75,10 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
         b2Filter filter = getFilterData();
         filter.groupIndex = -1;
         setFilterData(filter);
+        setName("enemy");
+
+        _limit = limit;
+
         return true;
     }
 
@@ -148,6 +171,9 @@ void EnemyModel::update(float dt) {
         return;
     }
 
+    int direction = (_distanceToPlayer.x > 0) ? 1 : -1;
+    setDirection(direction);
+
     //updating counters
     if (_knockbackTime > 0) {
         _knockbackTime -= dt;
@@ -174,24 +200,9 @@ void EnemyModel::update(float dt) {
     }
 
     b2Vec2 velocity = _body->GetLinearVelocity();
-    //   if (_state == "chasing") {
-    //       _node->setColor(Color4::BLACK);
-    //   }
-    //   else if (_state == "rolling"){
-    //       _node->setColor(Color4::RED);
-    //   }
-    //   else if (_state == "patrolling") {
-    //       _node->setColor(Color4::WHITE);
-    //   }
-    //   else if (_state == "stunned") {
-       //	_node->setColor(Color4::GRAY);
-       //}
-    //   else if (_state == "spitting") {
-       //	_node->setColor(Color4::YELLOW);
-       //}
-    //   else {
 
-//}
+    CULog("Enemy state: %s", _state.c_str());
+
     //handle type specific behavior
     switch (getType()) {
     case EnemyType::shrimp:
@@ -215,11 +226,37 @@ void EnemyModel::update(float dt) {
         }
         else {
             CULog("error: shrimp");
+            CULog(_state.c_str());
         }
         break;
 
     case EnemyType::rice:
         if (_state == "chasing") {
+            velocity.x = 0;
+        }
+        else if (_state == "yelling") {
+			velocity.x = 0;
+		}
+        else if (_state == "stunned") {
+            velocity.x = 0;
+        }
+        else if (_state == "pursuing") {
+            velocity.x = ENEMY_FORCE * _direction * 2;
+        }
+        else if (_state == "patrolling") {
+            velocity.x = ENEMY_FORCE * _direction;
+        }
+        else {
+            CULog("error: rice");
+            CULog(_state.c_str());
+        }
+        break;
+
+    case EnemyType::rice_soldier:
+        if (_state == "chasing") {
+            velocity.x = 0;
+        }
+        else if (_state == "pursuing") {
             velocity.x = ENEMY_FORCE * _direction * 2;
         }
         else if (_state == "stunned") {
@@ -229,12 +266,14 @@ void EnemyModel::update(float dt) {
             velocity.x = ENEMY_FORCE * _direction;
         }
         else {
-            CULog("error: rice");
+            CULog("error: rice soldier");
+            CULog(_state.c_str());
         }
         break;
+
     case EnemyType::egg:
         if (_state == "chasing") {
-            velocity.x = ENEMY_FORCE * _direction;
+            velocity.x = ENEMY_FORCE * _direction * 0.5;
         }
         else if (_state == "stunned") {
             velocity.x = 0;
@@ -247,7 +286,7 @@ void EnemyModel::update(float dt) {
             setattacktime(true);
         }
         else if (_state == "patrolling") {
-            velocity.x = ENEMY_FORCE * _direction;
+            velocity.x = ENEMY_FORCE * _direction * 0.25;
         }
         else if (_state == "short_windup") {
             velocity.x = 0;
@@ -258,57 +297,62 @@ void EnemyModel::update(float dt) {
         }
         break;
     case EnemyType::carrot:
+        if (_state == "chasing") {
+			velocity.x = ENEMY_FORCE * _direction * 2;
+		}
+        else if (_state == "windup") {
+			velocity.x = 0;
+		}
+        else if (_state == "jumping") {
+            if (isGrounded()) {
+                velocity.y = 10;
+                velocity.x = ENEMY_FORCE * _direction * 10;
+            }
+        }
+        else if (_state == "midair") {
+            if (isGrounded()) {
+				velocity.x = 0;
+			}
+		}
+        else if (_state == "stunned") {
+            velocity.x = 0;
+        }
+        else if (_state == "patrolling") {
+			velocity.x = ENEMY_FORCE * _direction;
+		}
+        else {
+			CULog("error: carrot");
+			CULog(_state.c_str());
+		}
         break;
     case EnemyType::beef:
+        if (_state == "chasing") {
+            velocity.x = 0;
+        }
+        else if (_state == "burrowing") {
+            velocity.x = 0;
+        }
+        else if (_state == "tracking") {
+            //Todo:: make this explicitly slightly slower than player max speed
+            cugl::Vec2 targetPos = _limit.nearestPoint(cugl::Vec2(getPosition().x + direction * ENEMY_FORCE * 5, getPosition().y));
+            
+            cugl::Vec2 v = targetPos - getPosition();
+            velocity = b2Vec2(v.x, v.y);  
+        }
+        else if (_state == "unburrowing") {
+            velocity.x = 0;
+        }
+        else if (_state == "stunned") {
+            velocity.x = 0;
+		}
+        else if (_state == "patrolling") {
+            velocity.x = 0;
+		}
         break;
     }
     
-    //_body->SetLinearVelocity(handleMovement(velocity));
     _body->SetLinearVelocity(handleMovement(velocity));
-
-    //if (_isGrounded) {
-    //    b2Vec2 velocity = _body->GetLinearVelocity();
-    //    velocity.x = ENEMY_FORCE;
-
-    //    // Reverse direction at edges or obstacles
-    //    if (velocity.x > ENEMY_MAXSPEED) {
-    //        velocity.x = ENEMY_MAXSPEED;
-    //        _direction = -_direction;
-    //    }
-    //    else if (velocity.x < -ENEMY_MAXSPEED) {
-    //        velocity.x = -ENEMY_MAXSPEED;
-    //        _direction = -_direction;
-    //    }
-    //    _nextChangeTime -= dt;
-    //    if (isChasing()) {
-    //        if (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < ENEMY_ATTACK_CHANCE) {
-    //            _preparetime = 2.5;
-    //            _shooted = true;
-    //        }
-    //        velocity.x *= CHASE_SPEED;
-    //    }
-    //    else if (!isChasing() && _nextChangeTime <= 0) {
-    //        _direction = (rand() % 2) * 2 - 1;
-    //        _nextChangeTime = _changeDirectionInterval + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * _changeDirectionInterval;
-    //    }
-
-    //    if (_direction != _lastDirection) {
-    //        // If direction changed, flip the image
-    //        scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
-    //        if (image != nullptr) {
-    //            image->flipHorizontal(!image->isFlipHorizontal());
-    //        }
-
-    //    }
-
-
-    //    velocity.x *= _direction;
-    //    _lastDirection = _direction; // Update last direction
-
-    //    _body->SetLinearVelocity(velocity);
-    //}
     _lastDamageTime += dt;
-
 
     // Update scene node position and rotation to match physics body
     if (_node != nullptr) {
@@ -337,14 +381,10 @@ b2Vec2 EnemyModel::handleMovement(b2Vec2 velocity) {
         }
         _lastDirection = _direction; // Update last direction
     }
+
     return velocity;
 }
 
-
-void EnemyModel::setSceneNode(const std::shared_ptr<scene2::SceneNode>& node) {
-    _node = node;
-    _node->setPosition(getPosition() * _drawScale);
-}
 
 void EnemyModel::dispose() {
     _core = nullptr;
@@ -369,13 +409,13 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> EnemyM
     }
     attack->setName("enemy_attack");
     attack->setBullet(true);
-    attack->setGravityScale(0.2);
+    attack->setGravityScale(0);
     attack->setDebugColor(DEBUG_COLOR);
     attack->setDrawScale(scale);
     attack->setstraight(_distanceToPlayer + getPosition());
     attack->setEnabled(true);
     attack->setrand(false);
-    attack->setSpeed(30.0f);
+    attack->setSpeed(10.0f);
 
 
 
@@ -389,7 +429,7 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> EnemyM
     AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);*/
 }
 
-//begins the aggro behavior, maintains player location information
+/** begins the aggro behavior, maintains player location information*/
 void EnemyModel::setIsChasing(bool isChasing) {
     _isChasing = isChasing;
     if (isChasing) {
@@ -404,77 +444,116 @@ void EnemyModel::setIsChasing(bool isChasing) {
 
 void EnemyModel::updatePlayerDistance(cugl::Vec2 playerPosition) {
     _distanceToPlayer = playerPosition - getPosition();
+    if (_distanceToPlayer.length() <= typeToAggroRange(_type) && _state == "patrolling") {
+        setIsChasing(true);
+    }
+    else if (_distanceToPlayer.length() >  2 * typeToAggroRange(_type) && _state != "patrolling") {
+		setIsChasing(false);
+	}
     //CULog("Distance to player: %f", _distanceToPlayer.length());
 }
 
-/**Sets the nextstate and also sets how long the enemy stays in that state. Counters set to -1 if the state will transition away based off of something else.*/
+/**Sets the nextstate and also sets how long the enemy stays in that state. 
+Counters set to -1 if the state will transition away based off of requirements
+other than time.*/
 void EnemyModel::setState(std::string state) {
     _state = state;
+    if (state == "chasing") {
+        _behaviorCounter = -1;
+    }
+    else if (state == "stunned") {
+        _behaviorCounter = 60;
+    }
+    else if (state == "patrollling") {
+        _behaviorCounter = -1;
+    }
+    
     switch (_type) {
         case EnemyType::shrimp:
-            if (state == "chasing") {
-                _behaviorCounter = 30;
+            if (state == "curling") {
+                _behaviorCounter = 60;
+            }
+            else if (state == "uncurling") {
+                _behaviorCounter = 20;
             }
             else if (state == "rolling") {
                 _behaviorCounter = -1;
             }
-            else if (state == "stunned") {
-                _behaviorCounter = 60;
-            }
-            else if (state == "patrollling") {
-                _behaviorCounter = -1;
-            }
 			break;
         case EnemyType::egg:
-            if (state == "chasing") {
-                _behaviorCounter = -1;
-            }
-            else if (state == "windup") {
-                _behaviorCounter = 300;
+            if (state == "windup") {
+                _behaviorCounter = 400;
             }
             else if (state == "spitting") {
                 _behaviorCounter = 1;
             }
             else if (state == "short_windup") {
-                _behaviorCounter = 180;
-            }
-            else if (state == "stunned") {
-                _behaviorCounter = 30;
-            }
-            else if (state == "patrollling") {
-                _behaviorCounter = -1;
+                _behaviorCounter = 200;
             }
             break;
         case EnemyType::rice:
             if (state == "yelling") {
                 _behaviorCounter = 30;
             }
-            else if (state == "stunned") {
-                _behaviorCounter = 60;
-            }
-            else if (state == "patrollling") {
+            else if (state == "pursuing") {
                 _behaviorCounter = -1;
             }
             break;
+        case EnemyType::rice_soldier:
+            if (state == "pursuing") {
+                _behaviorCounter = -1;
+            }
+            break;
+        case EnemyType::carrot:
+            if (state == "windup") {
+				_behaviorCounter = 60;
+			}
+            else if (state == "jumping") {
+				_behaviorCounter = -1;
+            }
+            else if (state == "midair") {
+                _behaviorCounter = -1;
+            }
+			break;
+        case EnemyType::beef:
+            if (state == "burrowing") {
+                _behaviorCounter = 60;
+            }
+            else if (state == "tracking") {
+                _behaviorCounter = 360;
+            }
+            else if (state == "unburrowing") {
+                _behaviorCounter = 10;
+            }
+            else if (state == "stunned") {
+                _behaviorCounter = 120;
+            }
+			break;
         default:
             _behaviorCounter = -1;
             break;
     }
 }
 
-/**Chasing is mostly an intermediate state between passive and aggro behavior. The exception is rice.
+/**Chasing is an intermediate state between passive and aggro behavior.
 For example the only time beef is chasing is when it first spots the player or after it is stunned.*/
 std::string EnemyModel::getNextState(std::string state) {
     switch (_type) {
 		case EnemyType::shrimp:
             if (state == "chasing") {
-				return "rolling";
+				return "curling";
 			}
+            if (state == "curling") {
+                return "rolling";
+            }
             else if (state == "rolling") {
                 return "rolling";
 			}
+            else if (state == "uncurling") {
+				return "patrolling";
+			}
             else if (state == "stunned") {
-                return "chasing";
+                return "rolling";
             }
             else if (state == "patrolling") {
 				return "patrolling";
@@ -482,21 +561,28 @@ std::string EnemyModel::getNextState(std::string state) {
 			break;
         case EnemyType::rice:
             if (state == "chasing") {
-                return "chasing";
+                return "yelling";
             }
             else if (state == "yelling") {
-                return "chasing";
+                return "pursuing";
             }
             else if (state == "stunned") {
                 return "chasing";
             }
+            else if (state == "pursuing") {
+                return "pursuing";
+            }
             else if (state == "patrolling") {
                 return "patrolling";
             }
+
             break;
-        case EnemyType::rice_follower:
+        case EnemyType::rice_soldier:
             if (state == "chasing") {
-                return "chasing";
+                return "pursuing";
+            }
+            else if (_state == "pursuing") {
+                return "pursuing";
             }
             else if (state == "patrolling") {
                 return "patrolling";
@@ -532,7 +618,10 @@ std::string EnemyModel::getNextState(std::string state) {
                 return "tracking";
             }
             if (state == "tracking") {
-                return "attacking";
+                return "unburrowing";
+            }
+            if (state == "unburrowing") {
+                return "stunned";
             }
             else if (state == "stunned") {
                 return "burrowing";
@@ -550,15 +639,21 @@ std::string EnemyModel::getNextState(std::string state) {
                 return "jumping";
             }
             else if (state == "jumping") {
+                if (!isGrounded()) return "midair";
+				else return "jumping";
+            }
+            else if (state == "midair") {
+                if (isGrounded()) return "windup";
+                else return "midair";
+            }
+            else if (state == "stunned") {
                 return "windup";
             }
             else if (state == "patrolling") {
 				return "patrolling";
 			}
 			break;
-
-    default:
-        return "patrolling";
+        default:
+            return "patrolling";
     }
-    return "none";
 }
