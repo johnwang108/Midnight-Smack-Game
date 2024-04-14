@@ -556,9 +556,13 @@ void LevelModel::populate(GameScene& scene) {
 							CULog(debugMsg.c_str());
 							// for some reason, despite appearing first, dream-background.png
 							// writes over everything (over the avatar, main_platform, and object layers
-							if (pathWeWant != "textures\\dream-background.png") {
+							if (pathWeWant != "textures\\dream-background-1.png") {
 								_background = cugl::scene2::PolygonNode::allocWithTexture(image);
 								_background->getSize();
+								// _background->setPosition(Vec2(0,0));
+								CULog(std::to_string(_background->getPositionX()).c_str());
+								CULog(std::to_string(_background->getPositionY()).c_str());
+								// _background->setPositionY(400.0);
 								scene.addChild(_background);
 							}
 							//---------------------------------------------------------------------
@@ -669,7 +673,12 @@ void LevelModel::populate(GameScene& scene) {
 
 							int rowPos = ((window_height - rowNum) % window_height + window_height) % window_height;
 
+							float scale_refactor = (210.0f / 40.0f);
+							//WE WILL HAVE TO CHANGE THIS
+
+							// Vec2 dudePos = Vec2(colNum + (3 * scale_refactor), rowPos + (3 * scale_refactor));
 							Vec2 dudePos = Vec2(colNum, rowPos);
+
 							//Vec2 dudePos = Vec2(colNum, (window_height - (rowNum * 32)) / 32);
 							// this is what we actually want, but code being annoying
 							// _avatar = DudeModel::alloc(dudePos, image->getSize() / (2 + scene.getScale()), scene.getScale());
@@ -721,6 +730,7 @@ void LevelModel::populate(GameScene& scene) {
 					}
 					else if (object->getString("name") == "Main_Platform") {
 						CULog("We are in loadMainPlatform!");
+						CULog(object->getString("id").c_str());
 						loadMainPlatform(object, scene, sprite, window_height * 32.0f);
 					}
 					else {
@@ -799,6 +809,9 @@ void LevelModel::loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameSc
 		startingY = 0.0f;
 	}
 
+	/*startingX -= (210.0f / 40.0f);
+	startingY += (210.0f / 40.0f);*/
+
 
 	std::shared_ptr<cugl::JsonValue> platform_vertices = json->get("polygon");
 	std::shared_ptr<physics2::PolygonObstacle> platobj;
@@ -810,26 +823,36 @@ void LevelModel::loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameSc
 			std::shared_ptr<JsonValue> point = platform_vertices->get(i);
 			// one possible issue: point->getFloat("y") also contains negative numbers,
 			// so we may want to add a % window_height or something, but not sure
-			polygon_points.push_back(Vec2((startingX + point->getFloat("x")) / 32.0f, (level_height - (startingY + point->getFloat("y"))) / 32.0f));
+			float refactor_scale = 210.0f / 40.0f;
+			// polygon_points.push_back(Vec2(((startingX + point->getFloat("x"))) * refactor_scale / 32.0f, ((level_height - (startingY + point->getFloat("y"))) * refactor_scale) / 32.0f));
+			polygon_points.push_back(Vec2(((startingX + point->getFloat("x"))) / 32.0f, ((level_height - (startingY + point->getFloat("y")))) / 32.0f));
 			std::string value = "Point " + std::to_string(i);
 			CULog(value.c_str());
 			std::string x_print = "x: " + std::to_string((startingX + point->getFloat("x")) / 32.0f);
 			std::string y_print = "y: " + std::to_string((level_height - (startingY + point->getFloat("y"))) / 32.0f);
+			std::string x_refactored = "x refactored: " + std::to_string((startingX + point->getFloat("x")) * refactor_scale / 32.0f);
+			std::string y_refactored = "y refactored: " + std::to_string((level_height - (startingY + point->getFloat("y"))) * refactor_scale / 32.0f);
 			CULog(x_print.c_str());
 			CULog(y_print.c_str());
+			CULog(x_refactored.c_str());
+			CULog(y_refactored.c_str());
 			CULog("-------------------------");
 
 		}
 	}
 
 	Poly2 platform(polygon_points);
+	// platform *= (scene.getScale() / (210.0 / 40.0));
 	EarclipTriangulator triangulator;
 	triangulator.set(platform.vertices);
 	triangulator.calculate();
 	platform.setIndices(triangulator.getTriangulation());
 	triangulator.clear();
 
-	platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_BOTTOM_LEFT);
+	// platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_BOTTOM_LEFT);
+	platobj = physics2::PolygonObstacle::alloc(platform);
+	platobj->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
+	// platobj->setPosition(5.0, 0.0);
 	platobj->setName(std::string(PLATFORM_NAME));
 
 	platobj->setBodyType(b2_staticBody);
@@ -839,10 +862,12 @@ void LevelModel::loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameSc
 	platobj->setDebugColor(DEBUG_COLOR);
 
 	platform *= scene.getScale();
+
 	// std::shared_ptr<cugl::Texture> text;
 	// text->init();
 
 	sprite = scene2::PolygonNode::allocWithTexture(nullptr, platform);
+	sprite->setColor(Color4::CLEAR);
 	sprite->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 	scene.addObstacle(platobj, sprite, 1);
 
@@ -859,11 +884,13 @@ void LevelModel::loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json,
 	float width = json->getFloat("width");
 
 	std::shared_ptr<physics2::PolygonObstacle> platobj;
+	float scene_refactor = 210.0f / 40.0f;
 	float DIMENSIONS[8] = {startingX / 32.0f, (level_height - startingY) / 32.0f, startingX / 32.0f, (level_height - startingY - height) / 32.0f, (startingX + width) / 32.0f, (level_height - startingY - height) / 32.0f, (startingX + width) / 32.0f, (level_height - startingY) / 32.0f};
 	
 	// float DIMENSIONS[8] = {8.0f, 4.0f, 8.0f, 3.0f, 20.0f, 3.0f, 20.0f, 4.0f};
 	
 	for (int i = 0; i < 8; i++) {
+		// DIMENSIONS[i] = DIMENSIONS[i] * (2);
 		std::string val = "Point " + std::to_string(i) + ": " + std::to_string(DIMENSIONS[i]);
 		CULog(val.c_str());
 	}
@@ -877,6 +904,7 @@ void LevelModel::loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json,
 	triangulator.clear();
 
 	platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_BOTTOM_LEFT);
+	// CULog(std::to_string(platobj->isRemoved()).c_str());
 	// platobj->setName(std::string(PLATFORM_NAME));
 
 	platobj->setBodyType(b2_staticBody);
@@ -886,14 +914,13 @@ void LevelModel::loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json,
 	platobj->setDebugColor(DEBUG_COLOR);
 
 	platform *= scene.getScale();
-
-
 	
 	//null texture because it is included in our main platform background
 
 	std::shared_ptr<Texture> image = _assets->get<Texture>("textures\\placeholder_block_PLATFORM.png");
 
 	sprite = scene2::PolygonNode::allocWithTexture(nullptr, platform);
+	sprite->setColor(Color4::CLEAR);
 	sprite->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 	scene.addObstacle(platobj, sprite, 1);
 }

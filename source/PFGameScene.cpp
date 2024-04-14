@@ -37,15 +37,15 @@ using namespace cugl;
 #pragma mark Level Geography
 
 /** This is adjusted by screen aspect ratio to get the height */
-#define SCENE_WIDTH 1280
+#define SCENE_WIDTH 6720
 #define SCENE_HEIGHT 800
 
 /** This is the aspect ratio for physics */
-#define SCENE_ASPECT 10.0/16.0
+#define SCENE_ASPECT 10.0/84.0
 // #define SCENE_ASPECT 10.0/16.0
 
 /** Width of the game world in Box2d units */
-#define DEFAULT_WIDTH   40.0f
+#define DEFAULT_WIDTH   210.0f
 /** Height of the game world in Box2d units */
 #define DEFAULT_HEIGHT  25.0f
 
@@ -156,7 +156,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     // Create the world and attach the listeners.
     _world = physics2::ObstacleWorld::alloc(rect,gravity);
-
     //Here, we are going to set our level's world equal to world
     // _assets->load<LevelModel>("long-level", "long-level.json");
     // _level_model = _assets->get<LevelModel>("long-level");
@@ -187,12 +186,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     std::shared_ptr<Texture> image;
     _worldnode = scene2::SceneNode::alloc();
     _worldnode->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
-    _worldnode->setPosition(offset);
+    _worldnode->setPosition(0,0);
 
     _debugnode = scene2::SceneNode::alloc();
     _debugnode->setScale(_scale); // Debug node draws in PHYSICS coordinates
     _debugnode->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
-    _debugnode->setPosition(offset);
+    _debugnode->setPosition(0,0);
 
     _winnode = scene2::Label::allocWithText(WIN_MESSAGE, _assets->get<Font>(MESSAGE_FONT));
     _winnode->setAnchor(Vec2::ANCHOR_CENTER);
@@ -235,7 +234,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_BOTTOM_LEFT);
     _dollarnode->setVisible(false);
 
-
+    _level_model->setFilePath("json/test_level_v2.json");
+    loadLevel(_level_model);
     addChild(_worldnode);
     addChild(_debugnode);
     addChild(_winnode);
@@ -255,9 +255,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _uiScene->init(dimen);
     _uiScene->setActive(true);
     // Right now we are manually adding in the json here
-    _level_model->setFilePath("json/test_level_v2.json");
     // loadLevel(level1);
-    loadLevel(_level_model);
 
 
     auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
@@ -304,7 +302,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _active = true;
     _complete = false;
     setDebug(false);
-    zoomCamera(0.5);
+    zoomCamera(210.0/40.0);
     // XNA nostalgia
     // Application::get()->setClearColor(Color4f::CORNFLOWER);
     Application::get()->setClearColor(Color4::BLACK);
@@ -354,10 +352,26 @@ void GameScene::reset() {
     _vulnerables.clear();
     _Bull= nullptr;
 
+    removeChild(_worldnode);
+    removeChild(_debugnode);
+    removeChild(_winnode);
+    removeChild(_losenode);
+    removeChild(_leftnode);
+    removeChild(_rightnode);
+    removeChild(_gestureFeedback);
+
     setFailure(false);
     setComplete(false);
 
     loadLevel(_level_model);
+
+    addChild(_worldnode);
+    addChild(_debugnode);
+    addChild(_winnode);
+    addChild(_losenode);
+    addChild(_leftnode);
+    addChild(_rightnode);
+    addChild(_gestureFeedback);
 }
 
 /**
@@ -404,6 +418,7 @@ void GameScene::addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj
     // Position the scene graph node (enough for static objects)
   	if (useObjPosition) {
 	  	node->setPosition(obj->getPosition()*_scale);
+        // node->setPosition(Vec2(500.0, 50.0));
 	  }
 	  _worldnode->addChild(node);
     
