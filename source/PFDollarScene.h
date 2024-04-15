@@ -91,18 +91,19 @@ protected:
 
     float _currentSimilarity; 
 
+
     std::vector<std::string> _validIngredients;
 
     std::shared_ptr<cugl::scene2::SceneNode> _bottomBar;
     std::shared_ptr<cugl::scene2::SceneNode> _conveyorBelt;
-    std::shared_ptr<cugl::scene2::SceneNode> _stationHitbox;
+    std::shared_ptr<cugl::scene2::PolygonNode> _stationHitbox;
     std::shared_ptr<cugl::scene2::SceneNode> _indicatorGroup;
 
     std::deque<std::shared_ptr<Ingredient>> _currentIngredients;
 
     std::shared_ptr<Ingredient> _ingredientToRemove; 
     std::shared_ptr<Ingredient> _currentlyHeldIngredient;
-
+    std::shared_ptr<Ingredient> _submittedIngredient;
 
     //technically unnecessary because ingredient knows if it is in pot but also easier to just store pointer
     std::shared_ptr<Ingredient> _ingredientInStation;
@@ -156,6 +157,12 @@ public:
     
     std::shared_ptr<Ingredient> getIngredientInStation() { return _ingredientInStation; }
 
+    std::shared_ptr<Ingredient> getCurrentlyHeldIngredient() { return _currentlyHeldIngredient; }
+
+    /* Only use to transfer ingredient to other station */
+    void removeHeldIngredient();
+    void receiveHeldIngredient(std::shared_ptr<Ingredient> ing);
+
     bool isFocus() { return _focus; };
 
     bool initGestureRecognizer();
@@ -172,7 +179,8 @@ public:
 
 
     void updateConveyor();
-    std::shared_ptr<Ingredient> getHeldIngredient();
+    /* Internal use, searches through all ingredients to see which is held */
+    std::shared_ptr<Ingredient> findHeldIngredient();
 
     void addIngredientToStation(std::shared_ptr<Ingredient>);
 
@@ -181,6 +189,14 @@ public:
     void reset();
 
     void setReadyToCook(bool ready) { _readyToCook = ready; }
+
+    void launchIngredient(std::shared_ptr<Ingredient> ing);
+
+    void submitIngredient(std::shared_ptr<Ingredient> ing);
+
+    std::shared_ptr<Ingredient> getSubmittedIngredient() { return _submittedIngredient; }
+
+    void clearSubmittedIngredient() { _submittedIngredient.reset(); }
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */

@@ -1,0 +1,23 @@
+{
+  "quota": 3,
+  "duration": 15,
+  "cooking": "Preparing Carrots",
+  "ingredients": [
+    {
+      "ingredient": "carrot",
+      "time": 2,
+      "station": "panfry"
+    },
+    {
+      "ingredient": "carrot",
+      "time": 4,
+      "station": "mixing"
+    },
+    {
+      "ingredient": "carrot",
+      "time": 5,
+      "station": "prep"
+    }
+  ],
+  "goals": []
+}
