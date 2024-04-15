@@ -76,6 +76,10 @@ void GameScene::beginContact(b2Contact* contact) {
         else {
             _Bull->setIsChasing(false);
             _Bull->takeDamage(0, direction, true);
+            _BullactionManager->clearAllActions(_Bull->getSceneNode());
+            auto bullCrash = _Bull->getAction("bullCrash");
+            _BullactionManager->activate("bullCrash", bullCrash, _Bull->getSceneNode());
+            _Bull->animate("bullCrash");
         }
 
 
@@ -92,6 +96,10 @@ void GameScene::beginContact(b2Contact* contact) {
         else {
             _Bull->setIsChasing(false);
             _Bull->takeDamage(0, direction, true);
+            _BullactionManager->clearAllActions(_Bull->getSceneNode());
+            auto bullCrash = _Bull->getAction("bullCrash");
+            _BullactionManager->activate("bullCrash", bullCrash, _Bull->getSceneNode());
+           _Bull->animate("bullCrash");
         }
       //  popup(std::to_string(5), bullPos * _scale);
     }

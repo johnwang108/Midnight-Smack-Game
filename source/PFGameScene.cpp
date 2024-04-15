@@ -306,7 +306,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     _target = std::make_shared<EnemyModel>();
 
-    currentLevel = level3;
+    currentLevel = level2;
     loadLevel(currentLevel);
 
     save();
@@ -708,7 +708,7 @@ void GameScene::preUpdate(float dt) {
             }
         }
         if (_Bull->getshake() && _Bull->getknockbacktime() <= 0) {
-			_Bull->setshake(false);
+            _Bull->setshake(false);
 			_Bull->createAttack2(*this);
 		}
         if (_Bull->getshoot()) {
@@ -752,41 +752,83 @@ void GameScene::preUpdate(float dt) {
 
     if (_Bull != nullptr) {
         _BullactionManager->update(dt);
-        if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-
-            if (_Bull->isChasing() && ((_Bull->getPosition().x < 20 && _Bull->getDirection() == -1) || _Bull->getPosition().x > 30 && _Bull->getDirection() == 1)) {
-                _Bull->animate("bullAttack");
+        if (_Bull->getangrytime()>0) {
+            if (!_BullactionManager->isActive("bullStunned")) {
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullStunned = _Bull->getAction("bullStunned");
+                _BullactionManager->activate("bullStunned", bullStunned, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate("bullStunned");
+            }
+        }
+        else if (_Bull->isChasing() && ((_Bull->getPosition().x < 15 && _Bull->getDirection() == -1) || _Bull->getPosition().x > 35 && _Bull->getDirection() == 1)) {
+            if (!_BullactionManager->isActive("bullAttack")){
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
                 auto bullAttack = _Bull->getAction("bullAttack");
                 _BullactionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
             }
-            else if (_Bull->isChasing() || _Bull->getsprintpreparetime() > 0) {
-                _Bull->animate("bullTelegraph");
-                auto bullTelegraph = _Bull->getAction("bullTelegraph");
-                _BullactionManager->activate("bullTelegraph", bullTelegraph, _Bull->getSceneNode());
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate("bullAttack");
             }
-            else if (_Bull->getknockbacktime() <= 0) {
-                _Bull->animate("bullIdle");
-                auto bullIdle = _Bull->getAction("bullIdle");
-                _BullactionManager->activate("bullIdle", bullIdle, _Bull->getSceneNode());
-            }
-
         }
+        else if (_Bull->getturing() > 0) {
+            if (!_BullactionManager->isActive("bullTurn")) {
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullTurn = _Bull->getAction("bullTurn");
+                _BullactionManager->activate("bullTurn", bullTurn, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate("bullTurn");
+            }
+        }
+        else if (_Bull->getsprintpreparetime() <= 0 && _Bull->getknockbacktime() <= 0) {
+            if (!_BullactionManager->isActive("bullRun")) {
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullRun = _Bull->getAction("bullRun");
+                _BullactionManager->activate("bullRun", bullRun, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate("bullRun");
+            }
+        }
+        else if ( _Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0) {
+            if (!_BullactionManager->isActive(_Bull->getattacktype())) {
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullTelegraph = _Bull->getAction(_Bull->getattacktype());
+                _BullactionManager->activate(_Bull->getattacktype(), bullTelegraph, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate(_Bull->getattacktype());
+            }
+        }
+
+
+        
     }
 
     if (_ShrimpRice != nullptr) {
         _SHRactionManager->update(dt);
-        if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-            if (_ShrimpRice->getattackcombo() > 0) {
-                _ShrimpRice->animate("SFR_Attack");
+        
+        if (_ShrimpRice->getattackcombo() > 0) {
+            if (!_SHRactionManager->isActive("SFR_Attack")) {
                 auto SFR_Attack = _ShrimpRice->getAction("SFR_Attack");
                 _SHRactionManager->activate("SFR_Attack", SFR_Attack, _ShrimpRice->getSceneNode());
             }
-            else if (_ShrimpRice->getknockbacktime() <= 0) {
-                _ShrimpRice->animate("SFR_Move");
+            if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                _ShrimpRice->animate("SFR_Attack");
+            }
+        }
+        else if (_ShrimpRice->getknockbacktime() <= 0) {
+            if (!_SHRactionManager->isActive("SFR_Move")) {
                 auto SFR_Move = _ShrimpRice->getAction("SFR_Move");
                 _SHRactionManager->activate("SFR_Move", SFR_Move, _ShrimpRice->getSceneNode());
-			}
-        }
+            }
+            if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                _ShrimpRice->animate("SFR_Move");
+            }
+		}
+        
     }
 
 }

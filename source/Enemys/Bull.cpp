@@ -26,6 +26,8 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         _CA=0;
         _CAcount = 0;
         _breaking = 0;
+        _attacktype = "none";
+        _turing = 0;
         b2Filter filter = getFilterData();
         filter.groupIndex = -1;
         setFilterData(filter);
@@ -49,6 +51,7 @@ void BullModel::update(float dt) {
 
     if (_knockbackTime > 0) {
         _knockbackTime -= dt;
+
         return;
     }
 
@@ -56,40 +59,41 @@ void BullModel::update(float dt) {
         _sprintPrepareTime -= dt;
         velocity.x = 0;
         if (_sprintPrepareTime <= 0) {
-            float pa = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-            pa = 0.2;
-            if (pa<0.33) {
+            if (_attacktype == "bullTelegraph") {
                 _isChasing = true;
+
             }
-            else if(pa>=0.33 && pa<0.66){
+            else if (_attacktype == "bullStomp") {
                 _shake = true;
                 b2Vec2 impulse = b2Vec2(0, BULL_KNOCKBACK_FORCE_UP * 25);
                 _body->ApplyLinearImpulseToCenter(impulse, true);
                 _knockbackTime = 2;
             }
-            else {
+            else if (_attacktype == "bullDazedtoIdle") {
                 _shoot = true;
-			}
-            
+            }
+
         }
-    }else if (!_isChasing &&  static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _bull_attack_chance) {
+    }
+    else if (!_isChasing && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _bull_attack_chance) {
         _sprintPrepareTime = 2;
+        float pa = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    //  pa = 0.3;
+        if (pa < 0.33) {
+            _attacktype = "bullTelegraph";
+        }
+        else if (pa >= 0.33 && pa < 0.66) {
+            _attacktype = "bullStomp";
+        }
+        else {
+            _attacktype = "bullDazedtoIdle";
+        }
+
     }
 
     if (_angrytime > 0) {
         _angrytime -= dt;
         _body->SetLinearVelocity(b2Vec2(0, 0));
-        if (_node != nullptr) {
-            scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
-            if (image->getTexture() != _assets->get<Texture>("P2bull")) {
-                image->setTexture(_assets->get<Texture>("P2bull"));
-            }
-            image->setScale(0.75);
-
-            _node->setPosition(getPosition() * _drawScale);
-            _node->setAngle(getAngle());
-        }
-
         return;
     }
 
@@ -97,21 +101,21 @@ void BullModel::update(float dt) {
         _running = false;
         _node->setVisible(true);
         _body->SetEnabled(true);
-      //  setPosition(getPosition() + -_direction * Vec2(40, 0));
+        //  setPosition(getPosition() + -_direction * Vec2(40, 0));
     }
-    if (_breaking>0) {
+    if (_breaking > 0) {
         _breaking -= dt;
-        velocity.x *= 5/1.2*_breaking/10;
-        if (_breaking<0.1) {
-            _isChasing= false;
+        velocity.x *= 5 / 1.2 * _breaking / 10;
+        if (_breaking < 0.1) {
+            _isChasing = false;
         }
     }
 
     if (_isChasing && !_breaking) {
         velocity.x *= BULL_CHASE_SPEED;
         if (_CAcount > 0) {
-            velocity.x *= _CAcount/1.2;
-            _bull_attack_chance = BULL_ATTACK_CHANCE*1.5;
+            velocity.x *= _CAcount / 1.2;
+            _bull_attack_chance = BULL_ATTACK_CHANCE * 1.5;
         }
         if (_CAcount == 6 && _CA <= 0) {
             _CAcount = 0;
@@ -119,37 +123,45 @@ void BullModel::update(float dt) {
         }
         if (_CA > 0) {
             _CA -= dt;
-           // _node->setVisible(false);
+            // _node->setVisible(false);
             _body->SetEnabled(false);
-            
+
             float yyy;
-            if(_CA>5){
-                yyy=25*(dt/10);
-            }else{
-                yyy=-25*(dt/10);
+            if (_CA > 5) {
+                yyy = 25 * (dt / 10);
             }
- 
-            setPosition(getPosition()+Vec2(-_direction*(38)*(dt/10),yyy));
+            else {
+                yyy = -25 * (dt / 10);
+            }
+
+            setPosition(getPosition() + Vec2(-_direction * (38) * (dt / 10), yyy));
 
             if (_CA <= 0) {
                 _running = true;
                 setGravityScale(1);
             }
             return;
-		}
+        }
     }
 
+    if (_turing > 0) {
+        _turing -= dt;
+        if (_turing <= 0) {
+            scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
+            if (image != nullptr) {
+                image->flipHorizontal(!image->isFlipHorizontal());
+            }
+        }
+    }
 
     if (_direction != _lastDirection) {
         // If direction changed, flip the image
-        scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
-        if (image != nullptr) {
-            image->flipHorizontal(!image->isFlipHorizontal());
-        }
+        _turing = 0.75;
     }
+
     _lastDirection = _direction;
     _lastDamageTime += dt;
-  //  _nextChangeTime -= dt;
+    _nextChangeTime -= dt;
     _body->SetLinearVelocity(velocity);
 
     if (_node != nullptr) {
@@ -167,9 +179,9 @@ void BullModel::takeDamage(float damage, int attackDirection,bool knockback) {
             _health = 0;
         }else if (knockback) {
           //  b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE*10, BULL_KNOCKBACK_FORCE_UP * 25);
-          //  _body->SetLinearVelocity(b2Vec2(0, 0));
+            _body->SetLinearVelocity(b2Vec2(0, 0));
           //  _body->ApplyLinearImpulseToCenter(impulse, true);
-            _knockbackTime = 3.5;
+            _knockbackTime = 3;
         }else {
             b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE*5, 0);
             _body->ApplyLinearImpulseToCenter(impulse, true);
@@ -270,6 +282,7 @@ void BullModel::createAttack2(GameScene& scene) {
     float _scale = scene.getScale();
 
     std::shared_ptr<Texture> image = _assets->get<Texture>(SHAKE_TEXTURE);
+
     Vec2 pos = getPosition();
     pos.x += ATTACK_OFFSET_X*6;
     pos.y -= ATTACK_OFFSET_Y * 4.5;
