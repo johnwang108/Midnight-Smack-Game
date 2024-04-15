@@ -160,7 +160,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	//_stationHitbox->setAnchor(Vec2::ANCHOR_CENTER);
 	_stationHitbox->setPosition(640,400);
 	//_stationHitbox->setColor(Color4::GRAY);
-	_stationHitbox->setVisible(true);
+	_stationHitbox->setVisible(false);
 	Rect box = _stationHitbox->getBoundingRect();
 	CULog("Min X: %f, Max X: %f, Min Y: %f, Max Y: %f", box.getMinX(), box.getMaxX(), box.getMinY(), box.getMaxY());
 	

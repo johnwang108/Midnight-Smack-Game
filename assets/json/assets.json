@@ -57,6 +57,9 @@
         "carrotEnemy": {
             "file": "textures/carrotEnemy.png"
         },
+        "carrot": {
+            "file": "textures/day/food/carrot.png"
+        },
         "cutCarrot": {
             "file": "textures/day/food/cutCarrot.png"
         },
@@ -164,7 +167,7 @@
         "su_air_attack": {
             "file": "textures/Sheets/Su/suAirAttackUp.png"
         },
-        "su_air_roll" : {
+        "su_air_roll": {
             "file": "textures/Sheets/Su/suAirRoll.png"
         },
         "background-1": {
