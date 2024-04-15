@@ -42,10 +42,10 @@ void Entity::animate(std::string action_name) {
         _node->setScale(0.3);
     }
     else if (name == "idle") {
-        _node->setScale(0.35 / 4);
+        _node->setScale(0.35 / 1.75);
     }
     else {
-        _node->setScale(0.35 / 4);
+        _node->setScale(0.35 / 1.75);
     }
     _activeAction = name;
 }

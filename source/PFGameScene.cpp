@@ -1049,8 +1049,8 @@ void GameScene::fixedUpdate(float step) {
 
         if (currentLevel == _level_model) {
             // we will have to not hard code this in future: WIDTH_OF_LEVEL / 40.0
-            // _camera->setZoom(210.0/40.0);
-            _camera->setZoom(1.5);
+            _camera->setZoom(210.0/40.0);
+            // _camera->setZoom(1.5);
         }
         else if (currentLevel == level1) {
             _camera->setZoom(2.0);

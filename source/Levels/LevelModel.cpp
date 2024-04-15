@@ -724,6 +724,7 @@ void LevelModel::populate(GameScene& scene) {
 									float imageHeight = image->getHeight() / 4;
 									Size singularSpriteSize = Size(imageWidth, imageHeight);
 									new_enemy = EnemyModel::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, EnemyType::rice);
+									spritenode->setScale(0.24f);
 								}
 								else {
 									image = _assets->get<Texture>("riceSoldier");
@@ -734,7 +735,7 @@ void LevelModel::populate(GameScene& scene) {
 									new_enemy = EnemyModel::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, EnemyType::rice_soldier);
 								}
 
-								spritenode->setScale(0.12f);
+								// spritenode->setScale(0.12f);
 								new_enemy->setSceneNode(spritenode);
 								new_enemy->setDebugColor(DEBUG_COLOR);
 								scene.addObstacle(new_enemy, spritenode);
