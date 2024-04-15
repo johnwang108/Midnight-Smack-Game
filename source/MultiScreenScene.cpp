@@ -172,9 +172,39 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_currentHour = 6;
 	_currentMinute = 0;
 
+
+	_winScreenRoot = _assets->get<scene2::SceneNode>("dayWinScreen");
+
+	std::shared_ptr<scene2::Button> b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("continuebutton"));
+	b->addListener([=](const std::string& name, bool down) {
+		this->_active = false;
+		this->setTransition(true);
+		this->setTarget("night");
+		});
+	_buttons.push_back(b);
+
+	//b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("retrybutton"));
+	//b->addListener([=](const std::string& name, bool down) {
+	//	this->reset();
+	//	});
+	//_buttons.push_back(b);
+
+
+	//b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("menubutton"));
+	//b->addListener([=](const std::string& name, bool down) {
+	//	this->_active = false;
+	//	this->setTransition(true);
+	//	this->setTarget("main_menu");
+	//});
+	//_buttons.push_back(b);
+
+	_winScreenRoot->setVisible(false);
+	
+
 	_uiScene->addChild(_gestureFeedback);
 	_uiScene->addChild(quotaRoot);
 	_uiScene->addChild(uiRoot);
+	_uiScene->addChild(_winScreenRoot);
 	//_uiScene->addChild(_uiNode);
 
 	//std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("exLevel");
@@ -604,6 +634,11 @@ void MultiScreenScene::endDay() {
 	else {
 		_gameState = -1;
 	}
+	for (auto it = _buttons.begin(); it != _buttons.end(); ++it) {
+		auto button = *it;
+		button->activate();
+	}
+	_winScreenRoot->setVisible(true);
 }
 
 

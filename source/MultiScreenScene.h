@@ -28,6 +28,9 @@ protected:
 	std::shared_ptr<cugl::scene2::SceneNode> _uiNode;
 	std::shared_ptr<cugl::scene2::SceneNode> _progBar;
 	std::shared_ptr<cugl::scene2::SceneNode> _expectationBar;
+	std::shared_ptr<cugl::scene2::SceneNode> _winScreenRoot;
+	std::vector<std::shared_ptr<cugl::scene2::Button>> _buttons;
+
 
 	std::shared_ptr<cugl::scene2::Label> _stationLabel;
 	std::shared_ptr<cugl::scene2::Label> _twelveHourTimer;
