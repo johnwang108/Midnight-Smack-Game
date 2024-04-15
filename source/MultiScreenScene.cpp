@@ -2,6 +2,7 @@
 #include "PFDollarScene.h"
 #include <algorithm> 
 #include "Levels/Levels.h"
+#include <cctype>
 
 #define CAMERA_MOVE_SPEED 50.0f
 #define FEEDBACK_DURATION 2.0f
@@ -138,11 +139,6 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	//_uiNode->setContentSize(_size);
 	//_uiNode->doLayout();
 
-	_timer = scene2::Label::allocWithText("godfhohofgji", _assets->get<Font>(MESSAGE_FONT));
-
-	_timer->setAnchor(Vec2::ANCHOR_CENTER);
-	_timer->setPosition(_size.width/2, _size.height - _timer->getHeight());
-	_timer->setForeground(Color4::BLACK);
 
 	_gestureFeedback = scene2::Label::allocWithText("Perfect", _assets->get<Font>(MESSAGE_FONT));
 	_gestureFeedback->setAnchor(Vec2::ANCHOR_TOP_CENTER);
@@ -167,8 +163,15 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 
 	std::shared_ptr<scene2::SceneNode> uiRoot = _assets->get<scene2::SceneNode>("uiScene");
 	
+	_stationLabel = std::dynamic_pointer_cast<scene2::Label>(uiRoot->getChildByName("Status")->getChildByName("STATION"));
+	_stationLabel->setText("PANFRY STATION");
+	_stationLabel->doLayout();
 
-	_uiScene->addChild(_timer);
+
+	_twelveHourTimer = std::dynamic_pointer_cast<scene2::Label>(uiRoot->getChildByName("Status")->getChildByName("Sunny")->getChildByName("Time"));
+	_currentHour = 6;
+	_currentMinute = 0;
+
 	_uiScene->addChild(_gestureFeedback);
 	_uiScene->addChild(quotaRoot);
 	_uiScene->addChild(uiRoot);
@@ -247,6 +250,8 @@ void MultiScreenScene::readLevel(std::shared_ptr<JsonValue> leveljson) {
 	_dishToPrepare = leveljson->get("cooking")->asString();
 	_quota = leveljson->get("quota")->asInt();
 	_dayDuration = leveljson->get("duration")->asInt();
+	//todo load in bonus objectives
+	_bonusObjectives = {1};
 
 	std::shared_ptr<JsonReader> gestureReader = JsonReader::allocWithAsset("json/dayIngredientGestures.json");
 	std::shared_ptr<JsonValue> gestureVals = gestureReader->readJson();
@@ -331,7 +336,20 @@ void MultiScreenScene::preUpdate(float timestep) {
 	if (_ended && !_animating) return;
 
 	_currentTime += timestep;
-	_timer->setText(std::to_string((int) _currentTime));
+
+	//timer stuff
+	_currentMinute = (5 * (int) _currentTime) - (60 * (_currentHour-6));
+	if (_currentMinute >= 60) {
+		_currentMinute = _currentMinute % 60;
+		_currentHour += 1;
+	}
+	std::string minString = std::to_string(_currentMinute);
+	if (_currentMinute < 10) {
+		minString = "0" + std::to_string(_currentMinute);
+	}
+	_twelveHourTimer->setText(std::to_string(_currentHour) + ":" + minString);
+	_twelveHourTimer->doLayout();
+	
 
 	float reqRate = _quota / _dayDuration;
 
@@ -349,7 +367,8 @@ void MultiScreenScene::preUpdate(float timestep) {
 	std::shared_ptr<Scissor> scissor2 = Scissor::alloc(Rect(0, 0, _progBar->getWidth(), clipHeight));
 	_progBar->setScissor(scissor2);
 
-	if (_currentTime >= _dayDuration) {
+	//todo bonus objectives
+	if (_currentTime >= _dayDuration || _bonusObjectives.size() == 0) {
 		endDay();
 	}
 	
@@ -520,7 +539,12 @@ void MultiScreenScene::switchStation(int currId, int targId) {
 		_scenes[currId]->removeHeldIngredient();
 		_scenes[targId]->receiveHeldIngredient(ing);
 	}
-	CULog("don");
+
+	std::string newStationName = _scenes[targId]->getName();
+	for (char& c : newStationName) {
+		c = toupper(c);
+	}
+	_stationLabel->setText(newStationName + " STATION");
 }
 
 void MultiScreenScene::increaseQuotaProgress() {

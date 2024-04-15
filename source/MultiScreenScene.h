@@ -18,7 +18,8 @@ private:
 	std::map<std::string, int> _stationMap;
 	std::map<int, std::vector<std::string>> _stationIngredients;
 	bool _finishedIngredients;
-
+	
+	std::vector<int> _bonusObjectives;
 
 
 
@@ -27,6 +28,12 @@ protected:
 	std::shared_ptr<cugl::scene2::SceneNode> _uiNode;
 	std::shared_ptr<cugl::scene2::SceneNode> _progBar;
 	std::shared_ptr<cugl::scene2::SceneNode> _expectationBar;
+
+	std::shared_ptr<cugl::scene2::Label> _stationLabel;
+	std::shared_ptr<cugl::scene2::Label> _twelveHourTimer;
+
+	int _currentHour;
+	int _currentMinute;
 
 
 
@@ -56,7 +63,6 @@ protected:
 
 	std::string _targetScene;
 
-	std::shared_ptr<cugl::scene2::Label> _timer;
 
 	std::shared_ptr<cugl::scene2::Label> _gestureFeedback;
 
