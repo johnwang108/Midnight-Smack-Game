@@ -138,7 +138,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     const Rect& rect, const Vec2& gravity, std::shared_ptr<PlatformInput> input) {
     // Initialize the scene to a locked height (iPhone X is narrow, but wide)
     Size dimen = computeActiveSize();
-    SDL_ShowCursor(SDL_DISABLE);
+    // SDL_ShowCursor(SDL_DISABLE);
 
     if (assets == nullptr) {
         return false;
@@ -244,6 +244,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _uiScene->setActive(true);
     // Right now we are manually adding in the json here
     // loadLevel(level1);
+    std::shared_ptr<cugl::scene2::SceneNode> _meterUINode;
+    _meterUINode = _assets->get<scene2::SceneNode>("night_meters");
 
 
     auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
@@ -1160,7 +1162,7 @@ void GameScene::postUpdate(float remain) {
                 reset();
             }
             else {
-                currentLevel = level3;
+                currentLevel = _level_model;
                 reset();
             }
         }
@@ -1564,5 +1566,36 @@ void GameScene::unzoomCamera() {
 //Marks transitioning between cooking and platforming. Call this method with t = true when you want to transition away from this scene
 void GameScene::transition(bool t) {
     _transitionScenes = t;
+}
+
+void GameScene::popup(std::string s, cugl::Vec2 pos) {
+    Timestamp now = Timestamp();
+    now.mark();
+    std::shared_ptr<cugl::scene2::Label> popup = cugl::scene2::Label::allocWithText(pos, s, _assets->get<Font>(MESSAGE_FONT));
+
+    popup = scene2::Label::allocWithText(s, _assets->get<Font>(MESSAGE_FONT));
+    popup->setAnchor(Vec2::ANCHOR_TOP_CENTER);
+    popup->setForeground(Color4::BLACK);
+    popup->setVisible(true);
+    popup->setPosition(pos);
+
+    addChild(popup);
+
+    _popups.push_back(std::make_tuple(popup, now));
+}
+
+void GameScene::loadLevel(int chapter, int level) {
+    std::shared_ptr<Levels> level_obj = nullptr;
+    if (chapter == 1) {
+        if (level == 1) {
+            level_obj = level1;
+        }
+        else if (level == 2) {
+            level_obj = level2;
+        }
+    }
+
+    loadLevel(level_obj);
+
 }
 
