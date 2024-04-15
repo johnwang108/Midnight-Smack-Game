@@ -1,12 +1,14 @@
 #include "Entity.h"
 
-
 bool Entity::init(cugl::Vec2 pos, cugl::Size size) {
     /*cugl::Rect rect = cugl::Rect(Vec2::ZERO, size);
     _dimension = size;
     return PolygonObstacle::init(rect);*/
 
     return CapsuleObstacle::init(pos, size);
+
+    _activated = false;
+    _finished = false;
 }
 /** Register a new animation in the dict*/
 void Entity::addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool isPassive) {

@@ -9,12 +9,14 @@
 
 #include "Attack.h"
 
+#define NUMBERS "0123456789"
+
 using namespace cugl;
 
 /**Class that the player and enemy classes inherit from.Shared behavior : animation, debug nodes, health, attacks,. */
 
 class Entity : public cugl::physics2::CapsuleObstacle {
-
+	
 protected:
 
 	bool _isGrounded;
@@ -47,12 +49,14 @@ protected:
 
 	bool _activated;
 
-	cugl::Size _dimension;
+	bool _finished;
 
 
 private:
 
 public:
+
+	static int ID;
 
 	/**Default constructor*/
 	Entity() : CapsuleObstacle() {};
@@ -75,7 +79,10 @@ public:
 	/**Unused*/
 	void getInfo(std::string action_name) {};
 
-	std::string getActiveAction() { return _activeAction; };
+	std::string getActiveAction() {
+		size_t i = _activeAction.find_first_of(NUMBERS);
+		return _activeAction.substr(0, i);
+		return _activeAction; };
 
 	//default constructor. Should not be used
 	virtual bool init(){ return false; }
@@ -87,13 +94,21 @@ public:
 	virtual std::string updateAnimation() { return ""; };
 
 	void setActiveAction(std::string actionName) { 
-		_activeAction = actionName; 
+		if (_activeAction == actionName && !_finished) return;
+		_activeAction = actionName;
 		_activated = false;
+		_finished = false;
 	};
 
 	void setActivated(bool act) { _activated = act; };
 
 	bool isActivated() { return _activated; };
+
+	void setFinished(bool fin) { _finished = fin; 
+	CULog("Finished");
+	};
+
+	bool isFinished() { return _finished; };
 
 };
 #endif /* __ENTITY_H__ */

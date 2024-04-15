@@ -102,6 +102,8 @@ protected:
 
     std::vector<std::shared_ptr<EnemyModel>> _enemies;
 
+    std::unordered_map<std::string, std::shared_ptr<EnemyModel>> _enemyMap;
+
 
     //Valid targets for cook-time
     std::vector<std::shared_ptr<EnemyModel>> _vulnerables;

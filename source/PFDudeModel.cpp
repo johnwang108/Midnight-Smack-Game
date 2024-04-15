@@ -159,7 +159,6 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         setFilterData(filter);
         setName("avatar");
         setEnabled(true);
-
         return true;
     }
     return false;

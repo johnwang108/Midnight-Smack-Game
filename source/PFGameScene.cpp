@@ -297,6 +297,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     _target = std::make_shared<EnemyModel>();
 
+
     currentLevel = level1;
     loadLevel(currentLevel);
 
@@ -733,23 +734,28 @@ void GameScene::preUpdate(float dt) {
 			}
 
 
-            enemy->update(dt);
+            
             if (enemy->getHealth() <= 0) {
                 removeEnemy(enemy.get());
             }
             else {
             //enemy animations. If enemy->activeAction is not active, activate the current action.
                 if (!enemy->isActivated()) {
-                    CULog(enemy->getActiveAction().c_str());
                     enemy->setActivated(true);
+                    
                     _actionManager->clearAllActions(enemy->getSceneNode());
                     std::string actionName = enemy->getActiveAction();
                     enemy->animate(actionName);
                     auto action = enemy->getAction(actionName);
                     _actionManager->activate(actionName, action, enemy->getSceneNode());
                 }
+                else {
+                    if (!_actionManager->isActive(enemy->getActiveAction())) {
+						enemy->setFinished(true);
+					}
+                }
             }
-
+            enemy->update(dt);
         }
     }
     if (_Bull != nullptr && !_Bull->isRemoved()) {

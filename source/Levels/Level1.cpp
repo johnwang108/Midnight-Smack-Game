@@ -204,32 +204,35 @@ void Level1::populate(GameScene& scene) {
 	scene.addObstacle(_enemy1, spritenode);
 	_enemies.push_back(_enemy1);
 
-	image = _assets->get<Texture>("riceSoldier");
-	std::shared_ptr<EnemyModel> _enemy2 = EnemyModel::allocWithConstants({ 29.0f, 6.0f }, riceSize, _scale, _assets, EnemyType::rice_soldier);
-	spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 15);
-	spritenode->setScale(0.12f);
-	_enemy2->setSceneNode(spritenode);
-	_enemy2->setName(ENEMY_NAME);
-	_enemy2->setDebugColor(DEBUG_COLOR);
-	scene.addObstacle(_enemy2, spritenode);
-	_enemies.push_back(_enemy2);
+	//image = _assets->get<Texture>("riceSoldier");
+	//std::shared_ptr<EnemyModel> _enemy2 = EnemyModel::allocWithConstants({ 29.0f, 6.0f }, riceSize, _scale, _assets, EnemyType::rice_soldier);
+	//spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 15);
+	//spritenode->setScale(0.12f);
+	//_enemy2->setSceneNode(spritenode);
+	//_enemy2->setName(ENEMY_NAME);
+	//_enemy2->setDebugColor(DEBUG_COLOR);
+	////scene.addObstacle(_enemy2, spritenode);
+	////_enemies.push_back(_enemy2);
 
-	EnemyModel* _enemy1Weak = _enemy1.get();
-	EnemyModel* _enemy2Weak = _enemy2.get();
-	_enemy->setListener([=](physics2::Obstacle* obs) {
-		if (_enemy->getState() == "pursuing") {
-			_enemy1Weak->setState("pursuing");
-			_enemy2Weak->setState("pursuing");
-			_enemy1Weak->setTargetPosition(_avatar->getPosition());
-			_enemy2Weak->setTargetPosition(_avatar->getPosition());
-		}
-		else {
-			_enemy1Weak->setState("patrolling");
-			_enemy2Weak->setState("patrolling");
-			_enemy1Weak->setTargetPosition(_enemy->getPosition());
-			_enemy2Weak->setTargetPosition(_enemy->getPosition());
-		}
-		});
+	//EnemyModel* _enemy1Weak = _enemy1.get();
+	//EnemyModel* _enemy2Weak = _enemy2.get();
+	//_enemy->setListener([=](physics2::Obstacle* obs) {
+	//	if (_enemy->getState() == "pursuing") {
+	//		_enemy1Weak->setState("pursuing");
+	//		_enemy2Weak->setState("pursuing");
+	//		_enemy1Weak->setTargetPosition(_avatar->getPosition());
+	//		_enemy2Weak->setTargetPosition(_avatar->getPosition());
+	//	}
+	//	else {
+	//		_enemy1Weak->setState("patrolling");
+	//		_enemy2Weak->setState("patrolling");
+	//		_enemy1Weak->setTargetPosition(_enemy->getPosition());
+	//		_enemy2Weak->setTargetPosition(_enemy->getPosition());
+	//	}
+	//	});
+
+
+
 
 	////shrimp 2
 	//image = _assets->get<Texture>("shrimp_rolling");

@@ -252,22 +252,20 @@ void EnemyModel::update(float dt) {
             //setActionParams("riceStun", false, false, true);
         }
         else if (_state == "pursuing") {
-
-            if (velocity.x == 0) setActiveAction("riceStartWalk");
-            else if (_distanceToPlayer.length() < 0.02) {
+            if (velocity.x == 0 && (getActiveAction() != "riceYell" && getActiveAction() != "riceAttack") || isFinished()) setActiveAction("riceStartWalk");
+            else if (_distanceToPlayer.length() < 0.05) {
                 setActiveAction("riceAttack");
                 velocity.x = 0;
                 break;
             }
-            else setActiveAction("riceWalk");
-
+            else if (getActiveAction() == "riceStartWalk" && isFinished() || getActiveAction() == "riceWalk") setActiveAction("riceWalk");
             velocity.x = ENEMY_FORCE * _direction * 2;
 
         }
         else if (_state == "patrolling") {
 
-            if (velocity.x = 0) setActiveAction("riceStartWalk");
-            else setActiveAction("riceWalk");
+            if (velocity.x == 0) setActiveAction("riceStartWalk");
+            else if (getActiveAction() == "riceWalk" || (getActiveAction() == "riceStartWalk" && isFinished())) setActiveAction("riceWalk");
 
             velocity.x = ENEMY_FORCE * _direction;
         }
@@ -285,13 +283,15 @@ void EnemyModel::update(float dt) {
         else if (_state == "pursuing") {
             float dir = SIGNUM(_targetPosition.x - getPosition().x);
 
-            if (velocity.x == 0 && dir != 0) setActiveAction("riceStartWalk");
+            if (velocity.x == 0 && dir != 0 && ((getActiveAction() != "riceYell" && getActiveAction() != "riceAttack") || isFinished())) {
+                setActiveAction("riceStartWalk");
+            }
             else if (_distanceToPlayer.length() < 0.02) {
                 setActiveAction("riceAttack");
                 velocity.x = 0;
                 break;
             }
-            else setActiveAction("riceWalk");
+            else if (getActiveAction() != "riceStartWalk" && isFinished()) setActiveAction("riceWalk");
 
             velocity.x = ENEMY_FORCE * dir * 3;
         }
@@ -309,7 +309,7 @@ void EnemyModel::update(float dt) {
             }
             else {
                 if (velocity.x = 0) setActiveAction("riceIdle");
-                else setActiveAction("riceEndWalk");
+                else if ((getActiveAction() != "riceStartWalk" || isFinished())) setActiveAction("riceWalk");
                 velocity.x = 0;
             }
         }
@@ -630,7 +630,8 @@ std::string EnemyModel::getNextState(std::string state) {
                 return "yelling";
             }
             else if (state == "yelling") {
-                return "pursuing";
+                if (getActiveAction() == "riceYell" && isFinished()) return "pursuing";
+                return "yelling";
             }
             else if (state == "stunned") {
                 return "chasing";
@@ -735,10 +736,6 @@ std::string EnemyModel::getNextState(std::string state) {
             return "patrolling";
     }
 }
-
-
-
-
 
 
 

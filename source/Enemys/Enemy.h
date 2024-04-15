@@ -290,6 +290,10 @@ public:
 
     virtual std::string updateAnimation();
 
+    void setActiveAction(std::string action) {
+        Entity::setActiveAction(action);
+    };
+
     static std::string typeToStr(EnemyType type) {
         switch (type) {
         case EnemyType::shrimp:
