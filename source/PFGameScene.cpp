@@ -299,10 +299,10 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _target = std::make_shared<EnemyModel>();
 
 
-    currentLevel = level2;
+    currentLevel = level1;
     loadLevel(currentLevel);
 
-    save();
+    //save();
 
     _actionManager = cugl::scene2::ActionManager::alloc();
     _BullactionManager = cugl::scene2::ActionManager::alloc();
