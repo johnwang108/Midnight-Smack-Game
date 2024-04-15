@@ -266,7 +266,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _SFRhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
     _SFRhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
-    _uiScene->addChild(_SFRBarNode);
+   // _uiScene->addChild(_SFRBarNode);
 
 
     _buffLabel = scene2::Label::allocWithText("NO BUFF", _assets->get<Font>(MESSAGE_FONT));
