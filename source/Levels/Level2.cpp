@@ -163,7 +163,7 @@ void Level2::populate(GameScene& scene) {
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
 	AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
-	/*Vec2 shrimp_pos = SHRIMP_POS;
+	Vec2 shrimp_pos = SHRIMP_POS;
 
 	image = _assets->get<Texture>("bullIdle");
 	std::shared_ptr<BullModel> _bull = BullModel::alloc(shrimp_pos, BULL_SIZE_DEFAULT, _scale);
@@ -179,7 +179,7 @@ void Level2::populate(GameScene& scene) {
 	_bull->addActionAnimation("bullAttack", _assets->get<Texture>("bullAttack"), 5, 5, 25, 2.0f, false);
 	_bull->addActionAnimation("bullTelegraph", _assets->get<Texture>("bullTelegraph"), 3, 4, 10, 1.0f, false);
 	
-	scene.addObstacle(_bull, spritenode);*/
+	scene.addObstacle(_bull, spritenode);
 
 
 	scene.setAssets(_assets);
