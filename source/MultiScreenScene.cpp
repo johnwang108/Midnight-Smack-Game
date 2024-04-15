@@ -206,7 +206,8 @@ void MultiScreenScene::initStations(std::string textures[], int size) {
 		scene = std::make_shared<DollarScene>();
 				
 		rect = cugl::Rect(Vec2::ZERO, _size);
-		scene->init(_assets, _input, rect, textures[i], std::vector<std::string>(), Size(600, 450));
+		//todo maybe make hitboxes different by station
+		scene->init(_assets, _input, rect, textures[i], std::vector<std::string>(), Size(600, 300));
 		scene->setContentSize(SCENE_WIDTH, SCENE_HEIGHT);
 		scene->setAnchor(Vec2::ANCHOR_CENTER);
 		scene->setPosition(positions[i]);
@@ -402,8 +403,9 @@ void MultiScreenScene::preUpdate(float timestep) {
 		
 		if (_scenes[_curr]->getCurrentlyHeldIngredient() != nullptr) {
 			std::shared_ptr<scene2::Button> button = _scenes[_curr]->getCurrentlyHeldIngredient()->getButton();
-			CULog("Button Pos: %f %f", button->getPositionX(), button->getPositionY());
+			CULog("Button Pos Before: %f %f", button->getPositionX(), button->getPositionY());
 			button->setPosition(button->getPosition() + movementAmount);
+			CULog("Button Pos After: %f %f", button->getPositionX(), button->getPositionY());
 		}
 	
 	}

@@ -188,6 +188,8 @@ public:
     void reset();
 
     void setReadyToCook(bool ready) { _readyToCook = ready; }
+
+    void launchIngredient(std::shared_ptr<Ingredient> ing);
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */

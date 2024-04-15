@@ -43,8 +43,11 @@
 
 #define GOOD_THRESHOLD 0.7
 #define PERFECT_THRESHOLD 0.85
-#define CONVEYOR_SPEED 1.0f
+#define CONVEYOR_SPEED 2.0f
 #define FALL_SPEED 3.0f
+#define LAUNCH_X_POS 1100
+#define HORIZ_LAUNCH_SPEED 4.0f
+#define VERT_LAUNCH_SPEED -3.0f
 
 using namespace cugl;
 
@@ -252,6 +255,7 @@ void DollarScene::update(float timestep) {
 	}
 
 	if (_completed) {
+		_completed = false;
 		_readyToCook = false;
 		_indicatorGroup->setVisible(false);
 		
@@ -267,8 +271,6 @@ void DollarScene::update(float timestep) {
 
 		handleCompletedIngredient(getIngredientInStation());
 
-		//remove ingredient from station for sure
-		_ingredientInStation = nullptr;
 	}
 
 
@@ -306,7 +308,7 @@ void DollarScene::update(float timestep) {
 	for (std::shared_ptr<Ingredient> ing : _currentIngredients) {
 		//CULog("Ing Pos: %f, Ing Pos Y: %f", ing->getButton()->getPosition().x, ing->getButton()->getPosition().y);
 
-		if (!ing->inPot() && ing->isFalling() && _stationHitbox->inContentBounds(ing->getButton()->getPosition())) {
+		if (!ing->inPot() && ing->isFalling() && !_readyToCook && _stationHitbox->inContentBounds(ing->getButton()->getPosition())) {
 			//add ingredient to pot somehow lmao
 			bool isValidIng = false;
 
@@ -317,8 +319,17 @@ void DollarScene::update(float timestep) {
 			if (isValidIng) {
 				addIngredientToStation(ing);
 			}
-
-			break;
+		}
+		else if (ing->isLaunching()) {
+			std::shared_ptr<scene2::Button> button = ing->getButton();
+			if (button->getPositionX() >= LAUNCH_X_POS) {
+				ing->setLaunching(false);
+				ing->setFalling(true);
+			}
+			else {
+				Vec2 curPos = button->getPosition();
+				button->setPosition(curPos + Vec2(HORIZ_LAUNCH_SPEED, VERT_LAUNCH_SPEED));
+			}
 		}
 	}
 };
@@ -410,7 +421,7 @@ void DollarScene::updateConveyor() {
 				button->setPositionY(button->getPositionY() - FALL_SPEED);
 			}
 		}
-		else {
+		else if (!ingredient->isLaunching()){
 			button->setPositionX(button->getPositionX() - CONVEYOR_SPEED);
 
 			if (button->getPositionX() <= button->getWidth()/2) {
@@ -439,6 +450,7 @@ std::shared_ptr<Ingredient> DollarScene::findHeldIngredient() {
 	for (std::shared_ptr<Ingredient> ing : _currentIngredients) {
 		if (ing->getBeingHeld() == true) {
 			ing->setFalling(false);
+			ing->setLaunching(false);
 			for (std::shared_ptr<scene2::SceneNode> child : _conveyorBelt->getChildren()) {
 				if (child == ing->getButton()) {
 					_conveyorBelt->removeChild(ing->getButton());
@@ -477,7 +489,6 @@ void DollarScene::receiveHeldIngredient(std::shared_ptr<Ingredient> ing) {
 	addChild(ing->getButton());
 	_currentIngredients.push_back(ing);
 	_currentlyHeldIngredient = ing;
-	CULog("received cap");
 }
 
 void DollarScene::addIngredientToStation(std::shared_ptr<Ingredient> ing) {
@@ -531,7 +542,18 @@ void DollarScene::addIngredientToStation(std::shared_ptr<Ingredient> ing) {
 }
 
 void DollarScene::handleCompletedIngredient(std::shared_ptr<Ingredient> ing) {
+	//remove ingredient from station for sure
+	_ingredientInStation.reset();
+	ing->setInPot(false);
+	_currentTargetGestures.clear();
+	std::shared_ptr<scene2::Button> button = ing->getButton();
 
+
+	addChild(button);
+	button->activate();
+	button->setPosition(Vec2(800, 400));
+
+	launchIngredient(ing);
 }
 
 //draws a boundary rectangle
@@ -601,4 +623,9 @@ void DollarScene::reset() {
 
 	// Don't do this so we don't have to re-init bottom bar
 	//_conveyorBelt = nullptr;
+}
+
+void DollarScene::launchIngredient(std::shared_ptr<Ingredient> ing) {
+	ing->setFalling(false);
+	ing->setLaunching(true);
 }

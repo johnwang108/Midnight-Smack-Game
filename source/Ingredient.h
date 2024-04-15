@@ -16,6 +16,7 @@ private:
 	std::shared_ptr<cugl::scene2::PolygonNode> _poly;
 	std::shared_ptr<cugl::scene2::Button> _button;
 	bool _beingHeld;
+	bool _launching;
 public: 
 	
 	
@@ -55,6 +56,9 @@ public:
 
 	bool inPot() { return _inPot; }
 	void setInPot(bool val) { _inPot = val; };
+
+	bool isLaunching() { return _launching; }
+	void setLaunching(bool val) { _launching = val; };
 };
 
 #endif // __INGREDIENT_H__
