@@ -119,6 +119,8 @@ public:
 	void unfocusAll();
 
 	void focusCurr();
+
+	void switchStation(int currId, int targId);
 	void endDay();
 
 

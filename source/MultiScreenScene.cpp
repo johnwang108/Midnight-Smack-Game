@@ -375,54 +375,43 @@ void MultiScreenScene::preUpdate(float timestep) {
 	if (!_animating) {
 		if (_input->getHorizontal() > 0) {
 			if ((_curr == 1) || (_curr == 2)) {
-				_scenes[_curr]->setFocus(false);
-				_curr++;
-				_scenes[_curr]->setFocus(true);
-				_animating = true;
+				switchStation(_curr, _curr + 1);
 			}
 		}
 		else if (_input->getHorizontal() < 0) {
 			if ((_curr == 2) || (_curr == 3)) {
-				_scenes[_curr]->setFocus(false);
-				_curr--;
-				_scenes[_curr]->setFocus(true);
-				_animating = true;
+				switchStation(_curr, _curr - 1);
 			}
 		}
-
 		else if (_input->getVertical() > 0) {
 			if ((_curr == 2) || (_curr == 4)) {
-				_scenes[_curr]->setFocus(false);
-				_curr -= 2;
-				_scenes[_curr]->setFocus(true);
-				_animating = true;
+				switchStation(_curr, _curr - 2);
 			}
 		}
 		else if (_input->getVertical() < 0) {
 			if ((_curr == 0) || (_curr == 2)) {
-				_scenes[_curr]->setFocus(false);
-				_curr += 2;
-				_scenes[_curr]->setFocus(true);
-				_animating = true;
+				switchStation(_curr, _curr + 2);
 			}
 		}
-		// check for swipes now
-		if (!_animating) {
-			
-		}
-
 	}
 	Vec2 dist = _scenes[_curr]->getPosition() - _camera->getPosition();
 	if (dist != Vec2::ZERO) {
-		_camera->translate(cugl::Vec2( abs_min(sign(dist.x) * CAMERA_MOVE_SPEED, dist.x), abs_min(sign(dist.y) * CAMERA_MOVE_SPEED, dist.y)));
+		Vec2 movementAmount = Vec2(abs_min(sign(dist.x) * CAMERA_MOVE_SPEED, dist.x), abs_min(sign(dist.y) * CAMERA_MOVE_SPEED, dist.y));
+		_camera->translate(movementAmount);
 		_camera->update();
+		
+		if (_scenes[_curr]->getCurrentlyHeldIngredient() != nullptr) {
+			std::shared_ptr<scene2::Button> button = _scenes[_curr]->getCurrentlyHeldIngredient()->getButton();
+			CULog("Button Pos: %f %f", button->getPositionX(), button->getPositionY());
+			button->setPosition(button->getPosition() + movementAmount);
+		}
+	
 	}
 	else {
 		_animating = false;
 	}
 
 
-	std::shared_ptr<Ingredient> curHeld = _scenes[_curr]->getHeldIngredient();
 	
 	
 	// find current touch position, set curHeld->button to be that pos
@@ -473,9 +462,22 @@ void MultiScreenScene::focusCurr() {
 	_scenes[_curr]->setFocus(true);
 }
 
+void MultiScreenScene::switchStation(int currId, int targId) {
+	_scenes[currId]->setFocus(false);
+	_scenes[targId]->setFocus(true);
+	_curr = targId;
+	_animating = true;
+	//handle moving ing
+	std::shared_ptr<Ingredient> ing = _scenes[currId]->getCurrentlyHeldIngredient();
+	if (ing != nullptr) {
+		_scenes[currId]->removeHeldIngredient();
+		_scenes[targId]->receiveHeldIngredient(ing);
+	}
+	CULog("don");
+}
+
 
 /* 
-* I'm choosing not to reload ingredients but we can later.
 */
 void MultiScreenScene::reset() {
 	_camera->setPosition(Vec2(0, 0));
@@ -485,6 +487,8 @@ void MultiScreenScene::reset() {
 	_curr = 2;
 	_ended = false;
 	_currentTime = 0.0f;
+	_gestureFeedback->setVisible(false);
+	_gestureFeedback->setText("");
 
 	for (int i = 0; i < 5; i++) {
 		_scenes[i]->reset();

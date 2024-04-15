@@ -95,7 +95,7 @@ protected:
 
     std::shared_ptr<cugl::scene2::SceneNode> _bottomBar;
     std::shared_ptr<cugl::scene2::SceneNode> _conveyorBelt;
-    std::shared_ptr<cugl::scene2::SceneNode> _stationHitbox;
+    std::shared_ptr<cugl::scene2::PolygonNode> _stationHitbox;
     std::shared_ptr<cugl::scene2::SceneNode> _indicatorGroup;
 
     std::deque<std::shared_ptr<Ingredient>> _currentIngredients;
@@ -156,6 +156,12 @@ public:
     
     std::shared_ptr<Ingredient> getIngredientInStation() { return _ingredientInStation; }
 
+    std::shared_ptr<Ingredient> getCurrentlyHeldIngredient() { return _currentlyHeldIngredient; }
+
+    /* Only use to transfer ingredient to other station */
+    void removeHeldIngredient();
+    void receiveHeldIngredient(std::shared_ptr<Ingredient> ing);
+
     bool isFocus() { return _focus; };
 
     bool initGestureRecognizer();
@@ -172,7 +178,8 @@ public:
 
 
     void updateConveyor();
-    std::shared_ptr<Ingredient> getHeldIngredient();
+    /* Internal use, searches through all ingredients to see which is held */
+    std::shared_ptr<Ingredient> findHeldIngredient();
 
     void addIngredientToStation(std::shared_ptr<Ingredient>);
 

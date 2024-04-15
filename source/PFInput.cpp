@@ -184,12 +184,12 @@ bool PlatformInput::init(const Rect bounds) {
     Mouse* mouse = Input::get<Mouse>();
     mouse->setPointerAwareness(Mouse::PointerAwareness::DRAG);
     mouse->addPressListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, Uint8 clicks, bool focus) {
-        CULog("STARTING!");
+        //CULog("STARTING!");
         this->mousePressCB(event, focus);
         });
 
     mouse->addDragListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, const Vec2& previous, bool focus) {
-        CULog("DRAGGIN!");
+        //CULog("DRAGGIN!");
         this->mouseDragCB(event, focus);
         });
 

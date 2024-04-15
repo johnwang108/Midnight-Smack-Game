@@ -32,6 +32,7 @@
 #include <iostream>
 #include <sstream>
 #include <random>
+#include <algorithm>
 
 #define WIDTH 25
 
@@ -57,6 +58,7 @@ float SHAPE[] = { 0,300,300,300,300,0,0,0} ;
 
 DollarScene::DollarScene() : scene2::SceneNode() {
 	_assets = nullptr;
+	_stationHitbox = nullptr;
 }
 
 void DollarScene::dispose() {
@@ -99,7 +101,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	* 0 -1
 	* transform is screen width/2, screen height/2 for mouse->screen coordinates
 	*/
-	_transf = Affine2(1, 0, 0, -1, -SCENE_WIDTH / 2, SCENE_HEIGHT);
+	_transf = Affine2(1, 0, 0, -1, 0, SCENE_HEIGHT);
 	_poly = cugl::scene2::PolygonNode::alloc();
 	_box = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>(texture), rect);
 	_box->setAnchor(Vec2::ANCHOR_CENTER);
@@ -111,13 +113,15 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_header->setAnchor(Vec2::ANCHOR_CENTER);
 	_header->setPosition(cugl::Vec2(640, 600));
 	_header->setForeground(cugl::Color4::RED);
-	_header->setVisible(true);
+	_header->setHorizontalAlignment(HorizontalAlign::CENTER);
+	_header->setVisible(false);
 
 	_currentGestureLabel = scene2::Label::allocWithText("Current Target Gesture: filling out text bc i swear this always breaks", _assets->get<Font>(SMALL_MSG));
 	_currentGestureLabel->setAnchor(Vec2::ANCHOR_CENTER);
 	_currentGestureLabel->setPosition(cugl::Vec2(640, 540));
 	_currentGestureLabel->setForeground(cugl::Color4::BLACK);
-	_currentGestureLabel->setVisible(true);
+	_currentGestureLabel->setHorizontalAlignment(HorizontalAlign::CENTER);
+	_currentGestureLabel->setVisible(false);
 
 	_indicatorGroup = scene2::SceneNode::alloc();
 	_indicatorGroup->setPosition(Vec2(640, 400));
@@ -130,6 +134,9 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 
 
 	addChild(_box);
+	if (_stationHitbox != nullptr) {
+		addChild(_stationHitbox);
+	}
 	addChild(_poly);
 	addChild(_header);
 	addChild(_currentGestureLabel);
@@ -144,9 +151,15 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 }
 
 bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector<std::string> gestures, Size hitboxSize) {
-	_stationHitbox = scene2::SceneNode::allocWithBounds(hitboxSize);
-	_stationHitbox->setAnchor(Vec2::ANCHOR_CENTER);
-	_stationHitbox->setPosition(Vec2(0, 0));
+	_stationHitbox = scene2::PolygonNode::allocWithPoly(Rect(Vec2(0, 0), hitboxSize));
+	//_stationHitbox = scene2::PolygonNode::allocWithBounds(hitboxSize);
+	//_stationHitbox->setAnchor(Vec2::ANCHOR_CENTER);
+	_stationHitbox->setPosition(640,400);
+	//_stationHitbox->setColor(Color4::GRAY);
+	_stationHitbox->setVisible(true);
+	Rect box = _stationHitbox->getBoundingRect();
+	CULog("Min X: %f, Max X: %f, Min Y: %f, Max Y: %f", box.getMinX(), box.getMaxX(), box.getMinY(), box.getMaxY());
+	
 	return init(assets, input, rect, texture, gestures);
 }
 
@@ -206,8 +219,11 @@ void DollarScene::update(float timestep) {
 			if (!_completed) {
 				_currentGestureLabel->setText("Current Target Gesture: " + _currentTargetGestures[_currentTargetIndex]);
 				_currentGestureLabel->setVisible(true);
+				_currentGestureLabel->doLayout();
 				_header->setText("Similarity: " + std::to_string(_currentSimilarity));
 				_header->setVisible(true);
+				_header->doLayout();
+
 			}
 			else {
 				_currentGestureLabel->setVisible(false);
@@ -220,8 +236,7 @@ void DollarScene::update(float timestep) {
 		//re-extrude path
 		_se.set(_path);
 		_se.calculate(WIDTH);
-
-
+		
 		//have to reflect across x axis with _transf
 		cugl::Affine2 t = cugl::Affine2(1, 0, 0, -1, 0,SCENE_HEIGHT);
 		_poly->setPolygon(_se.getPolygon() * t);
@@ -262,23 +277,35 @@ void DollarScene::update(float timestep) {
 
 	//_header->setVisible(!isPending() && isSuccess());
 	updateConveyor();
-	if (_currentlyHeldIngredient != nullptr && _currentlyHeldIngredient->getBeingHeld() == false) {
-		// let go
-		_currentlyHeldIngredient->setFalling(true);
-		_currentlyHeldIngredient = nullptr;
+
+	//if not holding anything, check if we are
+	if (_currentlyHeldIngredient == nullptr) {
+		_currentlyHeldIngredient = findHeldIngredient();
+	}
+	if (_currentlyHeldIngredient != nullptr){
+		//we think we are holding something, so check if it's still being held
+		if (!_currentlyHeldIngredient->getBeingHeld()) {
+			//let go
+			_currentlyHeldIngredient->setFalling(true);
+			_currentlyHeldIngredient = nullptr;
+		}
+		else {
+			//ingredient is being held so transform to mouse
+			std::shared_ptr<scene2::Button> button = _currentlyHeldIngredient->getButton();
+			//CULog("%f, %f", _input->getTouchPos().x, _input->getTouchPos().y);
+			Vec2 transformedMouse = _input->getTouchPos() * _transf;
+
+			button->setPositionX(transformedMouse.x);// +_currentlyHeldIngredient->getButton()->getWidth() / 2);
+			button->setPositionY(transformedMouse.y);
+
+			//CULog("Button Pos X: %f, Button Y: %f", button->getPositionX(), button->getPositionY());
+			//button->setPosition(_input->getTouchPos());
+		}
 	}
 
-	_currentlyHeldIngredient = getHeldIngredient();
-	if (_currentlyHeldIngredient != nullptr) {
-		std::shared_ptr<scene2::Button> button = _currentlyHeldIngredient->getButton();
-		//CULog("%f, %f", _input->getTouchPos().x, _input->getTouchPos().y);
-		Vec2 transformedMouse = _input->getTouchPos() * _transf; 
-
-		button->setPositionX(transformedMouse.x);// +_currentlyHeldIngredient->getButton()->getWidth() / 2);
-		button->setPositionY(transformedMouse.y);
-	}
-	
 	for (std::shared_ptr<Ingredient> ing : _currentIngredients) {
+		//CULog("Ing Pos: %f, Ing Pos Y: %f", ing->getButton()->getPosition().x, ing->getButton()->getPosition().y);
+
 		if (!ing->inPot() && ing->isFalling() && _stationHitbox->inContentBounds(ing->getButton()->getPosition())) {
 			//add ingredient to pot somehow lmao
 			bool isValidIng = false;
@@ -358,19 +385,24 @@ void DollarScene::addIngredient(std::shared_ptr<Ingredient> ing) {
 	_currentIngredients.push_back(ing);
 	ing->getButton()->setPosition(_conveyorBelt->getWidth() - ing->getButton()->getWidth() / 2, _conveyorBelt->getHeight() / 2);
 	_conveyorBelt->addChild(ing->getButton());
-
+	//CULog("Conv x: %f, Conv y: %f", _conveyorBelt->getPositionX(), _conveyorBelt->getPositionY());
+	//CULog("Conv width: %f, conv height: %f", _conveyorBelt->getWidth(), _conveyorBelt->getHeight());
 }
 
 
 void DollarScene::updateConveyor() {
 	if (_bottomBar == nullptr) return;
-
 	for (std::shared_ptr<Ingredient> ingredient : _currentIngredients) {
-		if (ingredient == _currentlyHeldIngredient || ingredient->inPot()) continue;
+ 		if (ingredient == _currentlyHeldIngredient || ingredient->inPot()) continue;
 		std::shared_ptr<scene2::SceneNode> button = ingredient->getButton();
 
 		if (ingredient->isFalling()) {
 			if (button->getPositionY() <= _conveyorBelt->getHeight() / 2) {
+				//error might occur here? might get mad if ingredient not in general scene but idk why it wouldn't be here
+				Vec2 scenePos = button->getPosition();
+				removeChild(button);
+				_conveyorBelt->addChild(button);
+				button->setPosition(scenePos - Vec2(_conveyorBelt->getWidth() + button->getWidth()/2, 0));
 				ingredient->setFalling(false);
 				button->setPositionY(_conveyorBelt->getHeight() / 2);
 			}
@@ -403,18 +435,73 @@ std::shared_ptr<Ingredient> DollarScene::popIngredient() {
 	return removedIngredient;
 }
 
-std::shared_ptr<Ingredient> DollarScene::getHeldIngredient() {
+std::shared_ptr<Ingredient> DollarScene::findHeldIngredient() {
 	for (std::shared_ptr<Ingredient> ing : _currentIngredients) {
-		if (ing->getBeingHeld() == true) return ing;
+		if (ing->getBeingHeld() == true) {
+			ing->setFalling(false);
+			for (std::shared_ptr<scene2::SceneNode> child : _conveyorBelt->getChildren()) {
+				if (child == ing->getButton()) {
+					_conveyorBelt->removeChild(ing->getButton());
+					break;
+				}
+			}
+			if (ing->getButton()->getParent() == nullptr) addChild(ing->getButton());
+
+
+			return ing;
+		}
 	}
 	return nullptr;
+}
+
+void DollarScene::removeHeldIngredient() {
+	//remove from this scenes scene node
+	for (std::shared_ptr<scene2::SceneNode> child : getChildren()) {
+		if (child == _currentlyHeldIngredient->getButton()) {
+			removeChild(child);
+			break;
+		}
+	}
+
+	//remove it from current ingredients deque
+	auto it = std::find(_currentIngredients.begin(), _currentIngredients.end(), _currentlyHeldIngredient);
+	if (it != _currentIngredients.end()) {
+		_currentIngredients.erase(it);
+	}
+
+	//set it to no longer be current held ingredient
+	_currentlyHeldIngredient.reset();
+}
+
+void DollarScene::receiveHeldIngredient(std::shared_ptr<Ingredient> ing) {
+	addChild(ing->getButton());
+	_currentIngredients.push_back(ing);
+	_currentlyHeldIngredient = ing;
+	CULog("received cap");
 }
 
 void DollarScene::addIngredientToStation(std::shared_ptr<Ingredient> ing) {
 	CULog("added to pot");
 	//Remove ingredient from conveyor belt, and remove gravity
-	_conveyorBelt->removeChild(ing->getButton());
+	//use loop because if it's not on conveyor belt then it'll error if u try to remove
+	// todo maybe swap to un parenting from scene
+	for (std::shared_ptr<scene2::SceneNode> child : _conveyorBelt->getChildren()) {
+		if (child == ing->getButton()) {
+			CULog("removed");
+			_conveyorBelt->removeChild(ing->getButton());
+			break;
+		}
+	}	
 	ing->setFalling(false);
+
+	// this could be time intensive?
+	for (std::shared_ptr<scene2::SceneNode> child : getChildren()) {
+		if (child == ing->getButton()) {
+			CULog("removed");
+			removeChild(ing->getButton());
+			break;
+		}
+	}
 
 	//add it to the station, and let both ingredient and station know. Also store which is ing is in
 	ing->setInPot(true);
@@ -475,6 +562,13 @@ void DollarScene::reset() {
 	_lastResult = -1;
 	//todo ready to cook idk if it should be false
 	_readyToCook = false;
+	if (_currentlyHeldIngredient != nullptr) {
+		for (std::shared_ptr<scene2::SceneNode> child : getChildren()) {
+			if (child == _currentlyHeldIngredient->getButton()) removeChild(_currentlyHeldIngredient->getButton());
+		}
+		_currentlyHeldIngredient.reset();
+	}
+	
 
 	// clear conveyor
 	for (std::shared_ptr<scene2::SceneNode> child : _conveyorBelt->getChildren()) {
@@ -489,12 +583,20 @@ void DollarScene::reset() {
 			_indicatorGroup->removeChild(child);
 		}
 	}
+	_indicatorGroup->setVisible(false);
+
+
+	//clear gestures
+	_input->popTouchPath();
+	_poly->setVisible(false);
+
+
 	_ingredientInStation = nullptr;
 
 
 	//clear all ingredients
 	_currentIngredients.clear();
-	_currentlyHeldIngredient.reset();
+
 	_ingredientToRemove.reset();
 
 	// Don't do this so we don't have to re-init bottom bar
