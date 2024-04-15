@@ -45,7 +45,10 @@ protected:
 
 	std::string _activeAction;
 
+	bool _activated;
+
 	cugl::Size _dimension;
+
 
 private:
 
@@ -80,6 +83,17 @@ public:
 	virtual bool init(cugl::Vec2 pos, cugl::Size size);
 
 	void loadAnimationsFromConstant(std::string entityName, std::shared_ptr<AssetManager> _assets);
+
+	virtual std::string updateAnimation() { return ""; };
+
+	void setActiveAction(std::string actionName) { 
+		_activeAction = actionName; 
+		_activated = false;
+	};
+
+	void setActivated(bool act) { _activated = act; };
+
+	bool isActivated() { return _activated; };
 
 };
 #endif /* __ENTITY_H__ */

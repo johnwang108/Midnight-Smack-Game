@@ -297,7 +297,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     _target = std::make_shared<EnemyModel>();
 
-    currentLevel = level2;
+    currentLevel = level1;
     loadLevel(currentLevel);
 
     save();
@@ -535,7 +535,6 @@ void GameScene::preUpdate(float dt) {
     //start running if idle or recovering and moving
     if (!_overrideAnim) {
         if ((_actionManager->isActive("idle") || _actionManager->isActive("recover")) && (_input->getHorizontal() != 0)) {
-            CULog("animating run");
             _avatar->animate("run");
             auto runAction = _avatar->getAction("run");
             _actionManager->clearAllActions(_avatar->getSceneNode());
@@ -602,14 +601,11 @@ void GameScene::preUpdate(float dt) {
                     auto idleAction = _avatar->getAction("idle");
                     _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
                 }
-
             }
         }
 
         _avatar->setShooting(_input->didFire());
-        if (_avatar->isShooting() && !_actionManager->isActive("attack")) {
-            //createAttack(false);
-            CULog("ATTACKING");
+        if (_avatar->isShooting() && (!_actionManager->isActive("attack"))) {
             auto att = _avatar->createAttack(getAssets(), _scale);
             addObstacle(std::get<0>(att), std::get<1>(att), true);
             _attacks.push_back(std::get<0>(att));
@@ -643,7 +639,6 @@ void GameScene::preUpdate(float dt) {
         if (_dollarnode->isFocus()) {
             _dollarnode->setFocus(false);
         }
-        _avatar->setShooting(_input->didFire());
         _avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
         _avatar->setJumping(_input->didJump());
         _avatar->setDash(_input->didDash());
@@ -736,19 +731,25 @@ void GameScene::preUpdate(float dt) {
 				enemy->setattacktime(false);
 				enemy->setshooted(false);
 			}
+
+
+            enemy->update(dt);
             if (enemy->getHealth() <= 0) {
                 removeEnemy(enemy.get());
             }
             else {
-            //enemy animations, TODO
-                if (enemy->getType() == EnemyType::beef && !_actionManager->isActive("beefIdle")) {
-                    CULog("Animating");
-                    enemy->animate("beefIdle");
-                    auto beefAction = enemy->getAction("beefIdle");
-                    _actionManager->activate("attack", beefAction, enemy->getSceneNode());
+            //enemy animations. If enemy->activeAction is not active, activate the current action.
+                if (!enemy->isActivated()) {
+                    CULog(enemy->getActiveAction().c_str());
+                    enemy->setActivated(true);
+                    _actionManager->clearAllActions(enemy->getSceneNode());
+                    std::string actionName = enemy->getActiveAction();
+                    enemy->animate(actionName);
+                    auto action = enemy->getAction(actionName);
+                    _actionManager->activate(actionName, action, enemy->getSceneNode());
                 }
             }
-            enemy->update(dt);
+
         }
     }
     if (_Bull != nullptr && !_Bull->isRemoved()) {

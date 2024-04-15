@@ -182,21 +182,6 @@ void Level2::populate(GameScene& scene) {
 	scene.addObstacle(_bull, spritenode);*/
 
 
-	Vec2 pos = SHRIMP_POS;
-	Size size = cugl::Size(2.0f, 2.0f);
-	image = _assets->get<Texture>("beefIdle");
-
-	spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
-	std::shared_ptr<EnemyModel> _enemy = EnemyModel::allocWithConstants(pos, size, _scale, _assets, EnemyType::beef);
-	spritenode->setScale(0.1f);
-	spritenode->setAnchor(Vec2(0.5, 0.35));
-	_enemy->setSceneNode(spritenode);
-	_enemy->setName(ENEMY_NAME);
-	_enemy->setDebugColor(DEBUG_COLOR);
-	_enemy->setLimit(cugl::Spline2(Vec2(1.0f, 1.0f), Vec2(50.0f, 1.0f)));
-	scene.addObstacle(_enemy, spritenode);
-	_enemies.push_back(_enemy);
-
 	scene.setAssets(_assets);
 	scene.setScale(_scale);
 	scene.setBackground(_background);

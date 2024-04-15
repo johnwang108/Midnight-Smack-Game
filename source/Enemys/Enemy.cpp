@@ -14,8 +14,14 @@ Behavior diagram and info:
 https://docs.google.com/drawings/d/1TS-DFsWZOT4SpqrswI8zruaZdR78v6QIWfDNnVQA1Yo/edit?pli=1
 
 
-
 */
+
+#define BEEF_BURROW_TIME 30.0f
+#define BEEF_UNBURROW_TIME 30.0f
+#define BEEF_ATTACK_TIME 10.0f
+
+#define CLOSE_ENOUGH 1.0f + ((float)rand() / ((float)RAND_MAX))/2.0f
+
 
 using namespace cugl;
 
@@ -77,6 +83,11 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
         setFilterData(filter);
         setName("enemy");
 
+        //soldier rice
+        _targetPosition = cugl::Vec2();
+        _closeEnough = CLOSE_ENOUGH;
+
+        //beef and egg
         _limit = limit;
 
         return true;
@@ -171,9 +182,6 @@ void EnemyModel::update(float dt) {
         return;
     }
 
-    int direction = (_distanceToPlayer.x > 0) ? 1 : -1;
-    setDirection(direction);
-
     //updating counters
     if (_knockbackTime > 0) {
         _knockbackTime -= dt;
@@ -199,9 +207,9 @@ void EnemyModel::update(float dt) {
         setState(getNextState(_state));
     }
 
-    b2Vec2 velocity = _body->GetLinearVelocity();
 
-    CULog("Enemy state: %s", _state.c_str());
+
+    b2Vec2 velocity = _body->GetLinearVelocity();
 
     //handle type specific behavior
     switch (getType()) {
@@ -233,17 +241,34 @@ void EnemyModel::update(float dt) {
     case EnemyType::rice:
         if (_state == "chasing") {
             velocity.x = 0;
+            setActiveAction("riceIdle");
         }
         else if (_state == "yelling") {
 			velocity.x = 0;
+            setActiveAction("riceYell");
 		}
         else if (_state == "stunned") {
             velocity.x = 0;
+            //setActionParams("riceStun", false, false, true);
         }
         else if (_state == "pursuing") {
+
+            if (velocity.x == 0) setActiveAction("riceStartWalk");
+            else if (_distanceToPlayer.length() < 0.02) {
+                setActiveAction("riceAttack");
+                velocity.x = 0;
+                break;
+            }
+            else setActiveAction("riceWalk");
+
             velocity.x = ENEMY_FORCE * _direction * 2;
+
         }
         else if (_state == "patrolling") {
+
+            if (velocity.x = 0) setActiveAction("riceStartWalk");
+            else setActiveAction("riceWalk");
+
             velocity.x = ENEMY_FORCE * _direction;
         }
         else {
@@ -255,15 +280,38 @@ void EnemyModel::update(float dt) {
     case EnemyType::rice_soldier:
         if (_state == "chasing") {
             velocity.x = 0;
+            setActiveAction("riceIdle");
         }
         else if (_state == "pursuing") {
-            velocity.x = ENEMY_FORCE * _direction * 2;
+            float dir = SIGNUM(_targetPosition.x - getPosition().x);
+
+            if (velocity.x == 0 && dir != 0) setActiveAction("riceStartWalk");
+            else if (_distanceToPlayer.length() < 0.02) {
+                setActiveAction("riceAttack");
+                velocity.x = 0;
+                break;
+            }
+            else setActiveAction("riceWalk");
+
+            velocity.x = ENEMY_FORCE * dir * 3;
         }
         else if (_state == "stunned") {
             velocity.x = 0;
+            //setActionParams("riceIdle", false, false, true);
         }
         else if (_state == "patrolling") {
-            velocity.x = ENEMY_FORCE * _direction;
+            float diff = _targetPosition.x - getPosition().x;
+            if (std::abs(diff) > CLOSE_ENOUGH) {
+                if (velocity.x = 0) setActiveAction("riceStartWalk");
+                else setActiveAction("riceWalk");
+
+                velocity.x = ENEMY_FORCE * SIGNUM(diff);
+            }
+            else {
+                if (velocity.x = 0) setActiveAction("riceIdle");
+                else setActiveAction("riceEndWalk");
+                velocity.x = 0;
+            }
         }
         else {
             CULog("error: rice soldier");
@@ -330,17 +378,23 @@ void EnemyModel::update(float dt) {
             velocity.x = 0;
         }
         else if (_state == "burrowing") {
+            //Todo: make mole burrow :)
+            b2Filter filter = getFilterData();
             velocity.x = 0;
+            velocity.y = (_node->getPositionY() - (_node->getHeight() / BEEF_BURROW_TIME));
         }
         else if (_state == "tracking") {
-            //Todo:: make this explicitly slightly slower than player max speed
-            cugl::Vec2 targetPos = _limit.nearestPoint(cugl::Vec2(getPosition().x + direction * ENEMY_FORCE * 5, getPosition().y));
+            cugl::Vec2 targetPos = _limit.nearestPoint(cugl::Vec2(getPosition().x + _direction * ENEMY_FORCE * 5, getPosition().y));
             
             cugl::Vec2 v = targetPos - getPosition();
             velocity = b2Vec2(v.x, v.y);  
         }
         else if (_state == "unburrowing") {
             velocity.x = 0;
+        }
+        else if (_state == "attacking") {
+            velocity.x = 0;
+            _node->setPositionY(_node->getPositionY() + (_node->getHeight() / BEEF_ATTACK_TIME));
         }
         else if (_state == "stunned") {
             velocity.x = 0;
@@ -371,16 +425,16 @@ b2Vec2 EnemyModel::handleMovement(b2Vec2 velocity) {
     else if (velocity.x < -ENEMY_MAXSPEED) {
         velocity.x = -ENEMY_MAXSPEED;
     }
-    if (_isGrounded) {
-        if (_direction != _lastDirection) {
-            // If direction changed, flip the image
-            scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
-            if (image != nullptr) {
-                image->flipHorizontal(!image->isFlipHorizontal());
-            }
-        }
-        _lastDirection = _direction; // Update last direction
+
+    if (_state != "patrolling") {
+        int direction = SIGNUM(_distanceToPlayer.x);
+        setDirection(direction);
     }
+
+    if (_lastDirection != _direction && _node != nullptr) {
+        _node->flipHorizontal(!_node->isFlipHorizontal());
+    }
+    _lastDirection = _direction; // Update last direction
 
     return velocity;
 }
@@ -444,6 +498,9 @@ void EnemyModel::setIsChasing(bool isChasing) {
 
 void EnemyModel::updatePlayerDistance(cugl::Vec2 playerPosition) {
     _distanceToPlayer = playerPosition - getPosition();
+    if (_type == EnemyType::rice_soldier) {
+        return;
+	}
     if (_distanceToPlayer.length() <= typeToAggroRange(_type) && _state == "patrolling") {
         setIsChasing(true);
     }
@@ -493,14 +550,20 @@ void EnemyModel::setState(std::string state) {
             break;
         case EnemyType::rice:
             if (state == "yelling") {
-                _behaviorCounter = 30;
+                _behaviorCounter = -1;
             }
             else if (state == "pursuing") {
+                _behaviorCounter = -1;
+            }
+            else if (state == "attacking") {
                 _behaviorCounter = -1;
             }
             break;
         case EnemyType::rice_soldier:
             if (state == "pursuing") {
+                _behaviorCounter = -1;
+            }
+            else if (state == "attacking") {
                 _behaviorCounter = -1;
             }
             break;
@@ -517,13 +580,16 @@ void EnemyModel::setState(std::string state) {
 			break;
         case EnemyType::beef:
             if (state == "burrowing") {
-                _behaviorCounter = 60;
+                _behaviorCounter = BEEF_BURROW_TIME;
             }
             else if (state == "tracking") {
-                _behaviorCounter = 360;
+                _behaviorCounter = -1;
             }
             else if (state == "unburrowing") {
-                _behaviorCounter = 10;
+                _behaviorCounter = BEEF_UNBURROW_TIME;
+            }
+            else if (state == "attacking") {
+                _behaviorCounter = BEEF_ATTACK_TIME;
             }
             else if (state == "stunned") {
                 _behaviorCounter = 120;
@@ -543,7 +609,7 @@ std::string EnemyModel::getNextState(std::string state) {
             if (state == "chasing") {
 				return "curling";
 			}
-            if (state == "curling") {
+            else if (state == "curling") {
                 return "rolling";
             }
             else if (state == "rolling") {
@@ -572,6 +638,10 @@ std::string EnemyModel::getNextState(std::string state) {
             else if (state == "pursuing") {
                 return "pursuing";
             }
+            else if (_state == "attacking") {
+                if (_activeAction == "riceAttack") return "attacking";
+                return "pursuing";
+            }
             else if (state == "patrolling") {
                 return "patrolling";
             }
@@ -584,6 +654,10 @@ std::string EnemyModel::getNextState(std::string state) {
             else if (_state == "pursuing") {
                 return "pursuing";
             }
+            else if (_state == "attacking") {
+                if (_activeAction == "riceAttack") return "attacking";
+                return "pursuing";
+            }
             else if (state == "patrolling") {
                 return "patrolling";
             }
@@ -593,10 +667,10 @@ std::string EnemyModel::getNextState(std::string state) {
                 if (_distanceToPlayer.length() > 12) return "chasing";
 				else return "windup";
             }
-            if (state == "windup") {
+            else if (state == "windup") {
 				return "spitting";
 			}
-            if (state == "short_windup") {
+            else if (state == "short_windup") {
                 return "spitting";
             }
             else if (state == "stunned") {
@@ -614,13 +688,17 @@ std::string EnemyModel::getNextState(std::string state) {
             if (state == "chasing") {
                 return "burrowing";
             }
-            if (state == "burrowing") {
+            else if (state == "burrowing") {
                 return "tracking";
             }
-            if (state == "tracking") {
-                return "unburrowing";
+            else if (state == "tracking") {
+                if (abs(_distanceToPlayer.x) < 1) return "unburrowing";
+                else return "tracking";
             }
-            if (state == "unburrowing") {
+            else if (state == "unburrowing") {
+                return "attacking";
+            }
+            else if (state == "attacking") {
                 return "stunned";
             }
             else if (state == "stunned") {
@@ -655,5 +733,163 @@ std::string EnemyModel::getNextState(std::string state) {
 			break;
         default:
             return "patrolling";
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//only called when there is no active action.
+std::string EnemyModel::updateAnimation() {
+    switch (_type) {
+    case EnemyType::shrimp:
+        if (_state == "chasing") {
+            return "";
+        }
+        else if (_state == "curling") {
+            return "";
+        }
+        else if (_state == "rolling") {
+            return "";
+        }
+        else if (_state == "uncurling") {
+            return "";
+        }
+        else if (_state == "stunned") {
+            return "";
+        }
+        else if (_state == "patrolling") {
+            return "";
+        }
+        break;
+    case EnemyType::rice:
+        if (_state == "chasing") {
+            return "";
+        }
+        else if (_state == "yelling") {
+            return "";
+        }
+        else if (_state == "stunned") {
+            return "";
+        }
+        else if (_state == "attacking") {
+            return "";
+        }
+        else if (_state == "pursuing") {
+            return "";
+        }
+        else if (_state == "patrolling") {
+            return "";
+        }
+
+        break;
+    case EnemyType::rice_soldier:
+        b2Vec2 velocity = _body->GetLinearVelocity();
+        if (_state == "chasing") {
+
+        } 
+        else if (_state == "attacking") {
+
+        }
+        else if (_state == "pursuing") {
+
+        }
+        else if (_state == "stunned") {
+
+        }
+        else if (_state == "patrolling") {
+            if (velocity.x == 0 && velocity.y == 0) {
+                return "riceIdle";
+			}
+            else if (velocity.x != 0 && velocity.y == 0) {
+				return "riceWalk";
+            }
+		}
+        break;
+    case EnemyType::egg:
+        if (_state == "chasing") {
+            if (_distanceToPlayer.length() > 12) return "chasing";
+            else return "";
+        }
+        else if (_state == "windup") {
+            return "";
+        }
+        else if (_state == "short_windup") {
+            return "";
+        }
+        else if (_state == "stunned") {
+            return "";
+        }
+        else if (_state == "spitting") {
+            if (_distanceToPlayer.length() > 12) return "chasing";
+            else return "";
+        }
+        else if (_state == "patrolling") {
+            return "";
+        }
+        break;
+    case EnemyType::beef:
+        if (_state == "chasing") {
+            return "";
+        }
+        else if (_state == "burrowing") {
+            return "";
+        }
+        else if (_state == "tracking") {
+            if (abs(_distanceToPlayer.x) < 1) return "unburrowing";
+            else return "";
+        }
+        else if (_state == "unburrowing") {
+            return "";
+        }
+        else if (_state == "attacking") {
+            return "";
+        }
+        else if (_state == "stunned") {
+            return "";
+        }
+        else if (_state == "patrolling") {
+            return "";
+        }
+        break;
+
+    case EnemyType::carrot:
+        if (_state == "chasing") {
+            return "";
+        }
+        else if (_state == "windup") {
+            return "";
+        }
+        else if (_state == "jumping") {
+            if (!isGrounded()) return "midair";
+            else return "";
+        }
+        else if (_state == "midair") {
+            if (isGrounded()) return "windup";
+            else return "";
+        }
+        else if (_state == "stunned") {
+            return "";
+        }
+        else if (_state == "patrolling") {
+            return "";
+        }
+        break;
+    default:
+        return "patrolling";
     }
 }

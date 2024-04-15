@@ -153,6 +153,8 @@ void Level1::populate(GameScene& scene) {
 
 	scene.addObstacle(_avatar, spritenode); // Put this at the very front
 
+
+
 	//CULog("Dude position: %f %f", _avatar->getPosition().x, _avatar->getPosition().y);
 	//CULog("Dude anchor: %f %f", _avatar->getAnchor().x, _avatar->getAnchor().y);
 
@@ -161,18 +163,73 @@ void Level1::populate(GameScene& scene) {
 	//AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
 
-	cugl::Size shrimpSize = cugl::Size(2.0f, 2.0f);
+	//cugl::Size shrimpSize = cugl::Size(2.0f, 2.0f);
 
-	//Vec2 shrimp_pos = SHRIMP_POS;
-	//image = _assets->get<Texture>("shrimp_rolling");
-	//std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc(shrimp_pos, shrimpSize, _scale, EnemyType::shrimp);
-	//sprite = scene2::PolygonNode::allocWithTexture(image);
-	//sprite->setScale(0.1f);
-	//_enemy->setSceneNode(sprite);
-	//_enemy->setName(ENEMY_NAME);
-	//_enemy->setDebugColor(DEBUG_COLOR);
-	//scene.addObstacle(_enemy, sprite);
+	Vec2 pos = SHRIMP_POS;
+	Size size = cugl::Size(2.0f, 2.0f);
+	image = _assets->get<Texture>("beefIdle");
+
+	spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
+	std::shared_ptr<EnemyModel> _enemy = EnemyModel::allocWithConstants({ 30.0f, 6.0f }, size, _scale, _assets, EnemyType::beef);
+	spritenode->setScale(0.1f);
+	spritenode->setAnchor(Vec2(0.5, 0.35));
+	_enemy->setSceneNode(spritenode);
+	_enemy->setName(ENEMY_NAME);
+	_enemy->setDebugColor(DEBUG_COLOR);
+	_enemy->setLimit(cugl::Spline2(Vec2(1.0f, 1.0f), Vec2(50.0f, 1.0f)));
+	//scene.addObstacle(_enemy, spritenode);
 	//_enemies.push_back(_enemy);
+
+
+	cugl::Size riceSize = cugl::Size(1.0f, 2.0f);
+
+	Vec2 rice_pos = RICE_POS;
+	image = _assets->get<Texture>("riceLeader");
+	_enemy = EnemyModel::allocWithConstants(rice_pos, riceSize, _scale, _assets, EnemyType::rice);
+	spritenode = EntitySpriteNode::allocWithSheet(image, 3,4,12);
+	spritenode->setScale(0.12f);
+	_enemy->setSceneNode(spritenode);
+	_enemy->setName(ENEMY_NAME);
+	_enemy->setDebugColor(DEBUG_COLOR);
+	scene.addObstacle(_enemy, spritenode);
+	_enemies.push_back(_enemy);
+
+	image = _assets->get<Texture>("riceSoldier");
+	std::shared_ptr<EnemyModel> _enemy1 = EnemyModel::allocWithConstants({27.0f, 6.0f}, riceSize, _scale, _assets, EnemyType::rice_soldier);
+	spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 15);
+	spritenode->setScale(0.12f);
+	_enemy1->setSceneNode(spritenode);
+	_enemy1->setName(ENEMY_NAME);
+	_enemy1->setDebugColor(DEBUG_COLOR);
+	scene.addObstacle(_enemy1, spritenode);
+	_enemies.push_back(_enemy1);
+
+	image = _assets->get<Texture>("riceSoldier");
+	std::shared_ptr<EnemyModel> _enemy2 = EnemyModel::allocWithConstants({ 29.0f, 6.0f }, riceSize, _scale, _assets, EnemyType::rice_soldier);
+	spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 15);
+	spritenode->setScale(0.12f);
+	_enemy2->setSceneNode(spritenode);
+	_enemy2->setName(ENEMY_NAME);
+	_enemy2->setDebugColor(DEBUG_COLOR);
+	scene.addObstacle(_enemy2, spritenode);
+	_enemies.push_back(_enemy2);
+
+	EnemyModel* _enemy1Weak = _enemy1.get();
+	EnemyModel* _enemy2Weak = _enemy2.get();
+	_enemy->setListener([=](physics2::Obstacle* obs) {
+		if (_enemy->getState() == "pursuing") {
+			_enemy1Weak->setState("pursuing");
+			_enemy2Weak->setState("pursuing");
+			_enemy1Weak->setTargetPosition(_avatar->getPosition());
+			_enemy2Weak->setTargetPosition(_avatar->getPosition());
+		}
+		else {
+			_enemy1Weak->setState("patrolling");
+			_enemy2Weak->setState("patrolling");
+			_enemy1Weak->setTargetPosition(_enemy->getPosition());
+			_enemy2Weak->setTargetPosition(_enemy->getPosition());
+		}
+		});
 
 	////shrimp 2
 	//image = _assets->get<Texture>("shrimp_rolling");
@@ -278,7 +335,6 @@ void Level1::populate(GameScene& scene) {
 
 }
 void Level1::update(float step) {
-	//CULog("cry");
 	for (const auto& obj : things) {
 		if (obj->queryPath(0).z > -1) {
 			obj->update(step);

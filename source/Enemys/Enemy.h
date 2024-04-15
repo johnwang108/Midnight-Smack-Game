@@ -65,8 +65,6 @@ protected:
     int _direction;
     /** Whether the enemy is currently on the ground */
     //bool _isGrounded;
-    /** The node for visual representation of the enemy */
-    std::shared_ptr<cugl::scene2::SceneNode> _node;
     /** Whether the enemy is aggroed*/
     bool _isChasing;
 
@@ -110,9 +108,16 @@ protected:
     //distance to player = player position - enemy position
     cugl::Vec2 _distanceToPlayer;
 
+    /**used for soldier rice */
+    cugl::Vec2 _targetPosition;
+    float _closeEnough;
 
     /**Limits on movement for egg and beef*/
     cugl::Spline2 _limit;
+
+    cugl::Vec2 _lastVelocity;
+
+    
 
 
 public:
@@ -275,7 +280,15 @@ public:
 
     std::string getNextState(std::string state);
 
+    /**Sets the predefined path limits, still wip */
     void setLimit(cugl::Spline2 limit) { _limit = limit; }
+
+    /**Sets the target location to move to for rice soldiers */
+    void setTargetPosition(cugl::Vec2 target) { _targetPosition = target; }
+
+    std::string getState() { return _state; }
+
+    virtual std::string updateAnimation();
 
     static std::string typeToStr(EnemyType type) {
         switch (type) {
@@ -343,9 +356,9 @@ public:
 		case EnemyType::shrimp:
 			return 10.0f;
 		case EnemyType::rice:
-			return 10.0f;
+			return 5.0f;
 		case EnemyType::rice_soldier:
-			return 10.0f;
+			return 1.0f;
 		case EnemyType::egg:
 			return 12.0f;
 		case EnemyType::carrot:
