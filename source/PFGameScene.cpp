@@ -306,7 +306,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     _target = std::make_shared<EnemyModel>();
 
-    currentLevel = level2;
+    currentLevel = level3;
     loadLevel(currentLevel);
 
     save();
@@ -817,6 +817,15 @@ void GameScene::preUpdate(float dt) {
             }
             if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
                 _ShrimpRice->animate("SFR_Attack");
+            }
+        }     
+        else if (_ShrimpRice->getWheelofDoom() > 0) {
+            if (!_SHRactionManager->isActive("SFRWheelofDoom")) {
+                auto SFRWheelofDoom = _ShrimpRice->getAction("SFRWheelofDoom");
+                _SHRactionManager->activate("SFRWheelofDoom", SFRWheelofDoom, _ShrimpRice->getSceneNode());
+            }
+            if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                _ShrimpRice->animate("SFRWheelofDoom");
             }
         }
         else if (_ShrimpRice->getknockbacktime() <= 0) {
