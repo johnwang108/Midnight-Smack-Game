@@ -169,6 +169,10 @@ protected:
 
     std::shared_ptr<cugl::scene2::ActionManager> _actionManager;
 
+    std::shared_ptr<cugl::scene2::ActionManager> _BullactionManager;
+
+    std::shared_ptr<cugl::scene2::ActionManager> _SHRactionManager;
+
     std::shared_ptr<cugl::scene2::Button> _pauseButton;
 
     bool _paused;
@@ -488,7 +492,8 @@ public:
 
     void loadLevel(std::shared_ptr<Levels> level) {
         _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level2);
-        _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level3);
+        CULog(currentLevel == level2 ? "true" : "false");
+        //_uiScene->getChildByName("bullbar")->setVisible(currentLevel == level3);
         level->populate(*this);
         currentLevel = level;
     }

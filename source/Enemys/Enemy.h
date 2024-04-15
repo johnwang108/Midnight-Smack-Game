@@ -155,7 +155,7 @@ public:
      */
     static std::shared_ptr<EnemyModel> alloc(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type);
 
-    static std::shared_ptr<EnemyModel> alloc(const cugl::Vec2& pos, EnemyType type) {};
+
 
     /**Allocs with animations defined from json.
     * 

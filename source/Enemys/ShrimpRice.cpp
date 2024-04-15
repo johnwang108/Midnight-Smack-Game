@@ -17,6 +17,8 @@ bool ShrimpRice::init(const Vec2& pos, const Size& size, float scale) {
         _healthCooldown = 0.1f;
         _knockbackTime = 0;
         _attackcombo = 0;
+        _attacktype = "none";
+        _WheelofDoom = 0;
         b2Filter filter = getFilterData();
         filter.groupIndex = -1;
         setFilterData(filter);
@@ -45,11 +47,21 @@ void ShrimpRice::update(float dt) {
     velocity.x = _direction * SHRIMPRICE_CHASE_SPEED; 
 
     if ( static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _SFR_attack_chance) {
-        _attackcombo = 1.125;
+        float pa = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+        if (pa < 0.5) {
+            _attackcombo = 1.125;
+		}
+        else {
+            _WheelofDoom = 0.5;
+		}
+
     }
 
     if (_attackcombo > 0) {
         _attackcombo -= dt;
+    }
+    if (_WheelofDoom > 0) {
+        _WheelofDoom -= dt;
     }
 
     if (_direction != _lastDirection) {

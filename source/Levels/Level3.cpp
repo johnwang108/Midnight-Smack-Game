@@ -187,6 +187,13 @@ void Level3::populate(GameScene& scene) {
 	_shrimprice->addActionAnimation("SFR_Idle", _assets->get<Texture>("SFR_Idle"), 6, 6, 31, 1.291f, false);
 	_shrimprice->addActionAnimation("SFR_Move", _assets->get<Texture>("SFR_Move"), 4, 4, 14, 0.583f, false);
 	_shrimprice->addActionAnimation("SFR_Attack", _assets->get<Texture>("SFR_Attack"), 6, 5, 28, 1.125f, false);
+	_shrimprice->addActionAnimation("SFRJoustState1", _assets->get<Texture>("SFRJoustState1"), 4, 5, 18, 1.125f, false);
+	_shrimprice->addActionAnimation("SFRJoustState2", _assets->get<Texture>("SFRJoustState2"), 3, 4, 12, 1.125f, false);
+	_shrimprice->addActionAnimation("SFRJoustState3", _assets->get<Texture>("SFRJoustState3"), 2, 2, 3, 0.3f, false);
+	_shrimprice->addActionAnimation("SFRWave1", _assets->get<Texture>("SFRWave1"), 3, 3, 8, 1.125f, false);
+	_shrimprice->addActionAnimation("SFRWave2", _assets->get<Texture>("SFRWave2"), 3, 3, 7, 1.125f, false);
+	_shrimprice->addActionAnimation("SFRWave3", _assets->get<Texture>("SFRWave3"), 4, 5, 18, 1.125f, false);
+	_shrimprice->addActionAnimation("SFRWheelofDoom", _assets->get<Texture>("SFRWheelofDoom"), 3, 4, 12, 0.5f, false);
 
 	scene.addObstacle(_shrimprice, spritenode);
 

@@ -254,9 +254,10 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
         _cookBarIcons[s] = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("boost")->getChildByName(s));
         _cookBarIcons[s]->setVisible(false);
     }
+
+
     std::shared_ptr<cugl::scene2::SceneNode> _bullBarNode;
     _bullBarNode = _assets->get<scene2::SceneNode>("bullbar");
-
     _BullhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
     _BullhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
     _uiScene->addChild(_bullBarNode);
@@ -266,7 +267,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     //_SFRhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
     //_SFRhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
-    //_uiScene->addChild(_SFRBarNode);
+   // _uiScene->addChild(_SFRBarNode);
 
 
     _buffLabel = scene2::Label::allocWithText("NO BUFF", _assets->get<Font>(MESSAGE_FONT));
@@ -304,6 +305,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     save();
 
     _actionManager = cugl::scene2::ActionManager::alloc();
+    _BullactionManager = cugl::scene2::ActionManager::alloc();
+    _SHRactionManager = cugl::scene2::ActionManager::alloc();
 
     _afterimages = std::vector < std::shared_ptr < scene2::SpriteNode >> ();
 
@@ -655,12 +658,12 @@ void GameScene::preUpdate(float dt) {
 
 
     if (_input->didAnimate() && _debugAnimTarget != nullptr) {
-        CULog("OVERRIDE ANIM");
-        _overrideAnim = true;
-        _debugAnimTarget->animate(_debugAnimName);
-        auto action = _debugAnimTarget->getAction(_debugAnimName);
-        _actionManager->clearAllActions(_debugAnimTarget->getSceneNode());
-        _actionManager->activate(_debugAnimName, action, _debugAnimTarget->getSceneNode());
+        //CULog("OVERRIDE ANIM");
+        //_overrideAnim = true;
+        //_debugAnimTarget->animate(_debugAnimName);
+        //auto action = _debugAnimTarget->getAction(_debugAnimName);
+        //_actionManager->clearAllActions(_debugAnimTarget->getSceneNode());
+        //_actionManager->activate(_debugAnimName, action, _debugAnimTarget->getSceneNode());
     }
 
     if (_overrideAnim && !_actionManager->isActive(_debugAnimName)) {
@@ -807,7 +810,7 @@ void GameScene::preUpdate(float dt) {
             }
         }
         if (_Bull->getshake() && _Bull->getknockbacktime() <= 0) {
-			_Bull->setshake(false);
+            _Bull->setshake(false);
 			_Bull->createAttack2(*this);
 		}
         if (_Bull->getshoot()) {
@@ -850,40 +853,93 @@ void GameScene::preUpdate(float dt) {
     }
 
     if (_Bull != nullptr) {
-        if (!_actionManager->isActive(_Bull->getActiveAction())) {
-
-            if (_Bull->isChasing() && ((_Bull->getPosition().x < 20 && _Bull->getDirection() == -1) || _Bull->getPosition().x > 30 && _Bull->getDirection() == 1)) {
-                _Bull->animate("bullAttack");
-                auto bullAttack = _Bull->getAction("bullAttack");
-                _actionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
+        _BullactionManager->update(dt);
+        if (_Bull->getangrytime()>0) {
+            if (!_BullactionManager->isActive("bullStunned")) {
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullStunned = _Bull->getAction("bullStunned");
+                _BullactionManager->activate("bullStunned", bullStunned, _Bull->getSceneNode());
             }
-            else if (_Bull->isChasing() || _Bull->getsprintpreparetime() > 0) {
-                _Bull->animate("bullTelegraph");
-                auto bullTelegraph = _Bull->getAction("bullTelegraph");
-                _actionManager->activate("bullTelegraph", bullTelegraph, _Bull->getSceneNode());
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate("bullStunned");
             }
-            else if (_Bull->getknockbacktime() <= 0) {
-                _Bull->animate("bullIdle");
-                auto bullIdle = _Bull->getAction("bullIdle");
-                _actionManager->activate("bullIdle", bullIdle, _Bull->getSceneNode());
-            }
-
         }
+        else if (_Bull->isChasing() && ((_Bull->getPosition().x < 15 && _Bull->getDirection() == -1) || _Bull->getPosition().x > 35 && _Bull->getDirection() == 1)) {
+            if (!_BullactionManager->isActive("bullAttack")){
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullAttack = _Bull->getAction("bullAttack");
+                _BullactionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate("bullAttack");
+            }
+        }
+        else if (_Bull->getturing() > 0) {
+            if (!_BullactionManager->isActive("bullTurn")) {
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullTurn = _Bull->getAction("bullTurn");
+                _BullactionManager->activate("bullTurn", bullTurn, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate("bullTurn");
+            }
+        }
+        else if (_Bull->getsprintpreparetime() <= 0 && _Bull->getknockbacktime() <= 0) {
+            if (!_BullactionManager->isActive("bullRun")) {
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullRun = _Bull->getAction("bullRun");
+                _BullactionManager->activate("bullRun", bullRun, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate("bullRun");
+            }
+        }
+        else if ( _Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0) {
+            if (!_BullactionManager->isActive(_Bull->getattacktype())) {
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullTelegraph = _Bull->getAction(_Bull->getattacktype());
+                _BullactionManager->activate(_Bull->getattacktype(), bullTelegraph, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate(_Bull->getattacktype());
+            }
+        }
+
+
+        
     }
 
     if (_ShrimpRice != nullptr) {
-        if (!_actionManager->isActive(_ShrimpRice->getActiveAction())) {
-            if (_ShrimpRice->getattackcombo() > 0) {
-                _ShrimpRice->animate("SFR_Attack");
+        _SHRactionManager->update(dt);
+        
+        if (_ShrimpRice->getattackcombo() > 0) {
+            if (!_SHRactionManager->isActive("SFR_Attack")) {
                 auto SFR_Attack = _ShrimpRice->getAction("SFR_Attack");
-                _actionManager->activate("SFR_Attack", SFR_Attack, _ShrimpRice->getSceneNode());
+                _SHRactionManager->activate("SFR_Attack", SFR_Attack, _ShrimpRice->getSceneNode());
             }
-            else if (_ShrimpRice->getknockbacktime() <= 0) {
-                _ShrimpRice->animate("SFR_Move");
-                auto SFR_Move = _ShrimpRice->getAction("SFR_Move");
-                _actionManager->activate("SFR_Move", SFR_Move, _ShrimpRice->getSceneNode());
-			}
+            if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                _ShrimpRice->animate("SFR_Attack");
+            }
+        }     
+        else if (_ShrimpRice->getWheelofDoom() > 0) {
+            if (!_SHRactionManager->isActive("SFRWheelofDoom")) {
+                auto SFRWheelofDoom = _ShrimpRice->getAction("SFRWheelofDoom");
+                _SHRactionManager->activate("SFRWheelofDoom", SFRWheelofDoom, _ShrimpRice->getSceneNode());
+            }
+            if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                _ShrimpRice->animate("SFRWheelofDoom");
+            }
         }
+        else if (_ShrimpRice->getknockbacktime() <= 0) {
+            if (!_SHRactionManager->isActive("SFR_Move")) {
+                auto SFR_Move = _ShrimpRice->getAction("SFR_Move");
+                _SHRactionManager->activate("SFR_Move", SFR_Move, _ShrimpRice->getSceneNode());
+            }
+            if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                _ShrimpRice->animate("SFR_Move");
+            }
+		}
+        
     }
 
     if ((_afterimages.size() > 4 || (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() > _avatar->getFloatyFrames())) && !_afterimages.empty()) {
@@ -1070,8 +1126,12 @@ void GameScene::postUpdate(float remain) {
                 currentLevel= level2;
                 reset();
             }
-            else {
+            else if (currentLevel == level3) {
                 currentLevel = level1;
+                reset();
+            }
+            else {
+                currentLevel = level3;
                 reset();
             }
         }

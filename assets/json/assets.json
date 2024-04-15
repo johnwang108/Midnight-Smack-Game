@@ -200,6 +200,24 @@
         "bullTelegraph": {
             "file": "textures/bullTelegraph.png"
         },
+        "bullStomp": {
+            "file": "textures/bullStomp.png"
+        },
+        "bullStompEffect": {
+            "file": "textures/bullStompEffect.png"
+        },
+        "bullDazedtoIdle": {
+            "file": "textures/bullDazedtoIdle.png"
+        },
+        "bullCrash": {
+            "file": "textures/bullCrash.png"
+        },
+        "bullTurn": {
+            "file": "textures/bullTurn.png"
+        },
+        "bullStunned": {
+            "file": "textures/bullStunned.png"
+        },
         "SFR_Attack": {
             "file": "textures/SFR_Attack.png"
         },
@@ -314,8 +332,29 @@
         "bullbar": {
             "file": "textures/UI/Meters/bullbar.png"
         },
-        "bosshealth": {
-            "file": "textures/UI/Meters/bosshealth.png"
+        "SFRJoustState1": {
+            "file": "textures/SFRJoustState1.png"
+        },
+        "SFRJoustState3": {
+            "file": "textures/SFRJoustState3.png"
+        },
+        "SFRJoustState2": {
+            "file": "textures/SFRJoustState2.png"
+        },
+        "SFRWave2": {
+            "file": "textures/SFRWave2.png"
+        },
+        "SFRWave3": {
+            "file": "textures/SFRWave3.png"
+        },
+        "SFRWave1": {
+            "file": "textures/SFRWave1.png"
+        },
+        "SFRWheelofDoom": {
+            "file": "textures/SFRWheelofDoom.png"
+        },
+        "bullRun": {
+            "file": "textures/bullRun.png"
         },
         "beefIdle": {
             "file": "textures/Sheets/Enemies/Beef/beefIdle.png"

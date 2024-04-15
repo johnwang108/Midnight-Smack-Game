@@ -37,6 +37,8 @@ protected:
     std::string _sensorName;
     std::shared_ptr<AssetManager> _assets;
     int _lastDirection;
+    std::string _attacktype;
+    float _WheelofDoom;
 
 
 public:
@@ -72,6 +74,7 @@ public:
     void setnextchangetime(double nextChangeTime) { _nextChangeTime = nextChangeTime; }
     float getknockbacktime() { return _knockbackTime; }
     float getattackcombo() { return _attackcombo; }
+    float getWheelofDoom() { return _WheelofDoom; }
 };
 
 #endif /* __SHRIMPRICE_H__ */
