@@ -40,28 +40,41 @@ void ShrimpRice::update(float dt) {
 
     if (_knockbackTime > 0) {
         _knockbackTime -= dt;
+        setGravityScale(1.5);
         return;
     }
 
     b2Vec2 velocity = _body->GetLinearVelocity();
     velocity.x = _direction * SHRIMPRICE_CHASE_SPEED; 
 
-    if ( static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _SFR_attack_chance) {
+    if (_attacktype=="none" && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _SFR_attack_chance) {
         float pa = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+        pa=0.8;
         if (pa < 0.5) {
             _attackcombo = 1.125;
+            _attacktype="attackcombo";
 		}
         else {
-            _WheelofDoom = 0.5;
+            _WheelofDoom = 3 + 3 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+            _attacktype="WheelofDoom";
 		}
 
     }
 
     if (_attackcombo > 0) {
         _attackcombo -= dt;
+        if(_attackcombo<=0){
+            _attacktype="none";
+        }
     }
     if (_WheelofDoom > 0) {
         _WheelofDoom -= dt;
+        velocity.x *=4;
+        velocity.y=8;
+        if(_WheelofDoom<=0){
+            _attacktype="none";
+            _knockbackTime=2;
+        }
     }
 
     if (_direction != _lastDirection) {

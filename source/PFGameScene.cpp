@@ -762,7 +762,7 @@ void GameScene::preUpdate(float dt) {
                 _Bull->animate("bullStunned");
             }
         }
-        else if (_Bull->isChasing() && ((_Bull->getPosition().x < 15 && _Bull->getDirection() == -1) || _Bull->getPosition().x > 35 && _Bull->getDirection() == 1)) {
+        else if (_Bull->isChasing() && ((_Bull->getPosition().x < 15 && _Bull->getDirection() == -1) || (_Bull->getPosition().x > 35 && _Bull->getDirection() == 1))) {
             if (!_BullactionManager->isActive("bullAttack")){
                 _BullactionManager->clearAllActions(_Bull->getSceneNode());
                 auto bullAttack = _Bull->getAction("bullAttack");
