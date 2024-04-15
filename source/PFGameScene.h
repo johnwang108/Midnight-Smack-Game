@@ -105,6 +105,8 @@ protected:
 
     std::unordered_map<std::string, std::shared_ptr<EnemyModel>> _enemyMap;
 
+    std::vector<std::shared_ptr<scene2::SpriteNode>> _afterimages;
+
 
     //Valid targets for cook-time
     std::vector<std::shared_ptr<EnemyModel>> _vulnerables;
@@ -167,6 +169,10 @@ protected:
     std::vector<std::tuple<std::shared_ptr<cugl::scene2::Label>, cugl::Timestamp>> _popups;
 
     std::shared_ptr<cugl::scene2::ActionManager> _actionManager;
+
+    std::shared_ptr<cugl::scene2::ActionManager> _BullactionManager;
+
+    std::shared_ptr<cugl::scene2::ActionManager> _SHRactionManager;
 
     std::shared_ptr<cugl::scene2::Button> _pauseButton;
 
@@ -494,7 +500,8 @@ public:
 
     void loadLevel(std::shared_ptr<Levels> level) {
         _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level2);
-        _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level3);
+        CULog(currentLevel == level2 ? "true" : "false");
+        //_uiScene->getChildByName("bullbar")->setVisible(currentLevel == level3);
         level->populate(*this);
         currentLevel = level;
     }

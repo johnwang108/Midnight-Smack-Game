@@ -49,6 +49,8 @@ protected:
     int _CAcount;
     bool _running;
     float _breaking;
+    std::string _attacktype;
+    float _turing;
 
 
 public:
@@ -116,6 +118,8 @@ public:
     int getCAcount() { return _CAcount; }
     float getCA() { return _CA; }
     void circleattack(GameScene& scene);
+    std::string getattacktype() { return _attacktype; }
+    float getturing() { return _turing; }
 };
 
 #endif /* __BULL_MODEL_H__ */

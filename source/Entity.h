@@ -51,6 +51,10 @@ protected:
 
 	bool _finished;
 
+	int _entityID;
+
+	bool _useID;
+
 
 private:
 
@@ -80,8 +84,10 @@ public:
 	void getInfo(std::string action_name) {};
 
 	std::string getActiveAction() {
-		size_t i = _activeAction.find_first_of(NUMBERS);
-		return _activeAction.substr(0, i);
+		//if (_useID) {
+		//	size_t i = _activeAction.find_first_of(NUMBERS);
+		//	return _activeAction.substr(0, i);
+		//}
 		return _activeAction; };
 
 	//default constructor. Should not be used
@@ -94,21 +100,32 @@ public:
 	virtual std::string updateAnimation() { return ""; };
 
 	void setActiveAction(std::string actionName) { 
-		if (_activeAction == actionName && !_finished) return;
-		_activeAction = actionName;
+		std::string name = actionName;
+		//if (_useID) {
+		//	name += getId();
+		//}
+		if (_activeAction == name && !_finished) return;
+		_activeAction = name;
 		_activated = false;
 		_finished = false;
 	};
 
-	void setActivated(bool act) { _activated = act; };
+	void setActivated(bool act) { 
+		_activated = act; };
 
 	bool isActivated() { return _activated; };
 
-	void setFinished(bool fin) { _finished = fin; 
-	CULog("Finished");
-	};
+	void setFinished(bool fin) { _finished = fin; };
 
 	bool isFinished() { return _finished; };
+
+	std::string getId() { return std::to_string(_entityID); };
+
+	bool usesID() { return _useID; };
+	
+	bool isAnimating(std::string actionName) { return _activeAction == actionName && isActivated() && !isFinished(); };
+
+	std::shared_ptr<EntitySpriteNode> getSpriteNode() { return _node; };
 
 };
 #endif /* __ENTITY_H__ */

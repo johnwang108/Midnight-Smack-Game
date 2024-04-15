@@ -18,7 +18,7 @@ https://docs.google.com/drawings/d/1TS-DFsWZOT4SpqrswI8zruaZdR78v6QIWfDNnVQA1Yo/
 
 #define BEEF_BURROW_TIME 30.0f
 #define BEEF_UNBURROW_TIME 30.0f
-#define BEEF_ATTACK_TIME 10.0f
+#define BEEF_ATTACK_TIME 20.0f
 
 #define CLOSE_ENOUGH 1.0f + ((float)rand() / ((float)RAND_MAX))/2.0f
 
@@ -90,6 +90,8 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
         //beef and egg
         _limit = limit;
 
+        _useID = true;
+
         return true;
     }
 
@@ -151,10 +153,12 @@ void EnemyModel::takeDamage(float damage, const int attackDirection) {
             if (_health == 1) {
                 setVulnerable(true);
             }
-            b2Vec2 impulse = b2Vec2(-attackDirection * 3, 10);
-            _body->SetLinearVelocity(impulse);
-            setState("stunned");
-            _knockbackTime = 1;
+            if (_type != EnemyType::beef) {
+                b2Vec2 impulse = b2Vec2(-attackDirection * 3, 10);
+                _body->SetLinearVelocity(impulse);
+                setState("stunned");
+                _knockbackTime = 1;
+            }
         }
     }
 }
@@ -207,7 +211,18 @@ void EnemyModel::update(float dt) {
         setState(getNextState(_state));
     }
 
-
+    if (_state == "burrowing") {
+        _node->setColor(Color4::BLUE);
+    }
+    else if (_state == "tracking") {
+		_node->setColor(Color4::GRAY);
+    }
+    else if (_state == "unburrowing") {
+		_node->setColor(Color4::BLACK);
+	}
+    else if (_state == "attacking") {
+        _node->setColor(Color4::RED);
+    }
 
     b2Vec2 velocity = _body->GetLinearVelocity();
 
@@ -249,18 +264,17 @@ void EnemyModel::update(float dt) {
 		}
         else if (_state == "stunned") {
             velocity.x = 0;
-            //setActionParams("riceStun", false, false, true);
+            //setActiveAction("riceHurt");
         }
         else if (_state == "pursuing") {
-            if (velocity.x == 0 && (getActiveAction() != "riceYell" && getActiveAction() != "riceAttack") || isFinished()) setActiveAction("riceStartWalk");
+            if (velocity.x == 0 && ((getActiveAction() != "riceYell" && getActiveAction() != "riceAttack") || isFinished())) setActiveAction("riceStartWalk");
             else if (_distanceToPlayer.length() < 0.05) {
                 setActiveAction("riceAttack");
                 velocity.x = 0;
                 break;
             }
-            else if (getActiveAction() == "riceStartWalk" && isFinished() || getActiveAction() == "riceWalk") setActiveAction("riceWalk");
+            else if ((getActiveAction() == "riceStartWalk" && isFinished()) || getActiveAction() == "riceWalk") setActiveAction("riceWalk");
             velocity.x = ENEMY_FORCE * _direction * 2;
-
         }
         else if (_state == "patrolling") {
 
@@ -280,10 +294,14 @@ void EnemyModel::update(float dt) {
             velocity.x = 0;
             setActiveAction("riceIdle");
         }
+        else if (_state == "acknowledging") {
+            if (getActiveAction() != "riceAcknowledge" && isFinished()) setActiveAction("riceAcknowledge");
+            velocity.x = 0;
+        }
         else if (_state == "pursuing") {
             float dir = SIGNUM(_targetPosition.x - getPosition().x);
 
-            if (velocity.x == 0 && dir != 0 && ((getActiveAction() != "riceYell" && getActiveAction() != "riceAttack") || isFinished())) {
+            if (velocity.x == 0 && ((getActiveAction() != "riceYell" && getActiveAction() != "riceAttack") || isFinished())) {
                 setActiveAction("riceStartWalk");
             }
             else if (_distanceToPlayer.length() < 0.02) {
@@ -291,25 +309,30 @@ void EnemyModel::update(float dt) {
                 velocity.x = 0;
                 break;
             }
-            else if (getActiveAction() != "riceStartWalk" && isFinished()) setActiveAction("riceWalk");
+            else if ((getActiveAction() == "riceStartWalk" && isFinished()) || getActiveAction() == "riceWalk") setActiveAction("riceWalk");
 
-            velocity.x = ENEMY_FORCE * dir * 3;
+            velocity.x = ENEMY_FORCE * dir * 5;
         }
         else if (_state == "stunned") {
             velocity.x = 0;
-            //setActionParams("riceIdle", false, false, true);
+            //setActiveAction("riceHurt");
         }
         else if (_state == "patrolling") {
             float diff = _targetPosition.x - getPosition().x;
             if (std::abs(diff) > CLOSE_ENOUGH) {
-                if (velocity.x = 0) setActiveAction("riceStartWalk");
-                else setActiveAction("riceWalk");
+                if (velocity.x == 0) setActiveAction("riceStartWalk");
+                else if (!isAnimating("riceStartWalk")) setActiveAction("riceWalk");
 
                 velocity.x = ENEMY_FORCE * SIGNUM(diff);
             }
             else {
-                if (velocity.x = 0) setActiveAction("riceIdle");
-                else if ((getActiveAction() != "riceStartWalk" || isFinished())) setActiveAction("riceWalk");
+                if (velocity.x == 0 && !(isAnimating("riceEndWalk") || isAnimating("riceStartWalk"))) {
+                    setActiveAction("riceIdle");
+                }
+                else if (velocity.x != 0) setActiveAction("riceEndWalk");
+                if (isAnimating("riceEndWalk") || isAnimating("riceStartWalk")) {
+                    velocity.x = ENEMY_FORCE * SIGNUM(diff);
+                }
                 velocity.x = 0;
             }
         }
@@ -378,10 +401,12 @@ void EnemyModel::update(float dt) {
             velocity.x = 0;
         }
         else if (_state == "burrowing") {
-            //Todo: make mole burrow :)
             b2Filter filter = getFilterData();
+            filter.maskBits = 0x0000;
+            setFilterData(filter);
+            setGravityScale(0);
             velocity.x = 0;
-            velocity.y = (_node->getPositionY() - (_node->getHeight() / BEEF_BURROW_TIME));
+            velocity.y = -4;
         }
         else if (_state == "tracking") {
             cugl::Vec2 targetPos = _limit.nearestPoint(cugl::Vec2(getPosition().x + _direction * ENEMY_FORCE * 5, getPosition().y));
@@ -391,16 +416,26 @@ void EnemyModel::update(float dt) {
         }
         else if (_state == "unburrowing") {
             velocity.x = 0;
+            velocity.y = 0;
         }
         else if (_state == "attacking") {
             velocity.x = 0;
-            _node->setPositionY(_node->getPositionY() + (_node->getHeight() / BEEF_ATTACK_TIME));
+            velocity.y = 13;
         }
         else if (_state == "stunned") {
+            b2Filter filter = getFilterData();
+            filter.maskBits = 0xFFFF;
+            setFilterData(filter);
+            setGravityScale(1);
             velocity.x = 0;
 		}
         else if (_state == "patrolling") {
             velocity.x = 0;
+            velocity.y = 0;
+            setGravityScale(1);
+            b2Filter filter = getFilterData();
+            filter.maskBits = 0xFFFF;
+            setFilterData(filter);
 		}
         break;
     }
@@ -426,11 +461,18 @@ b2Vec2 EnemyModel::handleMovement(b2Vec2 velocity) {
         velocity.x = -ENEMY_MAXSPEED;
     }
 
-    if (_state != "patrolling") {
-        int direction = SIGNUM(_distanceToPlayer.x);
-        setDirection(direction);
+
+    if (velocity.x != 0) {
+        if (_state != "patrolling") {
+            setDirection(SIGNUM(_distanceToPlayer.x));
+        }
+        else {
+            setDirection(SIGNUM(velocity.x));
+        }
     }
 
+
+    
     if (_lastDirection != _direction && _node != nullptr) {
         _node->flipHorizontal(!_node->isFlipHorizontal());
     }
@@ -566,6 +608,9 @@ void EnemyModel::setState(std::string state) {
             else if (state == "attacking") {
                 _behaviorCounter = -1;
             }
+            else if (state == "acknowledging") {
+                _behaviorCounter = -1;
+            }
             break;
         case EnemyType::carrot:
             if (state == "windup") {
@@ -650,7 +695,12 @@ std::string EnemyModel::getNextState(std::string state) {
             break;
         case EnemyType::rice_soldier:
             if (state == "chasing") {
-                return "pursuing";
+                //should never go into chasing except by leader rice
+                return "chasing";
+            }
+            else if (_state == "acknowledging") {
+                if (getActiveAction() == "riceAcknowledge" && isFinished()) return "pursuing";
+                return "acknowledging";
             }
             else if (_state == "pursuing") {
                 return "pursuing";
@@ -662,6 +712,9 @@ std::string EnemyModel::getNextState(std::string state) {
             else if (state == "patrolling") {
                 return "patrolling";
             }
+            else if (state == "stunned") {
+				return "acknowledging";
+			}
             break;
         case EnemyType::egg:
             if (state == "chasing") {

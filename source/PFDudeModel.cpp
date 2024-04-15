@@ -55,14 +55,12 @@ float jmpHeight = 1;
 /**Modif dash, as a multiple of DASH_JUMP*/
 float dashModif = 1.3;
 /**The aount of frames following a dash that SUe floats for*/
-float floatyFrames = 10;
 
 #pragma mark -
 #pragma mark Physics Constants
 /** Cooldown (in animation frames) for jumping */
 #define JUMP_COOLDOWN   5
-/** Cooldown (in animation frames) for shooting */
-#define DASH_COOLDOWN  20
+
 /** Cooldown (in animation frames) for shooting */
 #define SHOOT_COOLDOWN  20
 /** The amount to shrink the body fixture (vertically) relative to the image */
@@ -159,6 +157,7 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         setFilterData(filter);
         setName("avatar");
         setEnabled(true);
+        _useID = false;
         return true;
     }
     return false;
@@ -467,7 +466,7 @@ void DudeModel::update(float dt) {
     else {
         _dashCooldown = (_dashCooldown > 0 ? _dashCooldown - 1 : 0);
         if (getDashNum() == 0 && _dashCooldown <= 0 && isGrounded()) {
-
+            
             setDashNum(1);
             //TODO: remove hardcode limit on one dash
         }

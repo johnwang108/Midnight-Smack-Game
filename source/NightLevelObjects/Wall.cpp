@@ -73,6 +73,10 @@ bool Wall::init(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSIT
 	this->name = name + (doesDamage ? "dd" : "");
 	this->name = name + (breakableCoolDown > -1 ? "breaks" : "");
 	_obj->setName(this->name);
+
+	b2Filter filter = getFilterData();
+	filter.categoryBits = 0x0002;
+	setFilterData(filter);
 	return true;
 }
 

@@ -260,15 +260,51 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     // _healthBarBackground->setContentSize(_healthBarBackground->getWidth() * 3, _healthBarBackground->getHeight() * 3);
 
 
-    _uiScene->addChild(_healthBarBackground);
-    _uiScene->addChild(_healthBarForeground);
+    _cookBarOutline = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifeoutline"));
+    _cookBarFill = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifefill"));
+    //_cookBarGlow = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifeglow"));
+    for (std::string s : {"attackfill", "shieldfill", "speedfill", "healthfill", "jumpfill"}) {
+		_cookBarIcons[s] = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("boost")->getChildByName(s));
+        _cookBarIcons[s]->setVisible(false);
+	}
+    for (std::string s : {"attackready", "shieldready", "speedready", "healthready", "jumpready"}) {
+        _cookBarIcons[s] = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("boost")->getChildByName(s));
+        _cookBarIcons[s]->setVisible(false);
+    }
+
+
+    std::shared_ptr<cugl::scene2::SceneNode> _bullBarNode;
+    _bullBarNode = _assets->get<scene2::SceneNode>("bullbar");
+    _BullhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
+    _BullhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
+    _uiScene->addChild(_bullBarNode);
+
+    //std::shared_ptr<cugl::scene2::SceneNode> _SFRBarNode;
+    //_SFRBarNode = _assets->get<scene2::SceneNode>("shrimpbar");
+
+    //_SFRhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
+    //_SFRhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
+   // _uiScene->addChild(_SFRBarNode);
+
+
+    _buffLabel = scene2::Label::allocWithText("NO BUFF", _assets->get<Font>(MESSAGE_FONT));
+    _buffLabel->setAnchor(Vec2::ANCHOR_CENTER);
+    _buffLabel->setPosition(dimen.width - _buffLabel->getWidth()/2, dimen.height - _buffLabel->getHeight());
+
+    /*_pauseButton = std::dynamic_pointer_cast<scene2::Button>(_assets->get<scene2::SceneNode>("mymenubutton"));*/
+
+    _paused = false;
+    
+    //_uiScene->addChild(_pauseButton);
+    _uiScene->addChild(_meterUINode);
+    _uiScene->addChild(_dollarnode);
+
+    _uiScene->addChild(_winnode);
+    _uiScene->addChild(_losenode);
 # pragma mark: Background
 
-    _background = cugl::scene2::PolygonNode::allocWithTexture(assets->get<cugl::Texture>("textures\\dream-background.png"));
-    // cugl::Size backgroundSize = _background->getSize();
-
-    _bgScene = cugl::Scene2::alloc(20.0f, 20.0f);
-    _bgScene->init(20.0f, 20.0f);
+    _bgScene = cugl::Scene2::alloc(dimen);
+    _bgScene->init(dimen);
     _bgScene->setActive(true);
     // _bgScene = cugl::Scene2::alloc(cugl::Size(210, 25));
     // _bgScene->init(cugl::Size(210, 25));
@@ -298,11 +334,13 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_leftnode);
     addChild(_rightnode);
 
-    // save();
+    //save();
 
     _actionManager = cugl::scene2::ActionManager::alloc();
+    _BullactionManager = cugl::scene2::ActionManager::alloc();
+    _SHRactionManager = cugl::scene2::ActionManager::alloc();
 
-
+    _afterimages = std::vector < std::shared_ptr < scene2::SpriteNode >> ();
 
     //15 frame attack animation
 
@@ -541,14 +579,149 @@ void GameScene::preUpdate(float dt) {
             }
             if (minDist < COOKTIME_MAX_DIST) {
                 _slowed = true;
-                _dollarnode->setTargetGestures(std::vector<std::string>{_target->getGestureSeq1()});
+                _dollarnode->setTargetGestures(_target->getGestureSeq1());
             }
 
         }
 
     }
 
+    //handle animations
+    _actionManager->update(dt);
+    
+    //start running if idle or recovering and moving
+    if (!_overrideAnim) {
+        if ((_actionManager->isActive("idle") || _actionManager->isActive("recover")) && (_input->getHorizontal() != 0)) {
+            _avatar->animate("run");
+            auto runAction = _avatar->getAction("run");
+            _actionManager->clearAllActions(_avatar->getSceneNode());
+            _actionManager->activate("run", runAction, _avatar->getSceneNode());
+        }
+        //cancel run animation if stopped running
+        if (_actionManager->isActive("run") && _input->getHorizontal() == 0) {
+            _avatar->animate("idle");
+            auto idleAction = _avatar->getAction("idle");
+            _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
+        }
 
+        if (_avatar->isJumping() && _avatar->isGrounded()) {
+            _avatar->animate("jump_ready");
+            auto jumpAction = _avatar->getAction("jump_ready");
+            _actionManager->clearAllActions(_avatar->getSceneNode());
+            _actionManager->activate("jump_ready", jumpAction, _avatar->getSceneNode());
+        }
+
+
+        //animate jumps if not attacking or taking damage
+        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && _avatar->getLinearVelocity().y > 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+            _avatar->animate("jump_up");
+            auto jumpAction = _avatar->getAction("jump_up");
+            _actionManager->clearAllActions(_avatar->getSceneNode());
+            _actionManager->activate("jump_up", jumpAction, _avatar->getSceneNode());
+        }
+        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && _avatar->getLinearVelocity().y < 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+            _avatar->animate("jump_down");
+            auto jumpAction = _avatar->getAction("jump_down");
+            _actionManager->clearAllActions(_avatar->getSceneNode());
+            _actionManager->activate("jump_down", jumpAction, _avatar->getSceneNode());
+        }
+        if (_avatar->isGrounded() && (_actionManager->isActive("jump_down") || _actionManager->isActive("jump_up"))) {
+            _avatar->animate("jump_land");
+            auto jumpAction = _avatar->getAction("jump_land");
+            _actionManager->clearAllActions(_avatar->getSceneNode());
+            _actionManager->activate("jump_land", jumpAction, _avatar->getSceneNode());
+        }
+
+
+        //handle expired actions
+        if (!_actionManager->isActive(_avatar->getActiveAction())) {
+            if (_avatar->getActiveAction() == "attack") {
+                _avatar->animate("recover");
+                auto recoverAction = _avatar->getAction("recover");
+                _actionManager->activate("recover", recoverAction, _avatar->getSceneNode());
+            }
+            else if (_avatar->getActiveAction() == "run" && _input->getHorizontal() != 0) {
+                _avatar->animate("run");
+                auto runAction = _avatar->getAction("run");
+                _actionManager->clearAllActions(_avatar->getSceneNode());
+                _actionManager->activate("run", runAction, _avatar->getSceneNode());
+            }
+            else {
+                //Todo:: blink idle
+                if (((float)rand() / RAND_MAX) < 0.0f) {
+                    _avatar->animate("idle_blink");
+                    auto idleAction = _avatar->getAction("idle_blink");
+                    _actionManager->activate("idle_blink", idleAction, _avatar->getSceneNode());
+                }
+                else {
+                    _avatar->animate("idle");
+                    auto idleAction = _avatar->getAction("idle");
+                    _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
+                }
+            }
+        }
+
+            if (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() < _avatar->getFloatyFrames() && _avatar->getDashCooldownMax() - _avatar->getDashCooldown() != 0 && _avatar->getDashCooldown() % 3  == 1) {
+				std::shared_ptr<scene2::SpriteNode> afterimage = scene2::SpriteNode::allocWithSprite(_avatar->getSpriteNode());
+                afterimage->setAnchor(Vec2(0.5, 0.35));
+                afterimage->setPosition(_avatar->getSceneNode()->getPosition());
+                afterimage->setPositionY(afterimage->getPositionY() + 0.0f);
+                Color4 b = Color4::CYAN;
+                b.a = 255;
+                afterimage->setColor(b);
+                afterimage->setScale(_avatar->getSpriteNode()->getScale());
+                _afterimages.push_back(afterimage);
+                addChild(afterimage);
+			}
+
+        _avatar->setShooting(_input->didFire());
+        if (_avatar->isShooting() && (!_actionManager->isActive("attack") && !_actionManager->isActive("air_attack"))) {
+            auto att = _avatar->createAttack(getAssets(), _scale);
+            addObstacle(std::get<0>(att), std::get<1>(att), true);
+            _attacks.push_back(std::get<0>(att));
+
+            //if (_avatar->isGrounded()) {
+            auto attackAction = _avatar->getAction("attack");
+            _avatar->animate("attack");
+            _actionManager->clearAllActions(_avatar->getSceneNode());
+            _actionManager->activate("attack", attackAction, _avatar->getSceneNode());
+            //}
+            //else {
+            //    float horiz = _input->getHorizontal();
+            //    float vert = _input->getVertical();
+            //    cugl::Vec2 dir = Vec2(horiz, vert).normalize();
+            //    float angle = dir.getAngle();
+            //   
+            //    Affine2 aff = _avatar->getSpriteNode()->getTransform();
+            //    aff.rotate(angle);
+            //    _avatar->getSpriteNode()->setTransform(aff);
+
+            //    auto attackAction = _avatar->getAction("air_attack");
+            //    _avatar->animate("air_attack");
+            //    _actionManager->clearAllActions(_avatar->getSceneNode());
+            //    _actionManager->activate("air_attack", attackAction, _avatar->getSceneNode());
+            //}
+        }
+    }
+    if (!_actionManager->isActive("air_attack")) {
+        _avatar->getSceneNode()->setAngle(0.0);
+    }
+
+
+    if (_input->didAnimate() && _debugAnimTarget != nullptr) {
+        //CULog("OVERRIDE ANIM");
+        //_overrideAnim = true;
+        //_debugAnimTarget->animate(_debugAnimName);
+        //auto action = _debugAnimTarget->getAction(_debugAnimName);
+        //_actionManager->clearAllActions(_debugAnimTarget->getSceneNode());
+        //_actionManager->activate(_debugAnimName, action, _debugAnimTarget->getSceneNode());
+    }
+
+    if (_overrideAnim && !_actionManager->isActive(_debugAnimName)) {
+		_overrideAnim = false;
+	}
+    
+    _dollarnode->update(dt);
 
     if (!_slowed) {
         _dollarnode->setVisible(false);
@@ -654,6 +827,28 @@ void GameScene::preUpdate(float dt) {
             if (enemy->getHealth() <= 0) {
                 removeEnemy(enemy.get());
             }
+            else {
+            //enemy animations. If enemy->activeAction is not active, activate the current action.
+                if (!enemy->isActivated()) {
+                    if (enemy->getActiveAction() == "") continue;
+                    enemy->setActivated(true);
+                    
+                    _actionManager->clearAllActions(enemy->getSceneNode());
+                    std::string actionName = enemy->getActiveAction();
+                    enemy->animate(actionName);
+                    auto action = enemy->getAction(actionName);
+                    if (enemy->usesID()) {
+                        actionName += enemy->getId();
+                    }
+                    _actionManager->activate(actionName, action, enemy->getSceneNode());
+                }
+                else {
+                    if (!_actionManager->isActive(enemy->getActiveAction() + (enemy->usesID() ? enemy->getId() : ""))) {
+						enemy->setFinished(true);
+                        enemy->setActivated(false);
+					}
+                }
+            }
             enemy->update(dt);
         }
     }
@@ -670,8 +865,8 @@ void GameScene::preUpdate(float dt) {
         }
         if (_Bull->getshake() && _Bull->getknockbacktime() <= 0) {
             _Bull->setshake(false);
-            _Bull->createAttack2(*this);
-        }
+			_Bull->createAttack2(*this);
+		}
         if (_Bull->getshoot()) {
             _Bull->setshoot(false);
             _Bull->createAttack3(*this);
@@ -687,10 +882,120 @@ void GameScene::preUpdate(float dt) {
         }
         _Bull->update(dt);
     }
+    if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
+        if (_ShrimpRice->getHealth() <= 0) {
+            _worldnode->removeChild(_ShrimpRice->getSceneNode());
+            _ShrimpRice->setDebugScene(nullptr);
+            _ShrimpRice->markRemoved(true);
+        }
+        
+        if (!_ShrimpRice->isChasing()) {
+            Vec2 BullPos = _ShrimpRice->getPosition();
+            float distance = avatarPos.distance(BullPos);
+            if (_ShrimpRice->getnextchangetime() < 0) {
+                int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
+                _ShrimpRice->setDirection(direction);
+                _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+            }
+        }
+        _ShrimpRice->update(dt);
+    }
 
-    //update dollar node
-    _dollarnode->update(dt);
+    if (_Bull != nullptr) {
+        _BullactionManager->update(dt);
+        if (_Bull->getangrytime()>0) {
+            if (!_BullactionManager->isActive("bullStunned")) {
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullStunned = _Bull->getAction("bullStunned");
+                _BullactionManager->activate("bullStunned", bullStunned, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate("bullStunned");
+            }
+        }
+        else if (_Bull->isChasing() && ((_Bull->getPosition().x < 15 && _Bull->getDirection() == -1) || _Bull->getPosition().x > 35 && _Bull->getDirection() == 1)) {
+            if (!_BullactionManager->isActive("bullAttack")){
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullAttack = _Bull->getAction("bullAttack");
+                _BullactionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate("bullAttack");
+            }
+        }
+        else if (_Bull->getturing() > 0) {
+            if (!_BullactionManager->isActive("bullTurn")) {
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullTurn = _Bull->getAction("bullTurn");
+                _BullactionManager->activate("bullTurn", bullTurn, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate("bullTurn");
+            }
+        }
+        else if (_Bull->getsprintpreparetime() <= 0 && _Bull->getknockbacktime() <= 0) {
+            if (!_BullactionManager->isActive("bullRun")) {
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullRun = _Bull->getAction("bullRun");
+                _BullactionManager->activate("bullRun", bullRun, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate("bullRun");
+            }
+        }
+        else if ( _Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0) {
+            if (!_BullactionManager->isActive(_Bull->getattacktype())) {
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullTelegraph = _Bull->getAction(_Bull->getattacktype());
+                _BullactionManager->activate(_Bull->getattacktype(), bullTelegraph, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate(_Bull->getattacktype());
+            }
+        }
 
+
+        
+    }
+
+    if (_ShrimpRice != nullptr) {
+        _SHRactionManager->update(dt);
+        
+        if (_ShrimpRice->getattackcombo() > 0) {
+            if (!_SHRactionManager->isActive("SFR_Attack")) {
+                auto SFR_Attack = _ShrimpRice->getAction("SFR_Attack");
+                _SHRactionManager->activate("SFR_Attack", SFR_Attack, _ShrimpRice->getSceneNode());
+            }
+            if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                _ShrimpRice->animate("SFR_Attack");
+            }
+        }     
+        else if (_ShrimpRice->getWheelofDoom() > 0) {
+            if (!_SHRactionManager->isActive("SFRWheelofDoom")) {
+                auto SFRWheelofDoom = _ShrimpRice->getAction("SFRWheelofDoom");
+                _SHRactionManager->activate("SFRWheelofDoom", SFRWheelofDoom, _ShrimpRice->getSceneNode());
+            }
+            if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                _ShrimpRice->animate("SFRWheelofDoom");
+            }
+        }
+        else if (_ShrimpRice->getknockbacktime() <= 0) {
+            if (!_SHRactionManager->isActive("SFR_Move")) {
+                auto SFR_Move = _ShrimpRice->getAction("SFR_Move");
+                _SHRactionManager->activate("SFR_Move", SFR_Move, _ShrimpRice->getSceneNode());
+            }
+            if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                _ShrimpRice->animate("SFR_Move");
+            }
+		}
+        
+    }
+
+    if ((_afterimages.size() > 4 || (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() > _avatar->getFloatyFrames())) && !_afterimages.empty()) {
+        std::shared_ptr<scene2::SceneNode> afterimage = _afterimages.front();
+        _afterimages.erase(_afterimages.begin());
+        removeChild(afterimage);
+    }
 }
 
 
@@ -850,8 +1155,12 @@ void GameScene::postUpdate(float remain) {
                 loadLevel(level2);
                 reset();
             }
+            else if (currentLevel == level3) {
+                currentLevel = level1;
+                reset();
+            }
             else {
-                loadLevel(level1);
+                currentLevel = level3;
                 reset();
             }
         }

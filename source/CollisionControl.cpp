@@ -70,6 +70,10 @@ void GameScene::beginContact(b2Contact* contact) {
         else {
             _Bull->setIsChasing(false);
             _Bull->takeDamage(0, direction, true);
+            _BullactionManager->clearAllActions(_Bull->getSceneNode());
+            auto bullCrash = _Bull->getAction("bullCrash");
+            _Bull->animate("bullCrash");
+            _BullactionManager->activate("bullCrash", bullCrash, _Bull->getSceneNode());
         }
 
 
@@ -86,6 +90,10 @@ void GameScene::beginContact(b2Contact* contact) {
         else {
             _Bull->setIsChasing(false);
             _Bull->takeDamage(0, direction, true);
+            _BullactionManager->clearAllActions(_Bull->getSceneNode());
+            auto bullCrash = _Bull->getAction("bullCrash");
+            _Bull->animate("bullCrash");
+            _BullactionManager->activate("bullCrash", bullCrash, _Bull->getSceneNode());
         }
       //  popup(std::to_string(5), bullPos * _scale);
     }
@@ -229,9 +237,13 @@ void GameScene::beginContact(b2Contact* contact) {
     }
     else if (_avatar->getBodySensorName() == fd2 && bd1->getName() == "enemy") {
         Vec2 enemyPos = _avatar->getPosition();
-        Vec2 attackerPos = ((EnemyModel*)bd1)->getPosition();
+        EnemyModel* enemy = (EnemyModel*)bd1;
+        Vec2 attackerPos = enemy->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         _avatar->addTouching();
+        if (enemy->getType() == EnemyType::rice || enemy->getType() == EnemyType::rice_soldier) {
+            enemy->setActiveAction("riceAttack");
+        }
         _avatar->takeDamage(34, direction);
     }
 
