@@ -1,6 +1,7 @@
 #ifndef __LEVEL1_H__
 #define __LEVEL1_H__
 #include "Levels.h"
+#include "../NightLevelObjects/Wall.h"
 
 
 class Level1 : public Levels {
@@ -31,6 +32,7 @@ public:
     void createPlatform(std::string path, std::shared_ptr<AssetManager>& assets, GameScene& scene, int row, int col, int platformNumber);
 
     void populate(GameScene& scene) override;
+    void update(float step) override;
 };
 
 #endif /* __LEVEL1_H__ */

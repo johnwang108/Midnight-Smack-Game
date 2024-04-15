@@ -1,0 +1,139 @@
+{
+    "variables": {},
+    "contents": {
+        "type": "Node",
+        "format": {
+            "type": "Anchored"
+        },
+        "data": {
+            "anchor": [
+                0,
+                0
+            ],
+            "size": [
+                1280,
+                800
+            ],
+            "angle": 0,
+            "position": [
+                0,
+                0
+            ],
+            "visible": true
+        },
+        "children": {
+            "Quota": {
+                "type": "Node",
+                "format": {
+                    "type": "Anchored"
+                },
+                "data": {
+                    "anchor": [
+                        0,
+                        0
+                    ],
+                    "size": [
+                        120.56,
+                        273.13
+                    ],
+                    "angle": 0,
+                    "position": [
+                        20,
+                        14.88
+                    ],
+                    "visible": true
+                },
+                "children": {
+                    "Bar": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "bar",
+                            "anchor": [
+                                0,
+                                0
+                            ],
+                            "size": [
+                                47.5,
+                                273.13
+                            ],
+                            "angle": 0,
+                            "position": [
+                                0,
+                                0
+                            ],
+                            "visible": true
+                        },
+                        "layout": {
+                            "x_anchor": "left",
+                            "y_anchor": "bottom",
+                            "absolute": false,
+                            "x_offset": 0,
+                            "y_offset": 0
+                        }
+                    },
+                    "BarFilled": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "barFilled",
+                            "anchor": [
+                                0,
+                                0
+                            ],
+                            "size": [
+                                40.625,
+                                266.875
+                            ],
+                            "angle": 0,
+                            "position": [
+                                0,
+                                0
+                            ],
+                            "visible": true
+                        },
+                        "layout": {
+                            "x_anchor": "left",
+                            "y_anchor": "bottom",
+                            "absolute": false,
+                            "x_offset": 0,
+                            "y_offset": 0
+                        }
+                    },
+                    "Ramsay": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "ramsay",
+                            "anchor": [
+                                1,
+                                0
+                            ],
+                            "size": [
+                                72.56,
+                                108.94
+                            ],
+                            "angle": 0,
+                            "position": [
+                                48,
+                                0.19
+                            ],
+                            "visible": true
+                        },
+                        "layout": {
+                            "x_anchor": "right",
+                            "y_anchor": "bottom",
+                            "absolute": false,
+                            "x_offset": 0,
+                            "y_offset": 0
+                        }
+                    }
+                },
+                "layout": {
+                    "x_anchor": "left",
+                    "y_anchor": "bottom",
+                    "absolute": false,
+                    "x_offset": 0.02,
+                    "y_offset": 0.02
+                }
+            }
+        }
+    }
+}

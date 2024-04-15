@@ -28,16 +28,19 @@
 #include <cugl/cugl.h>
 #include <box2d/b2_world_callbacks.h>
 #include <box2d/b2_fixture.h>
+#include <box2d/b2_world.h>
+#include <box2d/b2_contact.h>
+#include <box2d/b2_collision.h>
 #include <unordered_set>
 #include <vector>
 #include "PFInput.h"
-#include "PFAttack.h"
+#include "Attack.h"
 #include "PFDudeModel.h"
-#include "PFRopeBridge.h"
-#include "PFSpinner.h"
 #include "PFDollarScene.h"
 #include "Levels/Level1.h"
 #include "Levels/Level2.h"
+#include "Levels/Level3.h"
+// #include "Levels/Level3.h"
 #include "Levels/LevelModel.h"
 
 
@@ -71,13 +74,8 @@ protected:
     /** Reference to the right joystick image */
     std::shared_ptr<cugl::scene2::PolygonNode> _rightnode;
 
-    std::shared_ptr<cugl::scene2::Label> _gestureFeedback;
-
     std::shared_ptr<Scene2> _bgScene;
-
     std::shared_ptr<Scene2> _uiScene;
-
-    cugl::Timestamp _gestureInitiatedTime;
 
     std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
 
@@ -105,18 +103,14 @@ protected:
 
     std::vector<std::shared_ptr<EnemyModel>> _enemies;
 
+    std::unordered_map<std::string, std::shared_ptr<EnemyModel>> _enemyMap;
+
 
     //Valid targets for cook-time
     std::vector<std::shared_ptr<EnemyModel>> _vulnerables;
 
     //Current target for cook-time
     std::shared_ptr<EnemyModel> _target;
-
-
-    /** Reference to the spinning barrier */
-    std::shared_ptr<Spinner>			  _spinner;
-    /** Reference to the rope bridge */
-    std::shared_ptr<RopeBridge>			  _ropebridge;
 
     //temp bad code
     std::vector<std::shared_ptr<Attack>>  _attacks;
@@ -132,7 +126,6 @@ protected:
     int _countdown;
 
     //camera
-    //std::shared_ptr<cugl::OrthographicCamera> _camera;
     cugl::Vec3 _cameraOffset = Vec3::ZERO;
     float _smoothTime = 0.25f;
     cugl::Vec3 _velocity = Vec3::ZERO;
@@ -145,15 +138,48 @@ protected:
 
     std::shared_ptr<BullModel>			  _Bull;
 
+    std::shared_ptr<ShrimpRice>			  _ShrimpRice;
+
     std::shared_ptr<Level2> level2 = std::make_shared<Level2>();
 
     std::shared_ptr<Level1> level1 = std::make_shared<Level1>();
 
+    std::shared_ptr<Level3> level3 = std::make_shared<Level3>();
+
     /** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
     bool _transitionScenes;
-    float healthPercentage;
+    std::string _targetScene;
+    float _healthPercentage;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarBackground;
+    std::shared_ptr<cugl::scene2::PolygonNode> _BullhealthBarBackground;
+    std::shared_ptr<cugl::scene2::PolygonNode> _BullhealthBarForeground;
+    std::shared_ptr<cugl::scene2::PolygonNode> _SFRhealthBarBackground;
+    std::shared_ptr<cugl::scene2::PolygonNode> _SFRhealthBarForeground;
+
+    std::shared_ptr<cugl::scene2::PolygonNode> _cookBarFill;
+    std::shared_ptr<cugl::scene2::PolygonNode> _cookBarOutline;
+    std::unordered_map<std::string, std::shared_ptr<cugl::scene2::PolygonNode>> _cookBarIcons;
+    std::unordered_map<std::string, std::shared_ptr<cugl::scene2::PolygonNode>> _cookBarGlows;
+
+    std::shared_ptr<cugl::scene2::Label> _buffLabel;
+
+    std::vector<std::tuple<std::shared_ptr<cugl::scene2::Label>, cugl::Timestamp>> _popups;
+
+    std::shared_ptr<cugl::scene2::ActionManager> _actionManager;
+
+    std::shared_ptr<cugl::scene2::Button> _pauseButton;
+
+    bool _paused;
+
+    float _flag;
+
+    //debug anims for Leon
+    std::string _debugAnimTargetName;
+    std::shared_ptr<Entity> _debugAnimTarget;
+    std::string _debugAnimName;
+    bool _overrideAnim;
+    //end debug anims
 
     std::shared_ptr<LevelModel> _level_model = std::make_shared<LevelModel>();
 
@@ -441,11 +467,6 @@ public:
     void reset();
 
     /**
-    * Adds a new bullet to the world and sends it in the right direction.
-    */
-    void createAttack();
-
-    /**
     * Removes the input Bullet from the world.
     *
     * @param  bullet   the bullet to remove
@@ -472,9 +493,13 @@ public:
     std::vector<std::shared_ptr<EnemyModel>> getEnemies() const { return _enemies; }
 
     void loadLevel(std::shared_ptr<Levels> level) {
+        _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level2);
+        _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level3);
         level->populate(*this);
         currentLevel = level;
     }
+
+    void loadLevel(int chapter, int level);
 
     void setAssets(const std::shared_ptr<AssetManager>& assets) { _assets = assets; }
     void setScale(float scale) { _scale = scale; }
@@ -489,13 +514,40 @@ public:
     std::shared_ptr<BullModel> getBull() const { return _Bull; }
     void setBull(const std::shared_ptr<BullModel>& bull) { _Bull = bull; }
 
+    std::shared_ptr<ShrimpRice> getShrimpRice() const { return _ShrimpRice; }
+    void setShrimpRice(const std::shared_ptr<ShrimpRice>& ShrimpRice) { _ShrimpRice = ShrimpRice; }
+
     void transition(bool t);
 
-    bool transitionedAway() { return _transitionScenes; }
     void renderBG(std::shared_ptr<cugl::SpriteBatch> batch);
 
     void renderUI(std::shared_ptr<cugl::SpriteBatch> batch);
 
-  };
+    //creates a popup message that dissapates. Position is in word coords, not physics.
+    void popup(std::string s, Vec2 pos);
+    
+    std::shared_ptr<Scene2> getuiScene() { return _uiScene; }
+    void setuiScene(std::shared_ptr<Scene2> scene) { _uiScene = scene; }
+
+    std::shared_ptr<cugl::scene2::ActionManager> getActionManager() { return _actionManager; };
+
+    void setPaused(bool paused) { _paused = paused; };
+
+    bool getPaused() { return _paused; };
+
+    std::string getTargetScene() { return _targetScene; };
+
+    bool didTransition() { return _transitionScenes; };
+
+    void setTransition(bool b) { _transitionScenes = b; };
+
+    std::string getTarget() { return _targetScene; };
+
+    void setTarget(std::string s) { _targetScene = s; };
+
+    void save();
+    void loadSave();
+};
+
 
 #endif /* __PF_GAME_SCENE_H__ */

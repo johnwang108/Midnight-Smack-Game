@@ -4,8 +4,7 @@
 #include <cugl/cugl.h>
 #include "PFInput.h"
 #include "PFDollarScene.h"
-#include "Order.h"
-#include <cugl/cugl.h>
+#include "Ingredient.h"
 #include <box2d/b2_world_callbacks.h>
 #include <box2d/b2_fixture.h>
 #include <unordered_set>
@@ -14,16 +13,20 @@
 
 class MultiScreenScene : public cugl::Scene2 {
 private:
-	cugl::Timestamp _startTime;
-
 	// current time, in seconds with decimals
 	float _currentTime;
 	std::map<std::string, int> _stationMap;
-	bool _finishedOrders;
+	std::map<int, std::vector<std::string>> _stationIngredients;
+	bool _finishedIngredients;
+
+
 
 
 protected:
 	std::shared_ptr<cugl::AssetManager> _assets;
+	std::shared_ptr<cugl::scene2::SceneNode> _uiNode;
+	std::shared_ptr<cugl::scene2::SceneNode> _progBar;
+
 
 	std::shared_ptr<PlatformInput> _input;
 
@@ -49,17 +52,35 @@ protected:
 	/** Whether or not this scene initiated a transfer to the other gameplay mode scene*/
 	bool _transitionScenes;
 
+	std::string _targetScene;
+
 	std::shared_ptr<cugl::scene2::Label> _timer;
 
 	std::shared_ptr<cugl::scene2::Label> _gestureFeedback;
 
-	cugl::Timestamp _gestureInitiatedTime;
+	float _gestureInitiatedTime;
 
-	std::vector<Order> _orders; 
+	std::vector<std::shared_ptr<Ingredient>> _ingredients; 
+
+	std::shared_ptr<Ingredient> _heldIngredient;
 
 	std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
+
+    /* This is the name of the dish we are making for the day, to display */
+	std::string _dishToPrepare;
+	float _dayDuration;
+	int _quota;
+	int _currentScore; 
+	
+	// 0 = playing, 1 = win, -1 = lose
+	int _gameState;
+
+	
+	/* If the day has ended*/
+	bool _ended;
 	// the index in the _orders vector where we will find the first new order
-	int _newOrderIndex;
+	int _newIngredientIndex;
+	float _flag;
 public:
 	MultiScreenScene();
 
@@ -70,6 +91,8 @@ public:
 	bool init(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input);
 
 	void initStations(std::string arr[], int size);
+
+	void initializeBottomBar(std::shared_ptr<DollarScene> scene, int sceneNum);
 
 	void setScene(Uint32 slot, std::shared_ptr<DollarScene> scene) { _scenes[slot] = scene; }
 
@@ -85,19 +108,32 @@ public:
 
 	void transition(bool t);
 
-	bool transitionedAway() { return _transitionScenes; }
-
 	int determineSwipeDirection();
 
-	void readLevel(std::shared_ptr<JsonValue> level);
+	void readLevel(std::shared_ptr<cugl::JsonValue> level);
 
-	void renderUI(std::shared_ptr<SpriteBatch> batch);
+	void renderUI(std::shared_ptr<cugl::SpriteBatch> batch);
 
 	void tempPopulate();
 	
 	void unfocusAll();
 
 	void focusCurr();
+	void endDay();
+
+
+	void reset();
+
+	bool didTransition() { return _transitionScenes; };
+
+	void setTransition(bool b) { _transitionScenes = b; };
+
+	std::string getTarget() { return _targetScene; };
+
+	void setTarget(std::string s) { _targetScene = s; };
+
+	void save();
+	void loadSave();
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */

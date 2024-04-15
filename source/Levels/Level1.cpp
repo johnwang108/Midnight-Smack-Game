@@ -19,6 +19,15 @@ static float RICE_POS[] = { 25.0f, 14.0f };
 
 static float BACKGROUND_POS[] = { 16.0f, 10.0f };
 
+std::vector<std::shared_ptr<Wall>> things;
+
+
+//static float WALL[WALL_COUNT][WALL_VERTS] = {
+//	{16.0f, 20.0f,  0.0f, 20.0f,  0.0f,  0.0f,
+//	  1.0f,  0.0f,  1.0f, 19.5f, 16.0f, 19.5f },
+//	{32.0f, 20.0f, 16.0f, 20.0f, 16.0f, 19.5f,
+//	 31.0f, 19.5f, 31.0f,  0.0f, 32.0f,  0.0f }
+//};
 
 static float WALL[WALL_COUNT][WALL_VERTS] = {
 	{16.0f, 20.0f,  0.0f, 20.0f,  0.0f,  0.0f,
@@ -226,89 +235,233 @@ void Level1::populate(GameScene& scene) {
 			// Each of our images in assets/textures will thus end in _BACKGROUND, or _ENEMY, or etc.
 
 
-			//if (data != nullptr && data->isArray()) {
-			//	for (int j = 0; j < data->size(); j++) {
-			//		colNum = j % width;
-			//		if (colNum == 0 && j != 0) {
-			//			rowNum += 1;
-			//		}
-			//		int tileId = data->get(j)->asInt();
+	// Set the physics attributes
+	_goalDoor->setBodyType(b2_staticBody);
+	_goalDoor->setDensity(0.0f);
+	_goalDoor->setFriction(0.0f);
+	_goalDoor->setRestitution(0.0f);
+	_goalDoor->setSensor(true);
+	// _goalDoor->setEnabledf
 
 
-			//		if (idToImage.find(tileId) != idToImage.end()) {
-			//			std::string value = idToImage.at(tileId);
+#pragma mark : Walls
+	// All walls and platforms share the same texture
+	image = _assets->get<Texture>(EARTH_TEXTURE);
+	std::string wname = "wall";
+	for (int ii = 0; ii < WALL_COUNT; ii++) {
+		std::shared_ptr<Wall> wallobj = Wall::alloc(image, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, DEBUG_COLOR,
+			reinterpret_cast<Vec2*>(WALL[ii]), WALL_VERTS, wname);
+		things.push_back(wallobj);
+		scene.addObstacle(wallobj->getObj(), wallobj->getSprite(), 1);  // All walls share the same texture
+	}
 
-			//			//checking what type exists here
-			//			if (value.find("_ENEMY.tsj") != std::string::npos) {
-			//				createEnemy(value, assets, scene, rowNum, colNum);
-			//			}
-			//			else if (value.find("_GOAL_DOOR.tsj") != std::string::npos) {
-			//				createGoalDoor(value, assets, scene, rowNum, colNum);
-			//			}
-			//			else if (value.find("_DUDE.tsj") != std::string::npos) {
-			//				CULog("CHECKING IN ON THE DUDE");
-			//				createDude(value, assets, scene, rowNum, colNum);
-			//			}
-			//			else if (value.find("_BORDER.tsj") != std::string::npos) {
-			//				borderNumber = borderNumber + 1;
-			//				createPlatform(value, assets, scene, rowNum, colNum, borderNumber);
-			//				
-			//			}
-			//			else if (value.find("_PLATFORM.tsj") != std::string::npos) {
-			//				platformNumber = platformNumber + 1;
-			//				createPlatform(value, assets, scene, rowNum, colNum, platformNumber);
-			//			}
-			//			// WE WILL NEED TO ADD MORE?
-			//			CULog("UH-OH");
+#pragma mark : Platforms
+	for (int ii = 0; ii < PLATFORM_COUNT; ii++) {
+		std::shared_ptr<Wall> platObj = Wall::alloc(image, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, Color4::BLUE,
+			reinterpret_cast<Vec2*>(PLATFORMS[ii]), PLATFORM_VERTS, std::string(PLATFORM_NAME) + cugl::strtool::to_string(ii));
+		std::vector<Vec3> path;
+		path = { Vec3(0,100,120), Vec3(100,100,120), Vec3(100,0,120), Vec3(0,-30,120) };
+		if (ii % 3 == 1) {
+			platObj->initiatePath(path, 2.0f);
+		}
+		things.push_back(platObj);
+		scene.addObstacle(platObj->getObj(), platObj->getSprite(), 1);
+	}
 
-			//		}
+#pragma mark : Dude
+	Vec2 dudePos = DUDE_POS;
+	// node = scene2::SceneNode::alloc();
+
+	image = _assets->get<Texture>("su_idle");
+	//hardcoded size
+	cugl::Size s = PLAYER_SIZE_DEFAULT;
+	_avatar = DudeModel::allocWithConstants(dudePos, s, _scale, _assets);
+	std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4,16);
+
+	//CALCULATE sue sprite size from sue obstacle size. Goal: su's feet line up with foot sensor, and head (not hat) with top of obstacle. Todo still
+	//float scalar = (s.width *_scale) / spritenode->getSize().width;
+	spritenode->setAnchor(Vec2(0.5, 0.35));
+	spritenode->setPosition(dudePos);
+	_avatar->setSceneNode(spritenode);
+	_avatar->setDebugColor(DEBUG_COLOR);
+
+	scene.addObstacle(_avatar, spritenode); // Put this at the very front
 
 
-			//	}
-			//}
 
-		// }
-	// }
+	//CULog("Dude position: %f %f", _avatar->getPosition().x, _avatar->getPosition().y);
+	//CULog("Dude anchor: %f %f", _avatar->getAnchor().x, _avatar->getAnchor().y);
+
+	// Play the background music on a loop.
+	//std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
+	//AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
 
-}
+	//cugl::Size shrimpSize = cugl::Size(2.0f, 2.0f);
 
-//COME BACK TO THIS ONE
-//void Level1::createBorder(std::string path, std::shared_ptr<AssetManager>& assets, GameScene& scene, int row, int col, int borderNumber) {
-//
-//	assets->load<Texture>(path, path);
-//	image = assets->get<Texture>(path);
-//
-//	std::string wname = "border";
-//	//for (int ii = 0; ii < WALL_COUNT; ii++) {
-//	//	std::shared_ptr<physics2::PolygonObstacle> wallobj;
-//
-//	//	Poly2 wall(reinterpret_cast<Vec2*>(WALL[ii]), WALL_VERTS / 2);
-//	//	// Call this on a polygon to get a solid shape
-//	//	EarclipTriangulator triangulator;
-//	//	triangulator.set(wall.vertices);
-//	//	triangulator.calculate();
-//	//	wall.setIndices(triangulator.getTriangulation());
-//	//	triangulator.clear();
-//
-//	//	wallobj = physics2::PolygonObstacle::allocWithAnchor(wall, Vec2::ANCHOR_CENTER);
-//	//	// You cannot add constant "".  Must stringify
-//	//	wallobj->setName(std::string(WALL_NAME) + cugl::strtool::to_string(ii));
-//	//	wallobj->setName(wname);
-//
-//	//	// Set the physics attributes
-//	//	wallobj->setBodyType(b2_staticBody);
-//	//	wallobj->setDensity(BASIC_DENSITY);
-//	//	wallobj->setFriction(BASIC_FRICTION);
-//	//	wallobj->setRestitution(BASIC_RESTITUTION);
-//	//	wallobj->setDebugColor(DEBUG_COLOR);
-//
-//	//	wall *= _scale;
-//	//	sprite = scene2::PolygonNode::allocWithTexture(image, wall);
-//	//	scene.addObstacle(wallobj, sprite, 1);  // All walls share the same texture
-//	//}
-//}
+	Vec2 pos = SHRIMP_POS;
+	Size size = cugl::Size(2.0f, 2.0f);
+	image = _assets->get<Texture>("beefIdle");
 
+	spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
+	std::shared_ptr<EnemyModel> _enemy = EnemyModel::allocWithConstants({ 30.0f, 6.0f }, size, _scale, _assets, EnemyType::beef);
+	spritenode->setScale(0.1f);
+	spritenode->setAnchor(Vec2(0.5, 0.35));
+	_enemy->setSceneNode(spritenode);
+	_enemy->setName(ENEMY_NAME);
+	_enemy->setDebugColor(DEBUG_COLOR);
+	_enemy->setLimit(cugl::Spline2(Vec2(1.0f, 1.0f), Vec2(50.0f, 1.0f)));
+	//scene.addObstacle(_enemy, spritenode);
+	//_enemies.push_back(_enemy);
+
+
+	cugl::Size riceSize = cugl::Size(1.0f, 2.0f);
+
+	Vec2 rice_pos = RICE_POS;
+	image = _assets->get<Texture>("riceLeader");
+	_enemy = EnemyModel::allocWithConstants(rice_pos, riceSize, _scale, _assets, EnemyType::rice);
+	spritenode = EntitySpriteNode::allocWithSheet(image, 3,4,12);
+	spritenode->setScale(0.12f);
+	_enemy->setSceneNode(spritenode);
+	_enemy->setName(ENEMY_NAME);
+	_enemy->setDebugColor(DEBUG_COLOR);
+	scene.addObstacle(_enemy, spritenode);
+	_enemies.push_back(_enemy);
+
+	image = _assets->get<Texture>("riceSoldier");
+	std::shared_ptr<EnemyModel> _enemy1 = EnemyModel::allocWithConstants({27.0f, 6.0f}, riceSize, _scale, _assets, EnemyType::rice_soldier);
+	spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 15);
+	spritenode->setScale(0.12f);
+	_enemy1->setSceneNode(spritenode);
+	_enemy1->setName(ENEMY_NAME);
+	_enemy1->setDebugColor(DEBUG_COLOR);
+	scene.addObstacle(_enemy1, spritenode);
+	_enemies.push_back(_enemy1);
+
+	//image = _assets->get<Texture>("riceSoldier");
+	//std::shared_ptr<EnemyModel> _enemy2 = EnemyModel::allocWithConstants({ 29.0f, 6.0f }, riceSize, _scale, _assets, EnemyType::rice_soldier);
+	//spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 15);
+	//spritenode->setScale(0.12f);
+	//_enemy2->setSceneNode(spritenode);
+	//_enemy2->setName(ENEMY_NAME);
+	//_enemy2->setDebugColor(DEBUG_COLOR);
+	////scene.addObstacle(_enemy2, spritenode);
+	////_enemies.push_back(_enemy2);
+
+	//EnemyModel* _enemy1Weak = _enemy1.get();
+	//EnemyModel* _enemy2Weak = _enemy2.get();
+	//_enemy->setListener([=](physics2::Obstacle* obs) {
+	//	if (_enemy->getState() == "pursuing") {
+	//		_enemy1Weak->setState("pursuing");
+	//		_enemy2Weak->setState("pursuing");
+	//		_enemy1Weak->setTargetPosition(_avatar->getPosition());
+	//		_enemy2Weak->setTargetPosition(_avatar->getPosition());
+	//	}
+	//	else {
+	//		_enemy1Weak->setState("patrolling");
+	//		_enemy2Weak->setState("patrolling");
+	//		_enemy1Weak->setTargetPosition(_enemy->getPosition());
+	//		_enemy2Weak->setTargetPosition(_enemy->getPosition());
+	//	}
+	//	});
+
+
+
+
+	////shrimp 2
+	//image = _assets->get<Texture>("shrimp_rolling");
+	//_enemy = EnemyModel::alloc({ 30.0f, 6.0f }, shrimpSize, _scale, EnemyType::shrimp);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//sprite->setScale(0.1f);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
+
+
+
+	//////shrimp 3
+	//image = _assets->get<Texture>("shrimp_rolling");
+	//_enemy = EnemyModel::alloc({ 25.0f, 18.0f }, shrimpSize, _scale, EnemyType::shrimp);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//sprite->setScale(0.1f);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
+
+	//cugl::Size riceSize = cugl::Size(1.0f, 2.0f);
+
+	//Vec2 rice_pos = RICE_POS;
+	//image = _assets->get<Texture>(RICE_TEXTURE);
+	//_enemy = EnemyModel::alloc(rice_pos, riceSize, _scale, EnemyType::rice);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//sprite->setScale(0.12f);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
+
+	//////rice 2
+	//image = _assets->get<Texture>(RICE_TEXTURE);
+	//_enemy = EnemyModel::alloc({27.0f, 28.0f}, riceSize, _scale, EnemyType::rice);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//sprite->setScale(0.12f);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
+
+	//////rice 3
+	//image = _assets->get<Texture>(RICE_TEXTURE);
+	//_enemy = EnemyModel::alloc({ 35.0f, 37.0f }, riceSize, _scale, EnemyType::rice);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//sprite->setScale(0.12f);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
+
+
+
+	//cugl::Size eggSize = cugl::Size(1.5f, 4.5f);
+	//Vec2 egg_pos = EGG_POS;
+	//image = _assets->get<Texture>(EGG_TEXTURE);
+	//_enemy = EnemyModel::alloc(egg_pos, eggSize, _scale, EnemyType::egg);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//sprite->setScale(0.1f);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
+
+	//////egg 2
+	////image = _assets->get<Texture>(EGG_TEXTURE);
+	////_enemy = EnemyModel::alloc({25.0f, 28.0f}, image->getSize() / (_scale), _scale, EnemyType::egg);
+	////sprite = scene2::PolygonNode::allocWithTexture(image);
+	////_enemy->setSceneNode(sprite);
+	////_enemy->setName(ENEMY_NAME);
+	////_enemy->setDebugColor(DEBUG_COLOR);
+	////scene.addObstacle(_enemy, sprite);
+	////_enemies.push_back(_enemy);
+
+	//////egg 3
+
+	//image = _assets->get<Texture>(EGG_TEXTURE);
+	//_enemy = EnemyModel::alloc({30.0f, 30.0f}, eggSize, _scale, EnemyType::egg);
+	//sprite = scene2::PolygonNode::allocWithTexture(image);
+	//sprite->setScale(0.1f);
+	//_enemy->setSceneNode(sprite);
+	//_enemy->setName(ENEMY_NAME);
+	//_enemy->setDebugColor(DEBUG_COLOR);
+	//scene.addObstacle(_enemy, sprite);
+	//_enemies.push_back(_enemy);
 
 //void Level1::createPlatform(std::string path, std::shared_ptr<AssetManager>& assets, GameScene& scene, int row, int col, int platformNumber) {
 //
@@ -509,4 +662,11 @@ void Level1::populate(GameScene& scene) {
 //	scene.setEnemies(_enemies);
 //	scene.setGoalDoor(_goalDoor);
 
-// }
+}
+void Level1::update(float step) {
+	for (const auto& obj : things) {
+		if (obj->queryPath(0).z > -1) {
+			obj->update(step);
+		}
+	}
+}

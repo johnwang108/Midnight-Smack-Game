@@ -30,15 +30,19 @@
 #include <box2d/b2_fixture.h>
 #include <unordered_set>
 #include <vector>
+#include <deque>
 #include "PFInput.h"
-#include "PFAttack.h"
 #include "PFDudeModel.h"
-#include "PFRopeBridge.h"
-#include "PFSpinner.h"
+#include "Ingredient.h"
 
-/**Todo: Implement a basic dollar gesture input scene that can be represented as 
-a child node of GameScene and has a basic rectangle that waits for input from a 
-Input Controller and renders something in response to anything received.
+//hardcode :3
+#define SCENE_WIDTH 1280
+#define SCENE_HEIGHT 800
+
+/**
+* 
+* 
+* 
  */
 class DollarScene : public cugl::scene2::SceneNode {
 protected:
@@ -49,7 +53,6 @@ protected:
     std::shared_ptr<cugl::GestureRecognizer> _dollarRecog;
 
 
-    //Todo: turn these into nodes
     cugl::Path2 _path;
 
     std::shared_ptr<cugl::scene2::PolygonNode> _poly;
@@ -64,12 +67,14 @@ protected:
 
   
     //transform for poly
-    cugl::Affine2 _trans;
+    cugl::Affine2 _transf;
 
     //temp
     cugl::Spline2 _spline;
 
     bool _focus;
+
+    bool _readyForGestures;
 
     std::vector<std::string> _currentTargetGestures;
 
@@ -86,6 +91,25 @@ protected:
 
     float _currentSimilarity; 
 
+    std::vector<std::string> _validIngredients;
+
+    std::shared_ptr<cugl::scene2::SceneNode> _bottomBar;
+    std::shared_ptr<cugl::scene2::SceneNode> _conveyorBelt;
+    std::shared_ptr<cugl::scene2::SceneNode> _stationHitbox;
+    std::shared_ptr<cugl::scene2::SceneNode> _indicatorGroup;
+
+    std::deque<std::shared_ptr<Ingredient>> _currentIngredients;
+
+    std::shared_ptr<Ingredient> _ingredientToRemove; 
+    std::shared_ptr<Ingredient> _currentlyHeldIngredient;
+
+
+    //technically unnecessary because ingredient knows if it is in pot but also easier to just store pointer
+    std::shared_ptr<Ingredient> _ingredientInStation;
+
+    bool _readyToCook;
+
+    
     //Todo: need library of existing predetermined inputs to check against
 
 public:
@@ -108,6 +132,7 @@ public:
     }
 
     bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector <std::string> gestures);
+    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector<std::string> gestures, cugl::Size hitboxSize);
 
     void update(float timestep);
 
@@ -121,21 +146,41 @@ public:
 
     void setTargetGestures(std::vector<std::string> gestures) { 
         _currentTargetGestures = gestures; 
+        _currentTargetIndex = 0;
         _completed = false;
     }
 
+    void setValidIngredients(std::vector<std::string> ingredients) { _validIngredients = ingredients; };
+
+    void setIngredientInStation(std::shared_ptr<Ingredient> ing) { _ingredientInStation = ing; }
+    
+    std::shared_ptr<Ingredient> getIngredientInStation() { return _ingredientInStation; }
 
     bool isFocus() { return _focus; };
-
-    //virtual void draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint);
-
-    bool shouldIDisappear();
 
     bool initGestureRecognizer();
 
     bool matchWithTouchPath();
 
     bool getJustCompletedGesture() { return _justCompletedGesture; }
+
+    std::shared_ptr<cugl::scene2::SceneNode> getBottomBar() { return _bottomBar; }
+    void setBottomBar(std::shared_ptr<cugl::scene2::SceneNode> bar);
+
+    void addIngredient(std::shared_ptr<Ingredient> ingredient);
+    std::shared_ptr<Ingredient> popIngredient();
+
+
+    void updateConveyor();
+    std::shared_ptr<Ingredient> getHeldIngredient();
+
+    void addIngredientToStation(std::shared_ptr<Ingredient>);
+
+    void handleCompletedIngredient(std::shared_ptr<Ingredient>);
+
+    void reset();
+
+    void setReadyToCook(bool ready) { _readyToCook = ready; }
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */
