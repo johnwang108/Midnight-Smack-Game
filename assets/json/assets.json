@@ -33,8 +33,8 @@
         "boiledEgg": {
             "file": "textures/day/food/boiledEgg.png"
         },
-        "carrot": {
-            "file": "textures/day/food/carrot.png"
+        "carrotEnemy": {
+            "file": "textures/carrotEnemy.png"
         },
         "cutCarrot": {
             "file": "textures/day/food/carrot.png"
@@ -111,31 +111,37 @@
             "file": "textures/dude.png"
         },
         "su_attack_sheet": {
-            "file": "textures/su_attack.png"
+            "file": "textures/Sheets/Su/su_attack.png"
         },
         "su_attack_recover": {
-            "file": "textures/su_attack_recover.png"
+            "file": "textures/Sheets/Su/su_attack_recover.png"
         },
         "su_idle_blink": {
-            "file": "textures/su_idle_blink.png"
+            "file": "textures/Sheets/Su/su_idle_blink.png"
         },
         "su_idle": {
-            "file": "textures/su_idle.png"
+            "file": "textures/Sheets/Su/su_idle.png"
         },
         "su_run": {
-            "file": "textures/su_run.png"
+            "file": "textures/Sheets/Su/su_run.png"
         },
         "su_jump_airborne_up": {
-            "file": "textures/su_jump_airborne_up.png"
+            "file": "textures/Sheets/Su/su_jump_airborne_up.png"
         },
         "su_jump_airborne_down": {
-            "file": "textures/su_jump_airborne_down.png"
+            "file": "textures/Sheets/Su/su_jump_airborne_down.png"
         },
         "su_jump_land": {
-            "file": "textures/su_jump_land.png"
+            "file": "textures/Sheets/Su/su_jump_land.png"
         },
         "su_jump_ready": {
-            "file": "textures/su_jump_ready.png"
+            "file": "textures/Sheets/Su/su_jump_ready.png"
+        },
+        "su_air_attack": {
+            "file": "textures/Sheets/Su/suAirAttackUp.png"
+        },
+        "su_air_roll" : {
+            "file": "textures/Sheets/Su/suAirRoll.png"
         },
         "background-1": {
             "file": "textures/background-image-1.png"
@@ -349,6 +355,42 @@
         },
         "bullRun": {
             "file": "textures/bullRun.png"
+        },
+        "beefIdle": {
+            "file": "textures/Sheets/Enemies/Beef/beefIdle.png"
+        },
+        "riceAttack": {
+            "file": "textures/Sheets/Enemies/Rice/riceAttack.png"
+        },
+        "riceEndWalk": {
+            "file": "textures/Sheets/Enemies/Rice/riceEndwalk.png"
+        },
+        "riceFall": {
+            "file": "textures/Sheets/Enemies/Rice/riceFall.png"
+        },
+        "riceIdle": {
+            "file": "textures/Sheets/Enemies/Rice/riceIdle.png"
+        },
+        "riceJump": {
+            "file": "textures/Sheets/Enemies/Rice/riceJump.png"
+        },
+        "riceLand": {
+            "file": "textures/Sheets/Enemies/Rice/riceLand.png"
+        },
+        "riceLeader": {
+            "file": "textures/Sheets/Enemies/Rice/riceLeader.png"
+        },
+        "riceSoldier": {
+            "file": "textures/Sheets/Enemies/Rice/riceSoldier.png"
+        },
+        "riceStartJump": {
+            "file": "textures/Sheets/Enemies/Rice/riceStartJump.png"
+        },
+        "riceStartWalk": {
+            "file": "textures/Sheets/Enemies/Rice/riceStartwalk.png"
+        },
+        "riceWalk": {
+            "file": "textures/Sheets/Enemies/Rice/riceWalk.png"
         }
     },
     "sounds": {

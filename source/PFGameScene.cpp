@@ -254,18 +254,19 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
         _cookBarIcons[s] = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("boost")->getChildByName(s));
         _cookBarIcons[s]->setVisible(false);
     }
+
+
     std::shared_ptr<cugl::scene2::SceneNode> _bullBarNode;
     _bullBarNode = _assets->get<scene2::SceneNode>("bullbar");
-
     _BullhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
     _BullhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
     _uiScene->addChild(_bullBarNode);
 
-    std::shared_ptr<cugl::scene2::SceneNode> _SFRBarNode;
-    _SFRBarNode = _assets->get<scene2::SceneNode>("bullbar");
+    //std::shared_ptr<cugl::scene2::SceneNode> _SFRBarNode;
+    //_SFRBarNode = _assets->get<scene2::SceneNode>("shrimpbar");
 
-    _SFRhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
-    _SFRhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
+    //_SFRhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
+    //_SFRhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
    // _uiScene->addChild(_SFRBarNode);
 
 
@@ -280,15 +281,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     //_uiScene->addChild(_pauseButton);
     _uiScene->addChild(_meterUINode);
     _uiScene->addChild(_dollarnode);
-//    _uiScene->addChild(_healthBarForeground);
-//    _uiScene->addChild(_buffLabel);
-//
-//    _uiScene->addChild(_cookBarOutline);
-//    _uiScene->addChild(_cookBarFill);
-////_uiScene->addChild(_cookBarGlow);
-//    for (auto& tpl : _cookBarIcons) {
-//		_uiScene->addChild(tpl.second);
-//	}
 
     _uiScene->addChild(_winnode);
     _uiScene->addChild(_losenode);
@@ -306,16 +298,17 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     _target = std::make_shared<EnemyModel>();
 
-    currentLevel = level3;
+
+    currentLevel = level2;
     loadLevel(currentLevel);
 
     save();
 
     _actionManager = cugl::scene2::ActionManager::alloc();
-
     _BullactionManager = cugl::scene2::ActionManager::alloc();
-
     _SHRactionManager = cugl::scene2::ActionManager::alloc();
+
+    _afterimages = std::vector < std::shared_ptr < scene2::SpriteNode >> ();
 
     //15 frame attack animation
 
@@ -331,7 +324,27 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     // XNA nostalgia
     // Application::get()->setClearColor(Color4f::CORNFLOWER);
 
-    setName("day");
+
+    auto reader = JsonReader::alloc("./json/constants.json");
+
+    std::shared_ptr<JsonValue> js = reader->readJson();
+
+    _debugAnimTargetName = js->getString("entity");
+    if (_debugAnimTargetName == "su") {
+        _debugAnimTarget = _avatar;
+    } else if(_debugAnimTargetName == "bull") {
+		_debugAnimTarget = _Bull;
+    }else if (_debugAnimTargetName == "shrimp") {
+        _debugAnimTarget = _ShrimpRice;
+    }
+    else {
+		_debugAnimTarget = nullptr;
+	}
+
+    _debugAnimName = js->getString("animation");
+    _overrideAnim = false;
+
+    setName("night");
     Application::get()->setClearColor(Color4::YELLOW);
     return true;
 }
@@ -385,7 +398,12 @@ void GameScene::reset() {
 
     loadLevel(currentLevel);
 
-    CULog("Resetted!");
+    if (_debugAnimTargetName == "bull" && _Bull != nullptr) {
+		_debugAnimTarget = _Bull;
+    }
+    else if (_debugAnimTargetName == "shrimp" && _ShrimpRice != nullptr) {
+		_debugAnimTarget = _ShrimpRice;
+	}
 }
 
 /**
@@ -440,7 +458,9 @@ void GameScene::addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj
         scene2::SceneNode* weak = node.get(); // No need for smart pointer in callback
         obj->setListener([=](physics2::Obstacle* obs){
             weak->setPosition(obs->getPosition()*_scale);
-            weak->setAngle(obs->getAngle());
+            if (weak->getName() != "avatar") {
+                weak->setAngle(obs->getAngle());
+            }
         });
     }
 }
@@ -516,68 +536,139 @@ void GameScene::preUpdate(float dt) {
     }
 
     //handle animations
-  //  CULog("active action: %s", _avatar->getActiveAction().c_str());
     _actionManager->update(dt);
     
     //start running if idle or recovering and moving
-    if ((_actionManager->isActive("idle") || _actionManager->isActive("recover")) && (_input->getHorizontal() != 0)) {
-     //   CULog("animating run");
-        _avatar->animate("run");
-        auto runAction = _avatar->getAction("run");
-        _actionManager->clearAllActions(_avatar->getSceneNode());
-        _actionManager->activate("run", runAction, _avatar->getSceneNode());
-    }
-    //cancel run animation if stopped running
-    if (_actionManager->isActive("run") && _input->getHorizontal() == 0) {
-        _avatar->animate("idle");
-        auto idleAction = _avatar->getAction("idle");
-        _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
-    }
-
-    if(_avatar->isJumping() && _avatar->isGrounded()){
-        _avatar->animate("jump_ready");
-		auto jumpAction = _avatar->getAction("jump_ready");
-        _actionManager->clearAllActions(_avatar->getSceneNode());
-		_actionManager->activate("jump_ready", jumpAction, _avatar->getSceneNode());
-    }
-
-
-    //animate jumps if not attacking or taking damage
-    if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && _avatar->getLinearVelocity().y > 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
-        _avatar->animate("jump_up");
-        auto jumpAction = _avatar->getAction("jump_up");
-        _actionManager->clearAllActions(_avatar->getSceneNode());
-        _actionManager->activate("jump_up", jumpAction, _avatar->getSceneNode());
-    }
-    if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && _avatar->getLinearVelocity().y < 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
-        _avatar->animate("jump_down");
-        auto jumpAction = _avatar->getAction("jump_down");
-        _actionManager->clearAllActions(_avatar->getSceneNode());
-        _actionManager->activate("jump_down", jumpAction, _avatar->getSceneNode());
-    }
-
-
-    //handle expired actions
-    if (!_actionManager->isActive(_avatar->getActiveAction())) {
-        if (_avatar->getActiveAction() == "attack") {
-            _avatar->animate("recover");
-            auto recoverAction = _avatar->getAction("recover");
-            _actionManager->activate("recover", recoverAction, _avatar->getSceneNode());
-        }
-        else if (_avatar->getActiveAction() == "run" && _input->getHorizontal() != 0) {
+    if (!_overrideAnim) {
+        if ((_actionManager->isActive("idle") || _actionManager->isActive("recover")) && (_input->getHorizontal() != 0)) {
             _avatar->animate("run");
             auto runAction = _avatar->getAction("run");
             _actionManager->clearAllActions(_avatar->getSceneNode());
             _actionManager->activate("run", runAction, _avatar->getSceneNode());
         }
-        else {
+        //cancel run animation if stopped running
+        if (_actionManager->isActive("run") && _input->getHorizontal() == 0) {
             _avatar->animate("idle");
             auto idleAction = _avatar->getAction("idle");
             _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
         }
+
+        if (_avatar->isJumping() && _avatar->isGrounded()) {
+            _avatar->animate("jump_ready");
+            auto jumpAction = _avatar->getAction("jump_ready");
+            _actionManager->clearAllActions(_avatar->getSceneNode());
+            _actionManager->activate("jump_ready", jumpAction, _avatar->getSceneNode());
+        }
+
+
+        //animate jumps if not attacking or taking damage
+        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && _avatar->getLinearVelocity().y > 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+            _avatar->animate("jump_up");
+            auto jumpAction = _avatar->getAction("jump_up");
+            _actionManager->clearAllActions(_avatar->getSceneNode());
+            _actionManager->activate("jump_up", jumpAction, _avatar->getSceneNode());
+        }
+        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && _avatar->getLinearVelocity().y < 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+            _avatar->animate("jump_down");
+            auto jumpAction = _avatar->getAction("jump_down");
+            _actionManager->clearAllActions(_avatar->getSceneNode());
+            _actionManager->activate("jump_down", jumpAction, _avatar->getSceneNode());
+        }
+        if (_avatar->isGrounded() && (_actionManager->isActive("jump_down") || _actionManager->isActive("jump_up"))) {
+            _avatar->animate("jump_land");
+            auto jumpAction = _avatar->getAction("jump_land");
+            _actionManager->clearAllActions(_avatar->getSceneNode());
+            _actionManager->activate("jump_land", jumpAction, _avatar->getSceneNode());
+        }
+
+
+        //handle expired actions
+        if (!_actionManager->isActive(_avatar->getActiveAction())) {
+            if (_avatar->getActiveAction() == "attack") {
+                _avatar->animate("recover");
+                auto recoverAction = _avatar->getAction("recover");
+                _actionManager->activate("recover", recoverAction, _avatar->getSceneNode());
+            }
+            else if (_avatar->getActiveAction() == "run" && _input->getHorizontal() != 0) {
+                _avatar->animate("run");
+                auto runAction = _avatar->getAction("run");
+                _actionManager->clearAllActions(_avatar->getSceneNode());
+                _actionManager->activate("run", runAction, _avatar->getSceneNode());
+            }
+            else {
+                //Todo:: blink idle
+                if (((float)rand() / RAND_MAX) < 0.0f) {
+                    _avatar->animate("idle_blink");
+                    auto idleAction = _avatar->getAction("idle_blink");
+                    _actionManager->activate("idle_blink", idleAction, _avatar->getSceneNode());
+                }
+                else {
+                    _avatar->animate("idle");
+                    auto idleAction = _avatar->getAction("idle");
+                    _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
+                }
+            }
+        }
+
+            if (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() < _avatar->getFloatyFrames() && _avatar->getDashCooldownMax() - _avatar->getDashCooldown() != 0 && _avatar->getDashCooldown() % 3  == 1) {
+				std::shared_ptr<scene2::SpriteNode> afterimage = scene2::SpriteNode::allocWithSprite(_avatar->getSpriteNode());
+                afterimage->setAnchor(Vec2(0.5, 0.35));
+                afterimage->setPosition(_avatar->getSceneNode()->getPosition());
+                afterimage->setPositionY(afterimage->getPositionY() + 0.0f);
+                Color4 b = Color4::CYAN;
+                b.a = 255;
+                afterimage->setColor(b);
+                afterimage->setScale(_avatar->getSpriteNode()->getScale());
+                _afterimages.push_back(afterimage);
+                addChild(afterimage);
+			}
+
+        _avatar->setShooting(_input->didFire());
+        if (_avatar->isShooting() && (!_actionManager->isActive("attack") && !_actionManager->isActive("air_attack"))) {
+            auto att = _avatar->createAttack(getAssets(), _scale);
+            addObstacle(std::get<0>(att), std::get<1>(att), true);
+            _attacks.push_back(std::get<0>(att));
+
+            //if (_avatar->isGrounded()) {
+            auto attackAction = _avatar->getAction("attack");
+            _avatar->animate("attack");
+            _actionManager->clearAllActions(_avatar->getSceneNode());
+            _actionManager->activate("attack", attackAction, _avatar->getSceneNode());
+            //}
+            //else {
+            //    float horiz = _input->getHorizontal();
+            //    float vert = _input->getVertical();
+            //    cugl::Vec2 dir = Vec2(horiz, vert).normalize();
+            //    float angle = dir.getAngle();
+            //   
+            //    Affine2 aff = _avatar->getSpriteNode()->getTransform();
+            //    aff.rotate(angle);
+            //    _avatar->getSpriteNode()->setTransform(aff);
+
+            //    auto attackAction = _avatar->getAction("air_attack");
+            //    _avatar->animate("air_attack");
+            //    _actionManager->clearAllActions(_avatar->getSceneNode());
+            //    _actionManager->activate("air_attack", attackAction, _avatar->getSceneNode());
+            //}
+        }
+    }
+    if (!_actionManager->isActive("air_attack")) {
+        _avatar->getSceneNode()->setAngle(0.0);
+    }
+
+
+    if (_input->didAnimate() && _debugAnimTarget != nullptr) {
+        //CULog("OVERRIDE ANIM");
+        //_overrideAnim = true;
+        //_debugAnimTarget->animate(_debugAnimName);
+        //auto action = _debugAnimTarget->getAction(_debugAnimName);
+        //_actionManager->clearAllActions(_debugAnimTarget->getSceneNode());
+        //_actionManager->activate(_debugAnimName, action, _debugAnimTarget->getSceneNode());
+    }
+
+    if (_overrideAnim && !_actionManager->isActive(_debugAnimName)) {
+		_overrideAnim = false;
 	}
-
-
     
     _dollarnode->update(dt);
 
@@ -629,11 +720,8 @@ void GameScene::preUpdate(float dt) {
                 }
                 else {
                     CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
-                    
                 }
                 message = _feedbackMessages[_dollarnode->getLastResult()];
-
-
                 popup(message, cugl::Vec2(_target->getPosition().x * _scale, _target->getPosition().y * 1.1 * _scale));
                 
                 _target = nullptr;
@@ -672,26 +760,40 @@ void GameScene::preUpdate(float dt) {
             Vec2 enemyPos = enemy->getPosition();
             float distance = avatarPos.distance(enemyPos);
 
-            if (distance < CHASE_THRESHOLD) {
-                enemy->setIsChasing(true);
-                enemy->updatePlayerDistance(_avatar->getPosition());
-                int direction = (avatarPos.x > enemyPos.x) ? 1 : -1;
-                enemy->setDirection(direction);
-                if (enemy->getnextchangetime() < 0) {
-                    enemy->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
-                }
-                if (enemy->getattacktime()) {
-                    auto res = enemy->createAttack(_assets, _scale);
-                    addObstacle(std::get<0>(res), std::get<1>(res));
-                    enemy->setattacktime(false);
-                    enemy->setshooted(false);
-                }
-            }
-            else if (distance >= CHASE_THRESHOLD * 2 && enemy->isChasing()) {
-                enemy->setIsChasing(false);
-            }
+            enemy->updatePlayerDistance(_avatar->getPosition());
+			if (enemy->getattacktime()) {
+				auto res = enemy->createAttack(_assets, _scale);
+				addObstacle(std::get<0>(res), std::get<1>(res));
+				enemy->setattacktime(false);
+				enemy->setshooted(false);
+			}
+
+
+            
             if (enemy->getHealth() <= 0) {
                 removeEnemy(enemy.get());
+            }
+            else {
+            //enemy animations. If enemy->activeAction is not active, activate the current action.
+                if (!enemy->isActivated()) {
+                    if (enemy->getActiveAction() == "") continue;
+                    enemy->setActivated(true);
+                    
+                    _actionManager->clearAllActions(enemy->getSceneNode());
+                    std::string actionName = enemy->getActiveAction();
+                    enemy->animate(actionName);
+                    auto action = enemy->getAction(actionName);
+                    if (enemy->usesID()) {
+                        actionName += enemy->getId();
+                    }
+                    _actionManager->activate(actionName, action, enemy->getSceneNode());
+                }
+                else {
+                    if (!_actionManager->isActive(enemy->getActiveAction() + (enemy->usesID() ? enemy->getId() : ""))) {
+						enemy->setFinished(true);
+                        enemy->setActivated(false);
+					}
+                }
             }
             enemy->update(dt);
         }
@@ -840,6 +942,11 @@ void GameScene::preUpdate(float dt) {
         
     }
 
+    if ((_afterimages.size() > 4 || (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() > _avatar->getFloatyFrames())) && !_afterimages.empty()) {
+        std::shared_ptr<scene2::SceneNode> afterimage = _afterimages.front();
+        _afterimages.erase(_afterimages.begin());
+        removeChild(afterimage);
+    }
 }
 
 
@@ -990,18 +1097,6 @@ void GameScene::postUpdate(float remain) {
 
     // Add a bullet AFTER physics allows it to hang in front
     // Otherwise, it looks like bullet appears far away
-    _avatar->setShooting(_input->didFire());
-    if (_avatar->isShooting() && !_actionManager->isActive("attack")) {
-        //createAttack(false);
-        auto att = _avatar->createAttack(getAssets(), _scale);
-        addObstacle(std::get<0>(att), std::get<1>(att), true);
-        _attacks.push_back(std::get<0>(att));
-
-        auto attackAction = _avatar->getAction("attack");
-        _avatar->animate("attack");
-        _actionManager->clearAllActions(_avatar->getSceneNode());
-        _actionManager->activate("attack", attackAction, _avatar->getSceneNode());
-    }
 
 
 
@@ -1031,8 +1126,12 @@ void GameScene::postUpdate(float remain) {
                 currentLevel= level2;
                 reset();
             }
-            else {
+            else if (currentLevel == level3) {
                 currentLevel = level1;
+                reset();
+            }
+            else {
+                currentLevel = level3;
                 reset();
             }
         }
@@ -1095,49 +1194,6 @@ void GameScene::setFailure(bool value) {
 		_losenode->setVisible(false);
 		_countdown = -1;
 	}
-}
-
-
-/**
- * Scuffed attack for the player.
- */
-void GameScene::createAttack(bool display) {
-	Vec2 pos = _avatar->getPosition();
-	pos.x += (_avatar->isFacingRight() ? ATTACK_OFFSET_H : -ATTACK_OFFSET_H);
-    pos.y += ATTACK_OFFSET_V;
-    std::shared_ptr<Texture> image;
-    if (_avatar->isFacingRight()) {
-        image = _assets->get<Texture>(ATTACK_TEXTURE_R);
-    }
-    else {
-        image = _assets->get<Texture>(ATTACK_TEXTURE_L);
-    }
-
-
-	std::shared_ptr<Attack> attack = Attack::alloc(pos, 
-        cugl::Size(0.6*ATTACK_W * image->getSize().width / _scale, 
-        ATTACK_H * image->getSize().height / _scale));
-
-	attack->setName(ATTACK_NAME);
-    attack->setDensity(HEAVY_DENSITY);
-    attack->setBullet(true);
-    attack->setGravityScale(0);
-    attack->setDebugColor(DEBUG_COLOR);
-    attack->setDrawScale(_scale);
-
-
-
-	std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
-    attack->setSceneNode(sprite);
-    sprite->setVisible(display);
-    sprite->setPosition(pos);
-
-	addObstacle(attack, sprite, true);
-
-	std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
-	AudioEngine::get()->play(PEW_EFFECT,source, false, EFFECT_VOLUME, true);
-
-    _attacks.push_back(attack);
 }
 
 template<typename T>
@@ -1250,7 +1306,10 @@ void GameScene::save() {
     std::string path = cugl::filetool::join_path({ root,"save.json" });*/
 
     //Should only change nighttime save data unless level was completed, in which case change level/chapter accordingly.
-    auto reader = JsonReader::alloc("./save.json");
+    std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });
+
+    auto reader = JsonReader::alloc(path);
 
     std::shared_ptr<JsonValue> prev_json = reader->readJson();
     reader->close();
@@ -1310,7 +1369,7 @@ void GameScene::save() {
     CULog("appended");
     json->appendValue("test", 0.0f);
 
-    auto writer = JsonWriter::alloc("./save.json");
+    auto writer = JsonWriter::alloc(path);
 
     writer->writeJson(json);
     
@@ -1325,7 +1384,9 @@ void GameScene::loadSave() {
     //CULog("PATH");
     //CULog(path.c_str());
 
-    auto reader = JsonReader::alloc("./save.json");
+    std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });
+    auto reader = JsonReader::alloc(path);
 
     std::shared_ptr<JsonValue> loaded_json = reader->readJson();
 

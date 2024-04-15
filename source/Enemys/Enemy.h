@@ -47,6 +47,7 @@ class GameScene;
 enum class EnemyType {
     shrimp, 
     rice, 
+    rice_soldier,
     egg,
     carrot,
     beef
@@ -64,8 +65,6 @@ protected:
     int _direction;
     /** Whether the enemy is currently on the ground */
     //bool _isGrounded;
-    /** The node for visual representation of the enemy */
-    std::shared_ptr<cugl::scene2::SceneNode> _node;
     /** Whether the enemy is aggroed*/
     bool _isChasing;
 
@@ -109,11 +108,16 @@ protected:
     //distance to player = player position - enemy position
     cugl::Vec2 _distanceToPlayer;
 
+    /**used for soldier rice */
+    cugl::Vec2 _targetPosition;
+    float _closeEnough;
 
+    /**Limits on movement for egg and beef*/
+    cugl::Spline2 _limit;
 
+    cugl::Vec2 _lastVelocity;
 
-
-
+    
 
 
 public:
@@ -133,8 +137,11 @@ public:
     /** default constructor, sets both gesture sequences to the default for that enemy type*/
     virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type);
 
+    virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type, cugl::Spline2 limit);
     /**init with gesture sequences*/
     virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type, std::vector<std::string> seq1, std::vector<std::string> seq2);
+
+    virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type, std::vector<std::string> seq1, std::vector<std::string> seq2, cugl::Spline2 limit);
 
     /**
      * Creates and returns a new enemy at the given position with the specified size and type.
@@ -150,12 +157,26 @@ public:
 
 
 
+    /**Allocs with animations defined from json.
+    * 
+    * */
+    static std::shared_ptr<EnemyModel> allocWithConstants(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::shared_ptr<AssetManager> _assets,EnemyType type) {
+        std::shared_ptr<EnemyModel> result = std::make_shared<EnemyModel>();
+        bool res = result->init(pos, size, scale, type);
+
+        if (res) {
+            CULog(typeToStr(type).c_str());
+            result->loadAnimationsFromConstant(typeToStr(type), _assets);
+        }
+
+        return res ? result : nullptr;
+    }
+
     /**
      * Sets the scene graph node representing this enemy.
      *
      * @param node The scene graph node representing this enemy.
      */
-    void setSceneNode(const std::shared_ptr<cugl::scene2::SceneNode>& node);
 
     void setGrounded(bool value) { _isGrounded = value; };
 
@@ -166,8 +187,6 @@ public:
     int getDirection() const { return _direction; }
 
     void setDirection(int d) { _direction = d; }
-
-    const std::shared_ptr<cugl::scene2::SceneNode>& getSceneNode() const { return _node; }
 
     void setIsChasing(bool isChasing);
 
@@ -261,12 +280,28 @@ public:
 
     std::string getNextState(std::string state);
 
+    /**Sets the predefined path limits, still wip */
+    void setLimit(cugl::Spline2 limit) { _limit = limit; }
+
+    /**Sets the target location to move to for rice soldiers */
+    void setTargetPosition(cugl::Vec2 target) { _targetPosition = target; }
+
+    std::string getState() { return _state; }
+
+    virtual std::string updateAnimation();
+
+    void setActiveAction(std::string action) {
+        Entity::setActiveAction(action);
+    };
+
     static std::string typeToStr(EnemyType type) {
         switch (type) {
         case EnemyType::shrimp:
             return "shrimp";
         case EnemyType::rice:
             return "rice";
+        case EnemyType::rice_soldier:
+            return "rice_soldier";
         case EnemyType::egg:
             return "egg";
         case EnemyType::carrot:
@@ -287,6 +322,8 @@ public:
             return { "pigtail", "v", "circle" };
         case EnemyType::rice:
             return { "circle", "circle", "pigtail" };
+        case EnemyType::rice_soldier:
+            return { "circle", "circle", "pigtail" };
         case EnemyType::egg:
             return { "v", "v", "v", };
         case EnemyType::carrot:
@@ -305,6 +342,8 @@ public:
             return buff::attack;
         case EnemyType::rice:
             return buff::defense;
+        case EnemyType::rice_soldier:
+            return buff::defense;
         case EnemyType::egg:
             return buff::jump;
         case EnemyType::carrot:
@@ -314,6 +353,25 @@ public:
         }
         return buff::none;
     };
+
+    /**Dict for enemy type to aggro range. */
+    static float typeToAggroRange(EnemyType type) {
+		switch (type) {
+		case EnemyType::shrimp:
+			return 10.0f;
+		case EnemyType::rice:
+			return 5.0f;
+		case EnemyType::rice_soldier:
+			return 1.0f;
+		case EnemyType::egg:
+			return 12.0f;
+		case EnemyType::carrot:
+			return 10.0f;
+		case EnemyType::beef:
+			return 10.0f;
+		}
+		return 0.0f;
+	};
 
 };
 #endif /* __ENEMY_MODEL_H__ */

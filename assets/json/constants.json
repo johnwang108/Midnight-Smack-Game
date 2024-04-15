@@ -1,0 +1,267 @@
+{
+    "entity" : "bull",
+    "animation" : "bullAttack",
+    "su": {
+        "idle": {
+            "sheet": "su_idle",
+            "rows": 4,
+            "cols": 4,
+            "frames": 16,
+            "duration": 1.0
+        },
+        "idle_blink": {
+            "sheet": "su_idle_blink",
+            "rows": 4,
+            "cols": 5,
+            "frames": 18,
+            "duration": 2.0
+        },
+        "attack": {
+            "sheet": "su_attack_sheet",
+            "rows": 4,
+            "cols": 5,
+            "frames": 18,
+            "duration": 0.6
+        },
+        "recover": {
+            "sheet": "su_attack_recover",
+            "rows": 3,
+            "cols": 4,
+            "frames": 10,
+            "duration": 0.83
+        },
+        "run": {
+            "sheet": "su_run",
+            "rows": 3,
+            "cols": 4,
+            "frames": 10,
+            "duration": 0.83
+        },
+        "jump_up": {
+            "sheet": "su_jump_airborne_up",
+            "rows": 2,
+            "cols": 2,
+            "frames": 3,
+            "duration": 0.25
+        },
+        "jump_down": {
+            "sheet": "su_jump_airborne_down",
+            "rows": 2,
+            "cols": 2,
+            "frames": 3,
+            "duration": 0.25
+        },
+        "jump_land": {
+            "sheet": "su_jump_land",
+            "rows": 2,
+            "cols": 2,
+            "frames": 3,
+            "duration": 0.25
+        },
+        "jump_ready": {
+            "sheet": "su_jump_ready",
+            "rows": 1,
+            "cols": 2,
+            "frames": 2,
+            "duration": 0.16
+        },
+        "air_attack": {
+            "sheet": "su_air_attack",
+            "rows": 3,
+            "cols": 3,
+            "frames": 8,
+            "duration": 0.6
+        },
+        "air_recover": {
+            "sheet": "su_air_roll",
+            "rows": 2,
+            "cols": 2,
+            "frames": 3,
+            "duration": 0.25
+        }
+    },
+    "rice" : {
+        "riceAttack":{
+            "sheet": "riceAttack",
+            "rows": 3,
+            "cols": 4,
+            "frames": 11,
+            "duration": 0.71428
+        },
+        "riceEndWalk":{
+            "sheet": "riceEndWalk",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 0.5
+        },
+        "riceFall":{
+            "sheet": "riceFall",
+            "rows": 2,
+            "cols": 2,
+            "frames": 3,
+            "duration": 0.25
+        },
+        "riceIdle":{
+            "sheet": "riceIdle",
+            "rows": 2,
+            "cols": 3,
+            "frames": 5,
+            "duration": 0.41667
+        },
+        "riceJump":{
+            "sheet": "riceJump",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 0.25
+        },
+        "riceLand":{
+            "sheet": "riceLand",
+            "rows": 3,
+            "cols": 4,
+            "frames": 10,
+            "duration": 0.8333
+        },
+        "riceStartJump":{
+            "sheet": "riceStartJump",
+            "rows": 2,
+            "cols": 3,
+            "frames": 6,
+            "duration": 0.5
+        },
+        "riceStartWalk":{
+            "sheet": "riceStartWalk",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 0.333
+        },
+        "riceWalk":{
+            "sheet": "riceWalk",
+            "rows": 3,
+            "cols": 3,
+            "frames": 8,
+            "duration": 0.667
+        },
+        "riceHurt":{
+            "sheet": "riceHurt",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 0.333
+        }, 
+        "riceDeath":{
+            "sheet": "riceDeath",
+            "rows": 3,
+            "cols": 4,
+            "frames": 9,
+            "duration": 1.25
+        },
+        "riceYell":{
+            "sheet": "riceLeader",
+            "rows": 3,
+            "cols": 4,
+            "frames": 12,
+            "duration": 1.1667
+        }
+    },
+    "rice_soldier": {
+        "riceAttack":{
+            "sheet": "riceAttack",
+            "rows": 3,
+            "cols": 4,
+            "frames": 11,
+            "duration": 0.71428
+        },
+        "riceEndWalk":{
+            "sheet": "riceEndWalk",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 0.5
+        },
+        "riceFall":{
+            "sheet": "riceFall",
+            "rows": 2,
+            "cols": 2,
+            "frames": 3,
+            "duration": 0.25
+        },
+        "riceIdle":{
+            "sheet": "riceIdle",
+            "rows": 2,
+            "cols": 3,
+            "frames": 5,
+            "duration": 0.41667
+        },
+        "riceJump":{
+            "sheet": "riceJump",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 0.25
+        },
+        "riceLand":{
+            "sheet": "riceLand",
+            "rows": 3,
+            "cols": 4,
+            "frames": 10,
+            "duration": 0.8333
+        },
+        "riceStartJump":{
+            "sheet": "riceStartJump",
+            "rows": 2,
+            "cols": 3,
+            "frames": 6,
+            "duration": 0.5
+        },
+        "riceStartWalk":{
+            "sheet": "riceStartWalk",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 0.333
+        },
+        "riceWalk":{
+            "sheet": "riceWalk",
+            "rows": 3,
+            "cols": 3,
+            "frames": 8,
+            "duration": 0.667
+        },
+        "riceHurt":{
+            "sheet": "riceHurt",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 0.333
+        }, 
+        "riceDeath":{
+            "sheet": "riceDeath",
+            "rows": 3,
+            "cols": 4,
+            "frames": 9,
+            "duration": 1.25
+        },
+        "riceAcknowledge":{
+            "sheet": "riceSoldier",
+            "rows": 4,
+            "cols": 4,
+            "frames": 15,
+            "duration": 1.5
+        }
+    },
+    "egg": {},
+    "shrimp": {},
+    "beef": {
+        "beefIdle": {
+            "sheet": "beefIdle",
+            "rows": 3,
+            "cols": 3,
+            "frames": 7,
+            "duration": 1.0
+        }
+    },
+    "carrot" : {}
+}

@@ -9,12 +9,14 @@
 
 #include "Attack.h"
 
+#define NUMBERS "0123456789"
+
 using namespace cugl;
 
 /**Class that the player and enemy classes inherit from.Shared behavior : animation, debug nodes, health, attacks,. */
 
 class Entity : public cugl::physics2::CapsuleObstacle {
-
+	
 protected:
 
 	bool _isGrounded;
@@ -45,11 +47,20 @@ protected:
 
 	std::string _activeAction;
 
-	cugl::Size _dimension;
+	bool _activated;
+
+	bool _finished;
+
+	int _entityID;
+
+	bool _useID;
+
 
 private:
 
 public:
+
+	static int ID;
 
 	/**Default constructor*/
 	Entity() : CapsuleObstacle() {};
@@ -69,14 +80,52 @@ public:
 
 	std::shared_ptr<cugl::scene2::Animate> getAction(std::string action_name) { return _actions[action_name]; };
 
+	/**Unused*/
 	void getInfo(std::string action_name) {};
 
-	std::string getActiveAction() { return _activeAction; };
+	std::string getActiveAction() {
+		//if (_useID) {
+		//	size_t i = _activeAction.find_first_of(NUMBERS);
+		//	return _activeAction.substr(0, i);
+		//}
+		return _activeAction; };
 
 	//default constructor. Should not be used
 	virtual bool init(){ return false; }
 
 	virtual bool init(cugl::Vec2 pos, cugl::Size size);
+
+	void loadAnimationsFromConstant(std::string entityName, std::shared_ptr<AssetManager> _assets);
+
+	virtual std::string updateAnimation() { return ""; };
+
+	void setActiveAction(std::string actionName) { 
+		std::string name = actionName;
+		//if (_useID) {
+		//	name += getId();
+		//}
+		if (_activeAction == name && !_finished) return;
+		_activeAction = name;
+		_activated = false;
+		_finished = false;
+	};
+
+	void setActivated(bool act) { 
+		_activated = act; };
+
+	bool isActivated() { return _activated; };
+
+	void setFinished(bool fin) { _finished = fin; };
+
+	bool isFinished() { return _finished; };
+
+	std::string getId() { return std::to_string(_entityID); };
+
+	bool usesID() { return _useID; };
+	
+	bool isAnimating(std::string actionName) { return _activeAction == actionName && isActivated() && !isFinished(); };
+
+	std::shared_ptr<EntitySpriteNode> getSpriteNode() { return _node; };
 
 };
 #endif /* __ENTITY_H__ */

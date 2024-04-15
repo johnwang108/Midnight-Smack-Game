@@ -42,15 +42,9 @@ void GameScene::beginContact(b2Contact* contact) {
 
 
     // See if we have landed on the ground.
-    if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
-        (_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
+    if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1 && bd1->getName() != "attack") ||
+        (_avatar->getSensorName() == fd1 && _avatar.get() != bd2 && bd2->getName() != "attack")) {
         _avatar->setGrounded(true);
-
-        ////animate
-        //_avatar->animate("jump_land");
-        //auto jumpAction = _avatar->getAction("jump_land");
-        //_actionManager->clearAllActions(_avatar->getSceneNode());
-        //_actionManager->activate("jump_land", jumpAction, _avatar->getSceneNode());
 
         // Could have more than one ground
         _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
@@ -58,8 +52,8 @@ void GameScene::beginContact(b2Contact* contact) {
 
     for (auto& _enemy : _enemies) {
         if (!_enemy->isRemoved()) {
-            if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
-                (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
+            if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1 && bd1->getName() != "attack") ||
+                (_enemy->getSensorName() == fd1 && _enemy.get() != bd2) && bd2->getName() != "attack") {
                     _enemy->setGrounded(true);
             }
 
@@ -78,8 +72,8 @@ void GameScene::beginContact(b2Contact* contact) {
             _Bull->takeDamage(0, direction, true);
             _BullactionManager->clearAllActions(_Bull->getSceneNode());
             auto bullCrash = _Bull->getAction("bullCrash");
-            _BullactionManager->activate("bullCrash", bullCrash, _Bull->getSceneNode());
             _Bull->animate("bullCrash");
+            _BullactionManager->activate("bullCrash", bullCrash, _Bull->getSceneNode());
         }
 
 
@@ -98,8 +92,8 @@ void GameScene::beginContact(b2Contact* contact) {
             _Bull->takeDamage(0, direction, true);
             _BullactionManager->clearAllActions(_Bull->getSceneNode());
             auto bullCrash = _Bull->getAction("bullCrash");
+            _Bull->animate("bullCrash");
             _BullactionManager->activate("bullCrash", bullCrash, _Bull->getSceneNode());
-           _Bull->animate("bullCrash");
         }
       //  popup(std::to_string(5), bullPos * _scale);
     }
@@ -171,26 +165,26 @@ void GameScene::beginContact(b2Contact* contact) {
     if (bd1->getName() == "shake" && bd2 == _avatar.get()) {
         Vec2 enemyPos = ((Attack*)bd1)->getPosition();
         Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x < enemyPos.x) ? -1 : 1;
+        int direction = (attackerPos.x < enemyPos.x) ? 1 : -1;
         _avatar->takeDamage(34, direction);
     }
     else if (bd2->getName() == "shake" && bd1 == _avatar.get()) {
         Vec2 enemyPos = ((Attack*)bd2)->getPosition();
         Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x < enemyPos.x) ? -1 : 1;
+        int direction = (attackerPos.x < enemyPos.x) ? 1 : -1;
         _avatar->takeDamage(34, direction);
     }
     if (bd1->getName() == "enemy_attack" && bd2 == _avatar.get()) {
         Vec2 enemyPos = ((Attack*)bd1)->getPosition();
         Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         _avatar->takeDamage(34, direction);
         removeAttack((Attack*)bd1);
     }
     else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
         Vec2 enemyPos = ((Attack*)bd2)->getPosition();
         Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
+        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         _avatar->takeDamage(34, direction);
         removeAttack((Attack*)bd2);
     }
@@ -243,9 +237,13 @@ void GameScene::beginContact(b2Contact* contact) {
     }
     else if (_avatar->getBodySensorName() == fd2 && bd1->getName() == "enemy") {
         Vec2 enemyPos = _avatar->getPosition();
-        Vec2 attackerPos = ((EnemyModel*)bd1)->getPosition();
+        EnemyModel* enemy = (EnemyModel*)bd1;
+        Vec2 attackerPos = enemy->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         _avatar->addTouching();
+        if (enemy->getType() == EnemyType::rice || enemy->getType() == EnemyType::rice_soldier) {
+            enemy->setActiveAction("riceAttack");
+        }
         _avatar->takeDamage(34, direction);
     }
 
@@ -316,7 +314,17 @@ void GameScene::endContact(b2Contact* contact) {
             _avatar->setGrounded(false);
         }
     }
-    
+
+
+    //Todo:: MAKE THIS BETTER ONCE BEN DONE WITH LEVEL EDITOR. FOR NOW JUST LOOP OVER ALL ENEMIES.
+    for (auto& _enemy : _enemies) {
+        if (!_enemy->isRemoved()) {
+            if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1 && bd1->getName() != "attack") ||
+                (_enemy->getSensorName() == fd1 && _enemy.get() != bd2) && bd2->getName() != "attack") {
+                _enemy->setGrounded(false);
+            }
+        }
+    }
 
     // Check if the player is no longer in contact with any walls
     bool p1 = (_avatar->getSensorName() == fd2);

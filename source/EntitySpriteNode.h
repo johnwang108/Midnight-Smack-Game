@@ -15,7 +15,6 @@ public:
         return (node->initWithSheet(texture, rows, cols, size) ? node : nullptr);
     }
 
-
 	void changeSheet(std::shared_ptr<cugl::Texture> texture, int rows, int cols, int size) {
         _cols = cols;
         _size = size;
@@ -25,6 +24,10 @@ public:
         setPolygon(_bounds);
         setTexture(texture);
         setFrame(0);
+	}
+
+    void setTransform(cugl::Affine2 transform) {
+		_combined = transform;
 	}
 };
 
