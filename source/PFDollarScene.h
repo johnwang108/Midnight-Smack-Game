@@ -91,6 +91,7 @@ protected:
 
     float _currentSimilarity; 
 
+
     std::vector<std::string> _validIngredients;
 
     std::shared_ptr<cugl::scene2::SceneNode> _bottomBar;
@@ -102,7 +103,7 @@ protected:
 
     std::shared_ptr<Ingredient> _ingredientToRemove; 
     std::shared_ptr<Ingredient> _currentlyHeldIngredient;
-
+    std::shared_ptr<Ingredient> _submittedIngredient;
 
     //technically unnecessary because ingredient knows if it is in pot but also easier to just store pointer
     std::shared_ptr<Ingredient> _ingredientInStation;
@@ -190,6 +191,12 @@ public:
     void setReadyToCook(bool ready) { _readyToCook = ready; }
 
     void launchIngredient(std::shared_ptr<Ingredient> ing);
+
+    void submitIngredient(std::shared_ptr<Ingredient> ing);
+
+    std::shared_ptr<Ingredient> getSubmittedIngredient() { return _submittedIngredient; }
+
+    void clearSubmittedIngredient() { _submittedIngredient.reset(); }
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */

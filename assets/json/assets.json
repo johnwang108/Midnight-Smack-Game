@@ -37,7 +37,7 @@
             "file": "textures/day/food/carrot.png"
         },
         "cutCarrot": {
-            "file": "textures/day/food/carrot.png"
+            "file": "textures/day/food/cutCarrot.png"
         },
         "beef": {
             "file": "textures/day/food/beef.png"
@@ -50,6 +50,9 @@
         },
         "barFilled": {
             "file": "textures/day/barFilled.png"
+        },
+        "barExpectation": {
+            "file": "textures/day/barExpectation.png"
         },
         "conveyorBar": {
             "file": "textures/day/conveyorBar.png"

@@ -7,10 +7,11 @@ Ingredient::Ingredient() {
 	Ingredient("", std::vector<std::string>(), 0);
 }
 
-Ingredient::Ingredient(std::string station, std::vector<std::string> gestures, float startTime) {
-	_station = station;
+Ingredient::Ingredient(std::string startStation, std::vector<std::string> gestures, float startTime) {
+	_startStation = startStation;
 	_gestureNames = gestures;
 	_startTime = startTime;
+	_validStations = {};
 	_beingHeld = false;
 	_falling = false;
 	_inPot = false;
@@ -23,6 +24,10 @@ void Ingredient::init(std::shared_ptr<Texture> texture) {
 	_inPot = false;
 	_launching = false;
 	_poly =  PolygonNode::allocWithTexture(texture);
+	if (_button != nullptr) {
+		_button->dispose();
+		_button.reset();
+	}
 	_button = Button::alloc(_poly);
 	_button->addListener([=](const std::string& name, bool down) {
 		_beingHeld = down;

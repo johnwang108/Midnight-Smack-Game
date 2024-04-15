@@ -8,8 +8,9 @@
 class Ingredient {
 private: 
 	std::string _name;
-	std::string _station;
+	std::string _startStation;
 	std::vector<std::string> _gestureNames;
+	std::vector <std::string> _validStations;
 	float _startTime;
 	bool _falling;
 	bool _inPot;
@@ -17,6 +18,7 @@ private:
 	std::shared_ptr<cugl::scene2::Button> _button;
 	bool _beingHeld;
 	bool _launching;
+
 public: 
 	
 	
@@ -36,10 +38,13 @@ public:
 	void setStartTime(float time) { _startTime = time; };
 
 
-	std::string getStation() { return _station + "Station"; }
+	std::string getStartStation() { return _startStation + "Station"; }
 
-	void setStation(std::string station) { _station = station; };
+	void setStartStation(std::string station) { _startStation = station; };
 
+	std::vector<std::string> getValidStations() { return _validStations; }
+
+	void setValidStations(std::vector<std::string> stations) { _validStations = stations; };
 	
 	std::vector<std::string> getGestures() { return _gestureNames; }
 

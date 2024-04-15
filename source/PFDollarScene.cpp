@@ -94,6 +94,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	_lastResult = -1;
 	_justCompletedGesture = false;
 	_currentlyHeldIngredient = nullptr;
+	_submittedIngredient = nullptr;
 	_validIngredients = std::vector<std::string>();
 	//todo fix this
 	_readyToCook = false;
@@ -312,8 +313,8 @@ void DollarScene::update(float timestep) {
 			//add ingredient to pot somehow lmao
 			bool isValidIng = false;
 
-			for (std::string ing_name : _validIngredients) {
-				if (ing->getName() == ing_name) isValidIng = true;
+			for (std::string station_name : ing->getValidStations()) {
+				if (getName() == station_name) isValidIng = true;
 			}
 
 			if (isValidIng) {
@@ -514,6 +515,13 @@ void DollarScene::addIngredientToStation(std::shared_ptr<Ingredient> ing) {
 		}
 	}
 
+	// any ingredient added to prep is submitted
+	if (getName() == "prep") {
+		submitIngredient(ing);
+		return;
+	}
+
+
 	//add it to the station, and let both ingredient and station know. Also store which is ing is in
 	ing->setInPot(true);
 	setIngredientInStation(ing);
@@ -546,8 +554,51 @@ void DollarScene::handleCompletedIngredient(std::shared_ptr<Ingredient> ing) {
 	_ingredientInStation.reset();
 	ing->setInPot(false);
 	_currentTargetGestures.clear();
+
+	//CULog("%s", getName().c_str());
+	//CULog("Ing name: %s", ing->getName().c_str());
+	//put this somewhere better
+	std::shared_ptr<JsonReader> newTextureReader = JsonReader::allocWithAsset("json/dayIngredientGestures.json");
+	std::shared_ptr<JsonValue> newTextureVals = newTextureReader->readJson();
+
+	std::string ingName = ing->getName();
+	ingName[0] = toupper(ingName[0]);
+	//CULog("%s", (getName() + ingName).c_str());
+	std::shared_ptr<JsonValue> newIngredientJSON = newTextureVals->get((getName() + ingName));
+	ing->setName(getName() + ingName);
+
+
+	std::shared_ptr<Texture> tex = _assets->get<Texture>(newIngredientJSON->get("texture")->asString());
+	ing->init(tex);
 	std::shared_ptr<scene2::Button> button = ing->getButton();
 
+
+	std::vector<std::string> gestures = {};
+
+	std::shared_ptr<JsonValue> jGests = newIngredientJSON->get("gestures");
+	if (jGests->type() == JsonValue::Type::ArrayType) {
+		for (int j = 0; j < jGests->size(); j++) {
+			gestures.push_back(jGests->get(j)->asString());
+		}
+	}
+	else {
+		CULogError("Gestures is not an array type");
+	}
+
+	ing->setGestures(gestures);
+	std::vector<std::string> stations = {};
+
+	std::shared_ptr<JsonValue> jStations = newIngredientJSON->get("valid_stations");
+	if (jStations->type() == JsonValue::Type::ArrayType) {
+		for (int j = 0; j < jStations->size(); j++) {
+			stations.push_back(jStations->get(j)->asString());
+		}
+	}
+	else {
+		CULogError("Valid Stations is not an array type");
+	}
+
+	ing->setValidStations(stations);
 
 	addChild(button);
 	button->activate();
@@ -555,6 +606,7 @@ void DollarScene::handleCompletedIngredient(std::shared_ptr<Ingredient> ing) {
 
 	launchIngredient(ing);
 }
+
 
 //draws a boundary rectangle
 //void DollarScene::draw(const std::shared_ptr<SpriteBatch>& batch, const Affine2& transform, Color4 tint) {
@@ -628,4 +680,13 @@ void DollarScene::reset() {
 void DollarScene::launchIngredient(std::shared_ptr<Ingredient> ing) {
 	ing->setFalling(false);
 	ing->setLaunching(true);
+}
+
+void DollarScene::submitIngredient(std::shared_ptr<Ingredient> ing) {
+	_submittedIngredient = ing;
+	auto it = std::find(_currentIngredients.begin(), _currentIngredients.end(), ing);
+	if (it != _currentIngredients.end()) {
+		_currentIngredients.erase(it);
+	}
+	CULog("Submitted Ingredient");
 }
