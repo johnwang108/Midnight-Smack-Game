@@ -104,6 +104,8 @@ protected:
 
     std::unordered_map<std::string, std::shared_ptr<EnemyModel>> _enemyMap;
 
+    std::vector<std::shared_ptr<scene2::SpriteNode>> _afterimages;
+
 
     //Valid targets for cook-time
     std::vector<std::shared_ptr<EnemyModel>> _vulnerables;

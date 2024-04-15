@@ -496,8 +496,11 @@ void MultiScreenScene::reset() {
 void MultiScreenScene::save() {
 	//save the current state of the game
 	//should only change daytime and persistent save data
-	auto reader = JsonReader::alloc("./save.json");
-	auto writer = JsonWriter::alloc("./save.json");
+	std::string root = cugl::Application::get()->getSaveDirectory();
+	std::string path = cugl::filetool::join_path({ root,"save.json" });
+
+	auto reader = JsonReader::alloc(path);
+	auto writer = JsonWriter::alloc(path);
 
 	std::shared_ptr<JsonValue> json = JsonValue::allocObject();
 
@@ -512,7 +515,9 @@ void MultiScreenScene::save() {
 }
 
 void MultiScreenScene::loadSave() {
-	auto reader = JsonReader::alloc("./save.json");
+	std::string root = cugl::Application::get()->getSaveDirectory();
+	std::string path = cugl::filetool::join_path({ root,"save.json" });
+	auto reader = JsonReader::alloc(path);
 }
 
 void MultiScreenScene::endDay() {

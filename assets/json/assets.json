@@ -137,6 +137,12 @@
         "su_jump_ready": {
             "file": "textures/Sheets/Su/su_jump_ready.png"
         },
+        "su_air_attack": {
+            "file": "textures/Sheets/Su/suAirAttackUp.png"
+        },
+        "su_air_roll" : {
+            "file": "textures/Sheets/Su/suAirRoll.png"
+        },
         "background-1": {
             "file": "textures/background-image-1.png"
         },

@@ -25,6 +25,10 @@ public:
         setTexture(texture);
         setFrame(0);
 	}
+
+    void setTransform(cugl::Affine2 transform) {
+		_combined = transform;
+	}
 };
 
 #endif /* __ENTITY_SPRITE_NODE_H__ */

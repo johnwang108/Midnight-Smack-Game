@@ -229,9 +229,13 @@ void GameScene::beginContact(b2Contact* contact) {
     }
     else if (_avatar->getBodySensorName() == fd2 && bd1->getName() == "enemy") {
         Vec2 enemyPos = _avatar->getPosition();
-        Vec2 attackerPos = ((EnemyModel*)bd1)->getPosition();
+        EnemyModel* enemy = (EnemyModel*)bd1;
+        Vec2 attackerPos = enemy->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         _avatar->addTouching();
+        if (enemy->getType() == EnemyType::rice || enemy->getType() == EnemyType::rice_soldier) {
+            enemy->setActiveAction("riceAttack");
+        }
         _avatar->takeDamage(34, direction);
     }
 

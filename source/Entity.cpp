@@ -1,14 +1,19 @@
 #include "Entity.h"
 
+int Entity::ID = 0;
+
 bool Entity::init(cugl::Vec2 pos, cugl::Size size) {
     /*cugl::Rect rect = cugl::Rect(Vec2::ZERO, size);
     _dimension = size;
     return PolygonObstacle::init(rect);*/
 
-    return CapsuleObstacle::init(pos, size);
+    _entityID = ID++;
 
+    CULog("Entity ID: %d", _entityID);
     _activated = false;
     _finished = false;
+    _activeAction = "";
+    return CapsuleObstacle::init(pos, size);
 }
 /** Register a new animation in the dict*/
 void Entity::addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool isPassive) {
@@ -23,30 +28,35 @@ void Entity::addActionAnimation(std::string action_name, std::shared_ptr<cugl::T
 
 /**Unsure if override needed. Begins an animation, switching the sheet if needed.*/
 void Entity::animate(std::string action_name) {
+    std::string name = action_name;
+
     //info = {int rows, int cols, int size, float duration, bool isPassive}
-    auto info = _info[action_name];
+    auto info = _info[name];
 
     //first, switch the sheet
-    changeSheet(action_name);
-    if (action_name.find("bull") != std::string::npos) {
+    changeSheet(name);
+    if (name.find("bull") != std::string::npos) {
 		_node->setScale(0.5/4);
     }
-    else if (action_name.find("SFR") != std::string::npos) {
+    else if (name.find("SFR") != std::string::npos) {
         _node->setScale(0.3);
     }
-    else if (action_name == "idle") {
+    else if (name == "idle") {
         _node->setScale(0.35 / 4);
     }
     else {
         _node->setScale(0.35 / 4);
     }
-    _activeAction = action_name;
+    _activeAction = name;
 }
 
 void Entity::changeSheet(std::string action_name) {
     //info = {int rows, int cols, int size, float duration, bool isPassive}
     try {
         auto info = _info[action_name];
+  //      for (auto it = _info.begin(); it != _info.end(); ++it) {
+		//	CULog("Action name: %s", it->first.c_str());
+		//}
         _node->changeSheet(_sheets[action_name], std::get<0>(info), std::get<1>(info), std::get<2>(info));
     }
     catch (int e) {

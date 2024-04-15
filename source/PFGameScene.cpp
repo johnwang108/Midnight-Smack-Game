@@ -305,7 +305,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _actionManager = cugl::scene2::ActionManager::alloc();
 
-    
+    _afterimages = std::vector < std::shared_ptr < scene2::SpriteNode >> ();
 
     //15 frame attack animation
 
@@ -455,7 +455,9 @@ void GameScene::addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj
         scene2::SceneNode* weak = node.get(); // No need for smart pointer in callback
         obj->setListener([=](physics2::Obstacle* obs){
             weak->setPosition(obs->getPosition()*_scale);
-            weak->setAngle(obs->getAngle());
+            if (weak->getName() != "avatar") {
+                weak->setAngle(obs->getAngle());
+            }
         });
     }
 }
@@ -557,13 +559,13 @@ void GameScene::preUpdate(float dt) {
 
 
         //animate jumps if not attacking or taking damage
-        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && _avatar->getLinearVelocity().y > 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && _avatar->getLinearVelocity().y > 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
             _avatar->animate("jump_up");
             auto jumpAction = _avatar->getAction("jump_up");
             _actionManager->clearAllActions(_avatar->getSceneNode());
             _actionManager->activate("jump_up", jumpAction, _avatar->getSceneNode());
         }
-        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && _avatar->getLinearVelocity().y < 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && _avatar->getLinearVelocity().y < 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
             _avatar->animate("jump_down");
             auto jumpAction = _avatar->getAction("jump_down");
             _actionManager->clearAllActions(_avatar->getSceneNode());
@@ -592,7 +594,7 @@ void GameScene::preUpdate(float dt) {
             }
             else {
                 //Todo:: blink idle
-                if (((float)rand() / RAND_MAX) < 0.5) {
+                if (((float)rand() / RAND_MAX) < 0.0f) {
                     _avatar->animate("idle_blink");
                     auto idleAction = _avatar->getAction("idle_blink");
                     _actionManager->activate("idle_blink", idleAction, _avatar->getSceneNode());
@@ -605,18 +607,52 @@ void GameScene::preUpdate(float dt) {
             }
         }
 
+            if (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() < _avatar->getFloatyFrames() && _avatar->getDashCooldownMax() - _avatar->getDashCooldown() != 0 && _avatar->getDashCooldown() % 3  == 1) {
+				std::shared_ptr<scene2::SpriteNode> afterimage = scene2::SpriteNode::allocWithSprite(_avatar->getSpriteNode());
+                afterimage->setAnchor(Vec2(0.5, 0.35));
+                afterimage->setPosition(_avatar->getSceneNode()->getPosition());
+                afterimage->setPositionY(afterimage->getPositionY() + 0.0f);
+                Color4 b = Color4::CYAN;
+                b.a = 255;
+                afterimage->setColor(b);
+                afterimage->setScale(_avatar->getSpriteNode()->getScale());
+                _afterimages.push_back(afterimage);
+                addChild(afterimage);
+			}
+
         _avatar->setShooting(_input->didFire());
-        if (_avatar->isShooting() && (!_actionManager->isActive("attack"))) {
+        if (_avatar->isShooting() && (!_actionManager->isActive("attack") && !_actionManager->isActive("air_attack"))) {
             auto att = _avatar->createAttack(getAssets(), _scale);
             addObstacle(std::get<0>(att), std::get<1>(att), true);
             _attacks.push_back(std::get<0>(att));
 
+            //if (_avatar->isGrounded()) {
             auto attackAction = _avatar->getAction("attack");
             _avatar->animate("attack");
             _actionManager->clearAllActions(_avatar->getSceneNode());
             _actionManager->activate("attack", attackAction, _avatar->getSceneNode());
+            //}
+            //else {
+            //    float horiz = _input->getHorizontal();
+            //    float vert = _input->getVertical();
+            //    cugl::Vec2 dir = Vec2(horiz, vert).normalize();
+            //    float angle = dir.getAngle();
+            //   
+            //    Affine2 aff = _avatar->getSpriteNode()->getTransform();
+            //    aff.rotate(angle);
+            //    _avatar->getSpriteNode()->setTransform(aff);
+
+            //    auto attackAction = _avatar->getAction("air_attack");
+            //    _avatar->animate("air_attack");
+            //    _actionManager->clearAllActions(_avatar->getSceneNode());
+            //    _actionManager->activate("air_attack", attackAction, _avatar->getSceneNode());
+            //}
         }
     }
+    if (!_actionManager->isActive("air_attack")) {
+        _avatar->getSceneNode()->setAngle(0.0);
+    }
+
 
     if (_input->didAnimate() && _debugAnimTarget != nullptr) {
         CULog("OVERRIDE ANIM");
@@ -630,8 +666,6 @@ void GameScene::preUpdate(float dt) {
     if (_overrideAnim && !_actionManager->isActive(_debugAnimName)) {
 		_overrideAnim = false;
 	}
-
-
     
     _dollarnode->update(dt);
 
@@ -685,8 +719,6 @@ void GameScene::preUpdate(float dt) {
                     CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
                 }
                 message = _feedbackMessages[_dollarnode->getLastResult()];
-
-
                 popup(message, cugl::Vec2(_target->getPosition().x * _scale, _target->getPosition().y * 1.1 * _scale));
                 
                 _target = nullptr;
@@ -741,17 +773,22 @@ void GameScene::preUpdate(float dt) {
             else {
             //enemy animations. If enemy->activeAction is not active, activate the current action.
                 if (!enemy->isActivated()) {
+                    if (enemy->getActiveAction() == "") continue;
                     enemy->setActivated(true);
                     
                     _actionManager->clearAllActions(enemy->getSceneNode());
                     std::string actionName = enemy->getActiveAction();
                     enemy->animate(actionName);
                     auto action = enemy->getAction(actionName);
+                    if (enemy->usesID()) {
+                        actionName += enemy->getId();
+                    }
                     _actionManager->activate(actionName, action, enemy->getSceneNode());
                 }
                 else {
-                    if (!_actionManager->isActive(enemy->getActiveAction())) {
+                    if (!_actionManager->isActive(enemy->getActiveAction() + (enemy->usesID() ? enemy->getId() : ""))) {
 						enemy->setFinished(true);
+                        enemy->setActivated(false);
 					}
                 }
             }
@@ -849,6 +886,11 @@ void GameScene::preUpdate(float dt) {
         }
     }
 
+    if ((_afterimages.size() > 4 || (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() > _avatar->getFloatyFrames())) && !_afterimages.empty()) {
+        std::shared_ptr<scene2::SceneNode> afterimage = _afterimages.front();
+        _afterimages.erase(_afterimages.begin());
+        removeChild(afterimage);
+    }
 }
 
 

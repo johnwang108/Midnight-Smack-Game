@@ -73,6 +73,10 @@
 #define MAX_METER 100.0f
 
 #define METER_COST 60.0f
+#define floatyFrames   10
+
+/** Cooldown (in animation frames) for shooting */
+#define DASH_COOLDOWN  20
 
 
 #pragma mark -
@@ -662,6 +666,12 @@ public:
 
     float getLastDamageTime() { return _lastDamageTime; };
     float getHealthCooldown() { return _healthCooldown; };
+
+    int getDashCooldown() {return _dashCooldown; };
+
+    int getDashCooldownMax() { return DASH_COOLDOWN; }
+
+    int getFloatyFrames() { return floatyFrames; };
 
     float getAttackBuff() {
         if (_duration > 0) {

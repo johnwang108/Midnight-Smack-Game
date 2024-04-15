@@ -166,28 +166,42 @@ void Level1::populate(GameScene& scene) {
 	//cugl::Size shrimpSize = cugl::Size(2.0f, 2.0f);
 
 	Vec2 pos = SHRIMP_POS;
-	Size size = cugl::Size(2.0f, 2.0f);
+	Size size = cugl::Size(4.0f, 4.0f);
 	image = _assets->get<Texture>("beefIdle");
 
 	spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
 	std::shared_ptr<EnemyModel> _enemy = EnemyModel::allocWithConstants({ 30.0f, 6.0f }, size, _scale, _assets, EnemyType::beef);
 	spritenode->setScale(0.1f);
-	spritenode->setAnchor(Vec2(0.5, 0.35));
+	spritenode->setAnchor(Vec2(0.5, 0.5));
 	_enemy->setSceneNode(spritenode);
 	_enemy->setName(ENEMY_NAME);
 	_enemy->setDebugColor(DEBUG_COLOR);
-	_enemy->setLimit(cugl::Spline2(Vec2(1.0f, 1.0f), Vec2(50.0f, 1.0f)));
-	//scene.addObstacle(_enemy, spritenode);
-	//_enemies.push_back(_enemy);
+	_enemy->setLimit(cugl::Spline2(Vec2(0.0f, 0.3f), Vec2(100.0f, 0.3f)));
+	scene.addObstacle(_enemy, spritenode);
+	_enemies.push_back(_enemy);
 
 
-	cugl::Size riceSize = cugl::Size(1.0f, 2.0f);
+	cugl::Size riceSize = cugl::Size(1.0f, 1.5f);
+	cugl::Vec2 riceAnchor = cugl::Vec2(0.5, 0.30);
 
 	Vec2 rice_pos = RICE_POS;
 	image = _assets->get<Texture>("riceLeader");
 	_enemy = EnemyModel::allocWithConstants(rice_pos, riceSize, _scale, _assets, EnemyType::rice);
 	spritenode = EntitySpriteNode::allocWithSheet(image, 3,4,12);
 	spritenode->setScale(0.12f);
+	spritenode->setAnchor(riceAnchor);
+	_enemy->setSceneNode(spritenode);
+	_enemy->setName(ENEMY_NAME);
+	_enemy->setDebugColor(DEBUG_COLOR);
+	scene.addObstacle(_enemy, spritenode);
+	_enemies.push_back(_enemy);
+
+	rice_pos = RICE_POS;
+	image = _assets->get<Texture>("riceLeader");
+	_enemy = EnemyModel::allocWithConstants({20.0f, 6.0f}, riceSize, _scale, _assets, EnemyType::rice);
+	spritenode = EntitySpriteNode::allocWithSheet(image, 3, 4, 12);
+	spritenode->setScale(0.12f);
+	spritenode->setAnchor(riceAnchor);
 	_enemy->setSceneNode(spritenode);
 	_enemy->setName(ENEMY_NAME);
 	_enemy->setDebugColor(DEBUG_COLOR);
@@ -197,39 +211,47 @@ void Level1::populate(GameScene& scene) {
 	image = _assets->get<Texture>("riceSoldier");
 	std::shared_ptr<EnemyModel> _enemy1 = EnemyModel::allocWithConstants({27.0f, 6.0f}, riceSize, _scale, _assets, EnemyType::rice_soldier);
 	spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 15);
-	spritenode->setScale(0.12f);
+	spritenode->setScale(0.2f);
+	spritenode->setAnchor(riceAnchor);
 	_enemy1->setSceneNode(spritenode);
 	_enemy1->setName(ENEMY_NAME);
 	_enemy1->setDebugColor(DEBUG_COLOR);
 	scene.addObstacle(_enemy1, spritenode);
 	_enemies.push_back(_enemy1);
 
-	//image = _assets->get<Texture>("riceSoldier");
-	//std::shared_ptr<EnemyModel> _enemy2 = EnemyModel::allocWithConstants({ 29.0f, 6.0f }, riceSize, _scale, _assets, EnemyType::rice_soldier);
-	//spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 15);
-	//spritenode->setScale(0.12f);
-	//_enemy2->setSceneNode(spritenode);
-	//_enemy2->setName(ENEMY_NAME);
-	//_enemy2->setDebugColor(DEBUG_COLOR);
-	////scene.addObstacle(_enemy2, spritenode);
-	////_enemies.push_back(_enemy2);
+	image = _assets->get<Texture>("riceSoldier");
+	std::shared_ptr<EnemyModel> _enemy2 = EnemyModel::allocWithConstants({ 29.0f, 6.0f }, riceSize, _scale, _assets, EnemyType::rice_soldier);
+	spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 15);
+	spritenode->setScale(0.2f);
+	spritenode->setAnchor(riceAnchor);
+	_enemy2->setSceneNode(spritenode);
+	_enemy2->setName(ENEMY_NAME);
+	_enemy2->setDebugColor(DEBUG_COLOR);
+	scene.addObstacle(_enemy2, spritenode);
+	_enemies.push_back(_enemy2);
 
-	//EnemyModel* _enemy1Weak = _enemy1.get();
-	//EnemyModel* _enemy2Weak = _enemy2.get();
-	//_enemy->setListener([=](physics2::Obstacle* obs) {
-	//	if (_enemy->getState() == "pursuing") {
-	//		_enemy1Weak->setState("pursuing");
-	//		_enemy2Weak->setState("pursuing");
-	//		_enemy1Weak->setTargetPosition(_avatar->getPosition());
-	//		_enemy2Weak->setTargetPosition(_avatar->getPosition());
-	//	}
-	//	else {
-	//		_enemy1Weak->setState("patrolling");
-	//		_enemy2Weak->setState("patrolling");
-	//		_enemy1Weak->setTargetPosition(_enemy->getPosition());
-	//		_enemy2Weak->setTargetPosition(_enemy->getPosition());
-	//	}
-	//	});
+	EnemyModel* _enemy1Weak = _enemy1.get();
+	EnemyModel* _enemy2Weak = _enemy2.get();
+
+	scene2::SceneNode* weak = _enemy->getSceneNode().get();
+	_enemy->setListener([=](physics2::Obstacle* obs) {
+
+		weak->setPosition(obs->getPosition()* _scale);
+		weak->setAngle(obs->getAngle());
+		if (_enemy->getState() == "pursuing") {
+
+			if(_enemy1Weak->getState() == "patrolling") _enemy1Weak->setState("acknowledging");
+			if (_enemy2Weak->getState() == "patrolling") _enemy2Weak->setState("acknowledging");
+			_enemy1Weak->setTargetPosition(_avatar->getPosition());
+			_enemy2Weak->setTargetPosition(_avatar->getPosition());
+		}
+		else {
+			_enemy1Weak->setState("patrolling");
+			_enemy2Weak->setState("patrolling");
+			_enemy1Weak->setTargetPosition(_enemy->getPosition());
+			_enemy2Weak->setTargetPosition(_enemy->getPosition());
+		}
+		});
 
 
 
