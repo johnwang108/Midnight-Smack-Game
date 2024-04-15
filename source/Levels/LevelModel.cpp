@@ -650,7 +650,7 @@ void LevelModel::populate(GameScene& scene) {
 							Size goalSize(image->getSize().width / scene.getScale(),
 								image->getSize().height / scene.getScale());
 							_goalDoor = physics2::BoxObstacle::alloc(goalPos, goalSize);
-
+							// _goalDoor->setPosition(0, 0);
 							// Set the physics attributes
 							_goalDoor->setBodyType(b2_staticBody);
 							_goalDoor->setDensity(0.0f);
@@ -703,6 +703,31 @@ void LevelModel::populate(GameScene& scene) {
 							// scene.addChild(sprite);
 							scene.addObstacle(_avatar, sprite);
 						}
+						else if (type == "enemy") {
+							CULog("Enemy layer spotted!");
+							sprite = scene2::PolygonNode::allocWithTexture(image);
+							int rowPos = ((window_height - rowNum) % window_height + window_height) % window_height;
+							Vec2 enemyPos = Vec2(colNum, rowPos);
+							std::shared_ptr<EnemyModel> new_enemy;
+
+							if (pathWeWant.find("shrimp") != std::string::npos) {
+								new_enemy = EnemyModel::alloc(enemyPos, image->getSize() / (2 + scene.getScale()), scene.getScale(), EnemyType::shrimp);
+								new_enemy->setName("shrimp" + std::to_string(tileId));
+							}
+							else if (pathWeWant.find("rice") != std::string::npos) {
+								new_enemy = EnemyModel::alloc(enemyPos, image->getSize() / (2 + scene.getScale()), scene.getScale(), EnemyType::rice);
+								new_enemy->setName("rice" + std::to_string(tileId));
+							}
+							else if (pathWeWant.find("egg") != std::string::npos) {
+								new_enemy = EnemyModel::alloc(enemyPos, image->getSize() / (2 + scene.getScale()), scene.getScale(), EnemyType::egg);
+								new_enemy->setName("egg" + std::to_string(tileId));
+							}
+							new_enemy->setSceneNode(sprite);
+							new_enemy->setDebugColor(Color4::YELLOW);
+							scene.addObstacle(new_enemy, sprite);
+							_enemies.push_back(new_enemy);
+
+						}
 						else {
 							CULog("we're not reading anything what the heck man??");
 						}
@@ -726,7 +751,7 @@ void LevelModel::populate(GameScene& scene) {
 					if (object->getString("name") == "Floating_Platform") {
 						CULog("We are in loadFloatingBox!");
 						CULog(object->getString("id").c_str());
-						loadFloatingBoxPlatform(object, scene, sprite, window_height * 32.0f);
+						// loadFloatingBoxPlatform(object, scene, sprite, window_height * 32.0f);
 					}
 					else if (object->getString("name") == "Main_Platform") {
 						CULog("We are in loadMainPlatform!");
@@ -777,7 +802,7 @@ void LevelModel::populate(GameScene& scene) {
 	// this set background probably won't work
 	scene.setBackground(_background);
 	scene.setAvatar(_avatar);
-	// scene.setEnemies(_enemies);
+	scene.setEnemies(_enemies);
 	scene.setGoalDoor(_goalDoor);
 
 

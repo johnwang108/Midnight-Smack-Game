@@ -234,7 +234,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_BOTTOM_LEFT);
     _dollarnode->setVisible(false);
 
-    _level_model->setFilePath("json/test_level_v2.json");
+    _level_model->setFilePath("json/test_level_v2_experiment.json");
     loadLevel(_level_model);
     addChild(_worldnode);
     addChild(_debugnode);
@@ -267,6 +267,10 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _healthBarForeground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarBackground->getHeight());
     _healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
     _healthBarBackground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarForeground->getHeight());
+
+    // _healthBarForeground->setContentSize(_healthBarForeground->getWidth() * 3, _healthBarForeground->getHeight() * 3);
+    // _healthBarBackground->setContentSize(_healthBarBackground->getWidth() * 3, _healthBarBackground->getHeight() * 3);
+
 
     _uiScene->addChild(_healthBarBackground);
     _uiScene->addChild(_healthBarForeground);
