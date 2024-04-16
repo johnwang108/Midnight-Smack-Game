@@ -52,11 +52,11 @@ void ShrimpRice::update(float dt) {
         pa=0.8;
         if (pa < 0.5) {
             _attackcombo = 1.125;
-            _attacktype="attackcombo";
+            _attacktype="SFR_Attack";
 		}
         else {
-            _WheelofDoom = 3 + 3 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-            _attacktype="WheelofDoom";
+            _WheelofDoom = 2 + 2 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+            _attacktype="SFRWheelofDoom";
 		}
 
     }

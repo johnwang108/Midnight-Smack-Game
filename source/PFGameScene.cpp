@@ -306,7 +306,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     
     _target = std::make_shared<EnemyModel>();
 
-    currentLevel = level3;
+    currentLevel = level2;
     loadLevel(currentLevel);
 
     save();
@@ -810,24 +810,15 @@ void GameScene::preUpdate(float dt) {
     if (_ShrimpRice != nullptr) {
         _SHRactionManager->update(dt);
         
-        if (_ShrimpRice->getattackcombo() > 0) {
-            if (!_SHRactionManager->isActive("SFR_Attack")) {
-                auto SFR_Attack = _ShrimpRice->getAction("SFR_Attack");
-                _SHRactionManager->activate("SFR_Attack", SFR_Attack, _ShrimpRice->getSceneNode());
+        if (_ShrimpRice->getattacktype()!="none" && _ShrimpRice->getknockbacktime() <= 0) {
+            if (!_SHRactionManager->isActive(_ShrimpRice->getattacktype())) {
+                auto SFR_Attack = _ShrimpRice->getAction(_ShrimpRice->getattacktype());
+                _SHRactionManager->activate(_ShrimpRice->getattacktype(), SFR_Attack, _ShrimpRice->getSceneNode());
             }
             if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                _ShrimpRice->animate("SFR_Attack");
+                _ShrimpRice->animate(_ShrimpRice->getattacktype());
             }
         }     
-        else if (_ShrimpRice->getWheelofDoom() > 0) {
-            if (!_SHRactionManager->isActive("SFRWheelofDoom")) {
-                auto SFRWheelofDoom = _ShrimpRice->getAction("SFRWheelofDoom");
-                _SHRactionManager->activate("SFRWheelofDoom", SFRWheelofDoom, _ShrimpRice->getSceneNode());
-            }
-            if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                _ShrimpRice->animate("SFRWheelofDoom");
-            }
-        }
         else if (_ShrimpRice->getknockbacktime() <= 0) {
             if (!_SHRactionManager->isActive("SFR_Move")) {
                 auto SFR_Move = _ShrimpRice->getAction("SFR_Move");

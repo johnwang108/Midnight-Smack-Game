@@ -75,6 +75,7 @@ public:
     float getknockbacktime() { return _knockbackTime; }
     float getattackcombo() { return _attackcombo; }
     float getWheelofDoom() { return _WheelofDoom; }
+    std::string getattacktype() { return _attacktype; }
 };
 
 #endif /* __SHRIMPRICE_H__ */
