@@ -589,7 +589,6 @@ void GameScene::preUpdate(float dt) {
     }
 
     //handle animations
-    _actionManager->update(dt);
     
     //start running if idle or recovering and moving
     if (!_overrideAnim) {
@@ -678,6 +677,8 @@ void GameScene::preUpdate(float dt) {
 
         _avatar->setShooting(_input->didFire());
         if (_avatar->isShooting() && (!_actionManager->isActive("attack") && !_actionManager->isActive("air_attack"))) {
+
+            CULog("CREATED ATTACK");
             auto att = _avatar->createAttack(getAssets(), _scale);
             addObstacle(std::get<0>(att), std::get<1>(att), true);
             _attacks.push_back(std::get<0>(att));
@@ -810,50 +811,46 @@ void GameScene::preUpdate(float dt) {
             Vec2 enemyPos = enemy->getPosition();
             float distance = avatarPos.distance(enemyPos);
 
-            if (distance < CHASE_THRESHOLD) {
-                enemy->setIsChasing(true);
-                if (enemy->getnextchangetime() < 0) {
-                    int direction = (avatarPos.x > enemyPos.x) ? 1 : -1;
-                    enemy->setDirection(direction);
-                    enemy->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
-                }
-                if (enemy->getattacktime()) {
-                    // enemy->createAttack(*this);
-                    enemy->setattacktime(false);
-                    enemy->setshooted(false);
-                }
-            }
-            else if (distance >= CHASE_THRESHOLD && enemy->isChasing()) {
-                enemy->setIsChasing(false);
-            }
+            enemy->updatePlayerDistance(_avatar->getPosition());
+			if (enemy->getattacktime()) {
+				auto res = enemy->createAttack(_assets, _scale);
+				addObstacle(std::get<0>(res), std::get<1>(res));
+				enemy->setattacktime(false);
+				enemy->setshooted(false);
+			}
+
             if (enemy->getHealth() <= 0) {
                 removeEnemy(enemy.get());
             }
             else {
-            //enemy animations. If enemy->activeAction is not active, activate the current action.
-                if (!enemy->isActivated()) {
-                    if (enemy->getActiveAction() == "") continue;
-                    enemy->setActivated(true);
-                    
+                std::string actionKey = enemy->getActiveAction() + enemy->getId();
+
+                //pausing shit
+                //if (enemy->getPaused() && !_actionManager->isPaused(actionKey)) {
+                //    CULog("Pausing");
+                //    enemy->getSpriteNode()->setFrame(enemy->getPausedFrame());
+                //    _actionManager->pauseAllActions(enemy->getSceneNode());
+                //}
+                //else if (!enemy->getPaused() && _actionManager->isPaused(actionKey)){
+                //    CULog("Unpausing");
+                //    enemy->getSpriteNode()->setFrame(enemy->getActiveFrame());
+                //    _actionManager->unpauseAllActions(enemy->getSceneNode());
+                //}
+
+                if ((enemy->getActiveAction() != "" && !_actionManager->isActive(actionKey)) || enemy->getPriority() > enemy->getActivePriority())
+                {
                     _actionManager->clearAllActions(enemy->getSceneNode());
-                    std::string actionName = enemy->getActiveAction();
+                    std::string actionName = enemy->getRequestedAction();
                     enemy->animate(actionName);
                     auto action = enemy->getAction(actionName);
-                    if (enemy->usesID()) {
-                        actionName += enemy->getId();
-                    }
-                    _actionManager->activate(actionName, action, enemy->getSceneNode());
-                }
-                else {
-                    if (!_actionManager->isActive(enemy->getActiveAction() + (enemy->usesID() ? enemy->getId() : ""))) {
-						enemy->setFinished(true);
-                        enemy->setActivated(false);
-					}
+                    _actionManager->activate(actionName + enemy->getId(), action, enemy->getSceneNode());
                 }
             }
             enemy->update(dt);
+          
         }
     }
+
     if (_Bull != nullptr && !_Bull->isRemoved()) {
         if (_Bull->getHealth() <= 0) {
             _worldnode->removeChild(_Bull->getSceneNode());
@@ -998,6 +995,8 @@ void GameScene::preUpdate(float dt) {
         _afterimages.erase(_afterimages.begin());
         removeChild(afterimage);
     }
+     
+    _actionManager->update(dt);
 }
 
 
@@ -1081,6 +1080,12 @@ void GameScene::fixedUpdate(float step) {
     }
     if (_Bull != nullptr && _Bull->getHealth() <= 0) {
         setComplete(true);
+    }
+
+    for (auto& enemy : _enemies) {
+        if (enemy != nullptr && !enemy->isRemoved()) {
+            enemy->fixedUpdate(step);
+		}
     }
     _world->update(step);
 }
@@ -1584,6 +1589,125 @@ void GameScene::popup(std::string s, cugl::Vec2 pos) {
     _popups.push_back(std::make_tuple(popup, now));
 }
 
+/**Potentially saves and/or modifies the following information:
+chapter - int
+level - int
+night: {
+    location_x_player - float
+	location_y_player - float
+	health_player - float
+    meter_player - float
+	for each enemy type:
+        location_x_type - float array
+		location_y_type - float array 
+		health_enemy_type - float array
+}
+
+Retains the following from previous save file: 
+day { ... }
+persistent { ... }
+*/
+
+void GameScene::save() {
+    /*std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });*/
+
+    //Should only change nighttime save data unless level was completed, in which case change level/chapter accordingly.
+    std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });
+
+    auto reader = JsonReader::alloc(path);
+
+    std::shared_ptr<JsonValue> prev_json = reader->readJson();
+    reader->close();
+
+    //write basic info.
+    //placeholders
+
+    std::shared_ptr<JsonValue> json = JsonValue::allocObject();
+
+    json->appendValue("chapter", 1.0f);
+    json->appendValue("level", 1.0f);
+    
+    std::shared_ptr<JsonValue> night = JsonValue::allocObject();
+    
+    night->appendValue("location_x_player", _avatar->getPosition().x);
+    night->appendValue("location_y_player", _avatar->getPosition().y);
+    night->appendValue("health_player", _avatar->getHealth());
+
+    std::vector<std::string> types = { "egg", "carrot", "shrimp", "rice", "beef" };
+    for (auto t = types.begin(); t != types.end(); t++) {
+        std::string type = *t;
+        night->appendArray("location_x_" + type);
+        night->appendArray("location_y_" + type);
+        night->appendArray("health_" + type);
+    }
+    
+    for (auto& e : _enemies) {
+        if (e->isRemoved()) {
+			continue;
+		}
+        std::string type = EnemyModel::typeToStr(e->getType());
+		night->insertValue(0, "location_x_" + type, e->getPosition().x);
+        night->insertValue(0, "location_y_" + type, e->getPosition().y);
+        night->insertValue(0, "health_" + type, e->getHealth());
+	}
+
+    json->appendChild("night", night);
+
+    std::shared_ptr<JsonValue> day = prev_json->get("day");
+    std::shared_ptr<JsonValue> persistent = prev_json->get("persistent");
+    if (persistent == nullptr || persistent->isNull()) {
+        persistent = JsonValue::allocObject();
+    }
+    else {
+        persistent->_parent = nullptr;
+    }
+    if (day == nullptr || day->isNull()) {
+        day = JsonValue::allocObject();
+    }
+    else {
+        day->_parent = nullptr;
+    }
+
+    json->appendChild("day", day);
+    json->appendChild("persistent", persistent);
+
+    json->appendValue("test", 0.0f);
+
+    auto writer = JsonWriter::alloc(path);
+
+    writer->writeJson(json);
+    
+    writer->close();
+}
+
+void GameScene::loadSave() {
+	/*std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });*/
+
+
+    //CULog("PATH");
+    //CULog(path.c_str());
+
+    std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });
+    auto reader = JsonReader::alloc(path);
+
+    std::shared_ptr<JsonValue> loaded_json = reader->readJson();
+
+    //Todo:: load enemies separately from level.
+
+    int chapter = loaded_json->getInt("chapter");
+    int level = loaded_json->getInt("level");
+
+    loadLevel(chapter, level);
+
+    reader->close();
+    
+}
+
+//load level with int specifiers
 void GameScene::loadLevel(int chapter, int level) {
     std::shared_ptr<Levels> level_obj = nullptr;
     if (chapter == 1) {

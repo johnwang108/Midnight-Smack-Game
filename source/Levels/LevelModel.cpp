@@ -1,8 +1,8 @@
 
 #include <cugl/assets/CUJsonLoader.h>
 #include "LevelModel.h"
-#include "/../Users/benlo/source/repos/Midnight-Smack-Folder/Midnight-Smack-Game/source/PFDudeModel.h"
-#include "/../Users/benlo/source/repos/Midnight-Smack-Folder/Midnight-Smack-Game/source/PFGameScene.h"
+#include "../PFDudeModel.h"
+#include "../PFGameScene.h"
 #include <direct.h>
 #include "Levels.h"
 

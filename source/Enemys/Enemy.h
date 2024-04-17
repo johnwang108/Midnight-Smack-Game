@@ -117,8 +117,6 @@ protected:
 
     cugl::Vec2 _lastVelocity;
 
-    
-
 
 public:
     EnemyModel() : Entity(), _sensorName(ENEMY_SENSOR_NAME) { }
@@ -178,7 +176,9 @@ public:
      * @param node The scene graph node representing this enemy.
      */
 
-    void setGrounded(bool value) { _isGrounded = value; };
+    void setGrounded(bool value) { 
+        _body->SetLinearDamping(24 * value);
+        _isGrounded = value; };
 
     std::string* getSensorName() { return &_sensorName; };
 
@@ -237,6 +237,8 @@ public:
      */
     void update(float dt) override;
 
+    void fixedUpdate(float step);
+
     /**
      * Applies the force to the body of this dude
      *
@@ -287,8 +289,6 @@ public:
     void setTargetPosition(cugl::Vec2 target) { _targetPosition = target; }
 
     std::string getState() { return _state; }
-
-    virtual std::string updateAnimation();
 
     void setActiveAction(std::string action) {
         Entity::setActiveAction(action);

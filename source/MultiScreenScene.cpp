@@ -2,6 +2,7 @@
 #include "PFDollarScene.h"
 #include <algorithm> 
 #include "Levels/Levels.h"
+#include <cctype>
 
 #define CAMERA_MOVE_SPEED 50.0f
 #define FEEDBACK_DURATION 2.0f
@@ -95,7 +96,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_input = input;
 	_input->init(getBounds());
 
-	std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("json/exLevel.json");
+	std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("json/dayLevel1.json");
 	readLevel(reader->readJson());
 
 	_stationMap["potStation"] = 0;
@@ -138,11 +139,6 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	//_uiNode->setContentSize(_size);
 	//_uiNode->doLayout();
 
-	_timer = scene2::Label::allocWithText("godfhohofgji", _assets->get<Font>(MESSAGE_FONT));
-
-	_timer->setAnchor(Vec2::ANCHOR_CENTER);
-	_timer->setPosition(_size.width/2, _size.height - _timer->getHeight());
-	_timer->setForeground(Color4::BLACK);
 
 	_gestureFeedback = scene2::Label::allocWithText("Perfect", _assets->get<Font>(MESSAGE_FONT));
 	_gestureFeedback->setAnchor(Vec2::ANCHOR_TOP_CENTER);
@@ -154,6 +150,12 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	std::shared_ptr<scene2::SceneNode> quotaRoot = _assets->get<scene2::SceneNode>("quotaScene");
 	
 
+
+	_expectationBar = quotaRoot->getChildByName("Quota")->getChildByName("BarExpectation");
+	_expectationBar->setContentSize(_expectationBar->getSize());
+	_expectationBar->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
+	_expectationBar->setPosition(5, 0);
+
 	_progBar = quotaRoot->getChildByName("Quota")->getChildByName("BarFilled");
 	_progBar->setContentSize(_progBar->getSize());
 	_progBar->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
@@ -161,11 +163,48 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 
 	std::shared_ptr<scene2::SceneNode> uiRoot = _assets->get<scene2::SceneNode>("uiScene");
 	
+	_stationLabel = std::dynamic_pointer_cast<scene2::Label>(uiRoot->getChildByName("Status")->getChildByName("STATION"));
+	_stationLabel->setText("PANFRY STATION");
+	_stationLabel->doLayout();
 
-	_uiScene->addChild(_timer);
+
+	_twelveHourTimer = std::dynamic_pointer_cast<scene2::Label>(uiRoot->getChildByName("Status")->getChildByName("Sunny")->getChildByName("Time"));
+	_currentHour = 6;
+	_currentMinute = 0;
+
+
+	_winScreenRoot = _assets->get<scene2::SceneNode>("dayWinScreen");
+
+	std::shared_ptr<scene2::Button> b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("continuebutton"));
+	b->addListener([=](const std::string& name, bool down) {
+		this->_active = false;
+		this->setTransition(true);
+		this->setTarget("night");
+		});
+	_buttons.push_back(b);
+
+	//b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("retrybutton"));
+	//b->addListener([=](const std::string& name, bool down) {
+	//	this->reset();
+	//	});
+	//_buttons.push_back(b);
+
+
+	//b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("menubutton"));
+	//b->addListener([=](const std::string& name, bool down) {
+	//	this->_active = false;
+	//	this->setTransition(true);
+	//	this->setTarget("main_menu");
+	//});
+	//_buttons.push_back(b);
+
+	_winScreenRoot->setVisible(false);
+	
+
 	_uiScene->addChild(_gestureFeedback);
 	_uiScene->addChild(quotaRoot);
 	_uiScene->addChild(uiRoot);
+	_uiScene->addChild(_winScreenRoot);
 	//_uiScene->addChild(_uiNode);
 
 	//std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("exLevel");
@@ -191,6 +230,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 }
 
 void MultiScreenScene::initStations(std::string textures[], int size) {
+	std::string stationNames[5] = { "pot","prep" ,"panfry" ,"cutting" ,"mixing" };
 	std::shared_ptr<DollarScene> scene;
 	
 	cugl::Rect rect;
@@ -206,8 +246,10 @@ void MultiScreenScene::initStations(std::string textures[], int size) {
 		scene = std::make_shared<DollarScene>();
 				
 		rect = cugl::Rect(Vec2::ZERO, _size);
-		scene->init(_assets, _input, rect, textures[i], std::vector<std::string>(), Size(600, 450));
+		//todo maybe make hitboxes different by station
+		scene->init(_assets, _input, rect, textures[i], std::vector<std::string>(), Size(600, 300));
 		scene->setContentSize(SCENE_WIDTH, SCENE_HEIGHT);
+		scene->setName(stationNames[i]);
 		scene->setAnchor(Vec2::ANCHOR_CENTER);
 		scene->setPosition(positions[i]);
 		scene->setVisible(true);
@@ -238,18 +280,28 @@ void MultiScreenScene::readLevel(std::shared_ptr<JsonValue> leveljson) {
 	_dishToPrepare = leveljson->get("cooking")->asString();
 	_quota = leveljson->get("quota")->asInt();
 	_dayDuration = leveljson->get("duration")->asInt();
+	//todo load in bonus objectives
+	_bonusObjectives = {1};
+
+	std::shared_ptr<JsonReader> gestureReader = JsonReader::allocWithAsset("json/dayIngredientGestures.json");
+	std::shared_ptr<JsonValue> gestureVals = gestureReader->readJson();
 
 	std::shared_ptr<JsonValue> events = leveljson->get("ingredients");
 	if (events->type() == JsonValue::Type::ArrayType) {
 		for (int i = 0; i < events->size(); i++) {
 			std::shared_ptr<JsonValue> item = events->get(i);
 			if (item != nullptr) {
-				std::shared_ptr<Ingredient> newOrder = std::make_shared<Ingredient>();
-				newOrder->setName(item->get("ingredient")->asString());
-				newOrder->setStartTime(item->get("time")->asFloat());
-				newOrder->setStation(item->get("station")->asString());
+				std::shared_ptr<Ingredient> newIngredient = std::make_shared<Ingredient>();
+				newIngredient->setName(item->get("ingredient")->asString());
+				newIngredient->setStartTime(item->get("time")->asFloat());
+				newIngredient->setStartStation(item->get("station")->asString());
+
+				std::shared_ptr<JsonValue> ingObject = gestureVals->get(newIngredient->getName());
+
+				//gestures
 				std::vector<std::string> gestures = {};
-				std::shared_ptr<JsonValue> jGests = item->get("gestures");
+
+				std::shared_ptr<JsonValue> jGests = ingObject->get("gestures");
 				if (jGests->type() == JsonValue::Type::ArrayType) {
 					for (int j = 0; j < jGests->size(); j++) {
 						gestures.push_back(jGests->get(j)->asString());
@@ -258,9 +310,24 @@ void MultiScreenScene::readLevel(std::shared_ptr<JsonValue> leveljson) {
 				else {
 					CULogError("Gestures is not an array type");
 				}
+				newIngredient->setGestures(gestures);
 
-				newOrder->setGestures(gestures);
-				_ingredients.push_back(newOrder);
+				//stations
+
+				std::vector<std::string> stations = {};
+
+				std::shared_ptr<JsonValue> jStations = ingObject->get("valid_stations");
+				if (jStations->type() == JsonValue::Type::ArrayType) {
+					for (int j = 0; j < jStations->size(); j++) {
+						stations.push_back(jStations->get(j)->asString());
+					}
+				}
+				else {
+					CULogError("Valid Stations is not an array type");
+				}
+				newIngredient->setValidStations(stations);
+
+				_ingredients.push_back(newIngredient);
 			}
 		}
 	}
@@ -299,19 +366,39 @@ void MultiScreenScene::preUpdate(float timestep) {
 	if (_ended && !_animating) return;
 
 	_currentTime += timestep;
-	_timer->setText(std::to_string((int) _currentTime));
+
+	//timer stuff
+	_currentMinute = (5 * (int) _currentTime) - (60 * (_currentHour-6));
+	if (_currentMinute >= 60) {
+		_currentMinute = _currentMinute % 60;
+		_currentHour += 1;
+	}
+	std::string minString = std::to_string(_currentMinute);
+	if (_currentMinute < 10) {
+		minString = "0" + std::to_string(_currentMinute);
+	}
+	_twelveHourTimer->setText(std::to_string(_currentHour) + ":" + minString);
+	_twelveHourTimer->doLayout();
+	
 
 	float reqRate = _quota / _dayDuration;
 
 	float reqQuotaUnits = _currentTime * reqRate;
 	float quotaFloatPercent = reqQuotaUnits / _quota;
 
-	float clipHeight = _progBar->getHeight() * quotaFloatPercent;
+	float clipHeight = _expectationBar->getHeight() * quotaFloatPercent;
 	//CULog("%f", clipHeight);
-	std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, _progBar->getWidth(), clipHeight));
-	_progBar->setScissor(scissor);
+	std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, _expectationBar->getWidth(), clipHeight));
+	_expectationBar->setScissor(scissor);
 
-	if (_currentTime >= _dayDuration) {
+	float progPerc = (float) _currentScore / (float) _quota;
+
+	clipHeight = progPerc * _progBar->getHeight();
+	std::shared_ptr<Scissor> scissor2 = Scissor::alloc(Rect(0, 0, _progBar->getWidth(), clipHeight));
+	_progBar->setScissor(scissor2);
+
+	//todo bonus objectives
+	if (_currentTime >= _dayDuration || _bonusObjectives.size() == 0) {
 		endDay();
 	}
 	
@@ -321,7 +408,7 @@ void MultiScreenScene::preUpdate(float timestep) {
 		std::shared_ptr<Texture> tex = _assets->get<Texture>(upcomingIngredient->getName());
 		upcomingIngredient->init(tex);
 		//upcomingIngredient.getButton()->setPosition(Vec2(0, 0));
-		int stationIdx = _stationMap[upcomingIngredient->getStation()];
+		int stationIdx = _stationMap[upcomingIngredient->getStartStation()];
 
 		//todo update this when you get new widgets
 		_scenes[stationIdx]->addIngredient(upcomingIngredient);
@@ -336,6 +423,7 @@ void MultiScreenScene::preUpdate(float timestep) {
 
 	for (int i = 0; i < 5; i++) {
 		_scenes[i]->update(timestep);
+		//move ingredients between conveyor belts
 		std::shared_ptr<Ingredient> poppedIng = _scenes[i]->popIngredient();
 		if (poppedIng != nullptr) {
 			int newIndex;
@@ -346,6 +434,13 @@ void MultiScreenScene::preUpdate(float timestep) {
 				newIndex = i + 1;
 			}
 			_scenes[newIndex]->addIngredient(poppedIng);
+		}
+
+		//submitted ingredients
+		std::shared_ptr<Ingredient> submittedIng = _scenes[i]->getSubmittedIngredient();
+		if (submittedIng != nullptr) {
+			increaseQuotaProgress();
+			_scenes[i]->clearSubmittedIngredient();
 		}
 	}
 
@@ -375,54 +470,44 @@ void MultiScreenScene::preUpdate(float timestep) {
 	if (!_animating) {
 		if (_input->getHorizontal() > 0) {
 			if ((_curr == 1) || (_curr == 2)) {
-				_scenes[_curr]->setFocus(false);
-				_curr++;
-				_scenes[_curr]->setFocus(true);
-				_animating = true;
+				switchStation(_curr, _curr + 1);
 			}
 		}
 		else if (_input->getHorizontal() < 0) {
 			if ((_curr == 2) || (_curr == 3)) {
-				_scenes[_curr]->setFocus(false);
-				_curr--;
-				_scenes[_curr]->setFocus(true);
-				_animating = true;
+				switchStation(_curr, _curr - 1);
 			}
 		}
-
 		else if (_input->getVertical() > 0) {
 			if ((_curr == 2) || (_curr == 4)) {
-				_scenes[_curr]->setFocus(false);
-				_curr -= 2;
-				_scenes[_curr]->setFocus(true);
-				_animating = true;
+				switchStation(_curr, _curr - 2);
 			}
 		}
 		else if (_input->getVertical() < 0) {
 			if ((_curr == 0) || (_curr == 2)) {
-				_scenes[_curr]->setFocus(false);
-				_curr += 2;
-				_scenes[_curr]->setFocus(true);
-				_animating = true;
+				switchStation(_curr, _curr + 2);
 			}
 		}
-		// check for swipes now
-		if (!_animating) {
-			
-		}
-
 	}
 	Vec2 dist = _scenes[_curr]->getPosition() - _camera->getPosition();
 	if (dist != Vec2::ZERO) {
-		_camera->translate(cugl::Vec2( abs_min(sign(dist.x) * CAMERA_MOVE_SPEED, dist.x), abs_min(sign(dist.y) * CAMERA_MOVE_SPEED, dist.y)));
+		Vec2 movementAmount = Vec2(abs_min(sign(dist.x) * CAMERA_MOVE_SPEED, dist.x), abs_min(sign(dist.y) * CAMERA_MOVE_SPEED, dist.y));
+		_camera->translate(movementAmount);
 		_camera->update();
+		
+		if (_scenes[_curr]->getCurrentlyHeldIngredient() != nullptr) {
+			std::shared_ptr<scene2::Button> button = _scenes[_curr]->getCurrentlyHeldIngredient()->getButton();
+			CULog("Button Pos Before: %f %f", button->getPositionX(), button->getPositionY());
+			button->setPosition(button->getPosition() + movementAmount);
+			CULog("Button Pos After: %f %f", button->getPositionX(), button->getPositionY());
+		}
+	
 	}
 	else {
 		_animating = false;
 	}
 
 
-	std::shared_ptr<Ingredient> curHeld = _scenes[_curr]->getHeldIngredient();
 	
 	
 	// find current touch position, set curHeld->button to be that pos
@@ -473,9 +558,32 @@ void MultiScreenScene::focusCurr() {
 	_scenes[_curr]->setFocus(true);
 }
 
+void MultiScreenScene::switchStation(int currId, int targId) {
+	_scenes[currId]->setFocus(false);
+	_scenes[targId]->setFocus(true);
+	_curr = targId;
+	_animating = true;
+	//handle moving ing
+	std::shared_ptr<Ingredient> ing = _scenes[currId]->getCurrentlyHeldIngredient();
+	if (ing != nullptr) {
+		_scenes[currId]->removeHeldIngredient();
+		_scenes[targId]->receiveHeldIngredient(ing);
+	}
+
+	std::string newStationName = _scenes[targId]->getName();
+	for (char& c : newStationName) {
+		c = toupper(c);
+	}
+	_stationLabel->setText(newStationName + " STATION");
+}
+
+void MultiScreenScene::increaseQuotaProgress() {
+	_currentScore += 1;
+	CULog("score: %d", _currentScore);
+}
+
 
 /* 
-* I'm choosing not to reload ingredients but we can later.
 */
 void MultiScreenScene::reset() {
 	_camera->setPosition(Vec2(0, 0));
@@ -485,7 +593,10 @@ void MultiScreenScene::reset() {
 	_curr = 2;
 	_ended = false;
 	_currentTime = 0.0f;
-
+	_gestureFeedback->setVisible(false);
+	_gestureFeedback->setText("");
+	_currentScore = 0;
+	
 	for (int i = 0; i < 5; i++) {
 		_scenes[i]->reset();
 	}
@@ -528,6 +639,11 @@ void MultiScreenScene::endDay() {
 	else {
 		_gameState = -1;
 	}
+	for (auto it = _buttons.begin(); it != _buttons.end(); ++it) {
+		auto button = *it;
+		button->activate();
+	}
+	_winScreenRoot->setVisible(true);
 }
 
 
