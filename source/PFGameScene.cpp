@@ -232,15 +232,16 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode = std::make_shared<DollarScene>();
     //_dollarnode->init(_assets, _input, cugl::Rect(Vec2::ZERO, computeActiveSize()/2), "cooktime");
     _dollarnode->init(_assets, _input, "cooktime");
-    _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_BOTTOM_LEFT);
+    _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
     _dollarnode->setVisible(false);
+    _dollarnode->setPosition(0,0);
 
 
 #pragma mark: UI
 
     // ui stuff
-    _uiScene = cugl::Scene2::alloc(dimen);
-    _uiScene->init(dimen);
+    _uiScene = cugl::Scene2::alloc(Size(1280, 800));
+    _uiScene->init(Size(1280, 800));
     _uiScene->setActive(true);
     // Right now we are manually adding in the json here
     // loadLevel(level1);
@@ -735,14 +736,6 @@ void GameScene::preUpdate(float dt) {
             _actionManager->activate(_debugAnimName, action, _debugAnimTarget->getSceneNode());
         }
     }
-    else {
-        CULog("Not overriding");
-
-        CULog(_debugAnimTarget == nullptr ? "true" : "false");
-    }
-
-
-
     if (_overrideAnim && !_actionManager->isActive(_debugAnimName)) {
         _overrideAnim = false;
     }
@@ -750,9 +743,6 @@ void GameScene::preUpdate(float dt) {
     //if (!_actionManager->isActive("air_attack")) {
     //    _avatar->getSceneNode()->setAngle(0.0);
     //}
-
-
-
     if (_input->didBackground()) {
         
         std::shared_ptr<scene2::SceneNode> bg = getChildByName("background");
@@ -766,8 +756,6 @@ void GameScene::preUpdate(float dt) {
         bgNode->setTexture(bgTexture);
         
     }
-
-
     if (_input->didMusic()) {
 
         auto reader = JsonReader::alloc("./json/constants.json");
@@ -778,9 +766,9 @@ void GameScene::preUpdate(float dt) {
         AudioEngine::get()->getMusicQueue()->clear();
         AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
     }
-    
-    _dollarnode->update(dt);
+   
 
+    _dollarnode->update(dt);
     if (!_slowed) {
         _dollarnode->setVisible(false);
         if (_dollarnode->isFocus()) {
@@ -1233,6 +1221,31 @@ void GameScene::fixedUpdate(float step) {
         std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
         _healthBarForeground->setScissor(scissor);
     }
+    if (_cookBarFill != nullptr) {
+        float meterPercentage = _avatar->getMeter() / 100.0f;
+        float totalWidth = _cookBarFill->getWidth();
+        float height = _cookBarFill->getHeight();
+        float clipWidth = totalWidth * meterPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _cookBarFill->setScissor(scissor);
+    }
+    if (_BullhealthBarForeground != nullptr && _Bull != nullptr) {
+        _healthPercentage = _Bull->getHealth() / 100;
+        float totalWidth = _BullhealthBarForeground->getWidth();
+        float height = _BullhealthBarForeground->getHeight();
+        float clipWidth = totalWidth * _healthPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _BullhealthBarForeground->setScissor(scissor);
+    }
+    if (_SFRhealthBarForeground != nullptr && _ShrimpRice != nullptr) {
+        _healthPercentage = _ShrimpRice->getHealth() / 100;
+        float totalWidth = _SFRhealthBarForeground->getWidth();
+        float height = _SFRhealthBarForeground->getHeight();
+        float clipWidth = totalWidth * _healthPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _SFRhealthBarForeground->setScissor(scissor);
+    }
+
     if (_slowed) {
         step = step / 15;
     }
@@ -1251,13 +1264,18 @@ void GameScene::fixedUpdate(float step) {
             _camera->setZoom(210.0 / 40.0);
         }
         else {
-            _camera->setZoom(1.4);
+            _camera->setZoom(210.0 / 40.0);
         }
 
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
+        //cugl::Vec3 mapMin = Vec3(SCENE_WIDTH / 2, SCENE_HEIGHT / 2, 0);
+        //cugl::Vec3 mapMax = Vec3(1400 - SCENE_WIDTH / 2, 900 - SCENE_HEIGHT / 2, 0); //replace magic numbers
+        /*target.clamp(mapMin, mapMax);*/
+
         cugl::Vec3 pos = _camera->getPosition();
 
         Rect viewport = _camera->getViewport();
+
         Vec2 worldPosition = Vec2(pos.x - viewport.size.width / 2 + 140,
             pos.y + viewport.size.height / 2 - 50);
 
@@ -1269,7 +1287,7 @@ void GameScene::fixedUpdate(float step) {
         pos = _avatar->getPosition() * _scale;
         _camera->setPosition(pos);
         _camera->update();
-        _dollarnode->setPosition(pos);
+        //_dollarnode->setPosition(pos);
     }
     if (_avatar->getHealth() <= 0) {
         setFailure(true);
