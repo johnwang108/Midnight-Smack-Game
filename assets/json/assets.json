@@ -418,6 +418,12 @@
         },
         "riceWalk": {
             "file": "textures/Sheets/Enemies/Rice/riceWalk.png"
+        },
+        "riceHurt": {
+            "file": "textures/Sheets/Enemies/Rice/riceHurt.png"
+        },
+        "riceDeath": {
+            "file": "textures/Sheets/Enemies/Rice/riceDeath.png"
         }
     },
     "sounds": {

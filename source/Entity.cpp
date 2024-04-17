@@ -13,6 +13,9 @@ bool Entity::init(cugl::Vec2 pos, cugl::Size size) {
     _activated = false;
     _finished = false;
     _activeAction = "";
+    _pausedFrame = 0;
+    _activeFrame = 0;
+    _paused = false;
     return CapsuleObstacle::init(pos, size);
 }
 /** Register a new animation in the dict*/
@@ -47,6 +50,9 @@ void Entity::animate(std::string action_name) {
     else {
         _node->setScale(0.35 / 4);
     }
+
+    setActiveAction(action_name);
+    _activePriority = _priority;
     _activeAction = name;
 }
 

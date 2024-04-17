@@ -536,7 +536,6 @@ void GameScene::preUpdate(float dt) {
     }
 
     //handle animations
-    _actionManager->update(dt);
     
     //start running if idle or recovering and moving
     if (!_overrideAnim) {
@@ -625,6 +624,8 @@ void GameScene::preUpdate(float dt) {
 
         _avatar->setShooting(_input->didFire());
         if (_avatar->isShooting() && (!_actionManager->isActive("attack") && !_actionManager->isActive("air_attack"))) {
+
+            CULog("CREATED ATTACK");
             auto att = _avatar->createAttack(getAssets(), _scale);
             addObstacle(std::get<0>(att), std::get<1>(att), true);
             _attacks.push_back(std::get<0>(att));
@@ -768,36 +769,38 @@ void GameScene::preUpdate(float dt) {
 				enemy->setshooted(false);
 			}
 
-
-            
             if (enemy->getHealth() <= 0) {
                 removeEnemy(enemy.get());
             }
             else {
-            //enemy animations. If enemy->activeAction is not active, activate the current action.
-                if (!enemy->isActivated()) {
-                    if (enemy->getActiveAction() == "") continue;
-                    enemy->setActivated(true);
-                    
+                std::string actionKey = enemy->getActiveAction() + enemy->getId();
+
+                //pausing shit
+                //if (enemy->getPaused() && !_actionManager->isPaused(actionKey)) {
+                //    CULog("Pausing");
+                //    enemy->getSpriteNode()->setFrame(enemy->getPausedFrame());
+                //    _actionManager->pauseAllActions(enemy->getSceneNode());
+                //}
+                //else if (!enemy->getPaused() && _actionManager->isPaused(actionKey)){
+                //    CULog("Unpausing");
+                //    enemy->getSpriteNode()->setFrame(enemy->getActiveFrame());
+                //    _actionManager->unpauseAllActions(enemy->getSceneNode());
+                //}
+
+                if ((enemy->getActiveAction() != "" && !_actionManager->isActive(actionKey)) || enemy->getPriority() > enemy->getActivePriority())
+                {
                     _actionManager->clearAllActions(enemy->getSceneNode());
-                    std::string actionName = enemy->getActiveAction();
+                    std::string actionName = enemy->getRequestedAction();
                     enemy->animate(actionName);
                     auto action = enemy->getAction(actionName);
-                    if (enemy->usesID()) {
-                        actionName += enemy->getId();
-                    }
-                    _actionManager->activate(actionName, action, enemy->getSceneNode());
-                }
-                else {
-                    if (!_actionManager->isActive(enemy->getActiveAction() + (enemy->usesID() ? enemy->getId() : ""))) {
-						enemy->setFinished(true);
-                        enemy->setActivated(false);
-					}
+                    _actionManager->activate(actionName + enemy->getId(), action, enemy->getSceneNode());
                 }
             }
             enemy->update(dt);
+          
         }
     }
+
     if (_Bull != nullptr && !_Bull->isRemoved()) {
         if (_Bull->getHealth() <= 0) {
             _worldnode->removeChild(_Bull->getSceneNode());
@@ -947,6 +950,8 @@ void GameScene::preUpdate(float dt) {
         _afterimages.erase(_afterimages.begin());
         removeChild(afterimage);
     }
+     
+    _actionManager->update(dt);
 }
 
 
@@ -1056,6 +1061,12 @@ void GameScene::fixedUpdate(float step) {
     */
     if (_Bull!=nullptr && _Bull->getHealth() <= 0) {
         setComplete(true);
+    }
+
+    for (auto& enemy : _enemies) {
+        if (enemy != nullptr && !enemy->isRemoved()) {
+            enemy->fixedUpdate(step);
+		}
     }
     _world->update(step);
     currentLevel->update(step);
@@ -1366,7 +1377,6 @@ void GameScene::save() {
     json->appendChild("day", day);
     json->appendChild("persistent", persistent);
 
-    CULog("appended");
     json->appendValue("test", 0.0f);
 
     auto writer = JsonWriter::alloc(path);
