@@ -146,7 +146,7 @@ void Level2::populate(GameScene& scene) {
 
 	image = _assets->get<Texture>("su_idle");
 	//hardcoded size
-	cugl::Size s = PLAYER_SIZE_DEFAULT;
+	cugl::Size s = Size(1.7, 3.3);
 	_avatar = DudeModel::allocWithConstants(dudePos, s, _scale, _assets);
 	std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
 
