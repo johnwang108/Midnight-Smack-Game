@@ -1379,7 +1379,7 @@ void GameScene::postUpdate(float remain) {
         if (_failed == false) {
 
             if (currentLevel == _level_model) {
-                loadLevel(level2);
+                currentLevel = level2;
                 reset();
             }
             else if (currentLevel == level3) {
@@ -1387,7 +1387,7 @@ void GameScene::postUpdate(float remain) {
                 reset();
             }
             else {
-                currentLevel = level2;
+                currentLevel = _level_model;
                 reset();
             }
         }
