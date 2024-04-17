@@ -19,6 +19,7 @@ bool ShrimpRice::init(const Vec2& pos, const Size& size, float scale) {
         _attackcombo = 0;
         _attacktype = "none";
         _WheelofDoom = 0;
+        _waveattack1=0;
         b2Filter filter = getFilterData();
         filter.groupIndex = -1;
         setFilterData(filter);
@@ -45,22 +46,46 @@ void ShrimpRice::update(float dt) {
     }
 
     b2Vec2 velocity = _body->GetLinearVelocity();
-    velocity.x = _direction * SHRIMPRICE_CHASE_SPEED; 
+    velocity.x = _direction * SHRIMPRICE_CHASE_SPEED*1.5; 
 
     if (_attacktype=="none" && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _SFR_attack_chance) {
         float pa = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-        pa=0.8;
-        if (pa < 0.5) {
+     //   pa=0.8;
+        if (pa <= 0.33) {
             _attackcombo = 1.125;
             _attacktype="SFR_Attack";
 		}
-        else {
+        else if(pa<=0.66 && pa>0.33){
             _WheelofDoom = 2 + 2 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
             _attacktype="SFRWheelofDoom";
-		}
+        }else{
+            _waveattack1=1.125;
+            _attacktype="SFRWave1";
+        }
 
     }
-
+    if(_waveattack1 > 0){
+        _waveattack1-=dt;
+        if(_waveattack1<=0){
+            _attacktype="SFRWave2";
+        }
+    }
+    if(_attacktype=="SFRWave2"){
+        velocity.x *= 6;
+    }
+    if(_passattack){
+        _waveattack3=1.125;
+        _attacktype="SFRWave3";
+        _passattack=false;
+    }
+    
+    if(_waveattack3 > 0){
+        _waveattack3 -= dt;
+        if(_waveattack3<=0){
+            _attacktype="none";
+        }
+    }
+    
     if (_attackcombo > 0) {
         _attackcombo -= dt;
         if(_attackcombo<=0){

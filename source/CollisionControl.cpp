@@ -270,7 +270,7 @@ void GameScene::beginContact(b2Contact* contact) {
         popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
         CULog("shrimpBoss: %f", _ShrimpRice->getHealth());
     }
-    if (_ShrimpRice != nullptr && bd1 == _ShrimpRice.get() && bd2 == _ShrimpRice.get()) {
+    if (_ShrimpRice != nullptr && bd1 == _ShrimpRice.get() && bd2 == _avatar.get()) {
         Vec2 avatarPos = _avatar->getPosition();
         Vec2 bullPos = _ShrimpRice->getPosition();
         int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
@@ -334,7 +334,7 @@ void GameScene::endContact(b2Contact* contact) {
         Vec2 attackerPos = _avatar->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         _avatar->removeTouching();
-        _avatar->takeDamage(34, direction);
+      //  _avatar->takeDamage(34, direction);
     }
     else if (_avatar->getBodySensorName() == fd2 && bd1->getName() == "enemy") {
         Vec2 enemyPos = _avatar->getPosition();

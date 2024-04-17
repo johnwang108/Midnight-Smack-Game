@@ -39,6 +39,9 @@ protected:
     int _lastDirection;
     std::string _attacktype;
     float _WheelofDoom;
+    float _waveattack1;
+    float _waveattack3;
+    bool _passattack;
 
 
 public:
@@ -76,6 +79,9 @@ public:
     float getattackcombo() { return _attackcombo; }
     float getWheelofDoom() { return _WheelofDoom; }
     std::string getattacktype() { return _attacktype; }
+    void setattacktype(std::string type){_attacktype=type;}
+    void setpassattack(bool t){_passattack=true;}
+    void setwave3(float time){_waveattack3=time;}
 };
 
 #endif /* __SHRIMPRICE_H__ */

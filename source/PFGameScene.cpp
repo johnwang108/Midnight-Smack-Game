@@ -721,7 +721,6 @@ void GameScene::preUpdate(float dt) {
         }
         if (!_Bull->isChasing()) {
             Vec2 BullPos = _Bull->getPosition();
-            float distance = avatarPos.distance(BullPos);
             if (_Bull->getnextchangetime() < 0) {
                 int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
                 _Bull->setDirection(direction);
@@ -737,10 +736,15 @@ void GameScene::preUpdate(float dt) {
             _ShrimpRice->setDebugScene(nullptr);
             _ShrimpRice->markRemoved(true);
         }
-        
-        if (!_ShrimpRice->isChasing()) {
+        if (_ShrimpRice->getattacktype()=="SFRWave2") {
             Vec2 BullPos = _ShrimpRice->getPosition();
             float distance = avatarPos.distance(BullPos);
+            if (distance < 4) {
+                _ShrimpRice->setpassattack(true);
+            }
+        }
+        if (!_ShrimpRice->isChasing()) {
+            Vec2 BullPos = _ShrimpRice->getPosition();
             if (_ShrimpRice->getnextchangetime() < 0) {
                 int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
                 _ShrimpRice->setDirection(direction);
@@ -812,6 +816,7 @@ void GameScene::preUpdate(float dt) {
         
         if (_ShrimpRice->getattacktype()!="none" && _ShrimpRice->getknockbacktime() <= 0) {
             if (!_SHRactionManager->isActive(_ShrimpRice->getattacktype())) {
+                _SHRactionManager->clearAllActions(_ShrimpRice->getSceneNode());
                 auto SFR_Attack = _ShrimpRice->getAction(_ShrimpRice->getattacktype());
                 _SHRactionManager->activate(_ShrimpRice->getattacktype(), SFR_Attack, _ShrimpRice->getSceneNode());
             }
@@ -821,6 +826,7 @@ void GameScene::preUpdate(float dt) {
         }     
         else if (_ShrimpRice->getknockbacktime() <= 0) {
             if (!_SHRactionManager->isActive("SFR_Move")) {
+                _SHRactionManager->clearAllActions(_ShrimpRice->getSceneNode());
                 auto SFR_Move = _ShrimpRice->getAction("SFR_Move");
                 _SHRactionManager->activate("SFR_Move", SFR_Move, _ShrimpRice->getSceneNode());
             }
