@@ -346,19 +346,20 @@ void DudeModel::applyForce(float h, float v) {
             float whyDoesntSTDMinWorkpls = LogVal < .8 ? LogVal : .8;
             if (abs(getVX()) > 0) {
                 int negativeAccounter = SIGNUM(vel.x);
-                vel.x = negativeAccounter * vel.x * whyDoesntSTDMinWorkpls < negativeAccounter * .01 ? 0 : whyDoesntSTDMinWorkpls * vel.x; // If you set y, you will stop a jump in place
+                vel.x = negativeAccounter * vel.x  * whyDoesntSTDMinWorkpls < negativeAccounter * .01 ? 0 : whyDoesntSTDMinWorkpls * vel.x; // If you set y, you will stop a jump in place
             }
-            _body->SetLinearVelocity(vel);
+            _body->SetLinearVelocity(vel );
         }
         else {
             // Damping factor in the air
-            b2Vec2 force(-getDamping() * getVX(), 0);
+            b2Vec2 force(-getDamping() * getVX() * 2, 0);
             _body->ApplyForce(force, _body->GetPosition(), true);
         }
     }
 
     // Velocity too high, clamp it
     b2Vec2 force(getMovement(), 0);
+    force.x *= isGrounded() ? 2 : 1;
     _body->ApplyForce(force, _body->GetPosition(), true);
 
 
@@ -620,9 +621,9 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeMo
     pos.y += 0;
 
     std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE);
+    Size size = Size(6.0f, 3.0f);
     std::shared_ptr<Attack> attack = Attack::alloc(pos,
-        cugl::Size(image->getSize().width * 1.5 / scale,
-            ATTACK_H * image->getSize().height / scale));
+        size);
 
     if (_faceRight) {
         attack->setFaceRight(true);

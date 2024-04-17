@@ -424,6 +424,12 @@
         },
         "riceDeath": {
             "file": "textures/Sheets/Enemies/Rice/riceDeath.png"
+        },
+        "dreamBackground": {
+            "file": "textures/dream-background.png"
+        },
+        "empanadaBackground": {
+            "file": "textures/empanada_level_sketch.png"
         }
     },
     "sounds": {

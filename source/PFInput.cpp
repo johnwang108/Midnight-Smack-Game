@@ -30,7 +30,9 @@ using namespace cugl;
 #define JUMP_KEY KeyCode::SPACE
 #define DASH_KEY KeyCode::LEFT_SHIFT
 
-#define ANIMATE_KEY KeyCode::M
+#define MUSIC_KEY KeyCode::M
+#define ANIMATE_KEY KeyCode::N
+#define BACKGROUND_KEY KeyCode::B
 
 /** Slow key */
 #define SLOW_KEY KeyCode::TAB
@@ -273,6 +275,8 @@ void PlatformInput::update(float dt) {
         _keyTransition = keys->keyPressed(KeyCode::T);
 
         _keyAnimate = keys->keyPressed(ANIMATE_KEY);
+        _keyBackground = keys->keyPressed(BACKGROUND_KEY);
+        _keyMusic = keys->keyPressed(MUSIC_KEY);
     }
     else {
         _keyJump = _gameCont->isButtonPressed(GameController::Button::A);
@@ -329,6 +333,8 @@ void PlatformInput::update(float dt) {
     _transitionPressed = _keyTransition;
 
     _animatePressed = _keyAnimate;
+    _backgroundPressed = _keyBackground;
+    _musicPressed = _keyMusic;
 
     // Directional controls
     _horizontal = 0.0f;

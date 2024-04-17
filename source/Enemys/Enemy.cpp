@@ -222,7 +222,9 @@ void EnemyModel::fixedUpdate(float step) {
         }
     }
     //set behaviors
-
+    b2Vec2 velocity = _body->GetLinearVelocity();
+    if (std::abs(velocity.x) < 1.0f) velocity.x = 0;
+    _body->SetLinearVelocity(velocity);
 
     if (_behaviorCounter > 0) {
         _behaviorCounter -= 1;
@@ -230,9 +232,7 @@ void EnemyModel::fixedUpdate(float step) {
     else if (_behaviorCounter == 0 || (_behaviorCounter == -1 && getNextState(_state) != _state)) {
         setState(getNextState(_state));
     }
-
-    b2Vec2 velocity = _body->GetLinearVelocity();
-
+    
     //handle type specific behavior
     switch (getType()) {
     case EnemyType::shrimp:
@@ -272,12 +272,12 @@ void EnemyModel::fixedUpdate(float step) {
             setRequestedActionAndPrio("riceYell", 50);
         }
         else if (_state == "stunned") {
-            if (!isGrounded()) {
-                setPausedAndFrame(true, 2);
-            }
-            else {
-                setPausedAndFrame(false, -1);
-            }
+            //if (!isGrounded()) {
+            //    setPausedAndFrame(true, 2);
+            //}
+            //else {
+            //    setPausedAndFrame(false, -1);
+            //}
             setRequestedActionAndPrio("riceHurt", 100);
         }
         else if (_state == "pursuing") {
@@ -495,7 +495,6 @@ b2Vec2 EnemyModel::handleMovement(b2Vec2 velocity) {
     }
 
     if (std::abs(velocity.x) < 0.03) velocity.x = 0;
-
     if (velocity.x != 0) {
         if (_state != "patrolling") {
             setDirection(SIGNUM(_distanceToPlayer.x));
@@ -766,7 +765,8 @@ std::string EnemyModel::getNextState(std::string state) {
                 return "patrolling";
             }
             else if (state == "stunned") {
-                return "acknowledging";
+                if (_body->GetLinearVelocity().x == 0) return "acknowledging";
+                return "stunned";
             }
             break;
         }

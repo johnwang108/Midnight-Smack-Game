@@ -706,23 +706,71 @@ void GameScene::preUpdate(float dt) {
             //}
         }
     }
-    if (!_actionManager->isActive("air_attack")) {
-        _avatar->getSceneNode()->setAngle(0.0);
-    }
-
-
     if (_input->didAnimate() && _debugAnimTarget != nullptr) {
-        //CULog("OVERRIDE ANIM");
-        //_overrideAnim = true;
-        //_debugAnimTarget->animate(_debugAnimName);
-        //auto action = _debugAnimTarget->getAction(_debugAnimName);
-        //_actionManager->clearAllActions(_debugAnimTarget->getSceneNode());
-        //_actionManager->activate(_debugAnimName, action, _debugAnimTarget->getSceneNode());
+        auto reader = JsonReader::alloc("./json/constants.json");
+
+        std::shared_ptr<JsonValue> js = reader->readJson();
+
+        _debugAnimTargetName = js->getString("entity");
+        if (_debugAnimTargetName == "su") {
+            _debugAnimTarget = _avatar;
+        }
+        else if (_debugAnimTargetName == "bull") {
+            _debugAnimTarget = _Bull;
+        }
+        else if (_debugAnimTargetName == "shrimp") {
+            _debugAnimTarget = _ShrimpRice;
+        }
+        else {
+            _debugAnimTarget = nullptr;
+        }
+
+        _debugAnimName = js->getString("animation");
+
+        _overrideAnim = true;
+        _debugAnimTarget->animate(_debugAnimName);
+        auto action = _debugAnimTarget->getAction(_debugAnimName);
+        _actionManager->clearAllActions(_debugAnimTarget->getSceneNode());
+        _actionManager->activate(_debugAnimName, action, _debugAnimTarget->getSceneNode());
     }
+
+
 
     if (_overrideAnim && !_actionManager->isActive(_debugAnimName)) {
-		_overrideAnim = false;
-	}
+        _overrideAnim = false;
+    }
+
+    //if (!_actionManager->isActive("air_attack")) {
+    //    _avatar->getSceneNode()->setAngle(0.0);
+    //}
+
+
+
+    if (_input->didBackground()) {
+        
+        std::shared_ptr<scene2::SceneNode> bg = getChildByName("background");
+
+        std::shared_ptr<scene2::PolygonNode> bgNode = std::dynamic_pointer_cast<scene2::PolygonNode>(bg);
+        auto reader = JsonReader::alloc("./json/constants.json");
+
+        std::shared_ptr<JsonValue> js = reader->readJson();
+
+        std::shared_ptr<Texture> bgTexture = _assets->get<Texture>(js->get("environment")->get("1")->getString("background"));
+        bgNode->setTexture(bgTexture);
+        
+    }
+
+
+    if (_input->didMusic()) {
+
+        auto reader = JsonReader::alloc("./json/constants.json");
+
+        std::shared_ptr<JsonValue> js = reader->readJson();
+        
+        std::shared_ptr<Sound> source = _assets->get<Sound>(js->get("environment")->get("1")->getString("music"));
+        AudioEngine::get()->getMusicQueue()->clear();
+        AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
+    }
     
     _dollarnode->update(dt);
 

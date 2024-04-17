@@ -561,6 +561,7 @@ void LevelModel::populate(GameScene& scene) {
 							if (pathWeWant != "textures\\dream-background-1.png") {
 								_background = cugl::scene2::PolygonNode::allocWithTexture(image);
 								_background->getSize();
+								_background->setName("background");
 								// _background->setPosition(Vec2(0,0));
 								CULog(std::to_string(_background->getPositionX()).c_str());
 								CULog(std::to_string(_background->getPositionY()).c_str());
@@ -690,7 +691,8 @@ void LevelModel::populate(GameScene& scene) {
 							CULog("row number: ");
 							// % 25
 							CULog(std::to_string(rowPos).c_str());
-							_avatar = DudeModel::allocWithConstants(dudePos, image->getSize() / (2 + scene.getScale()), scene.getScale(), _assets);
+							Size size = Size(1.7, 3.3);
+							_avatar = DudeModel::allocWithConstants(dudePos, size, scene.getScale(), _assets);
 							// _avatar = DudeModel::alloc(dudePos, image->getSize(), scene.getScale());
 							CULog(std::to_string(_avatar->getWidth()).c_str());
 							CULog(std::to_string(_avatar->getHeight()).c_str());
@@ -700,6 +702,7 @@ void LevelModel::populate(GameScene& scene) {
 							//----------------
 							// sprite = scene2::PolygonNode::allocWithTexture(image);
 							std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
+							spritenode->setAnchor(Vec2(0.5, 0.35));
 							_avatar->setSceneNode(spritenode);
 							_avatar->setDebugColor(DEBUG_COLOR);
 							// scene.addChild(sprite);
@@ -717,6 +720,7 @@ void LevelModel::populate(GameScene& scene) {
 							// because animations are not done yet for other enemies
 
 							if (pathWeWant.find("rice") != std::string::npos || pathWeWant.find("egg") != std::string::npos) {
+								
 								if (numOfRice == 0) {
 									image = _assets->get<Texture>("riceLeader");
 									spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
@@ -736,6 +740,8 @@ void LevelModel::populate(GameScene& scene) {
 								}
 
 								// spritenode->setScale(0.12f);
+								spritenode->setScale(0.2f);
+								spritenode->setAnchor(Vec2(0.5, 0.35));
 								new_enemy->setSceneNode(spritenode);
 								new_enemy->setDebugColor(DEBUG_COLOR);
 								scene.addObstacle(new_enemy, spritenode);

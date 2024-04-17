@@ -15,7 +15,7 @@
 #define BEEF_TEXTURE    "beef"
 #define CARROT_TEXTURE    "carrot"
 
-#define ENEMY_FORCE      0.75f
+#define ENEMY_FORCE      3.75f
 #define ENEMY_DAMPING    5.0f
 #define ENEMY_MAXSPEED   10.0f
 #define ENEMY_JUMP       2.5f
@@ -177,7 +177,7 @@ public:
      */
 
     void setGrounded(bool value) { 
-        _body->SetLinearDamping(24 * value);
+        _body->SetLinearDamping(40 * value);
         _isGrounded = value; };
 
     std::string* getSensorName() { return &_sensorName; };
@@ -358,17 +358,17 @@ public:
     static float typeToAggroRange(EnemyType type) {
 		switch (type) {
 		case EnemyType::shrimp:
-			return 10.0f;
+			return 20.0f;
 		case EnemyType::rice:
-			return 5.0f;
+			return 20.0f;
 		case EnemyType::rice_soldier:
-			return 1.0f;
+			return 20.0f;
 		case EnemyType::egg:
-			return 12.0f;
+			return 20.0f;
 		case EnemyType::carrot:
-			return 10.0f;
+			return 20.0f;
 		case EnemyType::beef:
-			return 10.0f;
+			return 20.0f;
 		}
 		return 0.0f;
 	};
