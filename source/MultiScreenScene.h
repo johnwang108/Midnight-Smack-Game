@@ -18,7 +18,8 @@ private:
 	std::map<std::string, int> _stationMap;
 	std::map<int, std::vector<std::string>> _stationIngredients;
 	bool _finishedIngredients;
-
+	
+	std::vector<int> _bonusObjectives;
 
 
 
@@ -26,6 +27,17 @@ protected:
 	std::shared_ptr<cugl::AssetManager> _assets;
 	std::shared_ptr<cugl::scene2::SceneNode> _uiNode;
 	std::shared_ptr<cugl::scene2::SceneNode> _progBar;
+	std::shared_ptr<cugl::scene2::SceneNode> _expectationBar;
+	std::shared_ptr<cugl::scene2::SceneNode> _winScreenRoot;
+	std::vector<std::shared_ptr<cugl::scene2::Button>> _buttons;
+
+
+	std::shared_ptr<cugl::scene2::Label> _stationLabel;
+	std::shared_ptr<cugl::scene2::Label> _twelveHourTimer;
+
+	int _currentHour;
+	int _currentMinute;
+
 
 
 	std::shared_ptr<PlatformInput> _input;
@@ -54,7 +66,6 @@ protected:
 
 	std::string _targetScene;
 
-	std::shared_ptr<cugl::scene2::Label> _timer;
 
 	std::shared_ptr<cugl::scene2::Label> _gestureFeedback;
 
@@ -119,6 +130,8 @@ public:
 	void unfocusAll();
 
 	void focusCurr();
+
+	void switchStation(int currId, int targId);
 	void endDay();
 
 
@@ -131,6 +144,8 @@ public:
 	std::string getTarget() { return _targetScene; };
 
 	void setTarget(std::string s) { _targetScene = s; };
+
+	void increaseQuotaProgress();
 
 	void save();
 	void loadSave();

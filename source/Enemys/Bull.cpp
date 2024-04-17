@@ -373,10 +373,10 @@ void BullModel::Summon(GameScene& scene) {
 
     cugl::Size shrimpSize = cugl::Size(2.0f, 2.0f);
 
-    std::vector<std::shared_ptr<EnemyModel>> Enemies=scene.getEnemies();
+    /*std::vector<std::shared_ptr<EnemyModel>> Enemies=scene.getEnemies();
     std::shared_ptr<Texture> image = _assets->get<Texture>("shrimp_rolling");
     std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc({ getPosition() + Vec2(5.0f, 10.0f) }, shrimpSize, scene.getScale(), EnemyType::shrimp);
-    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    std::shared_ptr<EntitySpriteNode> sprite = EntitySpriteNode::allocWithSheet(image);
     sprite->setScale(0.1f);
     _enemy->setSceneNode(sprite);
     _enemy->setName(ENEMY_NAME);
@@ -386,7 +386,7 @@ void BullModel::Summon(GameScene& scene) {
 
     image = _assets->get<Texture>("shrimp_rolling");
     _enemy = EnemyModel::alloc({ getPosition() + Vec2(-5.0f, 10.0f) }, shrimpSize, scene.getScale(), EnemyType::shrimp);
-    sprite = scene2::PolygonNode::allocWithTexture(image);
+    sprite = EntitySpriteNode::allocWithTexture(image);
     sprite->setScale(0.1f);
     _enemy->setSceneNode(sprite);
     _enemy->setName(ENEMY_NAME);
@@ -394,7 +394,7 @@ void BullModel::Summon(GameScene& scene) {
     scene.addObstacle(_enemy, sprite);
     Enemies.push_back(_enemy);
 
-    scene.setEnemies(Enemies);
+    scene.setEnemies(Enemies);*/
 }
 
 void BullModel::circleattack(GameScene& scene) {

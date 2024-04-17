@@ -1,0 +1,14 @@
+{ "columns":1,
+ "image":"..\/source\/repos\/Midnight-Smack-Folder\/Midnight-Smack-Game\/assets\/textures\/placeholder_block_PLATFORM.png",
+ "imageheight":32,
+ "imagewidth":32,
+ "margin":0,
+ "name":"placeholder_block_PLATFORM",
+ "spacing":0,
+ "tilecount":1,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

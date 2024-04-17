@@ -1,0 +1,14 @@
+{ "columns":2,
+ "image":"..\/source\/repos\/Midnight-Smack-Folder\/Midnight-Smack-Game\/assets\/textures\/shrimp_96_ENEMY.png",
+ "imageheight":96,
+ "imagewidth":64,
+ "margin":0,
+ "name":"shrimp_96_ENEMY",
+ "spacing":0,
+ "tilecount":6,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

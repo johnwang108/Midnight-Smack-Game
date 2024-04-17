@@ -1,11 +1,21 @@
 #include "Entity.h"
 
+int Entity::ID = 0;
 
 bool Entity::init(cugl::Vec2 pos, cugl::Size size) {
     /*cugl::Rect rect = cugl::Rect(Vec2::ZERO, size);
     _dimension = size;
     return PolygonObstacle::init(rect);*/
 
+    _entityID = ID++;
+
+    CULog("Entity ID: %d", _entityID);
+    _activated = false;
+    _finished = false;
+    _activeAction = "";
+    _pausedFrame = 0;
+    _activeFrame = 0;
+    _paused = false;
     return CapsuleObstacle::init(pos, size);
 }
 /** Register a new animation in the dict*/
@@ -21,33 +31,65 @@ void Entity::addActionAnimation(std::string action_name, std::shared_ptr<cugl::T
 
 /**Unsure if override needed. Begins an animation, switching the sheet if needed.*/
 void Entity::animate(std::string action_name) {
-    //first, switch the sheet
-    changeSheet(action_name);
-    if (action_name.find("bull") != std::string::npos) {
-		_node->setScale(0.5/4);
-    }
-    else if (action_name.find("SFR") != std::string::npos) {
-        _node->setScale(0.3);
-    }
-    else if (action_name == "idle") {
-        _node->setScale(0.35 / 4);
-    }
-    else {
-        _node->setScale(0.35 / 4);
-    }
-    _activeAction = action_name;
+    std::string name = action_name;
 
     //info = {int rows, int cols, int size, float duration, bool isPassive}
-    auto info = _info[action_name];
+    auto info = _info[name];
+
+    //first, switch the sheet
+    changeSheet(name);
+    if (name.find("bull") != std::string::npos) {
+		_node->setScale(0.5/4);
+    }
+    else if (name.find("SFR") != std::string::npos) {
+        _node->setScale(0.3);
+    }
+    else if (name == "idle") {
+        _node->setScale(0.35 / 1.75);
+    }
+    else {
+        _node->setScale(0.35 / 1.75);
+    }
+
+    setActiveAction(action_name);
+    _activePriority = _priority;
+    _activeAction = name;
 }
 
 void Entity::changeSheet(std::string action_name) {
     //info = {int rows, int cols, int size, float duration, bool isPassive}
     try {
         auto info = _info[action_name];
+  //      for (auto it = _info.begin(); it != _info.end(); ++it) {
+		//	CULog("Action name: %s", it->first.c_str());
+		//}
         _node->changeSheet(_sheets[action_name], std::get<0>(info), std::get<1>(info), std::get<2>(info));
     }
     catch (int e) {
         CULog("Error changing sheets. Is the action registered?");
+    }
+}
+
+void Entity::loadAnimationsFromConstant(std::string entityName, std::shared_ptr<AssetManager> _assets) {
+    auto reader = JsonReader::allocWithAsset("./json/constants.json");
+    std::shared_ptr<JsonValue> json = reader->readJson();
+    std::shared_ptr<JsonValue> su = json->get(entityName);
+    auto children = su->children();
+    for (auto it = children.begin(); it != children.end(); ++it) {
+        std::shared_ptr<JsonValue> action = *it;
+        std::string action_name = action->key();
+        std::string sheet_name = action->getString("sheet");
+        int rows = action->getInt("rows");
+        int cols = action->getInt("cols");
+        int size = action->getInt("frames");
+        float duration = action->getFloat("duration");
+        //CULog("Info about action");
+        //CULog("Action name: %s", action_name.c_str());
+        //CULog("Sheet name: %s", sheet_name.c_str());
+        //CULog("Rows: %d", rows);
+        //CULog("Cols: %d", cols);
+        //CULog("Size: %d", size);
+        //CULog("Duration: %f", duration);
+        addActionAnimation(action_name, _assets->get<Texture>(sheet_name), rows, cols, size, duration, false);
     }
 }

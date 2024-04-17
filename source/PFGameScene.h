@@ -41,6 +41,7 @@
 #include "Levels/Level2.h"
 #include "Levels/Level3.h"
 // #include "Levels/Level3.h"
+#include "Levels/LevelModel.h"
 
 
 /**
@@ -102,6 +103,10 @@ protected:
 
     std::vector<std::shared_ptr<EnemyModel>> _enemies;
 
+    std::unordered_map<std::string, std::shared_ptr<EnemyModel>> _enemyMap;
+
+    std::vector<std::shared_ptr<scene2::SpriteNode>> _afterimages;
+
 
     //Valid targets for cook-time
     std::vector<std::shared_ptr<EnemyModel>> _vulnerables;
@@ -123,7 +128,6 @@ protected:
     int _countdown;
 
     //camera
-    //std::shared_ptr<cugl::OrthographicCamera> _camera;
     cugl::Vec3 _cameraOffset = Vec3::ZERO;
     float _smoothTime = 0.25f;
     cugl::Vec3 _velocity = Vec3::ZERO;
@@ -176,6 +180,14 @@ protected:
 
     float _flag;
 
+    //debug anims for Leon
+    std::string _debugAnimTargetName;
+    std::shared_ptr<Entity> _debugAnimTarget;
+    std::string _debugAnimName;
+    bool _overrideAnim;
+    //end debug anims
+
+    std::shared_ptr<LevelModel> _level_model = std::make_shared<LevelModel>();
 
 #pragma mark Internal Object Management
     /**
@@ -237,6 +249,11 @@ public:
      * Disposes of all (non-static) resources allocated to this mode.
      */
     void dispose();
+
+    /** return the current instance of the physics world*/
+    std::shared_ptr<physics2::ObstacleWorld> getWorld() {
+        return _world;
+    }
     
     /**
      * Initializes the controller contents, and starts the game
@@ -456,11 +473,6 @@ public:
     void reset();
 
     /**
-    * Adds a new bullet to the world and sends it in the right direction.
-    */
-    void createAttack(bool display = true);
-
-    /**
     * Removes the input Bullet from the world.
     *
     * @param  bullet   the bullet to remove
@@ -488,7 +500,8 @@ public:
 
     void loadLevel(std::shared_ptr<Levels> level) {
         _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level2);
-        _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level3);
+        CULog(currentLevel == level2 ? "true" : "false");
+        //_uiScene->getChildByName("bullbar")->setVisible(currentLevel == level3);
         level->populate(*this);
         currentLevel = level;
     }

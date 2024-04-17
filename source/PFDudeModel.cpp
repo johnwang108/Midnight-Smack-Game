@@ -49,24 +49,18 @@
 
 #define SIGNUM(x)  ((x > 0) - (x < 0))
 
-#define PASSIVE_KEY "passive_action"
-
-#define ACTIVE_KEY "active_action"
-
 
 /**Modif for the max height jump in ~(Sues +1)*/
 float jmpHeight = 1;
 /**Modif dash, as a multiple of DASH_JUMP*/
 float dashModif = 1.3;
 /**The aount of frames following a dash that SUe floats for*/
-float floatyFrames = 10;
 
 #pragma mark -
 #pragma mark Physics Constants
 /** Cooldown (in animation frames) for jumping */
 #define JUMP_COOLDOWN   5
-/** Cooldown (in animation frames) for shooting */
-#define DASH_COOLDOWN  20
+
 /** Cooldown (in animation frames) for shooting */
 #define SHOOT_COOLDOWN  20
 /** The amount to shrink the body fixture (vertically) relative to the image */
@@ -114,8 +108,6 @@ using namespace cugl;
 bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale) {
     setEnabled(false);
     Size nsize = size;
-    //nsize.width  *= DUDE_HSHRINK;
-    //nsize.height *= DUDE_VSHRINK;
     _drawScale = scale;
 
     if (Entity::init(pos, nsize)) {
@@ -165,7 +157,7 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         setFilterData(filter);
         setName("avatar");
         setEnabled(true);
-
+        _useID = false;
         return true;
     }
     return false;
@@ -354,19 +346,20 @@ void DudeModel::applyForce(float h, float v) {
             float whyDoesntSTDMinWorkpls = LogVal < .8 ? LogVal : .8;
             if (abs(getVX()) > 0) {
                 int negativeAccounter = SIGNUM(vel.x);
-                vel.x = negativeAccounter * vel.x * whyDoesntSTDMinWorkpls < negativeAccounter * .01 ? 0 : whyDoesntSTDMinWorkpls * vel.x; // If you set y, you will stop a jump in place
+                vel.x = negativeAccounter * vel.x  * whyDoesntSTDMinWorkpls < negativeAccounter * .01 ? 0 : whyDoesntSTDMinWorkpls * vel.x; // If you set y, you will stop a jump in place
             }
-            _body->SetLinearVelocity(vel);
+            _body->SetLinearVelocity(vel );
         }
         else {
             // Damping factor in the air
-            b2Vec2 force(-getDamping() * getVX(), 0);
+            b2Vec2 force(-getDamping() * getVX() * 2, 0);
             _body->ApplyForce(force, _body->GetPosition(), true);
         }
     }
 
     // Velocity too high, clamp it
     b2Vec2 force(getMovement(), 0);
+    force.x *= isGrounded() ? 2 : 1;
     _body->ApplyForce(force, _body->GetPosition(), true);
 
 
@@ -423,7 +416,6 @@ void DudeModel::update(float dt) {
 
 
     if (_numberOfTouchingEnemies > 0) {
-        CULog("Number of touching enemies: %f", _numberOfTouchingEnemies);
         takeDamage(34, 0);
     }
 
@@ -474,6 +466,7 @@ void DudeModel::update(float dt) {
     else {
         _dashCooldown = (_dashCooldown > 0 ? _dashCooldown - 1 : 0);
         if (getDashNum() == 0 && _dashCooldown <= 0 && isGrounded()) {
+            
             setDashNum(1);
             //TODO: remove hardcode limit on one dash
         }
@@ -627,10 +620,10 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeMo
     pos.x += (_faceRight ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
     pos.y += 0;
 
-    std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE_L);
+    std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE);
+    Size size = Size(6.0f, 3.0f);
     std::shared_ptr<Attack> attack = Attack::alloc(pos,
-        cugl::Size(image->getSize().width * 1.5 / scale,
-            ATTACK_H * image->getSize().height / scale));
+        size);
 
     if (_faceRight) {
         attack->setFaceRight(true);
@@ -645,9 +638,6 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeMo
     attack->setrand(false);
     attack->setShoot(false);
     attack->setnorotate(true);
-   
-
-
 
     std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
     attack->setSceneNode(sprite);
