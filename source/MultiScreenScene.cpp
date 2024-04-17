@@ -260,6 +260,7 @@ void MultiScreenScene::initStations(std::string textures[], int size) {
 	}
 
 	for (int i = 0; i < size; i++) {
+		_scenes[i]->setNighttime(false);
 		addChild(_scenes[i]);
 	}
 }
@@ -600,6 +601,7 @@ void MultiScreenScene::reset() {
 	for (int i = 0; i < 5; i++) {
 		_scenes[i]->reset();
 	}
+	_winScreenRoot->setVisible(false);
 
 	focusCurr();
 }

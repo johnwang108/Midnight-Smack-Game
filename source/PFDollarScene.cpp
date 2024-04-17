@@ -206,7 +206,9 @@ bool DollarScene::initGestureRecognizer() {
 void DollarScene::update(float timestep) {
 	//pop new path if this node is focused on and the input controller contains a nonempty path.
 	_justCompletedGesture = false;
+	CULog("focus: %f, ready to cook: %f", _focus ? 1.0f : 0.0f, _readyToCook ? 1.0f : 0.0f);
 	if (_focus && _readyToCook) {
+		CULog("cooking");
 		if (!(_input->getTouchPath().empty())) {
 			// for spline
 			_path = _input->getTouchPath();
@@ -256,6 +258,7 @@ void DollarScene::update(float timestep) {
 	}
 
 	if (_completed) {
+		if (_isNighttime) return;
 		_completed = false;
 		_readyToCook = false;
 		_indicatorGroup->setVisible(false);
@@ -269,9 +272,7 @@ void DollarScene::update(float timestep) {
 				_indicatorGroup->removeChild(child);
 			}
 		}
-
 		handleCompletedIngredient(getIngredientInStation());
-
 	}
 
 
@@ -551,9 +552,11 @@ void DollarScene::addIngredientToStation(std::shared_ptr<Ingredient> ing) {
 
 void DollarScene::handleCompletedIngredient(std::shared_ptr<Ingredient> ing) {
 	//remove ingredient from station for sure
+	_currentTargetGestures.clear();
+	if (ing == nullptr) { return; }
+
 	_ingredientInStation.reset();
 	ing->setInPot(false);
-	_currentTargetGestures.clear();
 
 	//CULog("%s", getName().c_str());
 	//CULog("Ing name: %s", ing->getName().c_str());

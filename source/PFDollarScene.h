@@ -110,6 +110,8 @@ protected:
 
     bool _readyToCook;
 
+    bool _isNighttime;
+
     
     //Todo: need library of existing predetermined inputs to check against
 
@@ -197,6 +199,8 @@ public:
     std::shared_ptr<Ingredient> getSubmittedIngredient() { return _submittedIngredient; }
 
     void clearSubmittedIngredient() { _submittedIngredient.reset(); }
+
+    void setNighttime(bool b) { _isNighttime = b; }
 };
 
 #endif /* __PF_DOLLAR_SCENE_H__ */

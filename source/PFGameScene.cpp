@@ -234,6 +234,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode->init(_assets, _input, "cooktime");
     _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
     _dollarnode->setVisible(false);
+    _dollarnode->setNighttime(true);
     _dollarnode->setPosition(0,0);
 
 
@@ -773,6 +774,7 @@ void GameScene::preUpdate(float dt) {
         _dollarnode->setVisible(false);
         if (_dollarnode->isFocus()) {
             _dollarnode->setFocus(false);
+            _dollarnode->setReadyToCook(false);
         }
 
         _avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
@@ -788,6 +790,7 @@ void GameScene::preUpdate(float dt) {
         _dollarnode->setVisible(true);
         if (!(_dollarnode->isFocus())) {
             _dollarnode->setFocus(true);
+            _dollarnode->setReadyToCook(true);
         }
 
         _avatar->setMovement(0);
@@ -1263,8 +1266,11 @@ void GameScene::fixedUpdate(float step) {
         else if (currentLevel == level2) {
             _camera->setZoom(210.0 / 40.0);
         }
-        else {
+        else  if (currentLevel == level3) {
             _camera->setZoom(210.0 / 40.0);
+        }
+        else {
+            _camera->setZoom(2.0);
         }
 
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
@@ -1377,11 +1383,11 @@ void GameScene::postUpdate(float remain) {
                 reset();
             }
             else if (currentLevel == level3) {
-                currentLevel = level1;
+                currentLevel = _level_model;
                 reset();
             }
             else {
-                currentLevel = _level_model;
+                currentLevel = level2;
                 reset();
             }
         }
