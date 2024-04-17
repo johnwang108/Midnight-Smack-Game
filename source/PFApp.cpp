@@ -364,11 +364,16 @@ void PlatformApp::transitionScenes() {
 		_currentScene = _gameplay.getTarget();
         _gameplay.setTarget("");
         if(_currentScene == "day") {
+            CULog("ASDF :)");
 			_multiScreen.setActive(true);
 			_multiScreen.focusCurr();
         }
         else if (_currentScene == "main_menu"){
 			_menu.setActive(true);
+        }
+        else {
+            CULog("ASDF :(");
+            CULog(_currentScene.c_str());
         }
         CULog("Transed");
         CULog("From gameplay");

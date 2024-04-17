@@ -552,12 +552,13 @@ void GameScene::preUpdate(float dt) {
     if (_input->didDebug()) { setDebug(!isDebug()); }
     if (_input->didReset()) { reset(); }
     if (_input->didExit()) {
-        CULog("Shutting down");
-        Application::get()->quit();
+        transition(true);
+        setTarget("main_menu");
     }
 
     if (_input->didTransition()) {
         transition(true);
+        setTarget("day");
         CULog("TTTTTTTTTTT");
         return;
     }

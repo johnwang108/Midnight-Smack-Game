@@ -542,11 +542,7 @@ public:
 
     bool getPaused() { return _paused; };
 
-    std::string getTargetScene() { return _targetScene; };
-
     bool didTransition() { return _transitionScenes; };
-
-    void setTransition(bool b) { _transitionScenes = b; };
 
     std::string getTarget() { return _targetScene; };
 
