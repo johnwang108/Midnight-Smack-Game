@@ -103,7 +103,7 @@
             "file": "textures/day/pot.png"
         },
         "sink": {
-            "file": "textures/day/Sink.png"
+            "file": "textures/day/sink.png"
         },
         "knife": {
             "file": "textures/day/knife.png"
@@ -411,7 +411,7 @@
             "file": "textures/Sheets/Enemies/Rice/riceSoldier.png"
         },
         "riceStartJump": {
-            "file": "textures/Sheets/Enemies/Rice/riceStartJump.png"
+            "file": "textures/Sheets/Enemies/Rice/riceStartjump.png"
         },
         "riceStartWalk": {
             "file": "textures/Sheets/Enemies/Rice/riceStartwalk.png"
