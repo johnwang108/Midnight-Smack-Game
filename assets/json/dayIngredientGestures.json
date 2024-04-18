@@ -1,0 +1,47 @@
+{
+  "carrot": {
+    "texture": "carrot",
+    "gestures": [
+      "v",
+      "v",
+      "v"
+    ],
+    "valid_stations": [
+      "cutting"
+    ]
+  },
+  "cuttingCarrot": {
+    "texture": "cutCarrot",
+    "gestures": [
+      "circle",
+      "circle",
+      "circle"
+    ],
+    "valid_stations": [
+      "panfry",
+      "prep"
+    ]
+  },
+  "beef": {
+    "texture": "beef",
+    "gestures": [
+      "v",
+      "v",
+      "circle"
+    ],
+    "valid_stations": [
+      "panfry"
+    ]
+  },
+  "cookedBeef": {
+    "texture": "cookedBeef",
+    "gestures": [
+      "circle",
+      "circle",
+      "circle"
+    ],
+    "valid_stations": [
+      "panfry"
+    ]
+  }
+}

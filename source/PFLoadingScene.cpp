@@ -67,6 +67,7 @@ bool LoadingScene::init(const std::shared_ptr<cugl::AssetManager>& assets) {
 
     Application::get()->setClearColor(Color4(192,192,192,255));
     addChild(layer);
+    setActive(true);
     return true;
 }
 

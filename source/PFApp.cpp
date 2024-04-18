@@ -45,16 +45,24 @@ void PlatformApp::onStartup() {
 
     _assets->attach<Font>(FontLoader::alloc()->getHook());
     _assets->attach<Texture>(TextureLoader::alloc()->getHook());
+    _assets->attach<JsonValue>(JsonLoader::alloc()->getHook());
     _assets->attach<Sound>(SoundLoader::alloc()->getHook());
     _assets->attach<scene2::SceneNode>(Scene2Loader::alloc()->getHook());
+    _assets->attach<WidgetValue>(WidgetLoader::alloc()->getHook());
+
+    _assets->attach<JsonValue>(JsonLoader::alloc()->getHook());
+    // _assets->attach<JsonReader>(cugl::JsonReader::alloc()->getHook());
 
     // Create a "loading" screen
     _loaded = false;
     _loading.init(_assets);
+
+    std::shared_ptr<PlatformInput> input = std::make_shared<PlatformInput>();
     
     // Que up the other assets
     AudioEngine::start();
     _assets->loadDirectoryAsync("json/assets.json",nullptr);
+    _currentScene = "";
     
 
     Application::onStartup(); // YOU MUST END with call to parent
@@ -72,6 +80,10 @@ void PlatformApp::onStartup() {
  * causing the application to be deleted.
  */
 void PlatformApp::onShutdown() {
+    //_gameplay.save();
+
+    _menu.dispose();
+    _multiScreen.dispose();
     _loading.dispose();
     _gameplay.dispose();
     _assets = nullptr;
@@ -133,28 +145,29 @@ void PlatformApp::onResume() {
  * @param dt    The amount of time (in seconds) since the last frame
  */
 void PlatformApp::update(float dt) {
-    if (!_loaded && _loading.isActive()) {
+    if (!_loaded && _loading.isActive()) {//!_loaded && _loading.isActive()) {
         _loading.update(0.01f);
     } else if (!_loaded) {
         _loading.dispose(); // Disables the input listeners in this mode
 
         std::shared_ptr<PlatformInput> input = std::make_shared<PlatformInput>();
 
-        //MULTISCREEN IS RESPONSIBLE FOR INITING THE INPUT CONTROLLER.  THIS IS A TEMPORARY SOLUTION
         _multiScreen.init(_assets, input);
-        _multiScreen.setActive(MULTI_SCREEN);
-        
+        _multiScreen.setActive(false);
+
         /*_dayUIScene = std::make_shared<cugl::scene2::SceneNode>();
         _dayUIScene->init();
         _dayUIScene->setActive(MULTI_SCREEN);*/
 
         _gameplay.init(_assets, input);
-        _gameplay.setActive(!MULTI_SCREEN);
+        _gameplay.setActive(false);
 
-
+        _menu.init(_assets, "menu");
+        _menu.setActive(true);
+        _currentScene = "main_menu";
 
         _loaded = true;
-        
+
         // Switch to deterministic mode
         setDeterministic(true);
     }
@@ -181,34 +194,53 @@ void PlatformApp::update(float dt) {
  * @param dt    The amount of time (in seconds) since the last frame
  */
 void PlatformApp::preUpdate(float dt) {
-
-    if (_gameplay.transitionedAway()) {
-        _gameplay.setActive(false);
-        _gameplay.transition(false);
-
-        _multiScreen.setActive(true);
-        _multiScreen.preUpdate(dt);
-        _multiScreen.focusCurr();
-    }
-    else if (_multiScreen.transitionedAway()) {
-		_multiScreen.transition(false);
-		_multiScreen.setActive(false);
-        _multiScreen.unfocusAll();
-
-
-		_gameplay.setActive(true);
-		_gameplay.preUpdate(dt);
-       
+    transitionScenes();
+    if (_menu.isActive()) {
+        _menu.update(dt);
     }
     else if (_gameplay.isActive()) {
-		_gameplay.preUpdate(dt);
+        _gameplay.preUpdate(dt);
     }
     else if (_multiScreen.isActive()) {
-		_multiScreen.preUpdate(dt);
+        _multiScreen.preUpdate(dt);
     }
     else {
-		CULog("ERROR ERROR ERROR");
-	}
+
+    }
+ //   if (_gameplay.didTransition()) {
+
+ //       CULog("1");
+ //       _gameplay.setActive(false);
+ //       _gameplay.transition(false);
+
+ //       _multiScreen.setActive(true);
+ //       _multiScreen.preUpdate(dt);
+ //       _multiScreen.focusCurr();
+ //   }
+ //   else if (_multiScreen.didTransition()) {
+ //       CULog("2");
+	//	_multiScreen.transition(false);
+	//	_multiScreen.setActive(false);
+ //       _multiScreen.unfocusAll();
+
+
+	//	_gameplay.setActive(true);
+	//	_gameplay.preUpdate(dt);
+ //      
+ //   }
+ //   else if (_gameplay.isActive()) {
+ //       CULog("3");
+	//	_gameplay.preUpdate(dt);
+ //   }
+ //   else if (_multiScreen.isActive() || _menu.started()) {
+ //       CULog("4");
+	//	_multiScreen.preUpdate(dt);
+ //   }
+ //   else {
+ //       _menu.setStarted(false);
+ //       _menu.setActive(true);
+ //       _menu.update(dt);
+	//}
 }
 
 /**
@@ -238,7 +270,7 @@ void PlatformApp::fixedUpdate() {
     if (_gameplay.isActive()) {
         _gameplay.fixedUpdate(time);
     }
-    else {
+    else if (_multiScreen.isActive()){
         _multiScreen.fixedUpdate(time);
     }
     
@@ -274,7 +306,7 @@ void PlatformApp::postUpdate(float dt) {
     if (_gameplay.isActive()) {
 		_gameplay.postUpdate(time);
 	}
-    else {
+    else if (_multiScreen.isActive()){
 		_multiScreen.postUpdate(time);
 	}
 }
@@ -289,18 +321,96 @@ void PlatformApp::postUpdate(float dt) {
  * at all. The default implmentation does nothing.
  */
 void PlatformApp::draw() {
-    if (!_loaded) {
+    if (!_loaded && _loading.isActive()) {
         _loading.render(_batch);
-    } else {
-        if (_gameplay.isActive()) {
-            _gameplay.renderBG(_batch);
-            _gameplay.render(_batch);
-            _gameplay.renderUI(_batch);
-        }
-        else {
-            _multiScreen.render(_batch);
-            _multiScreen.renderUI(_batch);
-        }
     }
+    if (_menu.isActive()) {
+        _menu.render(_batch);
+    }
+    else if (_gameplay.isActive()) {
+        _gameplay.renderBG(_batch);
+        _gameplay.render(_batch);
+        _gameplay.renderUI(_batch);
+    }
+    else if (_multiScreen.isActive()) {
+        _multiScreen.render(_batch);
+        _multiScreen.renderUI(_batch);
+    }
+    else {
+
+    }
+    //if (_menu.isActive()) {
+    //    //_loading.render(_batch);
+    //    _menu.render(_batch);
+    //} else {
+    //    if (_gameplay.isActive()) {
+    //        _gameplay.renderBG(_batch);
+    //        _gameplay.render(_batch);
+    //        _gameplay.renderUI(_batch);
+    //    }
+    //    else {
+    //        _multiScreen.render(_batch);
+    //        _multiScreen.renderUI(_batch);
+    //    }
+    //}
 }
 
+
+void PlatformApp::transitionScenes() {
+    if (_gameplay.didTransition()) {
+		_gameplay.setActive(false);
+		_gameplay.transition(false);
+
+		_currentScene = _gameplay.getTarget();
+        _gameplay.setTarget("");
+        if(_currentScene == "day") {
+            CULog("ASDF :)");
+			_multiScreen.setActive(true);
+			_multiScreen.focusCurr();
+        }
+        else if (_currentScene == "main_menu"){
+			_menu.setActive(true);
+        }
+        else {
+            CULog("ASDF :(");
+            CULog(_currentScene.c_str());
+        }
+        CULog("Transed");
+        CULog("From gameplay");
+	}
+	else if (_multiScreen.didTransition()) {
+		_multiScreen.transition(false);
+		_multiScreen.setActive(false);
+		_multiScreen.unfocusAll();
+
+		_currentScene = _multiScreen.getTarget();
+        _multiScreen.setTarget("");
+        if (_currentScene == "night") {
+            _gameplay.setActive(true);
+        }
+        else if (_currentScene == "main_menu") {
+            _menu.setActive(true);
+        }
+
+        CULog("Transed");
+        CULog("From Multi");
+    }
+    else if (_menu.didTransition()) {
+        _menu.setActive(false);
+        _menu.setTransition(false);
+
+        _currentScene = _menu.getTarget();  
+        _menu.setTarget("");
+		if (_currentScene == "night") {
+			_gameplay.setActive(true);
+            
+		}
+		else if (_currentScene == "day") {
+			_multiScreen.setActive(true);
+			_multiScreen.focusCurr();
+		}
+
+        CULog("Transed");
+        CULog("From menu");
+    }
+}

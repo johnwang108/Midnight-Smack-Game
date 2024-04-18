@@ -31,24 +31,6 @@ static float WALL[WALL_COUNT][WALL_VERTS] = {
 
 
 /** The outlines of all of the platforms */
-
-float PLATFORMS[PLATFORM_COUNT][PLATFORM_VERTS] = {
-	{ 1.0f, 3.0f, 1.0f, 2.5f, 6.0f, 2.5f, 6.0f, 3.0f},
-	{ 6.0f, 4.0f, 6.0f, 2.5f, 9.0f, 2.5f, 9.0f, 4.0f},
-	{23.0f, 4.0f,23.0f, 2.5f,31.0f, 2.5f,31.0f, 4.0f},
-	{26.0f, 5.5f,26.0f, 5.0f,28.0f, 5.0f,28.0f, 5.5f},
-	{29.0f, 7.0f,29.0f, 6.5f,31.0f, 6.5f,31.0f, 7.0f},
-	{24.0f, 8.5f,24.0f, 8.0f,27.0f, 8.0f,27.0f, 8.5f},
-	{29.0f,10.0f,29.0f, 9.5f,31.0f, 9.5f,31.0f,10.0f},
-	{23.0f,11.5f,23.0f,11.0f,27.0f,11.0f,27.0f,11.5f},
-	{19.0f,12.5f,19.0f,12.0f,23.0f,12.0f,23.0f,12.5f},
-	{ 1.0f,12.5f, 1.0f,12.0f, 7.0f,12.0f, 7.0f,12.5f}
-};
-
-
-
-
-/** The outlines of all of the platforms */
 static float ALT_PLATFORMS[ALT_PLATFORM_COUNT][ALT_PLATFORM_VERTS] = {
 	{ 1.0f, .5f, 1.0f, .0f, 50.0f, .0f, 50.0f, .50f}
 };
@@ -161,38 +143,50 @@ void Level2::populate(GameScene& scene) {
 #pragma mark : Dude
 	Vec2 dudePos = DUDE_POS;
 	// node = scene2::SceneNode::alloc();
-	image = _assets->get<Texture>(DUDE_TEXTURE);
-	_avatar = DudeModel::alloc(dudePos, image->getSize() / (2 + _scale), _scale);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_avatar->setSceneNode(sprite);
+
+	image = _assets->get<Texture>("su_idle");
+	//hardcoded size
+	cugl::Size s = Size(1.7, 3.3);
+	_avatar = DudeModel::allocWithConstants(dudePos, s, _scale, _assets);
+	std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
+
+	//CALCULATE sue sprite size from sue obstacle size. Goal: su's feet line up with foot sensor, and head (not hat) with top of obstacle. Todo still
+	//float scalar = (s.width *_scale) / spritenode->getSize().width;
+	spritenode->setAnchor(Vec2(0.5, 0.35));
+	spritenode->setPosition(dudePos);
+	_avatar->setSceneNode(spritenode);
 	_avatar->setDebugColor(DEBUG_COLOR);
-	_avatar->setName(DUDE_TEXTURE);
-	scene.addObstacle(_avatar, sprite); // Put this at the very front
+
+	scene.addObstacle(_avatar, spritenode); // Put this at the very front
 
 	// Play the background music on a loop.
 	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
 	AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
 	Vec2 shrimp_pos = SHRIMP_POS;
-	image = _assets->get<Texture>(BULL_TEXTURE);
-	std::shared_ptr<BullModel> _bull = BullModel::alloc(shrimp_pos, image->getSize() / _scale, _scale);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_bull->setSceneNode(sprite);
+
+	image = _assets->get<Texture>("bullIdle");
+	std::shared_ptr<BullModel> _bull = BullModel::alloc(shrimp_pos, BULL_SIZE_DEFAULT, _scale);
+	spritenode = EntitySpriteNode::allocWithSheet(image,3,4,12);
+	spritenode->setAnchor(Vec2(0.5f, 0.43f));
+	spritenode->setPosition(shrimp_pos);
+	_bull->setSceneNode(spritenode);
 	_bull->setName(BULL_TEXTURE);
 	_bull->setDebugColor(DEBUG_COLOR);
 	_bull->setassets(_assets);
-	scene.addObstacle(_bull, sprite);
-	/*
-	Vec2 egg_pos = EGG_POS;
-	image = _assets->get<Texture>(EGG_TEXTURE);
-	std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc(egg_pos, image->getSize() / (_scale), _scale, EnemyType::egg);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_enemy->setSceneNode(sprite);
-	_enemy->setName(ENEMY_NAME);
-	_enemy->setDebugColor(DEBUG_COLOR);
-	scene.addObstacle(_enemy, sprite);
-	_enemies.push_back(_enemy);
-	*/
+
+	_bull->addActionAnimation("bullIdle", _assets->get<Texture>("bullIdle"), 3, 4, 12, 0.5f);
+	_bull->addActionAnimation("bullAttack", _assets->get<Texture>("bullAttack"), 5, 5, 25, 2.0f);
+	_bull->addActionAnimation("bullTelegraph", _assets->get<Texture>("bullTelegraph"), 3, 4, 10, 1.0f);
+	_bull->addActionAnimation("bullRun", _assets->get<Texture>("bullRun"), 3, 3, 8, 1.0f);
+	_bull->addActionAnimation("bullStunned", _assets->get<Texture>("bullStunned"), 3, 4, 12, 1.0f);
+	_bull->addActionAnimation("bullStomp", _assets->get<Texture>("bullStomp"), 5, 5, 22, 2.0f);
+	_bull->addActionAnimation("bullDazedtoIdle", _assets->get<Texture>("bullDazedtoIdle"), 2, 2, 4, 2.0f);
+	_bull->addActionAnimation("bullCrash", _assets->get<Texture>("bullCrash"), 4, 4, 15, 3.0f);
+	_bull->addActionAnimation("bullTurn", _assets->get<Texture>("bullTurn"), 4, 4, 16, 0.75f);
+	
+	scene.addObstacle(_bull, spritenode);
+
 
 	scene.setAssets(_assets);
 	scene.setScale(_scale);

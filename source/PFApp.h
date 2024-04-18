@@ -17,6 +17,7 @@
 #include "PFGameScene.h"
 #include "PFLoadingScene.h"
 #include "MultiScreenScene.h"
+#include "MenuScene.h"
 
 /**
  * This class represents the application root for the platform demo.
@@ -38,6 +39,10 @@ protected:
     int _currentlyFocused;
     /** The controller for the loading screen */
     LoadingScene _loading;
+
+    MenuScene _menu;
+
+    std::string _currentScene;
     
     /** Whether or not we have finished loading all assets */
     bool _loaded;
@@ -212,5 +217,7 @@ public:
      * at all. The default implmentation does nothing.
      */
     virtual void draw() override;
+
+    void transitionScenes();
 };
 #endif /* __PF_APP_H__ */

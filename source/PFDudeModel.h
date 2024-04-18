@@ -47,6 +47,9 @@
 #include <cugl/physics2/CUBoxObstacle.h>
 #include <cugl/physics2/CUCapsuleObstacle.h>
 #include <cugl/scene2/graph/CUWireNode.h>
+#include "EntitySpriteNode.h"
+#include "Entity.h"
+#include "Attack.h"
 
 #pragma mark -
 #pragma mark Drawing Constants
@@ -54,6 +57,8 @@
 #define DUDE_TEXTURE    "dude"
 /** Identifier to allow us to track the sensor in ContactListener */
 #define SENSOR_NAME     "dudesensor"
+
+#define BODY_SENSOR_NAME "dudebodysensor"
 
 
 #pragma mark -
@@ -64,6 +69,14 @@
 #define DUDE_DAMPING    10.0f
 /** The maximum character speed */
 #define DUDE_MANUEL_MAXSPEED   5.0f
+
+#define MAX_METER 100.0f
+
+#define METER_COST 60.0f
+#define floatyFrames   10
+
+/** Cooldown (in animation frames) for shooting */
+#define DASH_COOLDOWN  20
 
 
 #pragma mark -
@@ -91,15 +104,32 @@ enum class modifier {
     none
 };
 
-#define BASE_ATTACK_BUFF 20.0f
+#define DEFAULT_BUFF 1.0f
+
+#define BASE_ATTACK_BUFF 1.5f
 #define BASE_HEALTH_BUFF 5.0f
-#define BASE_JUMP_BUFF 10.0f
+#define BASE_JUMP_BUFF 1.5f
+//defense <1 because damage multiplied by defense
 #define BASE_DEFENSE_BUFF 0.5f
-#define BASE_SPEED_BUFF 3.0f
+#define BASE_SPEED_BUFF 2.0f
+
+#define SUPER_ATTACK_BUFF 3.0f
+#define SUPER_HEALTH_BUFF 5.0f
+#define SUPER_JUMP_BUFF 3.0f
+#define SUPER_DEFENSE_BUFF 0.0f
+#define SUPER_SPEED_BUFF 5.0f
 
 #define BASE_DURATION 10.0f
 
-class DudeModel : public cugl::physics2::CapsuleObstacle {
+/** The keys for the attack texture in asset manager*/
+#define ATTACK_TEXTURE  "attack_l"
+/**Scalar for height of a box attack, hacky*/
+#define ATTACK_H        1.0f
+
+#define ATTACK_OFFSET_X 0.6f
+#define ATTACK_OFFSET_Y 0.6f
+
+class DudeModel : public Entity {
 private:
 	/** This macro disables the copy constructor (not allowed on physics objects) */
 	CU_DISALLOW_COPY_AND_ASSIGN(DudeModel);
@@ -116,36 +146,43 @@ protected:
 	/** How long until we can shoot again */
 	int  _shootCooldown;
 	/** Whether our feet are on the ground */
-	bool _isGrounded;
+	//bool _isGrounded;
 	/** Whether we are actively shooting */
 	bool _isShooting;
 	/** Ground sensor to represent our feet */
 	b2Fixture*  _sensorFixture;
 	/** Reference to the sensor name (since a constant cannot have a pointer) */
 	std::string _sensorName;
+
+    b2Fixture* _bodySensorFixture;
+
+    std::string _bodySensorName;
 	/** The node for debugging the sensor */
 	std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
 
-	/** The scene graph node for the Dude. */
-	std::shared_ptr<cugl::scene2::SceneNode> _node;
-	/** The scale between the physics world and the screen (MUST BE UNIFORM) */
-	float _drawScale;
+    std::shared_ptr<cugl::scene2::WireNode> _bodySensorNode;
+
+	///** The scene graph node for the Dude. */
+	//std::shared_ptr<EntitySpriteNode> _node;
+	///** The scale between the physics world and the screen (MUST BE UNIFORM) */
+	//float _drawScale;
 
     bool _dash;
     int _dashNum;
     float _dashCooldown;
     bool _contactingWall;
+    bool _isOnDangerousGround;
 
-    float _health;
+    //float _health;
 
-    float _healthCooldown;
+    //float _healthCooldown;
     float _knockbackTime;
-    float _lastDamageTime;
+    //float _lastDamageTime;
 
     float healthPercentage;
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
 
-    float _attack;
+    //float _attack;
 
     //attack damage buff
     float _attackBuff;
@@ -158,7 +195,34 @@ protected:
     //max speed buff
     float _speedBuff;
 
+
+    //duration of buff, 0 if one-time buff
     float _duration;
+
+    bool _hasSuper;
+
+    float _numberOfTouchingEnemies;
+
+
+    //std::unordered_map<std::string, std::shared_ptr<cugl::scene2::Animate>> _actions;
+
+    ////unordered map of strings -> sprite sheets for the corresponding action
+    //std::unordered_map<std::string, std::shared_ptr<cugl::Texture>> _sheets;
+
+    ////info about each action's sheet: rows, cols, size, duration
+    //std::unordered_map<std::string, std::tuple<int,int,int,float,bool>> _info;
+
+    //the last action that was animated
+   // std::string _activeAction;
+
+    float _meter;
+
+    const float _maxMeter = MAX_METER;
+
+    float _healthUpgrade;
+    float _dashUpgrade;
+    float _meterGainUpgrade;
+    float _hitStunUpgrade;
 
 	/**
 	* Redraws the outline of the physics fixtures to the debug node
@@ -178,7 +242,7 @@ public:
      * This constructor does not initialize any of the dude values beyond
      * the defaults.  To use a DudeModel, you must call init().
      */
-    DudeModel() : CapsuleObstacle(), _sensorName(SENSOR_NAME) { }
+    DudeModel() : Entity(), _sensorName(SENSOR_NAME), _bodySensorName(BODY_SENSOR_NAME) { }
     
     /**
      * Destroys this DudeModel, releasing all resources.
@@ -340,20 +404,43 @@ public:
 		std::shared_ptr<DudeModel> result = std::make_shared<DudeModel>();
 		return (result->init(pos, size, scale) ? result : nullptr);
 	}
+
+    /** Alloc with assets that automatically populates actions. These are the default values */
+    static std::shared_ptr<DudeModel> alloc(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::shared_ptr<AssetManager> _assets) {
+        std::shared_ptr<DudeModel> result = std::make_shared<DudeModel>();
+        bool res = result->init(pos, size, scale);
+
+        if (res) {
+            result->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 4, 16, 1.0f);
+            result->addActionAnimation("idle_blink", _assets->get<Texture>("su_idle_blink"), 4, 5, 18, 2.0f);
+            result->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 5, 18, 0.6f);
+            result->addActionAnimation("recover", _assets->get<Texture>("su_attack_recover"), 3, 4, 10, 0.83f);
+            result->addActionAnimation("run", _assets->get<Texture>("su_run"), 3, 4, 10, 0.83f);
+
+            result->addActionAnimation("jump_up", _assets->get<Texture>("su_jump_airborne_up"), 2, 2, 3, 0.25f);
+            result->addActionAnimation("jump_down", _assets->get<Texture>("su_jump_airborne_down"), 2, 2, 3, 0.25f);
+            result->addActionAnimation("jump_land", _assets->get<Texture>("su_jump_land"), 2, 2, 3, 0.25f);
+            result->addActionAnimation("jump_ready", _assets->get<Texture>("su_jump_ready"), 1, 2, 2, 0.16f);
+        }
+
+        return res ? result : nullptr;
+    }
+
+    /** Same as above, but allocs animations based off of the constants.json file.*/
+    static std::shared_ptr<DudeModel> allocWithConstants(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::shared_ptr<AssetManager> _assets) {
+        std::shared_ptr<DudeModel> result = std::make_shared<DudeModel>();
+        bool res = result->init(pos, size, scale);
+
+        if (res) {
+            result->loadAnimationsFromConstant("su", _assets);
+			}
+
+        return res ? result : nullptr;
+    }
     
 
 #pragma mark -
 #pragma mark Animation
-    /**
-     * Returns the scene graph node representing this DudeModel.
-     *
-     * By storing a reference to the scene graph node, the model can update
-     * the node to be in sync with the physics info. It does this via the
-     * {@link Obstacle#update(float)} method.
-     *
-     * @return the scene graph node representing this DudeModel.
-     */
-	const std::shared_ptr<cugl::scene2::SceneNode>& getSceneNode() const { return _node; }
 
     /**
      * Sets the scene graph node representing this DudeModel.
@@ -373,10 +460,18 @@ public:
      *
      * @param node  The scene graph node representing this DudeModel, which has been added to the world node already.
      */
-	void setSceneNode(const std::shared_ptr<cugl::scene2::SceneNode>& node) {
-        _node = node;
-        _node->setPosition(getPosition() * _drawScale);
-    }
+
+    //void addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool isPassive = true);
+
+    //void animate(std::string action_name);
+
+    //void changeSheet(std::string action_name);
+
+    //std::shared_ptr<cugl::scene2::Animate> getAction(std::string action_name) { return _actions[action_name]; };
+
+    //void getInfo(std::string action_name) {};
+
+    //std::string getActiveAction() { return _activeAction; };
 
     
 #pragma mark -
@@ -424,6 +519,9 @@ public:
 
     bool contactingWall() { return _contactingWall; }
     void setContactingWall(bool val) { _contactingWall = val;  }
+
+    int getIsOnDangerousGround() { return _isOnDangerousGround; }
+    void settIsOnDangerousGround(bool val) { _isOnDangerousGround = val; }
     
     /**
      * Returns true if the dude is actively jumping.
@@ -460,7 +558,7 @@ public:
      *
      * @return how much force to apply to get the dude moving
      */
-    float getForce() const { return DUDE_FORCE + _speedBuff; }
+    float getForce() const { return DUDE_FORCE; }
     
     /**
      * Returns ow hard the brakes are applied to get a dude to stop moving
@@ -476,7 +574,7 @@ public:
      *
      * @return the upper limit on dude left-right movement.
      */
-    float getMaxSpeed() const { return DUDE_MANUEL_MAXSPEED + _speedBuff; }
+    float getMaxSpeed() { return DUDE_MANUEL_MAXSPEED * getSpeedBuff(); }
     
     /**
      * Returns the name of the ground sensor
@@ -486,6 +584,8 @@ public:
      * @return the name of the ground sensor
      */
     std::string* getSensorName() { return &_sensorName; }
+
+    std::string* getBodySensorName() { return &_bodySensorName; }
     
     /**
      * Returns true if this character is facing right
@@ -540,11 +640,85 @@ public:
     //Apply buff to Sue with proper modifier.
     void applyBuff(buff b, modifier m);
 
-    float getAttack() { return _attack + _attackBuff; }
+    /**This function gets the attack, and resets the attack buff if it is super*/
+    float getAttack() { return _attack * getAttackBuff(); }
 
     float getDuration() { return _duration; };
 
-    void DudeModel::resetBuff();
+    void resetBuff();
+
+    bool hasSuper() { return _hasSuper; };
+
+    void addTouching() { _numberOfTouchingEnemies += 1; };
+
+    void removeTouching() { _numberOfTouchingEnemies -= 1; };
+
+    void addMeter(float f) {_meter += f; if (_meter > _maxMeter) _meter = _maxMeter; };
+
+    float getMeter() { return _meter; };
+
+    void setMeter(float f) { _meter = std::min(_maxMeter, f); };
+
+    //uses a variable amount of meter, returns true if possible, returns false and doesn't do anything if not.
+    bool useMeter(float f = METER_COST);
+
+    std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale);
+
+    float getLastDamageTime() { return _lastDamageTime; };
+    float getHealthCooldown() { return _healthCooldown; };
+
+    int getDashCooldown() {return _dashCooldown; };
+
+    int getDashCooldownMax() { return DASH_COOLDOWN; }
+
+    int getFloatyFrames() { return floatyFrames; };
+
+    float getAttackBuff() {
+        if (_duration > 0) {
+            return _attackBuff;
+        }
+        if (_hasSuper && (_attackBuff != DEFAULT_BUFF)) {
+            _hasSuper = false;
+            return _attackBuff;
+        }
+        return DEFAULT_BUFF;
+    };
+
+    float getDefenseBuff() {
+        if (_duration > 0) {
+            return _defenseBuff;
+        }
+        if (_hasSuper && (_defenseBuff != DEFAULT_BUFF)) {
+            _hasSuper = false;
+            return _defenseBuff;
+        }
+        return DEFAULT_BUFF;
+    }
+
+    float getJumpBuff() {
+        if (_duration > 0) {
+            return _jumpBuff;
+        }
+        if (_hasSuper && (_jumpBuff != DEFAULT_BUFF)) {
+            _hasSuper = false;
+            return _jumpBuff;
+        }
+        return DEFAULT_BUFF;
+    }
+
+    float getSpeedBuff() {
+        if (_duration > 0) {
+            return _speedBuff;
+        }
+        if (_hasSuper && (_speedBuff != DEFAULT_BUFF)) {
+            _hasSuper = false;
+            return _speedBuff;
+        }
+        return DEFAULT_BUFF;
+    }
+
+    //maybe not needed
+    float getHealthBuff() { return 0.0f; };
 
     static char* getStrForBuff(buff enumVal)
     {

@@ -3,6 +3,7 @@
 
 #include <cugl/cugl.h>
 #include <cugl/physics2/CUCapsuleObstacle.h>
+#include "../Entity.h"
 
 using namespace cugl;
 
@@ -19,10 +20,10 @@ using namespace cugl;
 
 #define SENSOR_HEIGHT 0.1f
 
-#define BULL_ATTACK_CHANCE 0.001f
+#define BULL_ATTACK_CHANCE 0.002f
 
 class GameScene;
-class BullModel : public physics2::CapsuleObstacle {
+class BullModel : public Entity {
 protected:
     Size scaledSize;
     float _drawScale;
@@ -32,7 +33,6 @@ protected:
     bool _isChasing;
     int _direction;
     float _knockbackTime;
-    std::shared_ptr<cugl::scene2::SceneNode> _node;
     b2Fixture* _sensorFixture;
     std::string _sensorName;
     int _lastDirection;
@@ -44,11 +44,17 @@ protected:
     float _bull_attack_chance;
     std::shared_ptr<AssetManager> _assets;
     bool _shoot;
-    float healthPercentage;
-    std::shared_ptr<scene2::PolygonNode> _healthBarForeground;
+    bool _summoned;
+    float _CA;
+    int _CAcount;
+    bool _running;
+    float _breaking;
+    std::string _attacktype;
+    float _turing;
+
 
 public:
-    BullModel() : CapsuleObstacle(), _drawScale(1.0f), _health(100.0f), _healthCooldown(0.2f), _lastDamageTime(0), _isChasing(true), _direction(-1) {}
+    BullModel() : Entity(), _drawScale(1.0f), _health(100.0f), _healthCooldown(0.2f), _lastDamageTime(0), _isChasing(true), _direction(-1) {}
 
     virtual ~BullModel() { dispose(); }
 
@@ -65,7 +71,6 @@ public:
 
     void takeDamage(float damage, int attackDirection, bool knockback);
 
-    void setSceneNode(const std::shared_ptr<scene2::SceneNode>& node);
 
     void createFixtures() override;
 
@@ -89,7 +94,6 @@ public:
 
     void createAttack(GameScene& scene);
     void createAttack2(GameScene& scene);
-    const std::shared_ptr<cugl::scene2::SceneNode>& getSceneNode() const { return _node; }
 
     void setangrytime(float time) { _angrytime = time; }
 
@@ -104,7 +108,18 @@ public:
     bool getshoot() { return _shoot; }
     void setshoot(bool shoot) { _shoot = shoot; }
     void setassets(std::shared_ptr<AssetManager> assets) { _assets = assets; }
-    void sethealthbar();
+    void Summon(GameScene& scene);
+    void setsummoned(bool summoned) { _summoned = summoned; };
+    bool getsummoned() { return _summoned; };
+    void setsprintpreparetime(float time) { _sprintPrepareTime = time; }
+    float getsprintpreparetime() { return _sprintPrepareTime; }
+    void setCAcount(int time) { _CAcount = time; }
+    void setCA(float time) { _CA = time; }
+    int getCAcount() { return _CAcount; }
+    float getCA() { return _CA; }
+    void circleattack(GameScene& scene);
+    std::string getattacktype() { return _attacktype; }
+    float getturing() { return _turing; }
 };
 
 #endif /* __BULL_MODEL_H__ */

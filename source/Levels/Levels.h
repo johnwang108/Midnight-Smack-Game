@@ -3,11 +3,17 @@
 
 #include <cugl/cugl.h>
 #include "../PFInput.h"
-#include "../PFAttack.h"
+#include "../Attack.h"
 #include "../PFDudeModel.h"
 #include "../Enemys/Enemy.h"
+#include "../Enemys/Rice.h"
+#include "../Enemys/Beef.h"
+#include "../Enemys/Shrimp.h"
+#include "../Enemys/Carrot.h"
+#include "../Enemys/Egg.h"
 #include "../Enemys/Bull.h"
-
+#include "../Enemys/ShrimpRice.h"
+#include "../NightLevelObjects/Wall.h"
 
 
 #pragma mark -
@@ -19,11 +25,9 @@
 /** The density for a bullet */
 #define HEAVY_DENSITY   10.0f
 /** Friction of most platforms */
-#define BASIC_FRICTION  0.4f
+#define BASIC_FRICTION  1.0f
 /** The restitution for all physics objects */
 #define BASIC_RESTITUTION   0.1f
-/** The width of the rope bridge */
-#define BRIDGE_WIDTH    14.0f
 /** Offset for bullet when firing */
 #define BULLET_OFFSET   0.5f
 /** Offset for attack when firing, hacky */
@@ -34,8 +38,6 @@
 #define ATTACK_W        2.0f
 /**Scalar for height of a box attack, hacky*/
 #define ATTACK_H        0.5f
-/** The speed of the bullet after firing */
-#define BULLET_SPEED   20.0f
 /** The number of frame to wait before reinitializing the game */
 #define EXIT_COUNT      240
 
@@ -48,9 +50,9 @@
 #define GOAL_TEXTURE    "goal"
 /** The key for the win door texture in the asset manager */
 #define BULLET_TEXTURE  "bullet"
-/** The keys for the attack texture in asset manager*/
-#define ATTACK_TEXTURE_R  "attack_r"
-#define ATTACK_TEXTURE_L  "attack_l"
+/** The key for the attack texture in asset manager*/
+#define ATTACK_TEXTURE  "attack_l"
+
 #define SHAKE_TEXTURE  "shake"
 /** The name of a bullet (for object identification) */
 #define ATTACK_NAME     "attack"
@@ -115,7 +117,11 @@
 // IMPORTANT: Note that Box2D units do not equal drawing units
 /** The wall vertices */
 #define WALL_VERTS 12
-#define WALL_COUNT  2
+#define WALL_COUNT 2
+
+#define PLAYER_SIZE_DEFAULT cugl::Size(1.5f, 2.0f)
+#define BULL_SIZE_DEFAULT cugl::Size(14.0f, 8.0f)
+#define SHR_SIZE_DEFAULT cugl::Size(6.5f, 7.5f)
 
 
 class GameScene;
@@ -126,6 +132,7 @@ public:
 
     virtual void populate(GameScene& scene) = 0;
 
+    virtual void update(float step);
 };
 
-#endif /* __LEVELS_H__ */
+#endif  __LEVELS_H__ 
