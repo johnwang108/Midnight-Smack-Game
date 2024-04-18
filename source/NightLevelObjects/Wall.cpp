@@ -17,15 +17,19 @@ Wall::Wall() {
 	movementForce = 0;
 	currentPathNode = 0;
 	path.push_back(Vec3(-1, -1, -1));
-	float pathNodeCoolDown = -1;
+	pathNodeCoolDown = -1;
 
 	ogX = 0;
 	ogY = 0;
+
+	breakableCoolDown = -1;
+	respawnTime = -1;
+	breakingClock = -1;
+	activeDisplay = true;
 }
 
 bool Wall::init(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION,
-	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name,
-	int breakableCooldown, bool doesDamage) {
+	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, bool doesDamage) {
 	Poly2 _collisionPoly(WALL_POS, WALL_VERTS / 2);
 	// Call this on a polygon to get a solid shape
 	EarclipTriangulator triangulator;
@@ -68,23 +72,20 @@ bool Wall::init(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSIT
 	ogX = _obj->getX();
 	ogY = _obj->getY();
 
-	this->breakableCoolDown = breakableCoolDown;
 	this->doesDamage = doesDamage;
 	this->name = name + (doesDamage ? "dd" : "");
-	this->name = name + (breakableCoolDown > -1 ? "breaks" : "");
 	_obj->setName(this->name);
 
-	b2Filter filter = getFilterData();
-	filter.categoryBits = 0x0002;
-	setFilterData(filter);
+	this->breakableCoolDown = -1;
+	this->respawnTime = -1;
+	this->breakingClock = -1;
 	return true;
 }
 
 std::shared_ptr<Wall> Wall::alloc(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION,
-	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, int breakableCooldown, bool doesDamage) {
+	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, bool doesDamage) {
 	std::shared_ptr<Wall> result = std::make_shared<Wall>();
-	return (result->init(image, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, DEBUG_COLOR, WALL_POS, WALL_VERTS, name,
-		breakableCooldown, doesDamage) ? result : nullptr);
+	return (result->init(image, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, DEBUG_COLOR, WALL_POS, WALL_VERTS, name, doesDamage) ? result : nullptr);
 }
 
 std::shared_ptr<physics2::PolygonObstacle> Wall::getObj()
@@ -102,7 +103,55 @@ std::shared_ptr<scene2::SceneNode> Wall::getSprite()
 	return this->sprite;
 }
 
-void Wall::initiatePath(std::vector<Vec3> paath, int movementForce)
+void Wall::initBreakable(int duration, int respawnTime)
+{
+	breakableCoolDown = duration;
+	this->respawnTime = respawnTime;
+	breakingClock = breakableCoolDown;
+	name = name + "breakable";
+	_obj->setName(name);
+}
+
+void Wall::applyBreaking() {
+	breakingClock--;
+	//CULog("%f", breakingClock);
+	if (activeDisplay) {
+		if (breakingClock == 0) {
+			breakingClock = respawnTime;
+			setActive(false);
+		}
+	}
+	else {
+		if (breakingClock == 0) {
+			breakingClock = breakableCoolDown;
+			setActive(true);
+		}
+	}
+}
+
+void Wall::resetBreaking() {
+	breakingClock = breakableCoolDown;
+}
+
+int Wall::getBreakingClock() {
+	return breakingClock;
+}
+
+void Wall::setActive(bool state) {
+	activeDisplay = state;
+	CULog("%d", state);
+	if (state) {
+		CULog("1");
+		setEnabled(true);
+	}
+	else {
+		CULog("2");
+		setEnabled(false);
+		//image->dispose();
+	}
+}
+
+void Wall::initPath(std::vector<Vec3> paath, int movementForce)
 {
 	pathNodeCoolDown = -1;
 	std::vector<Vec3> temp;
