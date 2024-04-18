@@ -331,7 +331,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     currentLevel = _level_model;
     _level_model->setFilePath("json/test_level_v2_experiment.json");
-    loadLevel(currentLevel);
+    loadLevel(1, 2);
+   // loadLevel(currentLevel);
     addChild(_worldnode);
     addChild(_debugnode);
     addChild(_leftnode);
