@@ -727,7 +727,7 @@ void LevelModel::populate(GameScene& scene) {
 									float imageWidth = image->getWidth() / 4;
 									float imageHeight = image->getHeight() / 4;
 									Size singularSpriteSize = Size(imageWidth, imageHeight);
-									new_enemy = EnemyModel::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, EnemyType::rice);
+									new_enemy = Rice::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, false);
 									spritenode->setScale(0.24f);
 								}
 								else {
@@ -736,7 +736,7 @@ void LevelModel::populate(GameScene& scene) {
 									float imageWidth = image->getWidth() / 4;
 									float imageHeight = image->getHeight() / 4;
 									Size singularSpriteSize = Size(imageWidth, imageHeight);
-									new_enemy = EnemyModel::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, EnemyType::rice_soldier);
+									new_enemy = Rice::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, true);
 								}
 
 								// spritenode->setScale(0.12f);

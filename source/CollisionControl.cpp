@@ -13,6 +13,22 @@
  * @param  contact  The two bodies that collided
  */
 
+
+ /**
+ COLLISION MASKING TYPES
+
+ Player				    = 00000001
+ Wall				    = 00000010
+ Enemy				    = 00000100
+ Projectile			    = 00001000
+ Intangibles			= 00010000
+ (dying enemies, etc)
+ Jump-thru platforms    = 00100000
+
+ */
+
+std::set<std::string> enemies({ "rice", "rice_soldier", "beef", "egg", "carrot", "shrimp" });   
+
 void GameScene::beginContact(b2Contact* contact) {
     b2Fixture* fix1 = contact->GetFixtureA();
     b2Fixture* fix2 = contact->GetFixtureB();
@@ -190,7 +206,7 @@ void GameScene::beginContact(b2Contact* contact) {
     }
 
     // Test bullet collision with enemy
-    if (bd1->getName() == ATTACK_NAME && bd2->getName() == ENEMY_NAME) {
+    if (bd1->getName() == ATTACK_NAME && enemies.find(bd2->getName()) != enemies.end()) {
         Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
@@ -205,6 +221,7 @@ void GameScene::beginContact(b2Contact* contact) {
             ((EnemyModel*)bd2)->setVulnerable(true);
         }
     }
+
     //else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
     //    Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
     //    Vec2 attackerPos = ((Attack*)bd2)->getPosition();
@@ -228,7 +245,7 @@ void GameScene::beginContact(b2Contact* contact) {
         setComplete(true);
     }
 
-    if (_avatar->getBodySensorName() == fd1 && bd2->getName() == "enemy") {
+    if (_avatar->getBodySensorName() == fd1 && enemies.find(bd2->getName()) != enemies.end()) {
         Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
         Vec2 attackerPos = _avatar->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
@@ -236,7 +253,7 @@ void GameScene::beginContact(b2Contact* contact) {
         _avatar->addTouching();
         _avatar->takeDamage(34, direction);
     }
-    else if (_avatar->getBodySensorName() == fd2 && bd1->getName() == "enemy") {
+    else if (_avatar->getBodySensorName() == fd2 && enemies.find(bd1->getName()) != enemies.end()) {
         Vec2 enemyPos = _avatar->getPosition();
         EnemyModel* enemy = (EnemyModel*)bd1;
         Vec2 attackerPos = enemy->getPosition();
@@ -338,22 +355,19 @@ void GameScene::endContact(b2Contact* contact) {
         _avatar->setContactingWall(false);
     }
 
-    if (_avatar->getBodySensorName() == fd1 && bd2->getName() == "enemy") {
+    if (_avatar->getBodySensorName() == fd1 && enemies.find(bd2->getName()) != enemies.end()) {
         Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
         Vec2 attackerPos = _avatar->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         _avatar->removeTouching();
         _avatar->takeDamage(34, direction);
     }
-    else if (_avatar->getBodySensorName() == fd2 && bd1->getName() == "enemy") {
+    else if (_avatar->getBodySensorName() == fd2 && enemies.find(bd2->getName()) != enemies.end()) {
         Vec2 enemyPos = _avatar->getPosition();
         Vec2 attackerPos = ((EnemyModel*)bd1)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         _avatar->removeTouching();
     }
-
-
-
 }
 
 

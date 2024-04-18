@@ -114,6 +114,7 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         setDensity(DUDE_DENSITY);
         setFriction(0.0f);      // HE WILL STICK TO WALLS IF YOU FORGET
         setFixedRotation(true); // OTHERWISE, HE IS A WEEBLE WOBBLE
+        setRestitution(0);
 
         setPosition(pos);
         //setAnchor(Vec2::ANCHOR_CENTER);
@@ -146,7 +147,7 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         //_actionManager = cugl::scene2::ActionManager::alloc();
         _actions = std::unordered_map<std::string, std::shared_ptr<cugl::scene2::Animate>>();
         _sheets = std::unordered_map<std::string, std::shared_ptr<cugl::Texture>>();
-        _info = std::unordered_map<std::string, std::tuple<int, int, int, float, bool>>();
+        _info = std::unordered_map<std::string, std::tuple<int, int, int, float>>();
         _activeAction = "";
         _numberOfTouchingEnemies = 0;
 

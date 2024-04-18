@@ -411,16 +411,16 @@ public:
         bool res = result->init(pos, size, scale);
 
         if (res) {
-            result->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 4, 16, 1.0f, true);
-            result->addActionAnimation("idle_blink", _assets->get<Texture>("su_idle_blink"), 4, 5, 18, 2.0f, true);
-            result->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 5, 18, 0.6f, true);
-            result->addActionAnimation("recover", _assets->get<Texture>("su_attack_recover"), 3, 4, 10, 0.83f, true);
-            result->addActionAnimation("run", _assets->get<Texture>("su_run"), 3, 4, 10, 0.83f, true);
+            result->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 4, 16, 1.0f);
+            result->addActionAnimation("idle_blink", _assets->get<Texture>("su_idle_blink"), 4, 5, 18, 2.0f);
+            result->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 5, 18, 0.6f);
+            result->addActionAnimation("recover", _assets->get<Texture>("su_attack_recover"), 3, 4, 10, 0.83f);
+            result->addActionAnimation("run", _assets->get<Texture>("su_run"), 3, 4, 10, 0.83f);
 
-            result->addActionAnimation("jump_up", _assets->get<Texture>("su_jump_airborne_up"), 2, 2, 3, 0.25f, false);
-            result->addActionAnimation("jump_down", _assets->get<Texture>("su_jump_airborne_down"), 2, 2, 3, 0.25f, false);
-            result->addActionAnimation("jump_land", _assets->get<Texture>("su_jump_land"), 2, 2, 3, 0.25f, false);
-            result->addActionAnimation("jump_ready", _assets->get<Texture>("su_jump_ready"), 1, 2, 2, 0.16f, false);
+            result->addActionAnimation("jump_up", _assets->get<Texture>("su_jump_airborne_up"), 2, 2, 3, 0.25f);
+            result->addActionAnimation("jump_down", _assets->get<Texture>("su_jump_airborne_down"), 2, 2, 3, 0.25f);
+            result->addActionAnimation("jump_land", _assets->get<Texture>("su_jump_land"), 2, 2, 3, 0.25f);
+            result->addActionAnimation("jump_ready", _assets->get<Texture>("su_jump_ready"), 1, 2, 2, 0.16f);
         }
 
         return res ? result : nullptr;

@@ -19,14 +19,14 @@ bool Entity::init(cugl::Vec2 pos, cugl::Size size) {
     return CapsuleObstacle::init(pos, size);
 }
 /** Register a new animation in the dict*/
-void Entity::addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool isPassive) {
+void Entity::addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration) {
     std::vector<int> forward;
     for (int ii = 0; ii < size; ii++) {
         forward.push_back(ii);
     }
     _actions[action_name] = cugl::scene2::Animate::alloc(forward, duration);
     _sheets[action_name] = sheet;
-    _info[action_name] = std::make_tuple(rows, cols, size, duration, isPassive);
+    _info[action_name] = std::make_tuple(rows, cols, size, duration);
 }
 
 /**Unsure if override needed. Begins an animation, switching the sheet if needed.*/
@@ -83,13 +83,6 @@ void Entity::loadAnimationsFromConstant(std::string entityName, std::shared_ptr<
         int cols = action->getInt("cols");
         int size = action->getInt("frames");
         float duration = action->getFloat("duration");
-        //CULog("Info about action");
-        //CULog("Action name: %s", action_name.c_str());
-        //CULog("Sheet name: %s", sheet_name.c_str());
-        //CULog("Rows: %d", rows);
-        //CULog("Cols: %d", cols);
-        //CULog("Size: %d", size);
-        //CULog("Duration: %f", duration);
-        addActionAnimation(action_name, _assets->get<Texture>(sheet_name), rows, cols, size, duration, false);
+        addActionAnimation(action_name, _assets->get<Texture>(sheet_name), rows, cols, size, duration);
     }
 }

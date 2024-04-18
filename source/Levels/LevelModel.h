@@ -9,6 +9,11 @@
 //#include "/../Users/benlo/source/repos/Midnight-Smack-Folder/Midnight-Smack-Game/source/PFAttack.h"
 #include "../PFDudeModel.h"
 #include "../Enemys/Enemy.h"
+#include "../Enemys/Rice.h"
+#include "../Enemys/Beef.h"
+#include "../Enemys/Shrimp.h"
+#include "../Enemys/Carrot.h"
+#include "../Enemys/Egg.h"
 #include "../Enemys/Bull.h"
 #include "Levels.h"
 

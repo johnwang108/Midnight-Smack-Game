@@ -196,13 +196,13 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _winnode = scene2::Label::allocWithText(WIN_MESSAGE, _assets->get<Font>(MESSAGE_FONT));
     _winnode->setAnchor(Vec2::ANCHOR_CENTER);
-    _winnode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
+    _winnode->setPosition(0,0);
     _winnode->setForeground(WIN_COLOR);
     setComplete(false);
 
     _losenode = scene2::Label::allocWithText(LOSE_MESSAGE, _assets->get<Font>(MESSAGE_FONT));
     _losenode->setAnchor(Vec2::ANCHOR_CENTER);
-    _losenode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
+    _losenode->setPosition(0,0);
     _losenode->setForeground(LOSE_COLOR);
     setFailure(false);
 
@@ -250,19 +250,24 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _meterUINode = _assets->get<scene2::SceneNode>("night_meters");
 
 
-    auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
-    auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
-    _healthBarForeground = healthBarForeground;
-    _healthBarBackground = healthBarBackground;
+    //auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
+    //auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
+    //_healthBarForeground = healthBarForeground;
+    //_healthBarBackground = healthBarBackground;
 
-    _healthBarForeground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
-    _healthBarForeground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarBackground->getHeight());
-    _healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
-    _healthBarBackground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarForeground->getHeight());
+    //_healthBarForeground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
+    //_healthBarForeground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarBackground->getHeight());
+    //_healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
+    //_healthBarBackground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarForeground->getHeight());
 
     // _healthBarForeground->setContentSize(_healthBarForeground->getWidth() * 3, _healthBarForeground->getHeight() * 3);
     // _healthBarBackground->setContentSize(_healthBarBackground->getWidth() * 3, _healthBarBackground->getHeight() * 3);
 
+    _healthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("healthbar")->getChildByName("heartsfull"));
+    _healthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("healthbar")->getChildByName("heartsbroken"));
+
+    _cookBarOutline = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifeoutline"));
+    _cookBarFill = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifefill"));
 
     _cookBarOutline = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifeoutline"));
     _cookBarFill = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifefill"));
@@ -866,32 +871,27 @@ void GameScene::preUpdate(float dt) {
 				enemy->setshooted(false);
 			}
 
-            if (enemy->getHealth() <= 0) {
-                removeEnemy(enemy.get());
-            }
-            else {
-                std::string actionKey = enemy->getActiveAction() + enemy->getId();
+            std::string actionKey = enemy->getActiveAction() + enemy->getId();
 
-                //pausing shit
-                //if (enemy->getPaused() && !_actionManager->isPaused(actionKey)) {
-                //    CULog("Pausing");
-                //    enemy->getSpriteNode()->setFrame(enemy->getPausedFrame());
-                //    _actionManager->pauseAllActions(enemy->getSceneNode());
-                //}
-                //else if (!enemy->getPaused() && _actionManager->isPaused(actionKey)){
-                //    CULog("Unpausing");
-                //    enemy->getSpriteNode()->setFrame(enemy->getActiveFrame());
-                //    _actionManager->unpauseAllActions(enemy->getSceneNode());
-                //}
+            //pausing shit
+            //if (enemy->getPaused() && !_actionManager->isPaused(actionKey)) {
+            //    CULog("Pausing");
+            //    enemy->getSpriteNode()->setFrame(enemy->getPausedFrame());
+            //    _actionManager->pauseAllActions(enemy->getSceneNode());
+            //}
+            //else if (!enemy->getPaused() && _actionManager->isPaused(actionKey)){
+            //    CULog("Unpausing");
+            //    enemy->getSpriteNode()->setFrame(enemy->getActiveFrame());
+            //    _actionManager->unpauseAllActions(enemy->getSceneNode());
+            //}
 
-                if ((enemy->getActiveAction() != "" && !_actionManager->isActive(actionKey)) || enemy->getPriority() > enemy->getActivePriority())
-                {
-                    _actionManager->clearAllActions(enemy->getSceneNode());
-                    std::string actionName = enemy->getRequestedAction();
-                    enemy->animate(actionName);
-                    auto action = enemy->getAction(actionName);
-                    _actionManager->activate(actionName + enemy->getId(), action, enemy->getSceneNode());
-                }
+            if ((enemy->getActiveAction() != "" && !_actionManager->isActive(actionKey)) || enemy->getPriority() > enemy->getActivePriority())
+            {
+                _actionManager->clearAllActions(enemy->getSceneNode());
+                std::string actionName = enemy->getRequestedAction();
+                enemy->animate(actionName);
+                auto action = enemy->getAction(actionName);
+                _actionManager->activate(actionName + enemy->getId(), action, enemy->getSceneNode());
             }
             enemy->update(dt);
           
@@ -1307,6 +1307,12 @@ void GameScene::fixedUpdate(float step) {
         if (enemy != nullptr && !enemy->isRemoved()) {
             enemy->fixedUpdate(step);
 		}
+        if (enemy->getHealth() <= 0) {
+            enemy->markForDeletion();
+        }
+        if (enemy->shouldDelete()) {
+            removeEnemy(enemy.get());
+        }
     }
     _world->update(step);
 }
