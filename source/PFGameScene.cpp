@@ -37,17 +37,22 @@ using namespace cugl;
 #pragma mark Level Geography
 
 /** This is adjusted by screen aspect ratio to get the height */
-#define SCENE_WIDTH 6720
-#define SCENE_HEIGHT 800
+// #define SCENE_WIDTH 6720
+// #define SCENE_HEIGHT 800
+
+#define SCENE_WIDTH 12800
+#define SCENE_HEIGHT 960
 
 /** This is the aspect ratio for physics */
-#define SCENE_ASPECT 10.0/84.0
-// #define SCENE_ASPECT 10.0/16.0
+#define SCENE_ASPECT 10.0/133.0
+// #define SCENE_ASPECT 10.0/84.0
 
 /** Width of the game world in Box2d units */
-#define DEFAULT_WIDTH   210.0f
+// #define DEFAULT_WIDTH   210.0f
+#define DEFAULT_WIDTH 400.0f
 /** Height of the game world in Box2d units */
-#define DEFAULT_HEIGHT  25.0f
+// #define DEFAULT_HEIGHT  25.0f
+#define DEFAULT_HEIGHT 30.0f
 
 #define INCLUDE_ROPE_BRIDGE false
 
@@ -329,8 +334,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     currentLevel = _level_model;
     // loadLevel(currentLevel);
-    _level_model->setFilePath("json/test_level_v2_experiment.json");
-    loadLevel(_level_model);
+    // _level_model->setFilePath("json/test_level_v2_experiment.json");
+    _level_model->setFilePath("json/empanada-platform-level-01.json");
+    loadLevel(currentLevel);
     addChild(_worldnode);
     addChild(_debugnode);
     addChild(_leftnode);
@@ -1049,7 +1055,8 @@ void GameScene::fixedUpdate(float step) {
 
         if (currentLevel == _level_model) {
             // we will have to not hard code this in future: WIDTH_OF_LEVEL / 40.0
-            _camera->setZoom(210.0/40.0);
+            // _camera->setZoom(210.0/40.0);
+            _camera->setZoom(400.0/40.0);
             // _camera->setZoom(1.5);
         }
         else if (currentLevel == level1) {
