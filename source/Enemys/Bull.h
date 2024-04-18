@@ -53,6 +53,7 @@ protected:
     float _turing;
     std::shared_ptr<cugl::scene2::ActionManager> _actionM;
     int n;
+    float _dazy;
 
 
 public:
@@ -122,6 +123,7 @@ public:
     void circleattack(GameScene& scene);
     std::string getattacktype() { return _attacktype; }
     float getturing() { return _turing; }
+    void setdazy(float time){_dazy=time;}
 };
 
 #endif /* __BULL_MODEL_H__ */

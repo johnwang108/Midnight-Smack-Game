@@ -74,6 +74,7 @@ void GameScene::beginContact(b2Contact* contact) {
             auto bullCrash = _Bull->getAction("bullCrash");
             _Bull->animate("bullCrash");
             _BullactionManager->activate("bullCrash", bullCrash, _Bull->getSceneNode());
+
         }
 
 
@@ -94,6 +95,7 @@ void GameScene::beginContact(b2Contact* contact) {
             auto bullCrash = _Bull->getAction("bullCrash");
             _Bull->animate("bullCrash");
             _BullactionManager->activate("bullCrash", bullCrash, _Bull->getSceneNode());
+
         }
       //  popup(std::to_string(5), bullPos * _scale);
     }
@@ -246,7 +248,7 @@ void GameScene::beginContact(b2Contact* contact) {
             enemy->setActiveAction("riceAttack");
         }
         _avatar->takeDamage(34, direction);
-    }/*
+    }
 
     if (_ShrimpRice != nullptr && bd1->getName() == ATTACK_NAME && bd2->getName() == "shrimpBoss" && _ShrimpRice->getknockbacktime() <= 0) {
         Vec2 enemyPos = _ShrimpRice->getPosition();
@@ -281,7 +283,7 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 bullPos = _ShrimpRice->getPosition();
         int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
         _avatar->takeDamage(34, direction);
-    }*/
+    }
 }
 
 

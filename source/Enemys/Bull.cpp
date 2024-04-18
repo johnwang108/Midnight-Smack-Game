@@ -36,6 +36,7 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         setFixedRotation(true);
         _actionM=scene2::ActionManager::alloc();
         n=0;
+        _dazy=0;
 
         return true;
     }
@@ -98,7 +99,7 @@ void BullModel::update(float dt) {
         _body->SetLinearVelocity(b2Vec2(0, 0));
         return;
     }
-
+    
     if (_running) {
         _running = false;
         _node->setVisible(true);
