@@ -329,9 +329,10 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _target = std::make_shared<EnemyModel>();
 
 
-    currentLevel = _level_model;
-    _level_model->setFilePath("json/test_level_v2_experiment.json");
-    loadLevel(1, 2);
+   // currentLevel = _level_model;
+   // _level_model->setFilePath("json/test_level_v2_experiment.json");
+    currentLevel = level2;
+    loadLevel(currentLevel);
    // loadLevel(currentLevel);
     addChild(_worldnode);
     addChild(_debugnode);
@@ -929,279 +930,33 @@ void GameScene::preUpdate(float dt) {
             }
             _Bull->update(dt);
         }
-        if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
-            if (_ShrimpRice->getHealth() <= 0) {
-                _worldnode->removeChild(_ShrimpRice->getSceneNode());
-                _ShrimpRice->setDebugScene(nullptr);
-                _ShrimpRice->markRemoved(true);
-            }
-
-            if (!_ShrimpRice->isChasing()) {
-                Vec2 BullPos = _ShrimpRice->getPosition();
-                float distance = avatarPos.distance(BullPos);
-                if (_ShrimpRice->getnextchangetime() < 0) {
-                    int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
-                    _ShrimpRice->setDirection(direction);
-                    _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
-                }
-            }
-            _ShrimpRice->update(dt);
-        }
-
-    if (!_overrideAnim) {
-        if (_Bull != nullptr) {
-            _BullactionManager->update(dt);
-            if (_Bull->getangrytime() > 0) {
-                if (!_BullactionManager->isActive("bullStunned")) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullStunned = _Bull->getAction("bullStunned");
-                    _BullactionManager->activate("bullStunned", bullStunned, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate("bullStunned");
-                }
-            }
-            else if (_Bull->isChasing() && ((_Bull->getPosition().x < 15 && _Bull->getDirection() == -1) || _Bull->getPosition().x > 35 && _Bull->getDirection() == 1)) {
-                if (!_BullactionManager->isActive("bullAttack")) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullAttack = _Bull->getAction("bullAttack");
-                    _BullactionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate("bullAttack");
-                }
-            }
-            else if (_Bull->getturing() > 0) {
-                if (!_BullactionManager->isActive("bullTurn")) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullTurn = _Bull->getAction("bullTurn");
-                    _BullactionManager->activate("bullTurn", bullTurn, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate("bullTurn");
-                }
-            }
-            else if (_Bull->getsprintpreparetime() <= 0 && _Bull->getknockbacktime() <= 0) {
-                if (!_BullactionManager->isActive("bullRun")) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullRun = _Bull->getAction("bullRun");
-                    _BullactionManager->activate("bullRun", bullRun, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate("bullRun");
-                }
-            }
-            else if (_Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0) {
-                if (!_BullactionManager->isActive(_Bull->getattacktype())) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullTelegraph = _Bull->getAction(_Bull->getattacktype());
-                    _BullactionManager->activate(_Bull->getattacktype(), bullTelegraph, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate(_Bull->getattacktype());
-                }
-            }
-
-
-
-        }
-
-
-        if (_ShrimpRice != nullptr) {
-            _SHRactionManager->update(dt);
-
-            if (_ShrimpRice->getattackcombo() > 0) {
-                if (!_SHRactionManager->isActive("SFR_Attack")) {
-                    auto SFR_Attack = _ShrimpRice->getAction("SFR_Attack");
-                    _SHRactionManager->activate("SFR_Attack", SFR_Attack, _ShrimpRice->getSceneNode());
-                }
-                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                    _ShrimpRice->animate("SFR_Attack");
-                }
-            }
-            else if (_ShrimpRice->getWheelofDoom() > 0) {
-                if (!_SHRactionManager->isActive("SFRWheelofDoom")) {
-                    auto SFRWheelofDoom = _ShrimpRice->getAction("SFRWheelofDoom");
-                    _SHRactionManager->activate("SFRWheelofDoom", SFRWheelofDoom, _ShrimpRice->getSceneNode());
-                }
-                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                    _ShrimpRice->animate("SFRWheelofDoom");
-                }
-            }
-            else if (_ShrimpRice->getknockbacktime() <= 0) {
-                if (!_SHRactionManager->isActive("SFR_Move")) {
-                    auto SFR_Move = _ShrimpRice->getAction("SFR_Move");
-                    _SHRactionManager->activate("SFR_Move", SFR_Move, _ShrimpRice->getSceneNode());
-                }
-                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                    _ShrimpRice->animate("SFR_Move");
-                }
-            }
-
-        }if (_Bull != nullptr && !_Bull->isRemoved()) {
-            if (_Bull->getHealth() <= 0) {
-                _worldnode->removeChild(_Bull->getSceneNode());
-                _Bull->setDebugScene(nullptr);
-                _Bull->markRemoved(true);
-            }
-            if (_Bull->getangrytime() > 0 && _Bull->getknockbacktime() <= 0) {
-                if (int(_Bull->getangrytime() * 10) % 2 < 1) {
-                    _Bull->createAttack(*this);
-                }
-            }
-            if (_Bull->getshake() && _Bull->getknockbacktime() <= 0) {
-                _Bull->setshake(false);
-                _Bull->createAttack2(*this);
-            }
-            if (_Bull->getshoot()) {
-                _Bull->setshoot(false);
-                _Bull->createAttack3(*this);
-            }
-            if (!_Bull->isChasing()) {
-                Vec2 BullPos = _Bull->getPosition();
-                float distance = avatarPos.distance(BullPos);
-                if (_Bull->getnextchangetime() < 0) {
-                    int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
-                    _Bull->setDirection(direction);
-                    _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
-                }
-            }
-            _Bull->update(dt);
-        }
-        if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
-            if (_ShrimpRice->getHealth() <= 0) {
-                _worldnode->removeChild(_ShrimpRice->getSceneNode());
-                _ShrimpRice->setDebugScene(nullptr);
-                _ShrimpRice->markRemoved(true);
-            }
-
-            if (!_ShrimpRice->isChasing()) {
-                Vec2 BullPos = _ShrimpRice->getPosition();
-                float distance = avatarPos.distance(BullPos);
-                if (_ShrimpRice->getnextchangetime() < 0) {
-                    int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
-                    _ShrimpRice->setDirection(direction);
-                    _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
-                }
-            }
-            _ShrimpRice->update(dt);
-        }
-
-        if (_Bull != nullptr) {
-            _BullactionManager->update(dt);
-            if (_Bull->getangrytime() > 0) {
-                if (!_BullactionManager->isActive("bullStunned")) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullStunned = _Bull->getAction("bullStunned");
-                    _BullactionManager->activate("bullStunned", bullStunned, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate("bullStunned");
-                }
-            }
-            else if (_Bull->isChasing() && ((_Bull->getPosition().x < 15 && _Bull->getDirection() == -1) || _Bull->getPosition().x > 35 && _Bull->getDirection() == 1)) {
-                if (!_BullactionManager->isActive("bullAttack")) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullAttack = _Bull->getAction("bullAttack");
-                    _BullactionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate("bullAttack");
-                }
-            }
-            else if (_Bull->getturing() > 0) {
-                if (!_BullactionManager->isActive("bullTurn")) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullTurn = _Bull->getAction("bullTurn");
-                    _BullactionManager->activate("bullTurn", bullTurn, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate("bullTurn");
-                }
-            }
-            else if (_Bull->getsprintpreparetime() <= 0 && _Bull->getknockbacktime() <= 0) {
-                if (!_BullactionManager->isActive("bullRun")) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullRun = _Bull->getAction("bullRun");
-                    _BullactionManager->activate("bullRun", bullRun, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate("bullRun");
-                }
-            }
-            else if (_Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0) {
-                if (!_BullactionManager->isActive(_Bull->getattacktype())) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullTelegraph = _Bull->getAction(_Bull->getattacktype());
-                    _BullactionManager->activate(_Bull->getattacktype(), bullTelegraph, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate(_Bull->getattacktype());
-                }
-            }
-
-
-
-        }
-
-        if (_ShrimpRice != nullptr) {
-            _SHRactionManager->update(dt);
-
-            if (_ShrimpRice->getattackcombo() > 0) {
-                if (!_SHRactionManager->isActive("SFR_Attack")) {
-                    auto SFR_Attack = _ShrimpRice->getAction("SFR_Attack");
-                    _SHRactionManager->activate("SFR_Attack", SFR_Attack, _ShrimpRice->getSceneNode());
-                }
-                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                    _ShrimpRice->animate("SFR_Attack");
-                }
-            }
-            else if (_ShrimpRice->getWheelofDoom() > 0) {
-                if (!_SHRactionManager->isActive("SFRWheelofDoom")) {
-                    auto SFRWheelofDoom = _ShrimpRice->getAction("SFRWheelofDoom");
-                    _SHRactionManager->activate("SFRWheelofDoom", SFRWheelofDoom, _ShrimpRice->getSceneNode());
-                }
-                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                    _ShrimpRice->animate("SFRWheelofDoom");
-                }
-            }
-            else if (_ShrimpRice->getknockbacktime() <= 0) {
-                if (!_SHRactionManager->isActive("SFR_Move")) {
-                    auto SFR_Move = _ShrimpRice->getAction("SFR_Move");
-                    _SHRactionManager->activate("SFR_Move", SFR_Move, _ShrimpRice->getSceneNode());
-                }
-                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                    _ShrimpRice->animate("SFR_Move");
-                }
-
-            }
-
-        }
-    }
-
     if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
-        if (_ShrimpRice->getHealth() <= 0) {
-            _worldnode->removeChild(_ShrimpRice->getSceneNode());
-            _ShrimpRice->setDebugScene(nullptr);
-            _ShrimpRice->markRemoved(true);
-        }
-        if (_ShrimpRice->getattacktype()=="SFRWave2") {
-            Vec2 BullPos = _ShrimpRice->getPosition();
-            float distance = avatarPos.distance(BullPos);
-            if (distance < 4) {
-                _ShrimpRice->setpassattack(true);
+            if (_ShrimpRice->getHealth() <= 0) {
+                _worldnode->removeChild(_ShrimpRice->getSceneNode());
+                _ShrimpRice->setDebugScene(nullptr);
+                _ShrimpRice->markRemoved(true);
             }
-        }
-        if (!_ShrimpRice->isChasing()) {
-            Vec2 BullPos = _ShrimpRice->getPosition();
-            if (_ShrimpRice->getnextchangetime() < 0) {
-                int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
-                _ShrimpRice->setDirection(direction);
-                _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+            if (_ShrimpRice->getattacktype()=="SFRWave2") {
+                Vec2 BullPos = _ShrimpRice->getPosition();
+                float distance = avatarPos.distance(BullPos);
+                if (distance < 4) {
+                    _ShrimpRice->setpassattack(true);
+                }
             }
+            if (!_ShrimpRice->isChasing()) {
+                Vec2 BullPos = _ShrimpRice->getPosition();
+                if (_ShrimpRice->getnextchangetime() < 0) {
+                    int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
+                    _ShrimpRice->setDirection(direction);
+                    _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+                }
+            }
+            _ShrimpRice->update(dt);
         }
-        _ShrimpRice->update(dt);
-    }
+
+
+
+
 
     if (_Bull != nullptr) {
         _BullactionManager->update(dt);

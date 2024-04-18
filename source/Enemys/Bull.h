@@ -51,6 +51,8 @@ protected:
     float _breaking;
     std::string _attacktype;
     float _turing;
+    std::shared_ptr<cugl::scene2::ActionManager> _actionM;
+    int n;
 
 
 public:

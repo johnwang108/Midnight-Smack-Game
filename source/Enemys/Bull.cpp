@@ -34,6 +34,8 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         setDensity(BULL_DENSITY);
         setFriction(0.0f);
         setFixedRotation(true);
+        _actionM=scene2::ActionManager::alloc();
+        n=0;
 
         return true;
     }
@@ -78,7 +80,7 @@ void BullModel::update(float dt) {
     else if (!_isChasing && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _bull_attack_chance) {
         _sprintPrepareTime = 2;
         float pa = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-    //  pa = 0.3;
+      //  pa = 0.5;
         if (pa < 0.33) {
             _attacktype = "bullTelegraph";
         }
@@ -163,7 +165,7 @@ void BullModel::update(float dt) {
     _lastDamageTime += dt;
     _nextChangeTime -= dt;
     _body->SetLinearVelocity(velocity);
-
+    _actionM->update(dt);
     if (_node != nullptr) {
         _node->setPosition(getPosition() * _drawScale);
         _node->setAngle(getAngle());
@@ -281,20 +283,25 @@ void BullModel::createAttack(GameScene& scene) {
 void BullModel::createAttack2(GameScene& scene) {
     float _scale = scene.getScale();
 
-    std::shared_ptr<Texture> image = _assets->get<Texture>(SHAKE_TEXTURE);
-
+    std::shared_ptr<Texture> image = _assets->get<Texture>("bullStompEffect");
+    std::vector<int> forward;
+    for (int ii = 0; ii < 14; ii++) {
+        forward.push_back(ii);
+    }
+    auto act = scene2::Animate::alloc(forward, 7.0f);
+    
     Vec2 pos = getPosition();
     pos.x += ATTACK_OFFSET_X*6;
     pos.y -= ATTACK_OFFSET_Y * 4.5;
     std::shared_ptr<Attack> attack = Attack::alloc(pos,
-        cugl::Size(0.9*image->getSize().width / _scale,
-            ATTACK_H * image->getSize().height / _scale));
+        cugl::Size(0.01*image->getSize().width / _scale,
+            0.01 * image->getSize().height / _scale));
 
     Vec2 pos2 = pos;
     pos2.x -= ATTACK_OFFSET_X *12;
     std::shared_ptr<Attack> attack2 = Attack::alloc(pos2,
-        cugl::Size(0.9*image->getSize().width / _scale,
-            ATTACK_H * image->getSize().height / _scale));
+        cugl::Size(0.01*image->getSize().width / _scale,
+            0.01 * image->getSize().height / _scale));
 
     attack->setFaceRight(true);
     attack->setName("shake");
@@ -319,16 +326,20 @@ void BullModel::createAttack2(GameScene& scene) {
 
 
 
-    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
-    attack->setSceneNode(sprite);
+    std::shared_ptr<scene2::SpriteNode> sprite = scene2::SpriteNode::allocWithSheet(image,4,4,14);
     sprite->setPosition(pos);
-
+    sprite->setScale(0.3/4);
+    attack->setSceneNode(sprite);
+    _actionM->activate("s"+std::to_string(n), act, sprite);
+    n+=1;
     scene.addObstacle(attack, sprite, true);
 
-    std::shared_ptr<scene2::PolygonNode> sprite2 = scene2::PolygonNode::allocWithTexture(image);
-    attack2->setSceneNode(sprite2);
+    std::shared_ptr<scene2::SpriteNode> sprite2 = scene2::SpriteNode::allocWithSheet(image,4,4,14);
     sprite2->setPosition(pos2);
-
+    sprite2->setScale(0.3/4);
+    attack2->setSceneNode(sprite2);
+    _actionM->activate("s"+std::to_string(n), act, sprite2);
+    n+=1;
     scene.addObstacle(attack2, sprite2, true);
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
