@@ -5,10 +5,17 @@
 #define BEEF_BURROW_TIME 30.0f
 #define BEEF_UNBURROW_TIME 30.0f
 #define BEEF_ATTACK_TIME 20.0f
+#define BEEF_SPEED 3.0f
 
 class Beef : public EnemyModel {
 protected:
     Spline2 _limit;
+
+    Path2 _boundaries;
+
+    Path2 _centerBoundary;
+
+    std::shared_ptr<EntitySpriteNode> _dirtPile;
 private:
 public:
 
@@ -47,13 +54,18 @@ public:
         return res ? result : nullptr;
     }
 
-    void setLimit(cugl::Spline2 limit) { _limit = limit; }
+    void setLimit(cugl::Spline2 limit) { 
+        _limit = limit; 
+        _boundaries = cugl::SplinePather(&_limit).getPath();
+    }
 
     Spline2 getLimit() { return _limit; }
 
     void update(float dt) override;
 
     void fixedUpdate(float step) override;
+
+    b2Vec2 handleMovement(b2Vec2 velocity) override;
 
     void setState(std::string state) override;
 

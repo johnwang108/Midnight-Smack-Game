@@ -16,9 +16,15 @@ bool Beef::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std:
     if (EnemyModel::init(pos, size, scale, seq1, seq2)) {
 		_type = EnemyType::beef;
 		_limit = limit;
+        _boundaries = cugl::SplinePather(&_limit).getPath();
+        assert(!_boundaries.isClosed());
 		setName("beef");
 		_health = 100.0f;
         setFixedRotation(true);
+
+
+        //todo
+        _dirtPile = nullptr;
 		return true;
     }
     return false;
@@ -41,13 +47,15 @@ void Beef::fixedUpdate(float step) {
         setFilterData(filter);
         setGravityScale(0);
         velocity.x = 0;
-        velocity.y = -4;
+        if ((_limit.nearestPoint(getPosition()) - getPosition()).length() > BEEF_SPEED) {
+            velocity.y = BEEF_SPEED * SIGNUM((_limit.nearestPoint(getPosition()) - getPosition()).y);
+        }
+        else velocity.y = (_limit.nearestPoint(getPosition()) - getPosition()).y;
     }
     else if (_state == "tracking") {
-        cugl::Vec2 targetPos = _limit.nearestPoint(cugl::Vec2(getPosition().x + _direction * ENEMY_FORCE * 5, getPosition().y));
-
-        cugl::Vec2 v = targetPos - getPosition();
-        velocity = b2Vec2(v.x, v.y);
+        cugl::Vec2 targetPos = _limit.nearestPoint(_distanceToPlayer.normalize() * std::min(_distanceToPlayer.length(), BEEF_SPEED));
+        velocity.x = targetPos.x;
+        velocity.y = targetPos.y;
     }
     else if (_state == "unburrowing") {
         velocity.x = 0;
@@ -55,7 +63,7 @@ void Beef::fixedUpdate(float step) {
     }
     else if (_state == "attacking") {
         velocity.x = 0;
-        velocity.y = 13;
+        velocity.y = BEEF_SPEED;
     }
     else if (_state == "stunned") {
         b2Filter filter = getFilterData();
@@ -72,8 +80,41 @@ void Beef::fixedUpdate(float step) {
         filter.maskBits = 0xFFFF;
         setFilterData(filter);
     }
+    _body->SetLinearVelocity(handleMovement(velocity));
+}
 
-    _body->SetLinearVelocity(EnemyModel::handleMovement(velocity));
+b2Vec2 Beef::handleMovement(b2Vec2 velocity) {
+    velocity = EnemyModel::handleMovement(velocity);
+    Vec2 newVelocity = Vec2(velocity.x, velocity.y);
+
+    //have to clamp velocity if going to leave the boundary.
+    //if we're tracking, and we're on the edge of the boundary, and we try to move in that direction. Have to clamp it
+    //if (_state == "tracking") {
+    //    get bounds of the capsule
+    //    cugl::Rect box = Rect(getPosition().x, getPosition().y, getWidth(), getHeight());
+    //    cugl::Rect newBox = box + newVelocity;
+
+    //        //detect if this movement will move us out
+    //    bool upperRight = false;
+    //    bool upperLeft = false;
+    //    bool lowerLeft = false;
+    //    bool lowerRight = false;
+    //    if (!_boundaries.contains(Vec2(newBox.getMaxX(), newBox.getMaxY()))) upperRight = true;
+    //    if (!_boundaries.contains(Vec2(newBox.getMinX(), newBox.getMaxY()))) upperLeft = true;
+    //    if (!_boundaries.contains(Vec2(newBox.getMinX(), newBox.getMinY()))) lowerLeft = true;
+    //    if (!_boundaries.contains(Vec2(newBox.getMaxX(), newBox.getMinY()))) lowerRight = true;
+
+    //    //TODO: THIS DOESN"T WORK WELL
+    //    if ((upperRight && upperLeft) || (lowerRight && lowerLeft)) newVelocity.y = 0;
+    //    if ((upperLeft && lowerLeft) || (upperRight && lowerRight)) newVelocity.x = 0;
+
+    //   
+    //    
+    //}
+
+    //velocity.x = newVelocity.x;
+    //velocity.y = newVelocity.y;
+    return velocity;
 }
 
 void Beef::setState(std::string state) {
@@ -103,7 +144,7 @@ std::string Beef::getNextState(std::string state) {
         return "tracking";
     }
     else if (state == "tracking") {
-        if (abs(_distanceToPlayer.x) < 1) return "unburrowing";
+        if (abs(_distanceToPlayer.x) < 1.0f && _distanceToPlayer.length() < 4.0f) return "unburrowing";
         else return "tracking";
     }
     else if (state == "unburrowing") {

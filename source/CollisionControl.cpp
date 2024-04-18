@@ -246,25 +246,27 @@ void GameScene::beginContact(b2Contact* contact) {
     }
 
     if (_avatar->getBodySensorName() == fd1 && enemies.find(bd2->getName()) != enemies.end()) {
-        Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
-        Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        if (!((EnemyModel*)bd2)->isDying()) {
+            Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
+            Vec2 attackerPos = _avatar->getPosition();
+            int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
 
-        _avatar->addTouching();
-        _avatar->takeDamage(34, direction);
-    }
-    else if (_avatar->getBodySensorName() == fd2 && enemies.find(bd1->getName()) != enemies.end()) {
-        Vec2 enemyPos = _avatar->getPosition();
-        EnemyModel* enemy = (EnemyModel*)bd1;
-        Vec2 attackerPos = enemy->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-        _avatar->addTouching();
-        if (enemy->getType() == EnemyType::rice || enemy->getType() == EnemyType::rice_soldier) {
-            enemy->setActiveAction("riceAttack");
+            _avatar->addTouching();
+            _avatar->takeDamage(34, direction);
         }
-        _avatar->takeDamage(34, direction);
-    }/*
-
+    }
+    //else if (_avatar->getBodySensorName() == fd2 && enemies.find(bd1->getName()) != enemies.end()) {
+    //    Vec2 enemyPos = _avatar->getPosition();
+    //    EnemyModel* enemy = (EnemyModel*)bd1;
+    //    Vec2 attackerPos = enemy->getPosition();
+    //    int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+    //    _avatar->addTouching();
+    //    if (enemy->getType() == EnemyType::rice || enemy->getType() == EnemyType::rice_soldier) {
+    //        enemy->setActiveAction("riceAttack");
+    //    }
+    //    _avatar->takeDamage(34, direction);
+    //}
+    
     if (_ShrimpRice != nullptr && bd1->getName() == ATTACK_NAME && bd2->getName() == "shrimpBoss" && _ShrimpRice->getknockbacktime() <= 0) {
         Vec2 enemyPos = _ShrimpRice->getPosition();
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
@@ -298,7 +300,7 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 bullPos = _ShrimpRice->getPosition();
         int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
         _avatar->takeDamage(34, direction);
-    }*/
+    }
 }
 
 

@@ -269,7 +269,7 @@ public:
 
     EnemyType getType() { return _type; }
 
-    b2Vec2 handleMovement(b2Vec2 velocity);
+    virtual b2Vec2 handleMovement(b2Vec2 velocity);
 
     virtual void setState(std::string state);
 
@@ -291,6 +291,8 @@ public:
     bool shouldDelete() {
 		return _killMe && _killMeCountdown < 0;
 	}
+
+    bool isDying() { return _killMe; }
 
     static std::string typeToStr(EnemyType type) {
         switch (type) {
