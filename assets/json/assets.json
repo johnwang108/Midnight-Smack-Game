@@ -60,383 +60,381 @@
         "carrotEnemy": {
             "file": "textures/carrotEnemy.png"
         },
-
-        "cutCarrot": {
         "carrot": {
-            "file": "textures/day/food/carrot.png"
+          "file": "textures/day/food/carrot.png"
         },
         "cutCarrot": {
-            "file": "textures/day/food/cutCarrot.png"
+          "file": "textures/day/food/carrot.png"
         },
         "beef": {
-            "file": "textures/day/food/beef.png"
+          "file": "textures/day/food/beef.png"
         },
         "cookedBeef": {
-            "file": "textures/day/food/beef.png"
+          "file": "textures/day/food/beef.png"
         },
         "bar": {
-            "file": "textures/day/bar.png"
+          "file": "textures/day/bar.png"
         },
         "barFilled": {
-            "file": "textures/day/barFilled.png"
+          "file": "textures/day/barFilled.png"
         },
         "barExpectation": {
-            "file": "textures/day/barExpectation.png"
+          "file": "textures/day/barExpectation.png"
         },
         "conveyorBar": {
-            "file": "textures/day/conveyorBar.png"
+          "file": "textures/day/conveyorBar.png"
         },
         "updateConveyorBelt": {
-            "file": "textures/day/updateConveyorBelt.png"
+          "file": "textures/day/updateConveyorBelt.png"
         },
         "conveyorBelt": {
-            "file": "textures/day/conveyorBelt.png"
+          "file": "textures/day/conveyorBelt.png"
         },
         "recipeBook": {
-            "file": "textures/day/recipeBook.png"
+          "file": "textures/day/recipeBook.png"
         },
         "cookTimer": {
-            "file": "textures/day/cookTimerEmpty.png"
+          "file": "textures/day/cookTimerEmpty.png"
         },
         "gesture": {
-            "file": "textures/day/gesture.png"
+          "file": "textures/day/gesture.png"
         },
         "miniMap": {
-            "file": "textures/day/miniMap.png"
+          "file": "textures/day/miniMap.png"
         },
         "pot": {
-            "file": "textures/day/pot.png"
+          "file": "textures/day/pot.png"
         },
         "sink": {
-            "file": "textures/day/sink.png"
+          "file": "textures/day/sink.png"
         },
         "knife": {
-            "file": "textures/day/knife.png"
+          "file": "textures/day/knife.png"
         },
         "pan": {
-            "file": "textures/day/pan.png"
+          "file": "textures/day/pan.png"
         },
         "mixer": {
-            "file": "textures/day/mixer.png"
+          "file": "textures/day/mixer.png"
         },
         "status": {
-            "file": "textures/day/status.png"
+          "file": "textures/day/status.png"
         },
         "textBack": {
-            "file": "textures/day/textBack.png"
+          "file": "textures/day/textBack.png"
         },
         "sun": {
-            "file": "textures/day/sun.png"
+          "file": "textures/day/sun.png"
         },
         "ramsay": {
-            "file": "textures/day/ramsay.png"
+          "file": "textures/day/ramsay.png"
         },
         "indicator": {
-            "file": "textures/day/indicator.png"
+          "file": "textures/day/indicator.png"
         },
         "earth": {
-            "file": "textures/placeholder_block.png",
-            "wrapS": "repeat",
-            "wrapT": "repeat"
+          "file": "textures/placeholder_block.png",
+          "wrapS": "repeat",
+          "wrapT": "repeat"
         },
         "dude": {
-            "file": "textures/dude.png"
+          "file": "textures/dude.png"
         },
         "su_attack_sheet": {
-            "file": "textures/Sheets/Su/su_attack.png"
+          "file": "textures/Sheets/Su/su_attack.png"
         },
         "su_attack_recover": {
-            "file": "textures/Sheets/Su/su_attack_recover.png"
+          "file": "textures/Sheets/Su/su_attack_recover.png"
         },
         "su_idle_blink": {
-            "file": "textures/Sheets/Su/su_idle_blink.png"
+          "file": "textures/Sheets/Su/su_idle_blink.png"
         },
         "su_idle": {
-            "file": "textures/Sheets/Su/su_idle.png"
+          "file": "textures/Sheets/Su/su_idle.png"
         },
         "su_run": {
-            "file": "textures/Sheets/Su/su_run.png"
+          "file": "textures/Sheets/Su/su_run.png"
         },
         "su_jump_airborne_up": {
-            "file": "textures/Sheets/Su/su_jump_airborne_up.png"
+          "file": "textures/Sheets/Su/su_jump_airborne_up.png"
         },
         "su_jump_airborne_down": {
-            "file": "textures/Sheets/Su/su_jump_airborne_down.png"
+          "file": "textures/Sheets/Su/su_jump_airborne_down.png"
         },
         "su_jump_land": {
-            "file": "textures/Sheets/Su/su_jump_land.png"
+          "file": "textures/Sheets/Su/su_jump_land.png"
         },
         "su_jump_ready": {
-            "file": "textures/Sheets/Su/su_jump_ready.png"
+          "file": "textures/Sheets/Su/su_jump_ready.png"
         },
         "su_air_attack": {
-            "file": "textures/Sheets/Su/suAirAttackUp.png"
+          "file": "textures/Sheets/Su/suAirAttackUp.png"
         },
         "su_air_roll": {
-            "file": "textures/Sheets/Su/suAirRoll.png"
+          "file": "textures/Sheets/Su/suAirRoll.png"
         },
         "background-1": {
-            "file": "textures/background-image-1.png"
+          "file": "textures/background-image-1.png"
         },
         "spinner": {
-            "file": "textures/barrier.png"
+          "file": "textures/barrier.png"
         },
         "bridge": {
-            "file": "textures/ropebridge.png"
+          "file": "textures/ropebridge.png"
         },
         "bullet": {
-            "file": "textures/bullet.png"
+          "file": "textures/bullet.png"
         },
         "attack_l": {
-            "file": "textures/attack_l.png"
+          "file": "textures/attack_l.png"
         },
         "attack_r": {
-            "file": "textures/attack_r.png"
+          "file": "textures/attack_r.png"
         },
         "goal": {
-            "file": "textures/goaldoor.png"
+          "file": "textures/goaldoor.png"
         },
         "shrimp_standing": {
-            "file": "textures/shrimp_standing.png"
+          "file": "textures/shrimp_standing.png"
         },
         "shrimp_rolling": {
-            "file": "textures/shrimp_rolling.png"
+          "file": "textures/shrimp_rolling.png"
         },
         "shrimpBoss": {
-            "file": "textures/shrimpBoss.png"
+          "file": "textures/shrimpBoss.png"
         },
         "riceEnemy": {
-            "file": "textures/riceEnemy.png"
+          "file": "textures/riceEnemy.png"
         },
         "eggEnemy": {
-            "file": "textures/eggEnemy.png"
+          "file": "textures/eggEnemy.png"
         },
         "bull": {
-            "file": "textures/bull.png"
+          "file": "textures/bull.png"
         },
         "shake": {
-            "file": "textures/shake.png"
+          "file": "textures/shake.png"
         },
         "unball": {
-            "file": "textures/unball.png"
+          "file": "textures/unball.png"
         },
         "dball": {
-            "file": "textures/dball.png"
+          "file": "textures/dball.png"
         },
         "bullAttack": {
-            "file": "textures/bullAttack.png"
+          "file": "textures/bullAttack.png"
         },
         "bullIdle": {
-            "file": "textures/bullIdle.png"
+          "file": "textures/bullIdle.png"
         },
         "bullTelegraph": {
-            "file": "textures/bullTelegraph.png"
+          "file": "textures/bullTelegraph.png"
         },
         "bullStomp": {
-            "file": "textures/bullStomp.png"
+          "file": "textures/bullStomp.png"
         },
         "bullStompEffect": {
-            "file": "textures/bullStompEffect.png"
+          "file": "textures/bullStompEffect.png"
         },
         "bullDazedtoIdle": {
-            "file": "textures/bullDazedtoIdle.png"
+          "file": "textures/bullDazedtoIdle.png"
         },
         "bullCrash": {
-            "file": "textures/bullCrash.png"
+          "file": "textures/bullCrash.png"
         },
         "bullTurn": {
-            "file": "textures/bullTurn.png"
+          "file": "textures/bullTurn.png"
         },
         "bullStunned": {
-            "file": "textures/bullStunned.png"
+          "file": "textures/bullStunned.png"
         },
         "SFR_Attack": {
-            "file": "textures/SFR_Attack.png"
+          "file": "textures/SFR_Attack.png"
         },
         "SFR_Idle": {
-            "file": "textures/SFR_Idle.png"
+          "file": "textures/SFR_Idle.png"
         },
         "SFR_Move": {
-            "file": "textures/SFR_Move.png"
+          "file": "textures/SFR_Move.png"
         },
         "cooktime": {
-            "file": "textures/cutting_board.png",
-            "wrapS": "repeat",
-            "wrapT": "repeat"
+          "file": "textures/cutting_board.png",
+          "wrapS": "repeat",
+          "wrapT": "repeat"
         },
         "dpad": {
-            "file": "textures/dpad.png",
-            "wrapS": "clamp",
-            "wrapT": "clamp",
-            "atlas": {
-                "up": [
-                    0,
-                    0,
-                    127,
-                    127
-                ],
-                "down": [
-                    128,
-                    0,
-                    255,
-                    127
-                ],
-                "left": [
-                    0,
-                    128,
-                    127,
-                    255
-                ],
-                "right": [
-                    128,
-                    128,
-                    255,
-                    255
-                ]
-            }
+          "file": "textures/dpad.png",
+          "wrapS": "clamp",
+          "wrapT": "clamp",
+          "atlas": {
+            "up": [
+              0,
+              0,
+              127,
+              127
+            ],
+            "down": [
+              128,
+              0,
+              255,
+              127
+            ],
+            "left": [
+              0,
+              128,
+              127,
+              255
+            ],
+            "right": [
+              128,
+              128,
+              255,
+              255
+            ]
+          }
         },
         "background": {
-            "file": "textures/background.png"
+          "file": "textures/background.png"
         },
         "MYbackgroundbig": {
-            "file": "textures/UI/MYbackgroundbig.png"
+          "file": "textures/UI/MYbackgroundbig.png"
         },
         "MYmenuboard": {
-            "file": "textures/UI/MYmenu.png"
+          "file": "textures/UI/MYmenu.png"
         },
         "Language": {
-            "file": "textures/UI/Language.png"
+          "file": "textures/UI/Language.png"
         },
         "Credits": {
-            "file": "textures/UI/Credits.png"
+          "file": "textures/UI/Credits.png"
         },
         "metalbutton": {
-            "file": "textures/UI/metalnine.png"
+          "file": "textures/UI/metalnine.png"
         },
         "textfieldarea": {
-            "file": "textures/UI/textfieldarea.png"
+          "file": "textures/UI/textfieldarea.png"
         },
         "GameTitle": {
-            "file": "textures/UI/GameTitle.png"
+          "file": "textures/UI/GameTitle.png"
         },
         "knifeoutline": {
-            "file": "textures/UI/Meters/knifeoutline.png"
+          "file": "textures/UI/Meters/knifeoutline.png"
         },
         "knifefill": {
-            "file": "textures/UI/Meters/knifefill.png"
+          "file": "textures/UI/Meters/knifefill.png"
         },
         "attackfill": {
-            "file": "textures/UI/Meters/attackfill.png"
+          "file": "textures/UI/Meters/attackfill.png"
         },
         "shieldfill": {
-            "file": "textures/UI/Meters/shieldfill.png"
+          "file": "textures/UI/Meters/shieldfill.png"
         },
         "speedfill": {
-            "file": "textures/UI/Meters/speedfill.png"
+          "file": "textures/UI/Meters/speedfill.png"
         },
         "healthfill": {
-            "file": "textures/UI/Meters/healthfill.png"
+          "file": "textures/UI/Meters/healthfill.png"
         },
         "jumpfill": {
-            "file": "textures/UI/Meters/jumpfill.png"
+          "file": "textures/UI/Meters/jumpfill.png"
         },
         "attackready": {
-            "file": "textures/UI/Meters/attackready.png"
+          "file": "textures/UI/Meters/attackready.png"
         },
         "shieldready": {
-            "file": "textures/UI/Meters/shieldready.png"
+          "file": "textures/UI/Meters/shieldready.png"
         },
         "speedready": {
-            "file": "textures/UI/Meters/speedready.png"
+          "file": "textures/UI/Meters/speedready.png"
         },
         "healthready": {
-            "file": "textures/UI/Meters/healthready.png"
+          "file": "textures/UI/Meters/healthready.png"
         },
         "jumpready": {
-            "file": "textures/UI/Meters/jumpready.png"
+          "file": "textures/UI/Meters/jumpready.png"
         },
         "heartsbroken": {
-            "file": "textures/UI/Meters/heartsbroken.png"
+          "file": "textures/UI/Meters/heartsbroken.png"
         },
         "heartsfull": {
-            "file": "textures/UI/Meters/heartsfull.png"
+          "file": "textures/UI/Meters/heartsfull.png"
         },
         "bullbar": {
-            "file": "textures/UI/Meters/bullbar.png"
+          "file": "textures/UI/Meters/bullbar.png"
         },
         "SFRJoustState1": {
-            "file": "textures/SFRJoustState1.png"
+          "file": "textures/SFRJoustState1.png"
         },
         "SFRJoustState3": {
-            "file": "textures/SFRJoustState3.png"
+          "file": "textures/SFRJoustState3.png"
         },
         "SFRJoustState2": {
-            "file": "textures/SFRJoustState2.png"
+          "file": "textures/SFRJoustState2.png"
         },
         "SFRWave2": {
-            "file": "textures/SFRWave2.png"
+          "file": "textures/SFRWave2.png"
         },
         "SFRWave3": {
-            "file": "textures/SFRWave3.png"
+          "file": "textures/SFRWave3.png"
         },
         "SFRWave1": {
-            "file": "textures/SFRWave1.png"
+          "file": "textures/SFRWave1.png"
         },
         "SFRWheelofDoom": {
-            "file": "textures/SFRWheelofDoom.png"
+          "file": "textures/SFRWheelofDoom.png"
         },
         "bullRun": {
-            "file": "textures/bullRun.png"
+          "file": "textures/bullRun.png"
         },
         "beefIdle": {
-            "file": "textures/Sheets/Enemies/Beef/beefIdle.png"
+          "file": "textures/Sheets/Enemies/Beef/beefIdle.png"
         },
         "riceAttack": {
-            "file": "textures/Sheets/Enemies/Rice/riceAttack.png"
+          "file": "textures/Sheets/Enemies/Rice/riceAttack.png"
         },
         "riceEndWalk": {
-            "file": "textures/Sheets/Enemies/Rice/riceEndwalk.png"
+          "file": "textures/Sheets/Enemies/Rice/riceEndwalk.png"
         },
         "riceFall": {
-            "file": "textures/Sheets/Enemies/Rice/riceFall.png"
+          "file": "textures/Sheets/Enemies/Rice/riceFall.png"
         },
         "riceIdle": {
-            "file": "textures/Sheets/Enemies/Rice/riceIdle.png"
+          "file": "textures/Sheets/Enemies/Rice/riceIdle.png"
         },
         "riceJump": {
-            "file": "textures/Sheets/Enemies/Rice/riceJump.png"
+          "file": "textures/Sheets/Enemies/Rice/riceJump.png"
         },
         "riceLand": {
-            "file": "textures/Sheets/Enemies/Rice/riceLand.png"
+          "file": "textures/Sheets/Enemies/Rice/riceLand.png"
         },
         "riceLeader": {
-            "file": "textures/Sheets/Enemies/Rice/riceLeader.png"
+          "file": "textures/Sheets/Enemies/Rice/riceLeader.png"
         },
         "riceSoldier": {
-            "file": "textures/Sheets/Enemies/Rice/riceSoldier.png"
+          "file": "textures/Sheets/Enemies/Rice/riceSoldier.png"
         },
         "riceStartJump": {
-            "file": "textures/Sheets/Enemies/Rice/riceStartjump.png"
+          "file": "textures/Sheets/Enemies/Rice/riceStartjump.png"
         },
         "riceStartWalk": {
-            "file": "textures/Sheets/Enemies/Rice/riceStartwalk.png"
+          "file": "textures/Sheets/Enemies/Rice/riceStartwalk.png"
         },
         "riceWalk": {
-            "file": "textures/Sheets/Enemies/Rice/riceWalk.png"
+          "file": "textures/Sheets/Enemies/Rice/riceWalk.png"
         },
         "riceHurt": {
-            "file": "textures/Sheets/Enemies/Rice/riceHurt.png"
+          "file": "textures/Sheets/Enemies/Rice/riceHurt.png"
         },
         "riceDeath": {
-            "file": "textures/Sheets/Enemies/Rice/riceDeath.png"
+          "file": "textures/Sheets/Enemies/Rice/riceDeath.png"
         },
         "dreamBackground": {
-            "file": "textures/dream-background.png"
+          "file": "textures/dream-background.png"
         },
         "empanadaBackground": {
-            "file": "textures/empanada_level_sketch.png"
+          "file": "textures/empanada_level_sketch.png"
         }
-    },
+      },
     "sounds": {
         "game": {
             "type": "sample",
