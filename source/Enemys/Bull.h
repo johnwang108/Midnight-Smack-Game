@@ -128,6 +128,8 @@ public:
         _act=act;}
     float getacttime(){return _acttime;}
     std::string getact(){return _act;}
+    void setbreaking(float breaking){_breaking=breaking;}
+    float getbreaking(){return _breaking;}
 };
 
 #endif /* __BULL_MODEL_H__ */

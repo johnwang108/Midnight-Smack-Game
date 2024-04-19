@@ -127,13 +127,13 @@ void BullModel::update(float dt) {
     }
     if (_breaking > 0) {
         _breaking -= dt;
-        velocity.x *= 5 / 1.2 * _breaking / 10;
+        velocity.x *= BULL_CHASE_SPEED*_breaking / 2;
         if (_breaking < 0.1) {
             _isChasing = false;
         }
     }
 
-    if (_isChasing && !_breaking) {
+    if (_isChasing && _breaking<=0) {
         velocity.x *= BULL_CHASE_SPEED;
         if (_CAcount > 0) {
             velocity.x *= _CAcount / 1.2;

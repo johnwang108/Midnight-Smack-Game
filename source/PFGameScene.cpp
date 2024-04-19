@@ -928,6 +928,13 @@ void GameScene::preUpdate(float dt) {
                     _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
                 }
             }
+            if (_Bull->isChasing() && ((_Bull->getPosition().x > 20 && _Bull->getDirection() == -1) || (_Bull->getPosition().x < 30 && _Bull->getDirection() == 1))) {
+                Vec2 BullPos = _Bull->getPosition();
+                int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
+                if (direction != _Bull->getDirection()) {
+                    _Bull->setbreaking(2.0f);
+                }
+			}
             _Bull->update(dt);
         }
     if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
@@ -970,7 +977,7 @@ void GameScene::preUpdate(float dt) {
                 _Bull->animate("bullStunned");
             }
         }
-        else if (_Bull->isChasing() && ((_Bull->getPosition().x < 13 && _Bull->getDirection() == -1) || (_Bull->getPosition().x > 37 && _Bull->getDirection() == 1))) {
+        else if (_Bull->getbreaking()<=0 &&_Bull->isChasing() && ((_Bull->getPosition().x < 13 && _Bull->getDirection() == -1) || (_Bull->getPosition().x > 37 && _Bull->getDirection() == 1))) {
             if (!_BullactionManager->isActive("bullAttack")){
                 _BullactionManager->clearAllActions(_Bull->getSceneNode());
                 auto bullAttack = _Bull->getAction("bullAttack");
