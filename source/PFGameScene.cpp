@@ -105,7 +105,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_pt
 bool GameScene::initWithSave(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::shared_ptr<JsonValue> save) {
     bool res = init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
     if (save->size() == 0) return res;
-    float locX = save->get("location_x")->asFloat();
+    float locationX = save->get("player")->getFloat("location_x");
+    float locationY = save->get("player")->getFloat("location_y");
 }
 
 /**
@@ -1921,10 +1922,11 @@ void GameScene::save() {
             persistent->_parent = nullptr;
         }
     }
-    
-    night->appendValue("location_x_player", (double) _avatar->getPosition().x);
-    night->appendValue("location_y_player", (double) _avatar->getPosition().y);
-    night->appendValue("health_player", (double) _avatar->getHealth());
+    std::shared_ptr<JsonValue> player = JsonValue::allocObject();
+    player->appendValue("location_x", (double) _avatar->getPosition().x);
+    player->appendValue("location_y", (double) _avatar->getPosition().y);
+    player->appendValue("health", (double) _avatar->getHealth());
+    night->appendChild("player", player);
 
     std::vector<std::string> types = { "egg", "carrot", "shrimp", "rice", "beef" };
     for (auto t = types.begin(); t != types.end(); t++) {

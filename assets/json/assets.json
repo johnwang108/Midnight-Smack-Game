@@ -394,7 +394,7 @@
             "file": "textures/Sheets/Enemies/Rice/riceAttack.png"
         },
         "riceEndWalk": {
-            "file": "textures/Sheets/Enemies/Rice/riceEndwalk.png"
+            "file": "textures/Sheets/Enemies/Rice/riceEndWalk.png"
         },
         "riceFall": {
             "file": "textures/Sheets/Enemies/Rice/riceFall.png"
@@ -415,10 +415,10 @@
             "file": "textures/Sheets/Enemies/Rice/riceSoldier.png"
         },
         "riceStartJump": {
-            "file": "textures/Sheets/Enemies/Rice/riceStartjump.png"
+            "file": "textures/Sheets/Enemies/Rice/riceStartJump.png"
         },
         "riceStartWalk": {
-            "file": "textures/Sheets/Enemies/Rice/riceStartwalk.png"
+            "file": "textures/Sheets/Enemies/Rice/riceStartWalk.png"
         },
         "riceWalk": {
             "file": "textures/Sheets/Enemies/Rice/riceWalk.png"
