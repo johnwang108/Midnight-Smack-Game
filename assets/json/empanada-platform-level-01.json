@@ -242,72 +242,74 @@
          "id":6,
          "name":"platformColliders",
          "objects":[
-                {
-                 "height":0,
-                 "id":1,
-                 "name":"",
-                 "polygon":[
-                        {
-                         "x":0,
-                         "y":0
-                        },
-                        {
-                         "x":-13.5,
-                         "y":7.5
-                        },
-                        {
-                         "x":-16.5,
-                         "y":86.5
-                        },
-                        {
-                         "x":-14,
-                         "y":126
-                        },
-                        {
-                         "x":10.5,
-                         "y":148
-                        },
-                        {
-                         "x":49.5,
-                         "y":149
-                        },
-                        {
-                         "x":105.5,
-                         "y":144
-                        },
-                        {
-                         "x":120,
-                         "y":129.5
-                        },
-                        {
-                         "x":120,
-                         "y":96
-                        },
-                        {
-                         "x":119.5,
-                         "y":21.5
-                        },
-                        {
-                         "x":109.5,
-                         "y":-0.5
-                        }],
-                 "properties":[
-                        {
-                         "name":"name",
-                         "type":"string",
-                         "value":"Floating_Platform"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":3918,
-                 "y":224
-                },
+          {
+            "height": 0,
+            "id": 1,
+            "name": "Floating_Platform",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": -13.5,
+                "y": 7.5
+              },
+              {
+                "x": -16.5,
+                "y": 86.5
+              },
+              {
+                "x": -14,
+                "y": 126
+              },
+              {
+                "x": 10.5,
+                "y": 148
+              },
+              {
+                "x": 49.5,
+                "y": 149
+              },
+              {
+                "x": 105.5,
+                "y": 144
+              },
+              {
+                "x": 120,
+                "y": 129.5
+              },
+              {
+                "x": 120,
+                "y": 96
+              },
+              {
+                "x": 119.5,
+                "y": 21.5
+              },
+              {
+                "x": 109.5,
+                "y": -0.5
+              }
+            ],
+            "properties": [
+              {
+                "name": "name",
+                "type": "string",
+                "value": "Floating_Platform"
+              }
+            ],
+            "rotation": 0,
+            "type": "",
+            "visible": true,
+            "width": 0,
+            "x": 3918,
+            "y": 224
+          },
                 {
                  "height":0,
                  "id":2,
-                 "name":"",
+                 "name":"Floating_Platform",
                  "polygon":[
                         {
                          "x":0,
@@ -409,7 +411,7 @@
                 {
                  "height":0,
                  "id":3,
-                 "name":"",
+                 "name":"Floating_Platform",
                  "polygon":[
                         {
                          "x":0,
@@ -599,7 +601,7 @@
                 {
                  "height":0,
                  "id":4,
-                 "name":"",
+                 "name":"Main_Platform",
                  "polygon":[
                         {
                          "x":0,
