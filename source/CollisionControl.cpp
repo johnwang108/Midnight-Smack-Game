@@ -358,16 +358,12 @@ void GameScene::endContact(b2Contact* contact) {
     }
 
     if (_avatar->getBodySensorName() == fd1 && enemies.find(bd2->getName()) != enemies.end()) {
-        Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
-        Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-        _avatar->removeTouching();
-        _avatar->takeDamage(34, direction);
-    }
-    else if (_avatar->getBodySensorName() == fd2 && enemies.find(bd2->getName()) != enemies.end()) {
-        Vec2 enemyPos = _avatar->getPosition();
-        Vec2 attackerPos = ((EnemyModel*)bd1)->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        if (!((EnemyModel*)bd2)->isDying()) {
+            Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
+            Vec2 attackerPos = _avatar->getPosition();
+            int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+            _avatar->takeDamage(34, direction);
+        }
         _avatar->removeTouching();
     }
 }

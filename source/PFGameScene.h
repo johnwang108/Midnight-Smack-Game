@@ -549,7 +549,6 @@ public:
     void setTarget(std::string s) { _targetScene = s; };
 
     void save();
-    void loadSave();
 };
 
 

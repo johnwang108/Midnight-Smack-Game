@@ -414,3 +414,27 @@ void PlatformApp::transitionScenes() {
         CULog("From menu");
     }
 }
+
+void PlatformApp::loadSave() {
+    std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });
+    auto reader = JsonReader::alloc(path);
+
+    std::shared_ptr<JsonValue> loaded_json = reader->readJson();
+
+    //Todo:: load enemies separately from level.
+
+    int chapter = loaded_json->getInt("chapter");
+    int level = loaded_json->getInt("level");
+
+    std::shared_ptr<JsonValue> persistent = loaded_json->get("persistent");
+
+    //parse daytime data
+
+    //if (fromStart) {
+    //    loadLevel(chapter, level);
+    //}
+    std::shared_ptr<JsonValue> night = loaded_json->get("night");
+
+    reader->close();
+}

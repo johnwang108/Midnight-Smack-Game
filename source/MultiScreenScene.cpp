@@ -613,24 +613,22 @@ void MultiScreenScene::save() {
 	std::string path = cugl::filetool::join_path({ root,"save.json" });
 
 	auto reader = JsonReader::alloc(path);
-	auto writer = JsonWriter::alloc(path);
 
 	std::shared_ptr<JsonValue> json = JsonValue::allocObject();
+	std::shared_ptr<JsonValue> prevSave = reader->readJson();
+	std::shared_ptr<JsonValue> persistent = JsonValue::allocObject();
 
 	//placeholder values
 	json->appendValue("chapter", 1.0f);
 	json->appendValue("level", 1.0f);
+	json->appendValue("startFromNight", true);
+	json->appendChild("persistent", persistent);
+	json->appendChild("night", JsonValue::allocObject());
 
-	std::shared_ptr<JsonValue> day = JsonValue::allocArray();
+	auto writer = JsonWriter::alloc(path);
+	writer->writeJson(json);
+	writer->close();
 
-	json->appendChild("day", day);
-
-}
-
-void MultiScreenScene::loadSave() {
-	std::string root = cugl::Application::get()->getSaveDirectory();
-	std::string path = cugl::filetool::join_path({ root,"save.json" });
-	auto reader = JsonReader::alloc(path);
 }
 
 void MultiScreenScene::endDay() {

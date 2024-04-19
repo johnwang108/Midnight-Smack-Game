@@ -218,6 +218,8 @@ public:
      */
     virtual void draw() override;
 
+    void loadSave();
+
     void transitionScenes();
 };
 #endif /* __PF_APP_H__ */

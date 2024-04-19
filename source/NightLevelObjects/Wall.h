@@ -49,6 +49,7 @@ public:
     void initPath(std::vector<Vec3> path, int movementForce);
     void initBreakable(int duration, int respawnTime);
     void update(float dt);
+    void fixedUpdate(float step);
     Vec3 queryPath(int temp);
     void applyPathMovement(float step);
     void applyBreaking();

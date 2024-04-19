@@ -343,7 +343,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_leftnode);
     addChild(_rightnode);
 
-    //save();
+    save();
 
     _actionManager = cugl::scene2::ActionManager::alloc();
     _BullactionManager = cugl::scene2::ActionManager::alloc();
@@ -1844,94 +1844,61 @@ void GameScene::save() {
     std::string path = cugl::filetool::join_path({ root,"save.json" });
 
     auto reader = JsonReader::alloc(path);
-
-    std::shared_ptr<JsonValue> prev_json = reader->readJson();
+    std::shared_ptr<JsonValue> prevSave = reader->readJson();
     reader->close();
-
-    //write basic info.
-    //placeholders
 
     std::shared_ptr<JsonValue> json = JsonValue::allocObject();
 
-    json->appendValue("chapter", 1.0f);
-    json->appendValue("level", 1.0f);
-    
+    std::shared_ptr<JsonValue> persistent = prevSave->get("persistent");
     std::shared_ptr<JsonValue> night = JsonValue::allocObject();
+    //CHAPTER COMPLETION LOGIC
+    if (isComplete()) {
+        json->appendValue("chapter", 1.0f);
+        json->appendValue("level", 2.0f);
+        json->appendValue("startFromNight", false);
+        json->appendChild("persistent", persistent);
+        json->appendChild("night", night);
+        return;
+    }
     
-    night->appendValue("location_x_player", _avatar->getPosition().x);
-    night->appendValue("location_y_player", _avatar->getPosition().y);
-    night->appendValue("health_player", _avatar->getHealth());
+    night->appendValue("location_x_player", (double) _avatar->getPosition().x);
+    night->appendValue("location_y_player", (double) _avatar->getPosition().y);
+    night->appendValue("health_player", (double) _avatar->getHealth());
 
     std::vector<std::string> types = { "egg", "carrot", "shrimp", "rice", "beef" };
     for (auto t = types.begin(); t != types.end(); t++) {
         std::string type = *t;
-        night->appendArray("location_x_" + type);
-        night->appendArray("location_y_" + type);
-        night->appendArray("health_" + type);
+        night->appendChild(type, JsonValue::allocObject());
     }
     
+    int id = 0;
     for (auto& e : _enemies) {
         if (e->isRemoved()) {
 			continue;
 		}
         std::string type = EnemyModel::typeToStr(e->getType());
-		night->insertValue(0, "location_x_" + type, e->getPosition().x);
-        night->insertValue(0, "location_y_" + type, e->getPosition().y);
-        night->insertValue(0, "health_" + type, e->getHealth());
+        std::shared_ptr<JsonValue> x = JsonValue::allocObject();
+		x->appendValue("location_x", (double) e->getPosition().x);
+        x->appendValue("location_y", (double) e->getPosition().y);
+        x->appendValue("health", (double) e->getHealth());
+        night->get(type)->appendChild(std::to_string(id), x);
+        id += 1;
 	}
 
     json->appendChild("night", night);
 
-    std::shared_ptr<JsonValue> day = prev_json->get("day");
-    std::shared_ptr<JsonValue> persistent = prev_json->get("persistent");
     if (persistent == nullptr || persistent->isNull()) {
         persistent = JsonValue::allocObject();
     }
     else {
         persistent->_parent = nullptr;
     }
-    if (day == nullptr || day->isNull()) {
-        day = JsonValue::allocObject();
-    }
-    else {
-        day->_parent = nullptr;
-    }
 
-    json->appendChild("day", day);
     json->appendChild("persistent", persistent);
 
-    json->appendValue("test", 0.0f);
-
     auto writer = JsonWriter::alloc(path);
-
     writer->writeJson(json);
-    
     writer->close();
-}
-
-void GameScene::loadSave() {
-	/*std::string root = cugl::Application::get()->getSaveDirectory();
-    std::string path = cugl::filetool::join_path({ root,"save.json" });*/
-
-
-    //CULog("PATH");
-    //CULog(path.c_str());
-
-    std::string root = cugl::Application::get()->getSaveDirectory();
-    std::string path = cugl::filetool::join_path({ root,"save.json" });
-    auto reader = JsonReader::alloc(path);
-
-    std::shared_ptr<JsonValue> loaded_json = reader->readJson();
-
-    //Todo:: load enemies separately from level.
-
-    int chapter = loaded_json->getInt("chapter");
-    int level = loaded_json->getInt("level");
-
-    loadLevel(chapter, level);
-
-    reader->close();
-    
 }
 
 //load level with int specifiers

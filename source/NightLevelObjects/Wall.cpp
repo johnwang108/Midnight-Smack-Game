@@ -168,6 +168,10 @@ void Wall::update(float dt) {
 	applyPathMovement(dt);
 }
 
+void Wall::fixedUpdate(float step) {
+	applyBreaking();
+}
+
 Vec3 Wall::queryPath(int temp) {
 	return this->path[temp];
 }
