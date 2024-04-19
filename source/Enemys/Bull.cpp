@@ -36,7 +36,8 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         setFixedRotation(true);
         _actionM=scene2::ActionManager::alloc();
         n=0;
-        _dazy=0;
+        _act="none";
+        _acttime=0;
 
         return true;
     }
@@ -54,7 +55,6 @@ void BullModel::update(float dt) {
 
     if (_knockbackTime > 0) {
         _knockbackTime -= dt;
-
         return;
     }
 
@@ -78,7 +78,7 @@ void BullModel::update(float dt) {
 
         }
     }
-    else if (!_isChasing && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _bull_attack_chance) {
+    else if (!_isChasing && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _bull_attack_chance && _acttime<=0) {
         _sprintPrepareTime = 2;
         float pa = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
       //  pa = 0.5;
@@ -93,7 +93,26 @@ void BullModel::update(float dt) {
         }
 
     }
+    
+    if(_acttime>0){
+        _acttime-=dt;
+        if(_acttime<=0){
+            if(_act=="bullTurn"){
+                scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
+                if (image != nullptr) {
+                    image->flipHorizontal(!image->isFlipHorizontal());
+                }
+            }
+            if(_act=="bullStunned"){
+                setact("bullDazedtoIdle", 1.0f);
+            }
+            if(_act=="bullCrash"){
+                setact("bullStunned", 3.0f);
+            }
 
+        }
+    }
+    
     if (_angrytime > 0) {
         _angrytime -= dt;
         _body->SetLinearVelocity(b2Vec2(0, 0));
@@ -147,19 +166,12 @@ void BullModel::update(float dt) {
         }
     }
 
-    if (_turing > 0) {
-        _turing -= dt;
-        if (_turing <= 0) {
-            scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
-            if (image != nullptr) {
-                image->flipHorizontal(!image->isFlipHorizontal());
-            }
-        }
-    }
+
 
     if (_direction != _lastDirection) {
         // If direction changed, flip the image
         _turing = 0.75;
+        setact("bullTurn", 0.75f);
     }
 
     _lastDirection = _direction;
@@ -184,7 +196,7 @@ void BullModel::takeDamage(float damage, int attackDirection,bool knockback) {
           //  b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE*10, BULL_KNOCKBACK_FORCE_UP * 25);
             _body->SetLinearVelocity(b2Vec2(0, 0));
           //  _body->ApplyLinearImpulseToCenter(impulse, true);
-            _knockbackTime = 3;
+            _knockbackTime = 2;
         }else {
             b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE*5, 0);
             _body->ApplyLinearImpulseToCenter(impulse, true);

@@ -922,7 +922,7 @@ void GameScene::preUpdate(float dt) {
             if (!_Bull->isChasing()) {
                 Vec2 BullPos = _Bull->getPosition();
                 float distance = avatarPos.distance(BullPos);
-                if (_Bull->getnextchangetime() < 0) {
+                if (_Bull->getnextchangetime() < 0 && _Bull->getacttime()<=0){
                     int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
                     _Bull->setDirection(direction);
                     _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
@@ -970,7 +970,7 @@ void GameScene::preUpdate(float dt) {
                 _Bull->animate("bullStunned");
             }
         }
-        else if (_Bull->isChasing() && ((_Bull->getPosition().x < 15 && _Bull->getDirection() == -1) || (_Bull->getPosition().x > 35 && _Bull->getDirection() == 1))) {
+        else if (_Bull->isChasing() && ((_Bull->getPosition().x < 13 && _Bull->getDirection() == -1) || (_Bull->getPosition().x > 37 && _Bull->getDirection() == 1))) {
             if (!_BullactionManager->isActive("bullAttack")){
                 _BullactionManager->clearAllActions(_Bull->getSceneNode());
                 auto bullAttack = _Bull->getAction("bullAttack");
@@ -980,14 +980,14 @@ void GameScene::preUpdate(float dt) {
                 _Bull->animate("bullAttack");
             }
         }
-        else if (_Bull->getturing() > 0) {
-            if (!_BullactionManager->isActive("bullTurn")) {
+        else if (_Bull->getacttime() > 0) {
+            if (!_BullactionManager->isActive(_Bull->getact())) {
                 _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                auto bullTurn = _Bull->getAction("bullTurn");
-                _BullactionManager->activate("bullTurn", bullTurn, _Bull->getSceneNode());
+                auto bullTurn = _Bull->getAction(_Bull->getact());
+                _BullactionManager->activate(_Bull->getact(), bullTurn, _Bull->getSceneNode());
             }
             if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                _Bull->animate("bullTurn");
+                _Bull->animate(_Bull->getact());
             }
         }
         else if (_Bull->getsprintpreparetime() <= 0 && _Bull->getknockbacktime() <= 0) {
