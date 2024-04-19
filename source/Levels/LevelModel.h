@@ -79,7 +79,7 @@ public:
 	void loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height);
 
 	/** loads the main platform, specifically its physical parts*/
-	void loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height);
+	std::shared_ptr<physics2::PolygonObstacle> loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height);
 
 	/** Clears the root scene graph node for the level*/
 	// void clearRootNode();

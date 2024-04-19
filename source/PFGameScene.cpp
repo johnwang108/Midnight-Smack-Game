@@ -37,17 +37,22 @@ using namespace cugl;
 #pragma mark Level Geography
 
 /** This is adjusted by screen aspect ratio to get the height */
-#define SCENE_WIDTH 6720
-#define SCENE_HEIGHT 800
+// #define SCENE_WIDTH 6720
+// #define SCENE_HEIGHT 800
+
+#define SCENE_WIDTH 12800
+#define SCENE_HEIGHT 960
 
 /** This is the aspect ratio for physics */
-#define SCENE_ASPECT 10.0/84.0
-// #define SCENE_ASPECT 10.0/16.0
+#define SCENE_ASPECT 10.0/133.0
+// #define SCENE_ASPECT 10.0/84.0
 
 /** Width of the game world in Box2d units */
-#define DEFAULT_WIDTH   210.0f
+// #define DEFAULT_WIDTH   210.0f
+#define DEFAULT_WIDTH 400.0f
 /** Height of the game world in Box2d units */
-#define DEFAULT_HEIGHT  25.0f
+// #define DEFAULT_HEIGHT  25.0f
+#define DEFAULT_HEIGHT 30.0f
 
 #define INCLUDE_ROPE_BRIDGE false
 
@@ -95,6 +100,12 @@ _debug(false)
  */
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
     return init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
+}
+
+bool GameScene::initWithSave(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::shared_ptr<JsonValue> save) {
+    bool res = init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
+    if (save->size() == 0) return res;
+    float locX = save->get("location_x")->asFloat();
 }
 
 /**
@@ -336,7 +347,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     currentLevel = _level_model;
     // loadLevel(currentLevel);
-    _level_model->setFilePath("json/test_level_v2_experiment.json");
+    // _level_model->setFilePath("json/test_level_v2_experiment.json");
+    _level_model->setFilePath("json/empanada-platform-level-01.json");
     loadLevel(currentLevel);
     addChild(_worldnode);
     addChild(_debugnode);
@@ -402,17 +414,55 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 void GameScene::dispose() {
     if (_active) {
         _input->dispose();
-        _world = nullptr;
+        _assets = nullptr;
+        _input = nullptr;
         _worldnode = nullptr;
         _debugnode = nullptr;
         _winnode = nullptr;
         _losenode = nullptr;
         _leftnode = nullptr;
         _rightnode = nullptr;
-        //_dollarnode->dispose();
+        _bgScene = nullptr;
+        _uiScene = nullptr;
         _dollarnode = nullptr;
-        _complete = false;
-        _debug = false;
+        _world = nullptr;
+        _goalDoor = nullptr;
+        _background = nullptr;
+        _avatar = nullptr;
+        _enemies.clear();
+        _afterimages.clear();
+        _vulnerables.clear();
+        _target = nullptr;
+        for (auto& attack : _attacks) {
+            attack = nullptr;
+        }
+        _attacks.clear();
+        currentLevel = nullptr;
+        _Bull = nullptr;
+        _ShrimpRice = nullptr;
+        level2 = nullptr;
+        level1 = nullptr;
+        level3 = nullptr;
+        _healthBarForeground = nullptr;
+        _healthBarBackground = nullptr;
+        _BullhealthBarBackground = nullptr;
+        _BullhealthBarForeground = nullptr;
+        _SFRhealthBarBackground = nullptr;
+        _SFRhealthBarForeground = nullptr;
+        _cookBarFill = nullptr;
+        _cookBarOutline = nullptr;
+        _cookBarIcons.clear();
+        _cookBarGlows.clear();
+        _buffLabel = nullptr;
+        _popups.clear();
+        _actionManager = nullptr;
+        _BullactionManager = nullptr;
+        _SHRactionManager = nullptr;
+        _pauseButton = nullptr;
+        _debugAnimTarget = nullptr;
+        _level_model = nullptr;
+        Scene2::dispose();
+
         Scene2::dispose();
     }
 }
@@ -1261,7 +1311,9 @@ void GameScene::fixedUpdate(float step) {
 
         if (currentLevel == _level_model) {
             // we will have to not hard code this in future: WIDTH_OF_LEVEL / 40.0
-            _camera->setZoom(210.0/40.0);
+            // _camera->setZoom(210.0/40.0);
+            _camera->setZoom(400.0/40.0);
+            // _camera->setZoom(2.0);
             // _camera->setZoom(1.5);
         }
         else if (currentLevel == level2) {
@@ -1853,12 +1905,21 @@ void GameScene::save() {
     std::shared_ptr<JsonValue> night = JsonValue::allocObject();
     //CHAPTER COMPLETION LOGIC
     if (isComplete()) {
+        //if completed, don't need to save state. Just increment chapter and level accordingly
         json->appendValue("chapter", 1.0f);
         json->appendValue("level", 2.0f);
         json->appendValue("startFromNight", false);
         json->appendChild("persistent", persistent);
         json->appendChild("night", night);
         return;
+    }
+    else {
+        if (persistent == nullptr || persistent->isNull()) {
+            persistent = JsonValue::allocObject();
+        }
+        else {
+            persistent->_parent = nullptr;
+        }
     }
     
     night->appendValue("location_x_player", (double) _avatar->getPosition().x);
@@ -1885,16 +1946,12 @@ void GameScene::save() {
         id += 1;
 	}
 
-    json->appendChild("night", night);
-
-    if (persistent == nullptr || persistent->isNull()) {
-        persistent = JsonValue::allocObject();
-    }
-    else {
-        persistent->_parent = nullptr;
-    }
-
+    //placeholder  values for chapter and level
+    json->appendValue("chapter", 1.0f);
+    json->appendValue("level", 1.0f);
+    json->appendValue("startFromNight", true);
     json->appendChild("persistent", persistent);
+    json->appendChild("night", night);
 
     auto writer = JsonWriter::alloc(path);
     writer->writeJson(json);

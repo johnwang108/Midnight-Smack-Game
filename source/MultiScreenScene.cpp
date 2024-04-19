@@ -608,7 +608,7 @@ void MultiScreenScene::reset() {
 
 void MultiScreenScene::save() {
 	//save the current state of the game
-	//should only change daytime and persistent save data
+	//should only change persistent save data and startFromNight
 	std::string root = cugl::Application::get()->getSaveDirectory();
 	std::string path = cugl::filetool::join_path({ root,"save.json" });
 
@@ -618,7 +618,9 @@ void MultiScreenScene::save() {
 	std::shared_ptr<JsonValue> prevSave = reader->readJson();
 	std::shared_ptr<JsonValue> persistent = JsonValue::allocObject();
 
-	//placeholder values
+	//process persistent upgrades
+
+	//placeholder values for chap and level
 	json->appendValue("chapter", 1.0f);
 	json->appendValue("level", 1.0f);
 	json->appendValue("startFromNight", true);
@@ -628,7 +630,6 @@ void MultiScreenScene::save() {
 	auto writer = JsonWriter::alloc(path);
 	writer->writeJson(json);
 	writer->close();
-
 }
 
 void MultiScreenScene::endDay() {

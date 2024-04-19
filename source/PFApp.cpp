@@ -150,16 +150,16 @@ void PlatformApp::update(float dt) {
     } else if (!_loaded) {
         _loading.dispose(); // Disables the input listeners in this mode
 
-        std::shared_ptr<PlatformInput> input = std::make_shared<PlatformInput>();
+        _input = std::make_shared<PlatformInput>();
 
-        _multiScreen.init(_assets, input);
+        _multiScreen.init(_assets, _input);
         _multiScreen.setActive(false);
 
         /*_dayUIScene = std::make_shared<cugl::scene2::SceneNode>();
         _dayUIScene->init();
         _dayUIScene->setActive(MULTI_SCREEN);*/
 
-        _gameplay.init(_assets, input);
+        _gameplay.init(_assets, _input);
         _gameplay.setActive(false);
 
         _menu.init(_assets, "menu");
@@ -420,21 +420,25 @@ void PlatformApp::loadSave() {
     std::string path = cugl::filetool::join_path({ root,"save.json" });
     auto reader = JsonReader::alloc(path);
 
-    std::shared_ptr<JsonValue> loaded_json = reader->readJson();
+    std::shared_ptr<JsonValue> loadedSave = reader->readJson();
 
     //Todo:: load enemies separately from level.
 
-    int chapter = loaded_json->getInt("chapter");
-    int level = loaded_json->getInt("level");
+    int chapter = loadedSave->getInt("chapter");
+    int level = loadedSave->getInt("level");
+    bool startFromNight = loadedSave->getBool("startFromNight");
+    std::shared_ptr<JsonValue> persistent = loadedSave->get("persistent");
+    std::shared_ptr<JsonValue> night = loadedSave->get("night");
+    if (startFromNight) {
+        //load night
+        _gameplay.dispose();
+        _gameplay.initWithSave(_assets, _input, loadedSave);
 
-    std::shared_ptr<JsonValue> persistent = loaded_json->get("persistent");
+    }
+    else {
+        //load day
 
-    //parse daytime data
-
-    //if (fromStart) {
-    //    loadLevel(chapter, level);
-    //}
-    std::shared_ptr<JsonValue> night = loaded_json->get("night");
+    }
 
     reader->close();
 }

@@ -103,8 +103,6 @@ protected:
 
     std::vector<std::shared_ptr<EnemyModel>> _enemies;
 
-    std::unordered_map<std::string, std::shared_ptr<EnemyModel>> _enemyMap;
-
     std::vector<std::shared_ptr<scene2::SpriteNode>> _afterimages;
 
 
@@ -270,6 +268,8 @@ public:
      * @return true if the controller is initialized properly, false otherwise.
      */
     bool init(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input);
+
+    bool initWithSave(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::shared_ptr<JsonValue> save);
 
     /**
      * Initializes the controller contents, and starts the game

@@ -1,15 +1,14 @@
-{
-  "columns": 1,
-  "image": "..\/source\/repos\/Midnight-Smack-Folder\/Midnight-Smack-Game\/assets\/textures\/su_sprite.png",
-  "imageheight": 170,
-  "imagewidth": 100,
-  "margin": 0,
-  "name": "su_sprite",
-  "spacing": 0,
-  "tilecount": 1,
-  "tiledversion": "1.10.2",
-  "tileheight": 170,
-  "tilewidth": 100,
-  "type": "tileset",
-  "version": "1.10"
+{ "columns":3,
+ "image":"..\/textures\/su_sprite.png",
+ "imageheight":170,
+ "imagewidth":100,
+ "margin":0,
+ "name":"su_sprite",
+ "spacing":0,
+ "tilecount":15,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
 }

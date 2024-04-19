@@ -1,0 +1,14 @@
+{ "columns":5,
+ "image":"..\/textures\/beef.png",
+ "imageheight":150,
+ "imagewidth":160,
+ "margin":0,
+ "name":"beef",
+ "spacing":0,
+ "tilecount":20,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

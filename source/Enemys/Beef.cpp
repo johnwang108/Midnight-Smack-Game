@@ -16,13 +16,10 @@ bool Beef::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std:
     if (EnemyModel::init(pos, size, scale, seq1, seq2)) {
 		_type = EnemyType::beef;
 		_limit = limit;
-        _boundaries = cugl::SplinePather(&_limit).getPath();
-        assert(!_boundaries.isClosed());
 		setName("beef");
 		_health = 100.0f;
         setFixedRotation(true);
-
-
+        setFriction(1.0f);
         //todo
         _dirtPile = nullptr;
 		return true;
@@ -42,18 +39,24 @@ void Beef::fixedUpdate(float step) {
         velocity.x = 0;
     }
     else if (_state == "burrowing") {
-        b2Filter filter = getFilterData();
-        filter.maskBits = 0x0000;
-        setFilterData(filter);
-        setGravityScale(0);
-        velocity.x = 0;
-        if ((_limit.nearestPoint(getPosition()) - getPosition()).length() > BEEF_SPEED) {
-            velocity.y = BEEF_SPEED * SIGNUM((_limit.nearestPoint(getPosition()) - getPosition()).y);
-        }
-        else velocity.y = (_limit.nearestPoint(getPosition()) - getPosition()).y;
+        //b2Filter filter = getFilterData();
+        //filter.maskBits = 0x0000;
+        //setFilterData(filter);
+        //setGravityScale(0);
+        //velocity.x = 0;
+        ////if ((_limit.nearestPoint(getPosition()) - getPosition()).length() > BEEF_SPEED) {
+        ////    velocity.y = BEEF_SPEED * SIGNUM((_limit.nearestPoint(getPosition()) - getPosition()).y);
+        ////}
+        //if ((projectOntoPath(getPosition()) - getPosition()).length() > BEEF_SPEED) {
+        //    velocity.y = BEEF_SPEED * SIGNUM((projectOntoPath(getPosition()) - getPosition()).y);
+        //}
+        //else velocity.y = (projectOntoPath(getPosition()) - getPosition()).y;
+
+        if (getHeight() > 0.2f) setHeight(getHeight() - 0.2f);
     }
     else if (_state == "tracking") {
-        cugl::Vec2 targetPos = _limit.nearestPoint(_distanceToPlayer.normalize() * std::min(_distanceToPlayer.length(), BEEF_SPEED));
+        //cugl::Vec2 targetPos = _limit.nearestPoint(_distanceToPlayer.normalize() * std::min(_distanceToPlayer.length(), BEEF_SPEED));
+        cugl::Vec2 targetPos = _distanceToPlayer.normalize() * std::min(_distanceToPlayer.length(), BEEF_SPEED);
         velocity.x = targetPos.x;
         velocity.y = targetPos.y;
     }
@@ -63,23 +66,24 @@ void Beef::fixedUpdate(float step) {
     }
     else if (_state == "attacking") {
         velocity.x = 0;
-        velocity.y = BEEF_SPEED;
+        setHeight(getHeight() + 0.2f);
     }
     else if (_state == "stunned") {
-        b2Filter filter = getFilterData();
-        filter.maskBits = 0xFFFF;
-        setFilterData(filter);
-        setGravityScale(1);
+        //b2Filter filter = getFilterData();
+        //filter.maskBits = 0xFFFF;
+        //setFilterData(filter);
+        //setGravityScale(1);
         velocity.x = 0;
     }
     else if (_state == "patrolling") {
         velocity.x = 0;
         velocity.y = 0;
-        setGravityScale(1);
-        b2Filter filter = getFilterData();
-        filter.maskBits = 0xFFFF;
-        setFilterData(filter);
+        //setGravityScale(1);
+        //b2Filter filter = getFilterData();
+        //filter.maskBits = 0xFFFF;
+        //setFilterData(filter);
     }
+    resetDebug();
     _body->SetLinearVelocity(handleMovement(velocity));
 }
 
@@ -129,7 +133,7 @@ void Beef::setState(std::string state) {
         _behaviorCounter = BEEF_UNBURROW_TIME;
     }
     else if (state == "attacking") {
-        _behaviorCounter = BEEF_ATTACK_TIME;
+        _behaviorCounter = BEEF_BURROW_TIME;
     }
     else if (state == "stunned") {
         _behaviorCounter = 120;

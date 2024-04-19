@@ -502,6 +502,8 @@ void LevelModel::populate(GameScene& scene) {
 
 	//initialize our backgrounds variable
 	// _drawings = {};
+
+	std::shared_ptr<physics2::PolygonObstacle> mainPlatform;
 	if (layers != nullptr && layers->isArray()) {
 		for (int i = 0; i < layers->size(); i++) {
 			std::shared_ptr<cugl::JsonValue> layer = layers->get(i);
@@ -676,7 +678,7 @@ void LevelModel::populate(GameScene& scene) {
 
 							int rowPos = ((window_height - rowNum) % window_height + window_height) % window_height;
 
-							float scale_refactor = (210.0f / 40.0f);
+							// float scale_refactor = (210.0f / 40.0f);
 							//WE WILL HAVE TO CHANGE THIS
 
 							// Vec2 dudePos = Vec2(colNum + (3 * scale_refactor), rowPos + (3 * scale_refactor));
@@ -728,7 +730,7 @@ void LevelModel::populate(GameScene& scene) {
 									float imageHeight = image->getHeight() / 4;
 									Size singularSpriteSize = Size(imageWidth, imageHeight);
 									new_enemy = Rice::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, false);
-									spritenode->setScale(0.24f);
+									spritenode->setScale(1.0f);
 								}
 								else {
 									image = _assets->get<Texture>("riceSoldier");
@@ -749,8 +751,20 @@ void LevelModel::populate(GameScene& scene) {
 								numOfRice += 1;
 							}
 
-							else if (pathWeWant.find("shrimp") != std::string::npos) {
+							else if (pathWeWant.find("carrot") != std::string::npos) {
+								CULog("we found a carrot!");
 
+								image = _assets->get<Texture>("carrotIdle");
+								spritenode = EntitySpriteNode::allocWithSheet(image, 1, 1, 1);
+								// float imageWidth = image->getWidth() / 4;
+								// float imageHeight = image->getHeight() / 4;
+								Size singularSpriteSize = Size(image->getWidth(), image->getHeight());
+								new_enemy = Carrot::allocWithConstants(enemyPos, singularSpriteSize / (scene.getScale()), scene.getScale(), _assets);
+
+								new_enemy->setSceneNode(spritenode);
+								new_enemy->setDebugColor(DEBUG_COLOR);
+								scene.addObstacle(new_enemy, spritenode);
+								_enemies.push_back(new_enemy);
 								//image = _assets->get<Texture>("beefIdle");
 								//spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
 								//float imageWidth = image->getWidth() / 3;
@@ -765,6 +779,22 @@ void LevelModel::populate(GameScene& scene) {
 								//// new_enemy->setLimit(cugl::Spline2(enemyPos, Vec2(enemyPos.x, enemyPos.y + 5.0f)));
 								//scene.addObstacle(new_enemy, spritenode);
 								//_enemies.push_back(new_enemy);
+							}
+
+							else if (pathWeWant.find("beef") != std::string::npos) {
+								image = _assets->get<Texture>("beefIdle");
+								spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
+								float imageWidth = image->getWidth() / 3;
+								float imageHeight = image->getHeight() / 3;
+								Size singularSpriteSize = Size(imageWidth, imageHeight);
+								// enemyPos.y -= 100.0f;
+								new_enemy = Beef::allocWithConstants(enemyPos, singularSpriteSize / (6 * scene.getScale()), scene.getScale(), _assets);
+								spritenode->setScale(0.1f);
+								new_enemy->setSceneNode(spritenode);
+								new_enemy->setDebugColor(DEBUG_COLOR);
+								new_enemy->setLimit(cugl::Spline2(enemyPos, Vec2(enemyPos.x, enemyPos.y + 1.0)));
+								scene.addObstacle(new_enemy, spritenode);
+								_enemies.push_back(new_enemy);
 							}
 							//else if (pathWeWant.find("egg") != std::string::npos) {
 							//	new_enemy = EnemyModel::alloc(enemyPos, image->getSize() / (2 + scene.getScale()), scene.getScale(), EnemyType::egg);
@@ -802,11 +832,12 @@ void LevelModel::populate(GameScene& scene) {
 						CULog("We are in loadFloatingBox!");
 						CULog(object->getString("id").c_str());
 						// loadFloatingBoxPlatform(object, scene, sprite, window_height * 32.0f);
+						loadMainPlatform(object, scene, sprite, window_height * 32.0f);
 					}
 					else if (object->getString("name") == "Main_Platform") {
 						CULog("We are in loadMainPlatform!");
 						CULog(object->getString("id").c_str());
-						loadMainPlatform(object, scene, sprite, window_height * 32.0f);
+						mainPlatform = loadMainPlatform(object, scene, sprite, window_height * 32.0f);
 					}
 					else {
 						CULog(object->getString("name").c_str());
@@ -872,7 +903,7 @@ std::string LevelModel::getLevelScenery(std::string levelNumber) {
 	return "textures\\dream-background.png";
 }
 
-void LevelModel::loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height) {
+std::shared_ptr<physics2::PolygonObstacle> LevelModel::loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height) {
 
 	float startingX = json->getFloat("x");
 	float startingY = json->getFloat("y");
@@ -946,6 +977,7 @@ void LevelModel::loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameSc
 	sprite->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 	scene.addObstacle(platobj, sprite, 1);
 
+	return platobj;
 	CULog("we reached the end of loadMainPlatform!!");
 
 }
