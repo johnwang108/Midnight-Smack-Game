@@ -237,15 +237,17 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode = std::make_shared<DollarScene>();
     //_dollarnode->init(_assets, _input, cugl::Rect(Vec2::ZERO, computeActiveSize()/2), "cooktime");
     _dollarnode->init(_assets, _input, "cooktime");
-    _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_BOTTOM_LEFT);
+    _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
     _dollarnode->setVisible(false);
+    _dollarnode->setNighttime(true);
+    _dollarnode->setPosition(0,0);
 
 
 #pragma mark: UI
 
     // ui stuff
-    _uiScene = cugl::Scene2::alloc(dimen);
-    _uiScene->init(dimen);
+    _uiScene = cugl::Scene2::alloc(Size(1280, 800));
+    _uiScene->init(Size(1280, 800));
     _uiScene->setActive(true);
     // Right now we are manually adding in the json here
     // loadLevel(level1);
@@ -455,7 +457,7 @@ void GameScene::reset() {
     }
     // loadLevel(_level_model);
 
-    loadLevel(_level_model);
+    loadLevel(currentLevel);
     addChild(_worldnode);
     addChild(_debugnode);
     addChild(_leftnode);
@@ -595,7 +597,6 @@ void GameScene::preUpdate(float dt) {
     }
 
     //handle animations
-    _actionManager->update(dt);
     
     //start running if idle or recovering and moving
     if (!_overrideAnim) {
@@ -684,6 +685,8 @@ void GameScene::preUpdate(float dt) {
 
         _avatar->setShooting(_input->didFire());
         if (_avatar->isShooting() && (!_actionManager->isActive("attack") && !_actionManager->isActive("air_attack"))) {
+
+            CULog("CREATED ATTACK");
             auto att = _avatar->createAttack(getAssets(), _scale);
             addObstacle(std::get<0>(att), std::get<1>(att), true);
             _attacks.push_back(std::get<0>(att));
@@ -711,30 +714,73 @@ void GameScene::preUpdate(float dt) {
             //}
         }
     }
-    if (!_actionManager->isActive("air_attack")) {
-        _avatar->getSceneNode()->setAngle(0.0);
+    if (_input->didAnimate()) {
+        auto reader = JsonReader::alloc("./json/constants.json");
+
+        std::shared_ptr<JsonValue> js = reader->readJson();
+
+        _debugAnimTargetName = js->getString("entity");
+        if (_debugAnimTargetName == "su") {
+            _debugAnimTarget = _avatar;
+        }
+        else if (_debugAnimTargetName == "bull") {
+            _debugAnimTarget = _Bull;
+        }
+        else if (_debugAnimTargetName == "shrimp") {
+            _debugAnimTarget = _ShrimpRice;
+        }
+        else {
+            _debugAnimTarget = nullptr;
+        }
+
+        _debugAnimName = js->getString("animation");
+        if (_debugAnimTarget != nullptr) {
+            CULog("Overriding");
+            _overrideAnim = true;
+            _debugAnimTarget->animate(_debugAnimName);
+            auto action = _debugAnimTarget->getAction(_debugAnimName);
+            _actionManager->clearAllActions(_debugAnimTarget->getSceneNode());
+            _actionManager->activate(_debugAnimName, action, _debugAnimTarget->getSceneNode());
+        }
     }
-
-
-    if (_input->didAnimate() && _debugAnimTarget != nullptr) {
-        //CULog("OVERRIDE ANIM");
-        //_overrideAnim = true;
-        //_debugAnimTarget->animate(_debugAnimName);
-        //auto action = _debugAnimTarget->getAction(_debugAnimName);
-        //_actionManager->clearAllActions(_debugAnimTarget->getSceneNode());
-        //_actionManager->activate(_debugAnimName, action, _debugAnimTarget->getSceneNode());
-    }
-
     if (_overrideAnim && !_actionManager->isActive(_debugAnimName)) {
-		_overrideAnim = false;
-	}
-    
-    _dollarnode->update(dt);
+        _overrideAnim = false;
+    }
 
+    //if (!_actionManager->isActive("air_attack")) {
+    //    _avatar->getSceneNode()->setAngle(0.0);
+    //}
+    if (_input->didBackground()) {
+        
+        std::shared_ptr<scene2::SceneNode> bg = getChildByName("background");
+
+        std::shared_ptr<scene2::PolygonNode> bgNode = std::dynamic_pointer_cast<scene2::PolygonNode>(bg);
+        auto reader = JsonReader::alloc("./json/constants.json");
+
+        std::shared_ptr<JsonValue> js = reader->readJson();
+
+        std::shared_ptr<Texture> bgTexture = _assets->get<Texture>(js->get("environment")->get("1")->getString("background"));
+        bgNode->setTexture(bgTexture);
+        
+    }
+    if (_input->didMusic()) {
+
+        auto reader = JsonReader::alloc("./json/constants.json");
+
+        std::shared_ptr<JsonValue> js = reader->readJson();
+        
+        std::shared_ptr<Sound> source = _assets->get<Sound>(js->get("environment")->get("1")->getString("music"));
+        AudioEngine::get()->getMusicQueue()->clear();
+        AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
+    }
+   
+
+    _dollarnode->update(dt);
     if (!_slowed) {
         _dollarnode->setVisible(false);
         if (_dollarnode->isFocus()) {
             _dollarnode->setFocus(false);
+            _dollarnode->setReadyToCook(false);
         }
 
         _avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
@@ -750,6 +796,7 @@ void GameScene::preUpdate(float dt) {
         _dollarnode->setVisible(true);
         if (!(_dollarnode->isFocus())) {
             _dollarnode->setFocus(true);
+            _dollarnode->setReadyToCook(true);
         }
 
         _avatar->setMovement(0);
@@ -816,194 +863,333 @@ void GameScene::preUpdate(float dt) {
             Vec2 enemyPos = enemy->getPosition();
             float distance = avatarPos.distance(enemyPos);
 
-            if (distance < CHASE_THRESHOLD) {
-                enemy->setIsChasing(true);
-                if (enemy->getnextchangetime() < 0) {
-                    int direction = (avatarPos.x > enemyPos.x) ? 1 : -1;
-                    enemy->setDirection(direction);
-                    enemy->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
-                }
-                if (enemy->getattacktime()) {
-                    // enemy->createAttack(*this);
-                    enemy->setattacktime(false);
-                    enemy->setshooted(false);
-                }
-            }
-            else if (distance >= CHASE_THRESHOLD && enemy->isChasing()) {
-                enemy->setIsChasing(false);
-            }
+            enemy->updatePlayerDistance(_avatar->getPosition());
+			if (enemy->getattacktime()) {
+				auto res = enemy->createAttack(_assets, _scale);
+				addObstacle(std::get<0>(res), std::get<1>(res));
+				enemy->setattacktime(false);
+				enemy->setshooted(false);
+			}
+
             if (enemy->getHealth() <= 0) {
                 removeEnemy(enemy.get());
             }
             else {
-            //enemy animations. If enemy->activeAction is not active, activate the current action.
-                if (!enemy->isActivated()) {
-                    if (enemy->getActiveAction() == "") continue;
-                    enemy->setActivated(true);
-                    
+                std::string actionKey = enemy->getActiveAction() + enemy->getId();
+
+                //pausing shit
+                //if (enemy->getPaused() && !_actionManager->isPaused(actionKey)) {
+                //    CULog("Pausing");
+                //    enemy->getSpriteNode()->setFrame(enemy->getPausedFrame());
+                //    _actionManager->pauseAllActions(enemy->getSceneNode());
+                //}
+                //else if (!enemy->getPaused() && _actionManager->isPaused(actionKey)){
+                //    CULog("Unpausing");
+                //    enemy->getSpriteNode()->setFrame(enemy->getActiveFrame());
+                //    _actionManager->unpauseAllActions(enemy->getSceneNode());
+                //}
+
+                if ((enemy->getActiveAction() != "" && !_actionManager->isActive(actionKey)) || enemy->getPriority() > enemy->getActivePriority())
+                {
                     _actionManager->clearAllActions(enemy->getSceneNode());
-                    std::string actionName = enemy->getActiveAction();
+                    std::string actionName = enemy->getRequestedAction();
                     enemy->animate(actionName);
                     auto action = enemy->getAction(actionName);
-                    if (enemy->usesID()) {
-                        actionName += enemy->getId();
-                    }
-                    _actionManager->activate(actionName, action, enemy->getSceneNode());
-                }
-                else {
-                    if (!_actionManager->isActive(enemy->getActiveAction() + (enemy->usesID() ? enemy->getId() : ""))) {
-						enemy->setFinished(true);
-                        enemy->setActivated(false);
-					}
+                    _actionManager->activate(actionName + enemy->getId(), action, enemy->getSceneNode());
                 }
             }
             enemy->update(dt);
+          
         }
-    }
-    if (_Bull != nullptr && !_Bull->isRemoved()) {
-        if (_Bull->getHealth() <= 0) {
-            _worldnode->removeChild(_Bull->getSceneNode());
-            _Bull->setDebugScene(nullptr);
-            _Bull->markRemoved(true);
-        }
-        if (_Bull->getangrytime() > 0 && _Bull->getknockbacktime() <= 0) {
-            if (int(_Bull->getangrytime() * 10) % 2 < 1) {
-                _Bull->createAttack(*this);
-            }
-        }
-        if (_Bull->getshake() && _Bull->getknockbacktime() <= 0) {
-            _Bull->setshake(false);
-			_Bull->createAttack2(*this);
-		}
-        if (_Bull->getshoot()) {
-            _Bull->setshoot(false);
-            _Bull->createAttack3(*this);
-        }
-        if (!_Bull->isChasing()) {
-            Vec2 BullPos = _Bull->getPosition();
-            float distance = avatarPos.distance(BullPos);
-            if (_Bull->getnextchangetime() < 0) {
-                int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
-                _Bull->setDirection(direction);
-                _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
-            }
-        }
-        _Bull->update(dt);
-    }
-    if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
-        if (_ShrimpRice->getHealth() <= 0) {
-            _worldnode->removeChild(_ShrimpRice->getSceneNode());
-            _ShrimpRice->setDebugScene(nullptr);
-            _ShrimpRice->markRemoved(true);
-        }
-        
-        if (!_ShrimpRice->isChasing()) {
-            Vec2 BullPos = _ShrimpRice->getPosition();
-            float distance = avatarPos.distance(BullPos);
-            if (_ShrimpRice->getnextchangetime() < 0) {
-                int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
-                _ShrimpRice->setDirection(direction);
-                _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
-            }
-        }
-        _ShrimpRice->update(dt);
     }
 
-    if (_Bull != nullptr) {
-        _BullactionManager->update(dt);
-        if (_Bull->getangrytime()>0) {
-            if (!_BullactionManager->isActive("bullStunned")) {
-                _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                auto bullStunned = _Bull->getAction("bullStunned");
-                _BullactionManager->activate("bullStunned", bullStunned, _Bull->getSceneNode());
+
+        if (_Bull != nullptr && !_Bull->isRemoved()) {
+            if (_Bull->getHealth() <= 0) {
+                _worldnode->removeChild(_Bull->getSceneNode());
+                _Bull->setDebugScene(nullptr);
+                _Bull->markRemoved(true);
             }
-            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                _Bull->animate("bullStunned");
+            if (_Bull->getangrytime() > 0 && _Bull->getknockbacktime() <= 0) {
+                if (int(_Bull->getangrytime() * 10) % 2 < 1) {
+                    _Bull->createAttack(*this);
+                }
             }
+            if (_Bull->getshake() && _Bull->getknockbacktime() <= 0) {
+                _Bull->setshake(false);
+                _Bull->createAttack2(*this);
+            }
+            if (_Bull->getshoot()) {
+                _Bull->setshoot(false);
+                _Bull->createAttack3(*this);
+            }
+            if (!_Bull->isChasing()) {
+                Vec2 BullPos = _Bull->getPosition();
+                float distance = avatarPos.distance(BullPos);
+                if (_Bull->getnextchangetime() < 0) {
+                    int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
+                    _Bull->setDirection(direction);
+                    _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+                }
+            }
+            _Bull->update(dt);
         }
-        else if (_Bull->isChasing() && ((_Bull->getPosition().x < 15 && _Bull->getDirection() == -1) || _Bull->getPosition().x > 35 && _Bull->getDirection() == 1)) {
-            if (!_BullactionManager->isActive("bullAttack")){
-                _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                auto bullAttack = _Bull->getAction("bullAttack");
-                _BullactionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
+        if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
+            if (_ShrimpRice->getHealth() <= 0) {
+                _worldnode->removeChild(_ShrimpRice->getSceneNode());
+                _ShrimpRice->setDebugScene(nullptr);
+                _ShrimpRice->markRemoved(true);
             }
-            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                _Bull->animate("bullAttack");
+
+            if (!_ShrimpRice->isChasing()) {
+                Vec2 BullPos = _ShrimpRice->getPosition();
+                float distance = avatarPos.distance(BullPos);
+                if (_ShrimpRice->getnextchangetime() < 0) {
+                    int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
+                    _ShrimpRice->setDirection(direction);
+                    _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+                }
             }
-        }
-        else if (_Bull->getturing() > 0) {
-            if (!_BullactionManager->isActive("bullTurn")) {
-                _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                auto bullTurn = _Bull->getAction("bullTurn");
-                _BullactionManager->activate("bullTurn", bullTurn, _Bull->getSceneNode());
-            }
-            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                _Bull->animate("bullTurn");
-            }
-        }
-        else if (_Bull->getsprintpreparetime() <= 0 && _Bull->getknockbacktime() <= 0) {
-            if (!_BullactionManager->isActive("bullRun")) {
-                _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                auto bullRun = _Bull->getAction("bullRun");
-                _BullactionManager->activate("bullRun", bullRun, _Bull->getSceneNode());
-            }
-            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                _Bull->animate("bullRun");
-            }
-        }
-        else if ( _Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0) {
-            if (!_BullactionManager->isActive(_Bull->getattacktype())) {
-                _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                auto bullTelegraph = _Bull->getAction(_Bull->getattacktype());
-                _BullactionManager->activate(_Bull->getattacktype(), bullTelegraph, _Bull->getSceneNode());
-            }
-            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                _Bull->animate(_Bull->getattacktype());
-            }
+            _ShrimpRice->update(dt);
         }
 
+    if (!_overrideAnim) {
+        if (_Bull != nullptr) {
+            _BullactionManager->update(dt);
+            if (_Bull->getangrytime() > 0) {
+                if (!_BullactionManager->isActive("bullStunned")) {
+                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                    auto bullStunned = _Bull->getAction("bullStunned");
+                    _BullactionManager->activate("bullStunned", bullStunned, _Bull->getSceneNode());
+                }
+                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                    _Bull->animate("bullStunned");
+                }
+            }
+            else if (_Bull->isChasing() && ((_Bull->getPosition().x < 15 && _Bull->getDirection() == -1) || _Bull->getPosition().x > 35 && _Bull->getDirection() == 1)) {
+                if (!_BullactionManager->isActive("bullAttack")) {
+                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                    auto bullAttack = _Bull->getAction("bullAttack");
+                    _BullactionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
+                }
+                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                    _Bull->animate("bullAttack");
+                }
+            }
+            else if (_Bull->getturing() > 0) {
+                if (!_BullactionManager->isActive("bullTurn")) {
+                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                    auto bullTurn = _Bull->getAction("bullTurn");
+                    _BullactionManager->activate("bullTurn", bullTurn, _Bull->getSceneNode());
+                }
+                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                    _Bull->animate("bullTurn");
+                }
+            }
+            else if (_Bull->getsprintpreparetime() <= 0 && _Bull->getknockbacktime() <= 0) {
+                if (!_BullactionManager->isActive("bullRun")) {
+                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                    auto bullRun = _Bull->getAction("bullRun");
+                    _BullactionManager->activate("bullRun", bullRun, _Bull->getSceneNode());
+                }
+                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                    _Bull->animate("bullRun");
+                }
+            }
+            else if (_Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0) {
+                if (!_BullactionManager->isActive(_Bull->getattacktype())) {
+                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                    auto bullTelegraph = _Bull->getAction(_Bull->getattacktype());
+                    _BullactionManager->activate(_Bull->getattacktype(), bullTelegraph, _Bull->getSceneNode());
+                }
+                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                    _Bull->animate(_Bull->getattacktype());
+                }
+            }
 
-        
+
+
+        }
+
+        if (_ShrimpRice != nullptr) {
+            _SHRactionManager->update(dt);
+
+            if (_ShrimpRice->getattackcombo() > 0) {
+                if (!_SHRactionManager->isActive("SFR_Attack")) {
+                    auto SFR_Attack = _ShrimpRice->getAction("SFR_Attack");
+                    _SHRactionManager->activate("SFR_Attack", SFR_Attack, _ShrimpRice->getSceneNode());
+                }
+                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                    _ShrimpRice->animate("SFR_Attack");
+                }
+            }
+            else if (_ShrimpRice->getWheelofDoom() > 0) {
+                if (!_SHRactionManager->isActive("SFRWheelofDoom")) {
+                    auto SFRWheelofDoom = _ShrimpRice->getAction("SFRWheelofDoom");
+                    _SHRactionManager->activate("SFRWheelofDoom", SFRWheelofDoom, _ShrimpRice->getSceneNode());
+                }
+                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                    _ShrimpRice->animate("SFRWheelofDoom");
+                }
+            }
+            else if (_ShrimpRice->getknockbacktime() <= 0) {
+                if (!_SHRactionManager->isActive("SFR_Move")) {
+                    auto SFR_Move = _ShrimpRice->getAction("SFR_Move");
+                    _SHRactionManager->activate("SFR_Move", SFR_Move, _ShrimpRice->getSceneNode());
+                }
+                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                    _ShrimpRice->animate("SFR_Move");
+                }
+            }
+
+        }if (_Bull != nullptr && !_Bull->isRemoved()) {
+            if (_Bull->getHealth() <= 0) {
+                _worldnode->removeChild(_Bull->getSceneNode());
+                _Bull->setDebugScene(nullptr);
+                _Bull->markRemoved(true);
+            }
+            if (_Bull->getangrytime() > 0 && _Bull->getknockbacktime() <= 0) {
+                if (int(_Bull->getangrytime() * 10) % 2 < 1) {
+                    _Bull->createAttack(*this);
+                }
+            }
+            if (_Bull->getshake() && _Bull->getknockbacktime() <= 0) {
+                _Bull->setshake(false);
+                _Bull->createAttack2(*this);
+            }
+            if (_Bull->getshoot()) {
+                _Bull->setshoot(false);
+                _Bull->createAttack3(*this);
+            }
+            if (!_Bull->isChasing()) {
+                Vec2 BullPos = _Bull->getPosition();
+                float distance = avatarPos.distance(BullPos);
+                if (_Bull->getnextchangetime() < 0) {
+                    int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
+                    _Bull->setDirection(direction);
+                    _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+                }
+            }
+            _Bull->update(dt);
+        }
+        if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
+            if (_ShrimpRice->getHealth() <= 0) {
+                _worldnode->removeChild(_ShrimpRice->getSceneNode());
+                _ShrimpRice->setDebugScene(nullptr);
+                _ShrimpRice->markRemoved(true);
+            }
+
+            if (!_ShrimpRice->isChasing()) {
+                Vec2 BullPos = _ShrimpRice->getPosition();
+                float distance = avatarPos.distance(BullPos);
+                if (_ShrimpRice->getnextchangetime() < 0) {
+                    int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
+                    _ShrimpRice->setDirection(direction);
+                    _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+                }
+            }
+            _ShrimpRice->update(dt);
+        }
+
+        if (_Bull != nullptr) {
+            _BullactionManager->update(dt);
+            if (_Bull->getangrytime() > 0) {
+                if (!_BullactionManager->isActive("bullStunned")) {
+                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                    auto bullStunned = _Bull->getAction("bullStunned");
+                    _BullactionManager->activate("bullStunned", bullStunned, _Bull->getSceneNode());
+                }
+                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                    _Bull->animate("bullStunned");
+                }
+            }
+            else if (_Bull->isChasing() && ((_Bull->getPosition().x < 15 && _Bull->getDirection() == -1) || _Bull->getPosition().x > 35 && _Bull->getDirection() == 1)) {
+                if (!_BullactionManager->isActive("bullAttack")) {
+                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                    auto bullAttack = _Bull->getAction("bullAttack");
+                    _BullactionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
+                }
+                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                    _Bull->animate("bullAttack");
+                }
+            }
+            else if (_Bull->getturing() > 0) {
+                if (!_BullactionManager->isActive("bullTurn")) {
+                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                    auto bullTurn = _Bull->getAction("bullTurn");
+                    _BullactionManager->activate("bullTurn", bullTurn, _Bull->getSceneNode());
+                }
+                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                    _Bull->animate("bullTurn");
+                }
+            }
+            else if (_Bull->getsprintpreparetime() <= 0 && _Bull->getknockbacktime() <= 0) {
+                if (!_BullactionManager->isActive("bullRun")) {
+                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                    auto bullRun = _Bull->getAction("bullRun");
+                    _BullactionManager->activate("bullRun", bullRun, _Bull->getSceneNode());
+                }
+                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                    _Bull->animate("bullRun");
+                }
+            }
+            else if (_Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0) {
+                if (!_BullactionManager->isActive(_Bull->getattacktype())) {
+                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                    auto bullTelegraph = _Bull->getAction(_Bull->getattacktype());
+                    _BullactionManager->activate(_Bull->getattacktype(), bullTelegraph, _Bull->getSceneNode());
+                }
+                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                    _Bull->animate(_Bull->getattacktype());
+                }
+            }
+
+
+
+        }
+
+        if (_ShrimpRice != nullptr) {
+            _SHRactionManager->update(dt);
+
+            if (_ShrimpRice->getattackcombo() > 0) {
+                if (!_SHRactionManager->isActive("SFR_Attack")) {
+                    auto SFR_Attack = _ShrimpRice->getAction("SFR_Attack");
+                    _SHRactionManager->activate("SFR_Attack", SFR_Attack, _ShrimpRice->getSceneNode());
+                }
+                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                    _ShrimpRice->animate("SFR_Attack");
+                }
+            }
+            else if (_ShrimpRice->getWheelofDoom() > 0) {
+                if (!_SHRactionManager->isActive("SFRWheelofDoom")) {
+                    auto SFRWheelofDoom = _ShrimpRice->getAction("SFRWheelofDoom");
+                    _SHRactionManager->activate("SFRWheelofDoom", SFRWheelofDoom, _ShrimpRice->getSceneNode());
+                }
+                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                    _ShrimpRice->animate("SFRWheelofDoom");
+                }
+            }
+            else if (_ShrimpRice->getknockbacktime() <= 0) {
+                if (!_SHRactionManager->isActive("SFR_Move")) {
+                    auto SFR_Move = _ShrimpRice->getAction("SFR_Move");
+                    _SHRactionManager->activate("SFR_Move", SFR_Move, _ShrimpRice->getSceneNode());
+                }
+                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                    _ShrimpRice->animate("SFR_Move");
+                }
+            }
+
+        }
     }
-
-    if (_ShrimpRice != nullptr) {
-        _SHRactionManager->update(dt);
-        
-        if (_ShrimpRice->getattackcombo() > 0) {
-            if (!_SHRactionManager->isActive("SFR_Attack")) {
-                auto SFR_Attack = _ShrimpRice->getAction("SFR_Attack");
-                _SHRactionManager->activate("SFR_Attack", SFR_Attack, _ShrimpRice->getSceneNode());
-            }
-            if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                _ShrimpRice->animate("SFR_Attack");
-            }
-        }     
-        else if (_ShrimpRice->getWheelofDoom() > 0) {
-            if (!_SHRactionManager->isActive("SFRWheelofDoom")) {
-                auto SFRWheelofDoom = _ShrimpRice->getAction("SFRWheelofDoom");
-                _SHRactionManager->activate("SFRWheelofDoom", SFRWheelofDoom, _ShrimpRice->getSceneNode());
-            }
-            if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                _ShrimpRice->animate("SFRWheelofDoom");
-            }
-        }
-        else if (_ShrimpRice->getknockbacktime() <= 0) {
-            if (!_SHRactionManager->isActive("SFR_Move")) {
-                auto SFR_Move = _ShrimpRice->getAction("SFR_Move");
-                _SHRactionManager->activate("SFR_Move", SFR_Move, _ShrimpRice->getSceneNode());
-            }
-            if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                _ShrimpRice->animate("SFR_Move");
-            }
-		}
-        
-    }
+    
 
     if ((_afterimages.size() > 4 || (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() > _avatar->getFloatyFrames())) && !_afterimages.empty()) {
         std::shared_ptr<scene2::SceneNode> afterimage = _afterimages.front();
         _afterimages.erase(_afterimages.begin());
         removeChild(afterimage);
     }
+     
+    _actionManager->update(dt);
 }
 
 
@@ -1044,6 +1230,31 @@ void GameScene::fixedUpdate(float step) {
         std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
         _healthBarForeground->setScissor(scissor);
     }
+    if (_cookBarFill != nullptr) {
+        float meterPercentage = _avatar->getMeter() / 100.0f;
+        float totalWidth = _cookBarFill->getWidth();
+        float height = _cookBarFill->getHeight();
+        float clipWidth = totalWidth * meterPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _cookBarFill->setScissor(scissor);
+    }
+    if (_BullhealthBarForeground != nullptr && _Bull != nullptr) {
+        _healthPercentage = _Bull->getHealth() / 100;
+        float totalWidth = _BullhealthBarForeground->getWidth();
+        float height = _BullhealthBarForeground->getHeight();
+        float clipWidth = totalWidth * _healthPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _BullhealthBarForeground->setScissor(scissor);
+    }
+    if (_SFRhealthBarForeground != nullptr && _ShrimpRice != nullptr) {
+        _healthPercentage = _ShrimpRice->getHealth() / 100;
+        float totalWidth = _SFRhealthBarForeground->getWidth();
+        float height = _SFRhealthBarForeground->getHeight();
+        float clipWidth = totalWidth * _healthPercentage;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
+        _SFRhealthBarForeground->setScissor(scissor);
+    }
+
     if (_slowed) {
         step = step / 15;
     }
@@ -1060,17 +1271,25 @@ void GameScene::fixedUpdate(float step) {
             // _camera->setZoom(2.0);
             // _camera->setZoom(1.5);
         }
-        else if (currentLevel == level1) {
-            _camera->setZoom(2.0);
+        else if (currentLevel == level2) {
+            _camera->setZoom(210.0 / 40.0);
+        }
+        else  if (currentLevel == level3) {
+            _camera->setZoom(210.0 / 40.0);
         }
         else {
-            _camera->setZoom(1.4);
+            _camera->setZoom(2.0);
         }
 
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
+        //cugl::Vec3 mapMin = Vec3(SCENE_WIDTH / 2, SCENE_HEIGHT / 2, 0);
+        //cugl::Vec3 mapMax = Vec3(1400 - SCENE_WIDTH / 2, 900 - SCENE_HEIGHT / 2, 0); //replace magic numbers
+        /*target.clamp(mapMin, mapMax);*/
+
         cugl::Vec3 pos = _camera->getPosition();
 
         Rect viewport = _camera->getViewport();
+
         Vec2 worldPosition = Vec2(pos.x - viewport.size.width / 2 + 140,
             pos.y + viewport.size.height / 2 - 50);
 
@@ -1082,13 +1301,19 @@ void GameScene::fixedUpdate(float step) {
         pos = _avatar->getPosition() * _scale;
         _camera->setPosition(pos);
         _camera->update();
-        _dollarnode->setPosition(pos);
+        //_dollarnode->setPosition(pos);
     }
     if (_avatar->getHealth() <= 0) {
         setFailure(true);
     }
     if (_Bull != nullptr && _Bull->getHealth() <= 0) {
         setComplete(true);
+    }
+
+    for (auto& enemy : _enemies) {
+        if (enemy != nullptr && !enemy->isRemoved()) {
+            enemy->fixedUpdate(step);
+		}
     }
     _world->update(step);
 }
@@ -1161,12 +1386,12 @@ void GameScene::postUpdate(float remain) {
     else if (_countdown == 0) {
         if (_failed == false) {
 
-            if (currentLevel == level1) {
-                loadLevel(level2);
+            if (currentLevel == _level_model) {
+                currentLevel = level2;
                 reset();
             }
             else if (currentLevel == level3) {
-                currentLevel = level1;
+                currentLevel = _level_model;
                 reset();
             }
             else {
@@ -1592,6 +1817,125 @@ void GameScene::popup(std::string s, cugl::Vec2 pos) {
     _popups.push_back(std::make_tuple(popup, now));
 }
 
+/**Potentially saves and/or modifies the following information:
+chapter - int
+level - int
+night: {
+    location_x_player - float
+	location_y_player - float
+	health_player - float
+    meter_player - float
+	for each enemy type:
+        location_x_type - float array
+		location_y_type - float array 
+		health_enemy_type - float array
+}
+
+Retains the following from previous save file: 
+day { ... }
+persistent { ... }
+*/
+
+void GameScene::save() {
+    /*std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });*/
+
+    //Should only change nighttime save data unless level was completed, in which case change level/chapter accordingly.
+    std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });
+
+    auto reader = JsonReader::alloc(path);
+
+    std::shared_ptr<JsonValue> prev_json = reader->readJson();
+    reader->close();
+
+    //write basic info.
+    //placeholders
+
+    std::shared_ptr<JsonValue> json = JsonValue::allocObject();
+
+    json->appendValue("chapter", 1.0f);
+    json->appendValue("level", 1.0f);
+    
+    std::shared_ptr<JsonValue> night = JsonValue::allocObject();
+    
+    night->appendValue("location_x_player", _avatar->getPosition().x);
+    night->appendValue("location_y_player", _avatar->getPosition().y);
+    night->appendValue("health_player", _avatar->getHealth());
+
+    std::vector<std::string> types = { "egg", "carrot", "shrimp", "rice", "beef" };
+    for (auto t = types.begin(); t != types.end(); t++) {
+        std::string type = *t;
+        night->appendArray("location_x_" + type);
+        night->appendArray("location_y_" + type);
+        night->appendArray("health_" + type);
+    }
+    
+    for (auto& e : _enemies) {
+        if (e->isRemoved()) {
+			continue;
+		}
+        std::string type = EnemyModel::typeToStr(e->getType());
+		night->insertValue(0, "location_x_" + type, e->getPosition().x);
+        night->insertValue(0, "location_y_" + type, e->getPosition().y);
+        night->insertValue(0, "health_" + type, e->getHealth());
+	}
+
+    json->appendChild("night", night);
+
+    std::shared_ptr<JsonValue> day = prev_json->get("day");
+    std::shared_ptr<JsonValue> persistent = prev_json->get("persistent");
+    if (persistent == nullptr || persistent->isNull()) {
+        persistent = JsonValue::allocObject();
+    }
+    else {
+        persistent->_parent = nullptr;
+    }
+    if (day == nullptr || day->isNull()) {
+        day = JsonValue::allocObject();
+    }
+    else {
+        day->_parent = nullptr;
+    }
+
+    json->appendChild("day", day);
+    json->appendChild("persistent", persistent);
+
+    json->appendValue("test", 0.0f);
+
+    auto writer = JsonWriter::alloc(path);
+
+    writer->writeJson(json);
+    
+    writer->close();
+}
+
+void GameScene::loadSave() {
+	/*std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });*/
+
+
+    //CULog("PATH");
+    //CULog(path.c_str());
+
+    std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });
+    auto reader = JsonReader::alloc(path);
+
+    std::shared_ptr<JsonValue> loaded_json = reader->readJson();
+
+    //Todo:: load enemies separately from level.
+
+    int chapter = loaded_json->getInt("chapter");
+    int level = loaded_json->getInt("level");
+
+    loadLevel(chapter, level);
+
+    reader->close();
+    
+}
+
+//load level with int specifiers
 void GameScene::loadLevel(int chapter, int level) {
     std::shared_ptr<Levels> level_obj = nullptr;
     if (chapter == 1) {

@@ -15,7 +15,7 @@
 #define BEEF_TEXTURE    "beef"
 #define CARROT_TEXTURE    "carrot"
 
-#define ENEMY_FORCE      0.75f
+#define ENEMY_FORCE      3.75f
 #define ENEMY_DAMPING    5.0f
 #define ENEMY_MAXSPEED   10.0f
 #define ENEMY_JUMP       2.5f
@@ -117,8 +117,6 @@ protected:
 
     cugl::Vec2 _lastVelocity;
 
-    
-
 
 public:
     EnemyModel() : Entity(), _sensorName(ENEMY_SENSOR_NAME) { }
@@ -178,7 +176,9 @@ public:
      * @param node The scene graph node representing this enemy.
      */
 
-    void setGrounded(bool value) { _isGrounded = value; };
+    void setGrounded(bool value) { 
+        _body->SetLinearDamping(40 * value);
+        _isGrounded = value; };
 
     std::string* getSensorName() { return &_sensorName; };
 
@@ -237,6 +237,8 @@ public:
      */
     void update(float dt) override;
 
+    void fixedUpdate(float step);
+
     /**
      * Applies the force to the body of this dude
      *
@@ -287,8 +289,6 @@ public:
     void setTargetPosition(cugl::Vec2 target) { _targetPosition = target; }
 
     std::string getState() { return _state; }
-
-    virtual std::string updateAnimation();
 
     void setActiveAction(std::string action) {
         Entity::setActiveAction(action);
@@ -358,17 +358,17 @@ public:
     static float typeToAggroRange(EnemyType type) {
 		switch (type) {
 		case EnemyType::shrimp:
-			return 10.0f;
+			return 20.0f;
 		case EnemyType::rice:
-			return 5.0f;
+			return 20.0f;
 		case EnemyType::rice_soldier:
-			return 1.0f;
+			return 20.0f;
 		case EnemyType::egg:
-			return 12.0f;
+			return 20.0f;
 		case EnemyType::carrot:
-			return 10.0f;
+			return 20.0f;
 		case EnemyType::beef:
-			return 10.0f;
+			return 20.0f;
 		}
 		return 0.0f;
 	};

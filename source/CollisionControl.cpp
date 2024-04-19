@@ -56,9 +56,9 @@ void GameScene::beginContact(b2Contact* contact) {
                 (_enemy->getSensorName() == fd1 && _enemy.get() != bd2) && bd2->getName() != "attack") {
                     _enemy->setGrounded(true);
             }
-
         }
     }
+
     if (_Bull != nullptr && _Bull->isChasing() && bd1 == _Bull.get() && bd2->getName() == WALL_NAME) {
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd2)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
@@ -205,21 +205,22 @@ void GameScene::beginContact(b2Contact* contact) {
             ((EnemyModel*)bd2)->setVulnerable(true);
         }
     }
-    else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
-        Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
-        Vec2 attackerPos = ((Attack*)bd2)->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-        int damage = ((EnemyModel*)bd1)->getHealth();
-        ((EnemyModel*)bd1)->takeDamage(_avatar->getAttack(), direction);
-        damage -= ((EnemyModel*)bd1)->getHealth();
+    //else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
+    //    Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
+    //    Vec2 attackerPos = ((Attack*)bd2)->getPosition();
+    //    int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+    //    int damage = ((EnemyModel*)bd1)->getHealth();
+    //    CULog("DAMAGE");
+    //    ((EnemyModel*)bd1)->takeDamage(_avatar->getAttack(), direction);
+    //    damage -= ((EnemyModel*)bd1)->getHealth();
 
-        _avatar->addMeter(5.0f);
+    //    _avatar->addMeter(5.0f);
 
-        if (damage > 0) popup(std::to_string((int)damage), enemyPos * _scale);
-        if (((EnemyModel*)bd1)->getHealth() <= 50) {
-            ((EnemyModel*)bd1)->setVulnerable(true);
-        }
-    }
+    //    if (damage > 0) popup(std::to_string((int)damage), enemyPos * _scale);
+    //    if (((EnemyModel*)bd1)->getHealth() <= 50) {
+    //        ((EnemyModel*)bd1)->setVulnerable(true);
+    //    }
+    //}
 
     // If we hit the "win" door, we are done
     if (!_failed && ((bd1 == _avatar.get() && bd2 == _goalDoor.get()) ||
@@ -245,7 +246,7 @@ void GameScene::beginContact(b2Contact* contact) {
             enemy->setActiveAction("riceAttack");
         }
         _avatar->takeDamage(34, direction);
-    }
+    }/*
 
     if (_ShrimpRice != nullptr && bd1->getName() == ATTACK_NAME && bd2->getName() == "shrimpBoss" && _ShrimpRice->getknockbacktime() <= 0) {
         Vec2 enemyPos = _ShrimpRice->getPosition();
@@ -280,7 +281,7 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 bullPos = _ShrimpRice->getPosition();
         int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
         _avatar->takeDamage(34, direction);
-    }
+    }*/
 }
 
 

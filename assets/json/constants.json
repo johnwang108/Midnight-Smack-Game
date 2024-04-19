@@ -1,6 +1,6 @@
 {
-    "entity" : "bull",
-    "animation" : "bullAttack",
+    "entity" : "su",
+    "animation" : "air_attack",
     "su": {
         "idle": {
             "sheet": "su_idle",
@@ -263,5 +263,12 @@
             "duration": 1.0
         }
     },
-    "carrot" : {}
+    "carrot" : {},
+
+    "environment": {
+        "1": {
+            "background": "empanadaBackground",
+            "music": "jump"
+        }
+    }
 }

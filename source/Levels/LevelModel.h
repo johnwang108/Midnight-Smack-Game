@@ -5,11 +5,11 @@
 #include <vector>
 #include <cugl/assets/CUAsset.h>
 #include <cugl/io/CUJsonReader.h>
-#include "/../Users/benlo/source/repos/Midnight-Smack-Folder/Midnight-Smack-Game/source/PFInput.h"
+#include "../PFInput.h"
 //#include "/../Users/benlo/source/repos/Midnight-Smack-Folder/Midnight-Smack-Game/source/PFAttack.h"
-#include "/../Users/benlo/source/repos/Midnight-Smack-Folder/Midnight-Smack-Game/source/PFDudeModel.h"
-#include "/../Users/benlo/source/repos/Midnight-Smack-Folder/Midnight-Smack-Game/source/Enemys/Enemy.h"
-#include "/../Users/benlo/source/repos/Midnight-Smack-Folder/Midnight-Smack-Game/source/Enemys/Bull.h"
+#include "../PFDudeModel.h"
+#include "../Enemys/Enemy.h"
+#include "../Enemys/Bull.h"
 #include "Levels.h"
 
 // using namespace cugl;
