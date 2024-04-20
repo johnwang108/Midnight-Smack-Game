@@ -19,5 +19,33 @@
       "station": "prep"
     }
   ],
-  "goals": []
+  "goals": [
+    {
+      "name": "Rush Order",
+      "type": "rush",
+      "time": 20,
+      "quantity": 1,
+      "accuracy": -1,
+      "ingredient": "cutCarrot",
+      "reward": "speed"
+    },
+    {
+      "name": "Carrot Mastery",
+      "type": "accuracy",
+      "time": -1,
+      "quantity": -1,
+      "accuracy": 0.7,
+      "ingredient": "cutCarrot",
+      "reward": "strength"
+    },
+    {
+      "name": "VIP Table",
+      "type": "rush",
+      "time": 60,
+      "quantity": 2,
+      "accuracy": -1,
+      "ingredient": "cutCarrot",
+      "reward": "dash"
+    }
+  ]
 }

@@ -20,7 +20,9 @@ private:
 	bool _finishedIngredients;
 	
 	std::vector<int> _bonusObjectives;
+	std::map<std::string, float> _ingredientAccuracy;
 
+	bool _objectiveStatus[3];
 
 
 protected:
