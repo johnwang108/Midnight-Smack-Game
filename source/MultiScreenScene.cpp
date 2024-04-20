@@ -281,8 +281,6 @@ void MultiScreenScene::readLevel(std::shared_ptr<JsonValue> leveljson) {
 	_dishToPrepare = leveljson->get("cooking")->asString();
 	_quota = leveljson->get("quota")->asInt();
 	_dayDuration = leveljson->get("duration")->asInt();
-	//todo load in bonus objectives
-	_bonusObjectives = {1};
 
 	std::shared_ptr<JsonReader> gestureReader = JsonReader::allocWithAsset("json/dayIngredientGestures.json");
 	std::shared_ptr<JsonValue> gestureVals = gestureReader->readJson();
@@ -335,6 +333,44 @@ void MultiScreenScene::readLevel(std::shared_ptr<JsonValue> leveljson) {
 	else {
 		CULogError("Events is not an array type");
 	}
+
+	//todo load in bonus objectives
+	_bonusObjectives = {};
+	std::shared_ptr<JsonValue> objectives = leveljson->get("goals");
+	if (objectives->type() == JsonValue::Type::ArrayType) {
+		for (int i = 0; i < objectives->size(); i++) {
+			std::shared_ptr<JsonValue> item = objectives->get(i);
+			if (item == nullptr) {
+				CULogError("Objective JSON Object %d is nullptr", i);
+				continue;
+			}
+
+			std::shared_ptr<DayObjective> newObjective = std::make_shared<DayObjective>();
+			newObjective->setComplete(false);
+			try {
+
+				newObjective->setId(i);
+				newObjective->setName(item->get("name")->asString());
+				newObjective->setType(item->get("type")->asString());
+				newObjective->setQuantity(item->get("quantity")->asInt());
+				newObjective->setReqTime(item->get("time")->asFloat());
+				newObjective->setReqAccuracy(item->get("accuracy")->asFloat());
+				newObjective->setTargetName(item->get("ingredient")->asString());
+				newObjective->setReward(item->get("reward")->asString());
+			}
+			catch (...) {
+				CULogError("Error creating objective %d", i);
+			}
+			_bonusObjectives.push_back(newObjective);
+		}
+	}
+	else {
+		CULogError("Objectives is not an array type");
+	}
+
+	CULog("hi");
+
+	
 }
  
 

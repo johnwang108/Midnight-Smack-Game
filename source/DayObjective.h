@@ -40,7 +40,7 @@ public:
 	void setName(std::string name) { _objectiveName = name; }
 
 	std::string getType() { return _type; }
-	void setString(std::string type) { _type = type; }
+	void setType(std::string type) { _type = type; }
 
 	std::string getTargetName() { return _targetName; }
 	void setTargetName(std::string targetName) { _targetName = targetName; }

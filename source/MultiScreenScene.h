@@ -5,6 +5,7 @@
 #include "PFInput.h"
 #include "PFDollarScene.h"
 #include "Ingredient.h"
+#include "DayObjective.h"
 #include <box2d/b2_world_callbacks.h>
 #include <box2d/b2_fixture.h>
 #include <unordered_set>
@@ -19,11 +20,8 @@ private:
 	std::map<int, std::vector<std::string>> _stationIngredients;
 	bool _finishedIngredients;
 	
-	std::vector<int> _bonusObjectives;
+	std::vector<std::shared_ptr<DayObjective>> _bonusObjectives;
 	std::map<std::string, float> _ingredientAccuracy;
-
-	bool _objectiveStatus[3];
-
 
 protected:
 	std::shared_ptr<cugl::AssetManager> _assets;
