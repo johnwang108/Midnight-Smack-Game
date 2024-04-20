@@ -273,12 +273,14 @@ public:
 
     virtual void setState(std::string state);
 
-    virtual std::string getNextState(std::string state);
+    virtual std::string getNextState(std::string state) { return ""; };
 
     /**Sets the predefined path limits, still wip */
     void setLimit(cugl::Spline2 limit) { _limit = limit; }
 
     std::string getState() { return _state; }
+
+    //void syncStateTimes();
 
     void setActiveAction(std::string action) {
         Entity::setActiveAction(action);
@@ -345,11 +347,11 @@ public:
         case EnemyType::rice_soldier:
             return buff::defense;
         case EnemyType::egg:
-            return buff::jump;
-        case EnemyType::carrot:
-            return buff::speed;
-        case EnemyType::beef:
             return buff::health;
+        case EnemyType::carrot:
+            return buff::jump;
+        case EnemyType::beef:
+            return buff::speed;
         }
         return buff::none;
     };

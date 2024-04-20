@@ -3,7 +3,7 @@
 #include "Enemy.h"
 
 #define BEEF_BURROW_TIME 30.0f
-#define BEEF_UNBURROW_TIME 30.0f
+#define BEEF_UNBURROW_TIME 10.0f
 #define BEEF_ATTACK_TIME 30.0f
 #define BEEF_SPEED 3.0f
 
@@ -41,6 +41,10 @@ public:
         if (res) {
             result->loadAnimationsFromConstant("beef", _assets);
         }
+
+        //manually add rise (dig reversed)
+        auto info = result->getInfo("beefDig");
+        result->addActionAnimation("beefRise", _assets->get<Texture>("beefDig"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 0.2, true);
         return res ? result : nullptr;
     }
 
@@ -51,7 +55,16 @@ public:
         if (res) {
             result->loadAnimationsFromConstant("beef", _assets);
         }
+
+        auto info = result->getInfo("beefDig");
+        result->addActionAnimation("beefRise", _assets->get<Texture>("beefDig"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 0.2, true);
         return res ? result : nullptr;
+    }
+
+    void markForDeletion() override {
+        if (_killMeCountdown != 0.0f) return;
+        EnemyModel::markForDeletion();
+        _killMeCountdown = 0.1;
     }
 
     void setLimit(cugl::Spline2 limit) { _limit = limit; }

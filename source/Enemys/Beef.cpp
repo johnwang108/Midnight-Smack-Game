@@ -29,6 +29,33 @@ bool Beef::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std:
 
 void Beef::update(float dt) {
 	EnemyModel::update(dt);
+    if (_state == "chasing") {
+        setRequestedActionAndPrio("beefIdle", 1);
+    }
+    else if (_state == "burrowing") {
+        int prio = 29;
+        if (getActiveAction() == "beefAttack") prio = 39;
+        setRequestedActionAndPrio("beefDig", prio);
+    }
+    else if (_state == "tracking") {
+        //cugl::Vec2 targetPos = _limit.nearestPoint(_distanceToPlayer.normalize() * std::min(_distanceToPlayer.length(), BEEF_SPEED));
+        /*cugl::Vec2 targetPos = _distanceToPlayer.normalize() * std::min(_distanceToPlayer.length(), BEEF_SPEED);*/
+        if (getActiveAction() == "beefMove" && getActiveAction() == "beefStartMove") setRequestedActionAndPrio("beefMove", 30);
+        else setRequestedActionAndPrio("beefStartMove", 31);
+    }
+    else if (_state == "unburrowing") {
+        setRequestedActionAndPrio("beefRise", 32);
+    }
+    else if (_state == "attacking") {
+        //todo: make attack hitbox way bigger
+        setRequestedActionAndPrio("beefAttack", 33);
+    }
+    else if (_state == "stunned") {
+        setRequestedActionAndPrio("beefHurt", 40);
+    }
+    else if (_state == "patrolling") {
+        setRequestedActionAndPrio("beefIdle", 1);
+    }
 }
 
 void Beef::fixedUpdate(float step) {
@@ -39,49 +66,25 @@ void Beef::fixedUpdate(float step) {
         velocity.x = 0;
     }
     else if (_state == "burrowing") {
-        //b2Filter filter = getFilterData();
-        //filter.maskBits = 0x0000;
-        //setFilterData(filter);
-        //setGravityScale(0);
-        //velocity.x = 0;
-        ////if ((_limit.nearestPoint(getPosition()) - getPosition()).length() > BEEF_SPEED) {
-        ////    velocity.y = BEEF_SPEED * SIGNUM((_limit.nearestPoint(getPosition()) - getPosition()).y);
-        ////}
-        //if ((projectOntoPath(getPosition()) - getPosition()).length() > BEEF_SPEED) {
-        //    velocity.y = BEEF_SPEED * SIGNUM((projectOntoPath(getPosition()) - getPosition()).y);
-        //}
-        //else velocity.y = (projectOntoPath(getPosition()) - getPosition()).y;
-
-        if (getHeight() > 0.2f) setHeight(getHeight() - 0.2f);
+        velocity.x = 0;
     }
     else if (_state == "tracking") {
-        //cugl::Vec2 targetPos = _limit.nearestPoint(_distanceToPlayer.normalize() * std::min(_distanceToPlayer.length(), BEEF_SPEED));
-        cugl::Vec2 targetPos = _distanceToPlayer.normalize() * std::min(_distanceToPlayer.length(), BEEF_SPEED);
-        velocity.x = targetPos.x;
-        velocity.y = targetPos.y;
+        velocity.x = _direction * BEEF_SPEED;
     }
     else if (_state == "unburrowing") {
         velocity.x = 0;
         velocity.y = 0;
     }
     else if (_state == "attacking") {
+        //todo: make attack hitbox way bigger
         velocity.x = 0;
-        setHeight(getHeight() + 0.2f);
     }
     else if (_state == "stunned") {
-        //b2Filter filter = getFilterData();
-        //filter.maskBits = 0xFFFF;
-        //setFilterData(filter);
-        //setGravityScale(1);
         velocity.x = 0;
     }
     else if (_state == "patrolling") {
         velocity.x = 0;
         velocity.y = 0;
-        //setGravityScale(1);
-        //b2Filter filter = getFilterData();
-        //filter.maskBits = 0xFFFF;
-        //setFilterData(filter);
     }
     resetDebug();
     _body->SetLinearVelocity(handleMovement(velocity));
@@ -90,53 +93,25 @@ void Beef::fixedUpdate(float step) {
 b2Vec2 Beef::handleMovement(b2Vec2 velocity) {
     velocity = EnemyModel::handleMovement(velocity);
     Vec2 newVelocity = Vec2(velocity.x, velocity.y);
-
-    //have to clamp velocity if going to leave the boundary.
-    //if we're tracking, and we're on the edge of the boundary, and we try to move in that direction. Have to clamp it
-    //if (_state == "tracking") {
-    //    get bounds of the capsule
-    //    cugl::Rect box = Rect(getPosition().x, getPosition().y, getWidth(), getHeight());
-    //    cugl::Rect newBox = box + newVelocity;
-
-    //        //detect if this movement will move us out
-    //    bool upperRight = false;
-    //    bool upperLeft = false;
-    //    bool lowerLeft = false;
-    //    bool lowerRight = false;
-    //    if (!_boundaries.contains(Vec2(newBox.getMaxX(), newBox.getMaxY()))) upperRight = true;
-    //    if (!_boundaries.contains(Vec2(newBox.getMinX(), newBox.getMaxY()))) upperLeft = true;
-    //    if (!_boundaries.contains(Vec2(newBox.getMinX(), newBox.getMinY()))) lowerLeft = true;
-    //    if (!_boundaries.contains(Vec2(newBox.getMaxX(), newBox.getMinY()))) lowerRight = true;
-
-    //    //TODO: THIS DOESN"T WORK WELL
-    //    if ((upperRight && upperLeft) || (lowerRight && lowerLeft)) newVelocity.y = 0;
-    //    if ((upperLeft && lowerLeft) || (upperRight && lowerRight)) newVelocity.x = 0;
-
-    //   
-    //    
-    //}
-
-    //velocity.x = newVelocity.x;
-    //velocity.y = newVelocity.y;
     return velocity;
 }
 
 void Beef::setState(std::string state) {
     EnemyModel::setState(state);
     if (state == "burrowing") {
-        _behaviorCounter = BEEF_BURROW_TIME;
+        _behaviorCounter = getActionDuration("beefDig");
     }
     else if (state == "tracking") {
         _behaviorCounter = -1;
     }
     else if (state == "unburrowing") {
-        _behaviorCounter = BEEF_UNBURROW_TIME;
+        _behaviorCounter = getActionDuration("beefRise");
     }
     else if (state == "attacking") {
-        _behaviorCounter = BEEF_BURROW_TIME;
+        _behaviorCounter = getActionDuration("beefAttack");
     }
     else if (state == "stunned") {
-        _behaviorCounter = 120;
+        _behaviorCounter = getActionDuration("beefHurt");
     }
 }
 
@@ -148,14 +123,14 @@ std::string Beef::getNextState(std::string state) {
         return "tracking";
     }
     else if (state == "tracking") {
-        if (abs(_distanceToPlayer.x) < 1.0f && _distanceToPlayer.length() < 4.0f) return "unburrowing";
+        if (abs(_distanceToPlayer.x) < 1.0f) return "unburrowing";
         else return "tracking";
     }
     else if (state == "unburrowing") {
         return "attacking";
     }
     else if (state == "attacking") {
-        return "stunned";
+        return "burrowing";
     }
     else if (state == "stunned") {
         return "burrowing";

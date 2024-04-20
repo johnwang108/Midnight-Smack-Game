@@ -82,6 +82,12 @@ void PlatformApp::onStartup() {
 void PlatformApp::onShutdown() {
     //_gameplay.save();
 
+    if (_currentScene == "night") {
+        _gameplay.save();
+    }
+    else if (_currentScene == "day"){
+        _multiScreen.save();
+    }
     _menu.dispose();
     _multiScreen.dispose();
     _loading.dispose();
@@ -364,16 +370,11 @@ void PlatformApp::transitionScenes() {
 		_currentScene = _gameplay.getTarget();
         _gameplay.setTarget("");
         if(_currentScene == "day") {
-            CULog("ASDF :)");
 			_multiScreen.setActive(true);
 			_multiScreen.focusCurr();
         }
         else if (_currentScene == "main_menu"){
 			_menu.setActive(true);
-        }
-        else {
-            CULog("ASDF :(");
-            CULog(_currentScene.c_str());
         }
         CULog("Transed");
         CULog("From gameplay");
@@ -415,6 +416,7 @@ void PlatformApp::transitionScenes() {
     }
 }
 
+
 void PlatformApp::loadSave() {
     std::string root = cugl::Application::get()->getSaveDirectory();
     std::string path = cugl::filetool::join_path({ root,"save.json" });
@@ -433,11 +435,14 @@ void PlatformApp::loadSave() {
         //load night
         _gameplay.dispose();
         _gameplay.initWithSave(_assets, _input, loadedSave);
-
+        _gameplay.setActive(true);
     }
     else {
         //load day
-
+        _multiScreen.dispose();
+        _multiScreen.init(_assets, _input);
+        _multiScreen.setActive(true);
+        _multiScreen.focusCurr();
     }
 
     reader->close();

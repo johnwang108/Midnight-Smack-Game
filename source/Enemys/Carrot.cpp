@@ -20,6 +20,7 @@ void Carrot::update(float dt) {
 }
 
 void Carrot::fixedUpdate(float step) {
+    CULog(_state.c_str());
     EnemyModel::fixedUpdate(step);
     b2Vec2 velocity = _body->GetLinearVelocity();
 
@@ -66,7 +67,7 @@ void Carrot::setState(std::string state) {
         _behaviorCounter = -1;
     }
     else if (state == "windup") {
-        _behaviorCounter = 60;
+        _behaviorCounter = 1.0f;
     }
     else if (state == "jumping") {
         _behaviorCounter = -1;

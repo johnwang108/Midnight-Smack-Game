@@ -788,7 +788,8 @@ void LevelModel::populate(GameScene& scene) {
 								float imageHeight = image->getHeight() / 3;
 								Size singularSpriteSize = Size(imageWidth, imageHeight);
 								// enemyPos.y -= 100.0f;
-								new_enemy = Beef::allocWithConstants(enemyPos, singularSpriteSize / (6 * scene.getScale()), scene.getScale(), _assets);
+								Size beefSize = cugl::Size(8.0f, 8.0f);
+								new_enemy = Beef::allocWithConstants(enemyPos, beefSize, scene.getScale(), _assets);
 								spritenode->setScale(0.1f);
 								new_enemy->setSceneNode(spritenode);
 								new_enemy->setDebugColor(DEBUG_COLOR);

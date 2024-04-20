@@ -187,6 +187,8 @@ protected:
 
     std::shared_ptr<LevelModel> _level_model = std::make_shared<LevelModel>();
 
+    std::vector<float> _persistentUpgrades;
+
 #pragma mark Internal Object Management
     /**
      * Lays out the game geography.

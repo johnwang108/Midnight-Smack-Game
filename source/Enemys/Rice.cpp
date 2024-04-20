@@ -26,7 +26,7 @@ bool Rice::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std:
 
 
 
-
+//Todo:: move animation requests into update
 void Rice::update(float dt) {
     //replace with enemy update
     EnemyModel::update(dt);
@@ -119,27 +119,24 @@ void Rice::setState(std::string state) {
     EnemyModel::setState(state);
     if (state == "chasing") {
         _behaviorCounter = 0;
-        return;
     }
     else if (state == "stunned") {
         _behaviorCounter = -1;
-        return;
     }
     else if (state == "patrollling") {
         _behaviorCounter = -1;
-        return;
     }
     else if (state == "yelling") {
-        _behaviorCounter = 60;
+        _behaviorCounter = getActionDuration("riceYell");
     }
     else if (state == "acknowledging") {
-        _behaviorCounter = 80;
+        _behaviorCounter = getActionDuration("riceAcknowledge");
     }
     else if (state == "pursuing") {
         _behaviorCounter = -1;
     }
     else if (state == "attacking") {
-        _behaviorCounter = -1;
+        _behaviorCounter = getActionDuration("riceAttack");
     }
 }
 

@@ -28,6 +28,13 @@ public:
         }
         return res ? result : nullptr;
     }
+
+    void markForDeletion() override {
+        if (_killMeCountdown != 0.0f) return;
+        EnemyModel::markForDeletion();
+        _killMeCountdown = 0.1;
+    }
+
     void update(float dt) override;
 
     void fixedUpdate(float step) override;

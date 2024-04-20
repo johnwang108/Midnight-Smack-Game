@@ -45,6 +45,12 @@ private:
         return res ? result : nullptr;
     }
 
+    void markForDeletion() override {
+        if (_killMeCountdown != 0.0f) return;
+        EnemyModel::markForDeletion();
+        _killMeCountdown = 0.1;
+    }
+
     void setLimit(cugl::Spline2 limit) {_limit = limit;}
 
     Spline2 getLimit() {return _limit;}

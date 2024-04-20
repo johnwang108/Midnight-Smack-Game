@@ -71,13 +71,13 @@ void Egg::setState(std::string state) {
         _behaviorCounter = -1;
     }
     else if (state == "windup") {
-        _behaviorCounter = 400;
+        _behaviorCounter = 2.0f;
     }
     else if (state == "spitting") {
         _behaviorCounter = 1;
     }
     else if (state == "short_windup") {
-        _behaviorCounter = 200;
+        _behaviorCounter = 1.0f;
     }
 }
 

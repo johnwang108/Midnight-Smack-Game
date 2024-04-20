@@ -71,12 +71,13 @@
 #define DUDE_MANUEL_MAXSPEED   5.0f
 
 #define MAX_METER 100.0f
+#define MAX_HEALTH 100.0f
 
 #define METER_COST 60.0f
 #define floatyFrames   10
 
-/** Cooldown (in animation frames) for shooting */
-#define DASH_COOLDOWN  20
+/** Cooldown (in animation frames) for dashing */
+#define DASH_COOLDOWN  60
 
 
 #pragma mark -
@@ -172,6 +173,7 @@ protected:
     float _dashCooldown;
     bool _contactingWall;
     bool _isOnDangerousGround;
+    bool _isInputWalk;
 
     //float _health;
 
@@ -224,6 +226,7 @@ protected:
     float _meterGainUpgrade;
     float _hitStunUpgrade;
 
+    bool _rechargingDash;
 	/**
 	* Redraws the outline of the physics fixtures to the debug node
 	*
@@ -623,6 +626,8 @@ public:
      * @param delta Number of seconds since last animation frame
      */
     void update(float dt) override;
+
+    void fixedUpdate(float step);
     
     /**
      * Applies the force to the body of this dude
@@ -663,15 +668,23 @@ public:
     bool useMeter(float f = METER_COST);
 
     std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale);
+    std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAirAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale, float angle);;
 
     float getLastDamageTime() { return _lastDamageTime; };
+
     float getHealthCooldown() { return _healthCooldown; };
+
+    void setHealthUpgrade( float f ) { _healthUpgrade = f; };
+
+    void gainHealth(float f);
 
     int getDashCooldown() {return _dashCooldown; };
 
     int getDashCooldownMax() { return DASH_COOLDOWN; }
 
     int getFloatyFrames() { return floatyFrames; };
+
+    void setInputWalk(bool b) { _isInputWalk = b; };
 
     float getAttackBuff() {
         if (_duration > 0) {

@@ -60,10 +60,6 @@
         "carrotEnemy": {
             "file": "textures/carrotEnemy.png"
         },
-
-        "cutCarrot": {
-            "file": "textures/day/food/carrot.png"
-        },
         "cutCarrot": {
             "file": "textures/day/food/cutCarrot.png"
         },
@@ -389,6 +385,30 @@
         },
         "beefIdle": {
             "file": "textures/Sheets/Enemies/Beef/beefIdle.png"
+        },
+        "beefDig": {
+            "file": "textures/Sheets/Enemies/Beef/beefDig.png"
+        },
+        "beefHurt": {
+            "file": "textures/Sheets/Enemies/Beef/beefHurt.png"
+        },
+        "beefDeath": {
+            "file": "textures/Sheets/Enemies/Beef/beefDeath.png"
+        },
+        "beefAttack": {
+            "file": "textures/Sheets/Enemies/Beef/beefAttack.png"
+        },
+        "beefDigDirt": {
+            "file": "textures/Sheets/Enemies/Beef/beefDigDirt.png"
+        },
+        "beefIdleDirt": {
+            "file": "textures/Sheets/Enemies/Beef/beefIdleDirt.png"
+        },
+        "beefStartMove": {
+            "file": "textures/Sheets/Enemies/Beef/beefStartMove.png"
+        },
+        "beefMove": {
+            "file": "textures/Sheets/Enemies/Beef/beefMove.png"
         },
         "riceAttack": {
             "file": "textures/Sheets/Enemies/Rice/riceAttack.png"

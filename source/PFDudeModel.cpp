@@ -377,7 +377,6 @@ void DudeModel::applyForce(float h, float v) {
         _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
     }
     if (canDash() && getDashNum() > 0) {
-        //b2Vec2 force(DUDE_DASH*SIGNUM(h), DUDE_DASH * SIGNUM(v) * .8);
         b2Vec2 force(SIGNUM(h), SIGNUM(v) * .8);
         setVY(0);
         setVX(0);
@@ -397,8 +396,122 @@ void DudeModel::update(float dt) {
 
     Entity::update(dt);
 
+    //if (_duration > 0) {
+    //    _duration -= dt;
+    //    _duration = std::max(0.0f, _duration);
+    //    //reset buff state if duration is over
+    //    if (_duration == 0) {
+    //        resetBuff();
+    //    }
+    //    else {
+    //        _node->setColor(Color4::BLACK);
+    //    }
+    //}
+    //else if (_hasSuper) {
+    //    _node->setColor(Color4::RED);
+    //}
+    //else {
+    //    _node->setColor(Color4::WHITE);
+    //}
+
+
+    //if (_numberOfTouchingEnemies > 0) {
+    //    takeDamage(34, 0);
+    //}
+
+    //take damage anim
+    if (_knockbackTime > 0) {
+        if (int(_knockbackTime * 10) % 2 < 1) {
+            _node->setVisible(true);
+        }
+        else {
+            _node->setVisible(false);
+        }
+        _knockbackTime -= dt;
+        if (_node != nullptr) {
+            _node->setPosition(getPosition() * _drawScale);
+            _node->setAngle(getAngle());
+        }
+        //return;
+    }
+    else {
+        _lastDamageTime += dt;
+    }
+
+    if (!isGrounded()) {
+        //todo hurt anim
+        //if (_body->GetLinearVelocity().y > 0) {
+        //    setRequestedActionAndPrio("jump_up", 20);
+        //}
+        //else if (_body->GetLinearVelocity().y > 0) {
+        //    setRequestedActionAndPrio("jump_down", 20);
+        //}
+        //else if (isShooting()) {
+
+        //}
+    }
+    else {
+        /*if (_isInputWalk) {
+            setRequestedActionAndPrio("walk", 20);
+        }
+        else if (isJumping()) {
+            setRequestedActionAndPrio("jump__ready", 60);
+        }
+        else if (!_isInputWalk && _body->GetLinearVelocity().x == 0 && isGrounded()) {
+            setRequestedActionAndPrio("idle", 1);
+        }
+        else if (isShooting()) {
+            setRequestedActionAndPrio("shoot", 20);
+        }
+        else {
+            setRequestedActionAndPrio("idle", 20);
+        }*/
+    }
+    
+    
+
+    //// Apply cooldowns
+    //if (isJumping()) {
+    //    _jumpCooldown = JUMP_COOLDOWN;
+    //}
+    //else {
+    //    // Only cooldown while grounded
+    //    _jumpCooldown = (_jumpCooldown > 0 ? _jumpCooldown - 1 : 0);
+    //}
+
+    //if (isShooting()) {
+    //    _shootCooldown = SHOOT_COOLDOWN;
+    //}
+    //else {
+    //    _shootCooldown = (_shootCooldown > 0 ? _shootCooldown - 1 : 0);
+    //}
+    //if (canDash() && _dashCooldown == 0) {
+    //    _dashCooldown = DASH_COOLDOWN;
+    //    _rechargingDash = false;
+    //    deltaDashNum(-1);
+    //}
+    //else {
+    //    //if (_dashCooldown > 0) {
+    //    //    if (isGrounded()) _rechargingDash = true;
+    //    //    if (_rechargingDash) _dashCooldown = (_dashCooldown > 0 ? _dashCooldown - 1 : 0;
+    //    //}
+    //    _dashCooldown = _dashCooldown > 0 ? _dashCooldown - 1 : 0.0;
+    //    if (getDashNum() == 0 && _dashCooldown <= 0 && isGrounded()) {
+
+    //        setDashNum(1);
+    //        //TODO: remove hardcode limit on one dash
+    //    }
+    //}
+
+    if (_node != nullptr) {
+        _node->setPosition(getPosition() * _drawScale);
+        _node->setAngle(getAngle());
+    }
+}
+
+void DudeModel::fixedUpdate(float step) {
     if (_duration > 0) {
-        _duration -= dt;
+        _duration -= step;
         _duration = std::max(0.0f, _duration);
         //reset buff state if duration is over
         if (_duration == 0) {
@@ -420,23 +533,13 @@ void DudeModel::update(float dt) {
         takeDamage(34, 0);
     }
 
-    if (_knockbackTime > 0) {
-        if (int(_knockbackTime * 10) % 2 < 1) {
-            _node->setVisible(true);
-        }
-        else {
-            _node->setVisible(false);
-        }
-        _knockbackTime -= dt;
-        if (_node != nullptr) {
-            _node->setPosition(getPosition() * _drawScale);
-            _node->setAngle(getAngle());
-        }
-        //return;
+    if (_dashCooldown > DASH_COOLDOWN - floatyFrames) {
+        setGravityScale(0);
     }
     else {
-        _lastDamageTime += dt;
+        setGravityScale(1);
     }
+
 
     if (_dashCooldown > DASH_COOLDOWN - floatyFrames) {
         setGravityScale(0);
@@ -462,22 +565,20 @@ void DudeModel::update(float dt) {
     }
     if (canDash() && _dashCooldown == 0) {
         _dashCooldown = DASH_COOLDOWN;
+        _rechargingDash = false;
         deltaDashNum(-1);
     }
     else {
-        _dashCooldown = (_dashCooldown > 0 ? _dashCooldown - 1 : 0);
+        //if (_dashCooldown > 0) {
+        //    if (isGrounded()) _rechargingDash = true;
+        //    if (_rechargingDash) _dashCooldown = (_dashCooldown > 0 ? _dashCooldown - 1 : 0;
+        //}
+        _dashCooldown = _dashCooldown > 0 ? _dashCooldown - 1 : 0.0;
         if (getDashNum() == 0 && _dashCooldown <= 0 && isGrounded()) {
             
             setDashNum(1);
             //TODO: remove hardcode limit on one dash
         }
-    }
-
-
-
-    if (_node != nullptr) {
-        _node->setPosition(getPosition() * _drawScale);
-        _node->setAngle(getAngle());
     }
 }
 
@@ -647,3 +748,41 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeMo
 
     return std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>>(attack, sprite);
 }
+
+std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeModel::createAirAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale, float angle) {
+    Vec2 pos = getPosition();
+    Vec2 angleVec = Vec2(cos(angle), sin(angle));
+    pos = pos + angleVec * 1.5;
+
+    std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE);
+    Size size = Size(6.0f, 4.75f);
+    std::shared_ptr<Attack> attack = Attack::alloc(pos,
+        size);
+
+    if (_faceRight) {
+        attack->setFaceRight(true);
+    }
+
+    attack->setName("attack");
+    attack->setGravityScale(0);
+    attack->setDebugColor(DEBUG_COLOR);
+    attack->setDrawScale(scale);
+    attack->setDensity(10.0f);
+    attack->setBullet(true);
+    attack->setrand(false);
+    attack->setShoot(false);
+    attack->setnorotate(true);
+    attack->setAngle(angle - (3.14159265 / 2));
+
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    attack->setSceneNode(sprite);
+    sprite->setVisible(false);
+    sprite->setPosition(pos);
+
+    return std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>>(attack, sprite);
+}
+
+void DudeModel::gainHealth(float f) {
+    _health += f;
+    if (_health > MAX_HEALTH + _healthUpgrade) _health = MAX_HEALTH + _healthUpgrade;
+};

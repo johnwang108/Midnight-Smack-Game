@@ -105,8 +105,23 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_pt
 bool GameScene::initWithSave(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::shared_ptr<JsonValue> save) {
     bool res = init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
     if (save->size() == 0) return res;
+
+    // max health, dash cooldown, attack damage, speed
+
     float locationX = save->get("player")->getFloat("location_x");
     float locationY = save->get("player")->getFloat("location_y");
+    float health = save->get("player")->getFloat("health");
+    _avatar->setPosition(locationX, locationY);
+    _avatar->setHealth(health);
+    for (auto& e : _enemies) {
+        std::shared_ptr<JsonValue> enemy = save->get(EnemyModel::typeToStr(e->getType()))->get(e->getId());
+        if (enemy->getBool("isDead", false)) {
+            removeEnemy(e.get());
+            continue;
+        } 
+        e->setPosition(enemy->getFloat("location_x"), enemy->getFloat("location_y"));
+        e->setHealth(enemy->getFloat("health"));
+    }
 }
 
 /**
@@ -648,6 +663,12 @@ void GameScene::preUpdate(float dt) {
     }
 
     //handle animations
+
+    if (!_actionManager->isActive("air_attack")) {
+        _avatar->getBody()->SetFixedRotation(false);
+        _avatar->getBody()->SetTransform(_avatar->getBody()->GetPosition(), 0.0f);
+        _avatar->getBody()->SetFixedRotation(true);
+    }
     
     //start running if idle or recovering and moving
     if (!_overrideAnim) {
@@ -673,19 +694,22 @@ void GameScene::preUpdate(float dt) {
 
 
         //animate jumps if not attacking or taking damage
-        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && _avatar->getLinearVelocity().y > 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y > 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+            //CULog("animating jump_up 1");
             _avatar->animate("jump_up");
             auto jumpAction = _avatar->getAction("jump_up");
             _actionManager->clearAllActions(_avatar->getSceneNode());
             _actionManager->activate("jump_up", jumpAction, _avatar->getSceneNode());
         }
-        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && _avatar->getLinearVelocity().y < 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y < 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+           // CULog("animating jump_down");
             _avatar->animate("jump_down");
             auto jumpAction = _avatar->getAction("jump_down");
             _actionManager->clearAllActions(_avatar->getSceneNode());
             _actionManager->activate("jump_down", jumpAction, _avatar->getSceneNode());
         }
         if (_avatar->isGrounded() && (_actionManager->isActive("jump_down") || _actionManager->isActive("jump_up"))) {
+            //CULog("animating jump_land");
             _avatar->animate("jump_land");
             auto jumpAction = _avatar->getAction("jump_land");
             _actionManager->clearAllActions(_avatar->getSceneNode());
@@ -696,18 +720,27 @@ void GameScene::preUpdate(float dt) {
         //handle expired actions
         if (!_actionManager->isActive(_avatar->getActiveAction())) {
             if (_avatar->getActiveAction() == "attack") {
+                //CULog("animating attack");
                 _avatar->animate("recover");
                 auto recoverAction = _avatar->getAction("recover");
                 _actionManager->activate("recover", recoverAction, _avatar->getSceneNode());
             }
             else if (_avatar->getActiveAction() == "run" && _input->getHorizontal() != 0) {
+                //CULog("animating run");
                 _avatar->animate("run");
                 auto runAction = _avatar->getAction("run");
                 _actionManager->clearAllActions(_avatar->getSceneNode());
                 _actionManager->activate("run", runAction, _avatar->getSceneNode());
             }
+            else  if (_avatar->getActiveAction() == "air_attack") {
+                //CULog("animating air roll");
+                _avatar->animate("air_roll");
+                auto recoverAction = _avatar->getAction("air_roll");
+                _actionManager->activate("air_roll", recoverAction, _avatar->getSceneNode());
+            } 
             else {
                 //Todo:: blink idle
+                //CULog("animating idle");
                 if (((float)rand() / RAND_MAX) < 0.0f) {
                     _avatar->animate("idle_blink");
                     auto idleAction = _avatar->getAction("idle_blink");
@@ -736,35 +769,49 @@ void GameScene::preUpdate(float dt) {
 
         _avatar->setShooting(_input->didFire());
         if (_avatar->isShooting() && (!_actionManager->isActive("attack") && !_actionManager->isActive("air_attack"))) {
+            if (_avatar->isGrounded()) {
+                auto att = _avatar->createAttack(getAssets(), _scale);
+                addObstacle(std::get<0>(att), std::get<1>(att), true);
+                _attacks.push_back(std::get<0>(att));
+                std::get<0>(att)->setListener([=](physics2::Obstacle* obs) {
+                    obs->setPosition(_avatar->getPosition());
+                    obs->setAngle(_avatar->getBody()->GetAngle());
+					});
 
-            CULog("CREATED ATTACK");
-            auto att = _avatar->createAttack(getAssets(), _scale);
-            addObstacle(std::get<0>(att), std::get<1>(att), true);
-            _attacks.push_back(std::get<0>(att));
+                auto attackAction = _avatar->getAction("attack");
+                _avatar->animate("attack");
+                _actionManager->clearAllActions(_avatar->getSceneNode());
+                _actionManager->activate("attack", attackAction, _avatar->getSceneNode());
+            }
+            else {
+                float horiz = _input->getHorizontal();
+                float vert = _input->getVertical();
+                cugl::Vec2 dir = Vec2(horiz, vert).normalize();
+                float angle = dir.getAngle();
+                if (horiz == 0 && vert == 0) angle = 0;
 
-            //if (_avatar->isGrounded()) {
-            auto attackAction = _avatar->getAction("attack");
-            _avatar->animate("attack");
-            _actionManager->clearAllActions(_avatar->getSceneNode());
-            _actionManager->activate("attack", attackAction, _avatar->getSceneNode());
-            //}
-            //else {
-            //    float horiz = _input->getHorizontal();
-            //    float vert = _input->getVertical();
-            //    cugl::Vec2 dir = Vec2(horiz, vert).normalize();
-            //    float angle = dir.getAngle();
-            //   
-            //    Affine2 aff = _avatar->getSpriteNode()->getTransform();
-            //    aff.rotate(angle);
-            //    _avatar->getSpriteNode()->setTransform(aff);
+                auto att = _avatar->createAirAttack(getAssets(), _scale, angle);
+                addObstacle(std::get<0>(att), std::get<1>(att), true);
+                _attacks.push_back(std::get<0>(att));
+                std::get<0>(att)->setListener([=](physics2::Obstacle* obs) {
+                    float avAngle = _avatar->getBody()->GetAngle() + (3.14159265 / 2);
+                    Vec2 angleVec = Vec2(cos(avAngle), sin(avAngle));
+                    obs->setAngle(_avatar->getBody()->GetAngle());
+                    obs->setPosition(_avatar->getPosition() + angleVec * 1.5);
+                });
+               
+                _avatar->getBody()->SetFixedRotation(false);
+                _avatar->getBody()->SetTransform(_avatar->getBody()->GetPosition(), angle- (3.14159265 / 2));
+                _avatar->getBody()->SetFixedRotation(true);
 
-            //    auto attackAction = _avatar->getAction("air_attack");
-            //    _avatar->animate("air_attack");
-            //    _actionManager->clearAllActions(_avatar->getSceneNode());
-            //    _actionManager->activate("air_attack", attackAction, _avatar->getSceneNode());
-            //}
+                auto attackAction = _avatar->getAction("air_attack");
+                _avatar->animate("air_attack");
+                _actionManager->clearAllActions(_avatar->getSceneNode());
+                _actionManager->activate("air_attack", attackAction, _avatar->getSceneNode());
+            }
         }
     }
+
     if (_input->didAnimate()) {
         auto reader = JsonReader::alloc("./json/constants.json");
 
@@ -837,6 +884,7 @@ void GameScene::preUpdate(float dt) {
         _avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
         _avatar->setJumping(_input->didJump());
         _avatar->setDash(_input->didDash());
+        _avatar->setInputWalk(_input->getHorizontal() != 0);
         _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
         if (_avatar->isJumping() && _avatar->isGrounded()) {
             std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
@@ -1356,6 +1404,7 @@ void GameScene::fixedUpdate(float step) {
         setComplete(true);
     }
 
+    _avatar->fixedUpdate(step);
     for (auto& enemy : _enemies) {
         if (enemy != nullptr && !enemy->isRemoved()) {
             enemy->fixedUpdate(step);
@@ -1723,6 +1772,7 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
     if (enemy->isRemoved()) {
         return;
     }
+    CULog("removing");
     _worldnode->removeChild(enemy->getSceneNode());
     enemy->setDebugScene(nullptr);
     enemy->markRemoved(true);
@@ -1933,19 +1983,15 @@ void GameScene::save() {
         std::string type = *t;
         night->appendChild(type, JsonValue::allocObject());
     }
-    
-    int id = 0;
+
     for (auto& e : _enemies) {
-        if (e->isRemoved()) {
-			continue;
-		}
         std::string type = EnemyModel::typeToStr(e->getType());
         std::shared_ptr<JsonValue> x = JsonValue::allocObject();
 		x->appendValue("location_x", (double) e->getPosition().x);
         x->appendValue("location_y", (double) e->getPosition().y);
         x->appendValue("health", (double) e->getHealth());
-        night->get(type)->appendChild(std::to_string(id), x);
-        id += 1;
+        x->appendValue("isDead", e->isRemoved());
+        night->get(type)->appendChild(e->getId(), x);
 	}
 
     //placeholder  values for chapter and level
