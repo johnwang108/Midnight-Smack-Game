@@ -1,10 +1,16 @@
 {
     "textures": {
         "rushObjective": {
-            "file": "textures/day/food/shrimp.png"
+            "file": "textures/day/rushObjective.png"
         },
         "accuracyObjective": {
-            "file": "textures/day/food/beef.png"
+            "file": "textures/day/accuracyObjective.png"
+        },
+        "objectiveCardBackground": {
+            "file": "textures/day/programmerArt.png"
+        },
+        "blackBackground": {
+            "file": "textures/day/blackBackground.png"
         },
         "endScreenBackground": {
             "file": "textures/day/endScreenBackground.png"

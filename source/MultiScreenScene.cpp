@@ -220,6 +220,11 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	_uiScene->addChild(uiRoot);
 	_uiScene->addChild(_winScreenRoot);
 
+	std::shared_ptr<scene2::PolygonNode> grayFade = scene2::PolygonNode::allocWithPoly(Rect(0, 0, _size.width, _size.height));
+	grayFade->setName("blackOverlay");
+	grayFade->setTexture(_assets->get<Texture>("blackBackground"));
+	_uiScene->addChild(grayFade);
+
 	for (int i = 0; i < _bonusObjectives.size(); i++) {
 		std::shared_ptr<scene2::PolygonNode> bonusObj = createObjectiveNode(_bonusObjectives[i]);
 		bonusObj->setPosition(OBJ_CARD_WIDTH / 2 + OBJ_CARD_SPACING + (OBJ_CARD_SPACING * i) + (OBJ_CARD_WIDTH * i), 400);
@@ -784,6 +789,7 @@ std::shared_ptr<scene2::PolygonNode> MultiScreenScene::createObjectiveNode(std::
 	std::string objSceneName = "dayObjective" + std::to_string(obj->getId());
 	objNode->setName(objSceneName);
 	objNode->setColor(Color4::GRAY);
+	//objNode->setTexture(_assets->get<Texture>("objectiveCardBackground"));
 
 	std::shared_ptr<scene2::Label> objName = scene2::Label::allocWithText(obj->getName(), _assets->get<Font>("winter drinkRegular40"));
 	objName->setContentSize(Vec2(OBJ_CARD_WIDTH, OBJ_CARD_HEIGHT));
@@ -844,6 +850,7 @@ void MultiScreenScene::showObjectiveNodes(bool val) {
 		std::string childToGet = "dayObjective" + std::to_string(i);
 		_uiScene->getChildByName(childToGet)->setVisible(val);
 	}
+	_uiScene->getChildByName("blackOverlay")->setVisible(val);
 }
 
 void MultiScreenScene::checkObjectiveCompletion(std::shared_ptr<DayObjective> obj) {
