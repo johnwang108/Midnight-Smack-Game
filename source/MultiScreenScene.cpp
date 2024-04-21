@@ -208,17 +208,21 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 
 	_winScreenRoot->setVisible(false);
 
-	for (int i = 0; i < _bonusObjectives.size(); i++) {
-		std::shared_ptr<scene2::PolygonNode> bonusObj = createObjectiveNode(_bonusObjectives[i]);
-		bonusObj->setPosition(OBJ_CARD_WIDTH/2 + OBJ_CARD_SPACING + (OBJ_CARD_SPACING * i) + (OBJ_CARD_WIDTH * i), 400);
-		_uiScene->addChild(bonusObj);
-	}
+
 	
 
 	_uiScene->addChild(_gestureFeedback);
 	_uiScene->addChild(quotaRoot);
 	_uiScene->addChild(uiRoot);
 	_uiScene->addChild(_winScreenRoot);
+
+	for (int i = 0; i < _bonusObjectives.size(); i++) {
+		std::shared_ptr<scene2::PolygonNode> bonusObj = createObjectiveNode(_bonusObjectives[i]);
+		bonusObj->setPosition(OBJ_CARD_WIDTH / 2 + OBJ_CARD_SPACING + (OBJ_CARD_SPACING * i) + (OBJ_CARD_WIDTH * i), 400);
+		_uiScene->addChild(bonusObj);
+	}
+
+	
 
 
 	//_uiScene->addChild(_uiNode);
@@ -424,6 +428,10 @@ void MultiScreenScene::preUpdate(float timestep) {
 			showObjectiveNodes(false);
 			_currentTime = 0;
 		}
+		else {
+			return;
+		}
+		
 	} 
 
 
@@ -459,7 +467,13 @@ void MultiScreenScene::preUpdate(float timestep) {
 	_progBar->setScissor(scissor2);
 
 	//todo bonus objectives
-	if (_currentTime >= _dayDuration || _bonusObjectives.size() == 0) {
+	bool oneBonusObjectiveIncomplete = false;
+
+	for (int i = 0; i < _bonusObjectives.size(); i++) {
+		if (!_bonusObjectives[i]->getComplete()) oneBonusObjectiveIncomplete = true;
+	}
+
+	if (_currentTime >= _dayDuration || !oneBonusObjectiveIncomplete) {
 		endDay();
 	}
 	
@@ -502,6 +516,8 @@ void MultiScreenScene::preUpdate(float timestep) {
 		if (submittedIng != nullptr) {
 			increaseQuotaProgress();
 			_scenes[i]->clearSubmittedIngredient();
+			_ingredientCompletionTimes[submittedIng->getName()] = _currentTime;
+			_ingredientCompletionCounts[submittedIng->getName()] += 1;
 		}
 	}
 
@@ -512,11 +528,19 @@ void MultiScreenScene::preUpdate(float timestep) {
 	if (_scenes[_curr]->getJustCompletedGesture()) {
 		_gestureInitiatedTime = _currentTime;
 		_gestureFeedback->setPositionY(_size.height - _gestureFeedback->getHeight());
+		int lastResult = _scenes[_curr]->getLastResult();
+		_gestureFeedback->setText(_feedbackMessages[lastResult], true);
+		std::shared_ptr<Ingredient> ing = _scenes[_curr]->getIngredientInStation();
+		if (ing != nullptr) {
+			float sim = _scenes[_curr]->getCurrentSimilarity();
+
+			_ingredientAccuracy[ing->getName()] = sim;
+		}
+		
 	}
 	if (_currentTime - _gestureInitiatedTime < FEEDBACK_DURATION) {
 		int lastResult = _scenes[_curr]->getLastResult();
 		if (lastResult != -1) {
-			_gestureFeedback->setText(_feedbackMessages[lastResult]);
 			_gestureFeedback->setPositionY(_gestureFeedback->getPositionY() - 1.0f);
 			_gestureFeedback->setVisible(true);
 		}
@@ -558,9 +582,9 @@ void MultiScreenScene::preUpdate(float timestep) {
 		
 		if (_scenes[_curr]->getCurrentlyHeldIngredient() != nullptr) {
 			std::shared_ptr<scene2::Button> button = _scenes[_curr]->getCurrentlyHeldIngredient()->getButton();
-			CULog("Button Pos Before: %f %f", button->getPositionX(), button->getPositionY());
+			//CULog("Button Pos Before: %f %f", button->getPositionX(), button->getPositionY());
 			button->setPosition(button->getPosition() + movementAmount);
-			CULog("Button Pos After: %f %f", button->getPositionX(), button->getPositionY());
+			//CULog("Button Pos After: %f %f", button->getPositionX(), button->getPositionY());
 		}
 	
 	}
@@ -572,7 +596,9 @@ void MultiScreenScene::preUpdate(float timestep) {
 	
 	
 	// find current touch position, set curHeld->button to be that pos
-
+	for (int i = 0; i < _bonusObjectives.size(); i++) {
+		checkObjectiveCompletion(_bonusObjectives[i]);
+	}
 }
 
 /*
@@ -658,10 +684,15 @@ void MultiScreenScene::reset() {
 	_gestureFeedback->setText("");
 	_currentScore = 0;
 	_gameState = 0;
+	_ingredientAccuracy.clear();
+	_ingredientCompletionTimes.clear();
+	_ingredientCompletionCounts.clear();
+
 
 	for (int i = 0; i < _bonusObjectives.size(); i++) {
 		_bonusObjectives[i]->setComplete(false);
 	}
+
 
 	showObjectiveNodes(true);
 
@@ -751,7 +782,7 @@ std::shared_ptr<scene2::PolygonNode> MultiScreenScene::createObjectiveNode(std::
 		objImage = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("rushObjective"));
 
 	}
-	else {
+	else if (objType == "accuracy") {
 
 		std::ostringstream textStream;
 		textStream << "Cut carrots with an accuracy of at least " << std::fixed << std::setprecision(1) << obj->getReqAccuracy();
@@ -784,5 +815,45 @@ void MultiScreenScene::showObjectiveNodes(bool val) {
 	for (int i = 0; i < _bonusObjectives.size(); i++) {
 		std::string childToGet = "dayObjective" + std::to_string(i);
 		_uiScene->getChildByName(childToGet)->setVisible(val);
+	}
+}
+
+void MultiScreenScene::checkObjectiveCompletion(std::shared_ptr<DayObjective> obj) {
+
+	std::string objType = obj->getType();
+	if (objType == "rush") {
+
+		if (obj->getComplete()) return;
+
+		//have to use iterator here, because accessing by [] on an undefined key will return a default value
+		//which would be 0.0f which would always mark as complete
+		float completionTime;
+		auto iterator = _ingredientCompletionTimes.find(obj->getTargetName());
+		if (iterator != _ingredientCompletionTimes.end()) {
+			completionTime = iterator->second;
+		}
+		else {
+			completionTime = FLT_MAX;
+		}
+		
+		int completionCount = _ingredientCompletionCounts[obj->getTargetName()];
+		if (completionCount >= obj->getQuantity() && completionTime <= obj->getReqTime()) {
+			obj->setComplete(true);
+			CULog("completed rush obj");
+		}
+	}
+	else if (objType == "accuracy") {
+		//no need for that here, because 0.0 will always be less than required accuracy
+		float itemAccuracy = _ingredientAccuracy[obj->getTargetName()];
+		if (itemAccuracy >= obj->getReqAccuracy()) {
+			obj->setComplete(true);
+			CULog("win accuracy");
+		}
+		else {
+			obj->setComplete(false);
+		}
+	}
+	else {
+		CULogError("Attempted to Check Completion of Unimplemented Objective Type");
 	}
 }

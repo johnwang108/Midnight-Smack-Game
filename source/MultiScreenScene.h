@@ -22,6 +22,8 @@ private:
 	
 	std::vector<std::shared_ptr<DayObjective>> _bonusObjectives;
 	std::map<std::string, float> _ingredientAccuracy;
+	std::map<std::string, float> _ingredientCompletionTimes;
+	std::map<std::string, int> _ingredientCompletionCounts;
 
 protected:
 	std::shared_ptr<cugl::AssetManager> _assets;
@@ -152,6 +154,8 @@ public:
 
 	std::shared_ptr<cugl::scene2::PolygonNode> createObjectiveNode(std::shared_ptr<DayObjective> obj);
 	void showObjectiveNodes(bool val);
+
+	void checkObjectiveCompletion(std::shared_ptr<DayObjective> obj);
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */
