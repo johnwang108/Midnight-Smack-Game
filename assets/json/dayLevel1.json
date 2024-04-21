@@ -1,6 +1,6 @@
 {
   "quota": 3,
-  "duration": 15,
+  "duration": 25,
   "cooking": "Preparing Carrots",
   "ingredients": [
     {
@@ -23,7 +23,7 @@
     {
       "name": "Rush Order",
       "type": "rush",
-      "time": 20,
+      "time": 8,
       "quantity": 1,
       "accuracy": -1,
       "ingredient": "cuttingCarrot",
@@ -41,7 +41,7 @@
     {
       "name": "VIP Table",
       "type": "rush",
-      "time": 60,
+      "time": 20,
       "quantity": 2,
       "accuracy": -1,
       "ingredient": "cuttingCarrot",

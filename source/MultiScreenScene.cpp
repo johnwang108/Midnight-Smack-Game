@@ -191,6 +191,10 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 		});
 	_buttons.push_back(b);
 
+
+	std::shared_ptr<scene2::Label> statUps = scene2::Label::allocWithText("", _assets->get<Font>("winter drinkRegular25"));
+	statUps->setName("statUps");
+	_winScreenRoot->addChild(statUps);
 	//b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("retrybutton"));
 	//b->addListener([=](const std::string& name, bool down) {
 	//	this->reset();
@@ -473,7 +477,7 @@ void MultiScreenScene::preUpdate(float timestep) {
 		if (!_bonusObjectives[i]->getComplete()) oneBonusObjectiveIncomplete = true;
 	}
 
-	if (_currentTime >= _dayDuration || !oneBonusObjectiveIncomplete) {
+	if (_currentTime >= _dayDuration || (!oneBonusObjectiveIncomplete && _currentScore >= _quota)) {
 		endDay();
 	}
 	
@@ -680,6 +684,8 @@ void MultiScreenScene::reset() {
 	_curr = 2;
 	_ended = false;
 	_currentTime = 0.0f;
+	_currentHour = 6;
+	_currentMinute = 0;
 	_gestureFeedback->setVisible(false);
 	_gestureFeedback->setText("");
 	_currentScore = 0;
@@ -693,6 +699,7 @@ void MultiScreenScene::reset() {
 		_bonusObjectives[i]->setComplete(false);
 	}
 
+	
 
 	showObjectiveNodes(true);
 
@@ -743,6 +750,27 @@ void MultiScreenScene::endDay() {
 	else {
 		_gameState = -1;
 	}
+
+	std::shared_ptr<scene2::Label> statUps = std::dynamic_pointer_cast<scene2::Label>(_winScreenRoot->getChildByName("statUps"));
+	std::ostringstream textStream;
+	for (int i = 0; i < _bonusObjectives.size(); i++) {
+		
+		if (_bonusObjectives[i]->getComplete()) {
+			if (i != 0) {
+				textStream << ", ";
+			}
+			textStream << "+" << _bonusObjectives[i]->getReward();
+		}
+	}
+	if (textStream.str() == "") {
+		statUps->setText("no bonus objectives completed");
+	}
+	else {
+		statUps->setText(textStream.str(), true);
+	}
+	statUps->setPosition(750, 220);
+	statUps->setWrap(true);
+
 	for (auto it = _buttons.begin(); it != _buttons.end(); ++it) {
 		auto button = *it;
 		button->activate();
