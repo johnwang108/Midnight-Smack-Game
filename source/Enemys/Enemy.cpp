@@ -64,6 +64,7 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
         _killMe = false;
         _killMeCountdown = 0.0f;
         _useID = true;
+        _isTangible = true;
 
         return true;
     }
@@ -234,7 +235,7 @@ void EnemyModel::dispose() {
     _node = nullptr;
 }
 
-//when called, it will return a tuple <attack, node> of the attack that the enemy will create, using the given texture
+//when called, it will return a tuple <attack, node> of the attack 
 std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> EnemyModel::createAttack(std::shared_ptr<AssetManager> _assets, float scale) {
     Vec2 pos = getPosition();
 
@@ -255,7 +256,7 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> EnemyM
     attack->setGravityScale(0);
     attack->setDebugColor(DEBUG_COLOR);
     attack->setDrawScale(scale);
-    attack->setstraight(_distanceToPlayer + getPosition());
+    //attack->setstraight(_distanceToPlayer + getPosition());
     attack->setEnabled(true);
     attack->setrand(false);
     attack->setSpeed(10.0f);

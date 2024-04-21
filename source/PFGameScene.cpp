@@ -104,24 +104,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_pt
 
 bool GameScene::initWithSave(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::shared_ptr<JsonValue> save) {
     bool res = init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
-    if (save->size() == 0) return res;
-
-    // max health, dash cooldown, attack damage, speed
-
-    float locationX = save->get("player")->getFloat("location_x");
-    float locationY = save->get("player")->getFloat("location_y");
-    float health = save->get("player")->getFloat("health");
-    _avatar->setPosition(locationX, locationY);
-    _avatar->setHealth(health);
-    for (auto& e : _enemies) {
-        std::shared_ptr<JsonValue> enemy = save->get(EnemyModel::typeToStr(e->getType()))->get(e->getId());
-        if (enemy->getBool("isDead", false)) {
-            removeEnemy(e.get());
-            continue;
-        } 
-        e->setPosition(enemy->getFloat("location_x"), enemy->getFloat("location_y"));
-        e->setHealth(enemy->getFloat("health"));
-    }
+    loadSave(save);
+    return res;
 }
 
 /**
@@ -174,13 +158,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
         return false;
     }
 
-    // Start up the input handler
     _assets = assets;
-
     _input = input;
     _input->init(getBounds());
-    /*_input = std::make_shared<PlatformInput>();
-    _input->init(getBounds());*/
 
     // Create the world and attach the listeners.
     _world = physics2::ObstacleWorld::alloc(rect, gravity);
@@ -271,8 +251,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _uiScene = cugl::Scene2::alloc(Size(1280, 800));
     _uiScene->init(Size(1280, 800));
     _uiScene->setActive(true);
-    // Right now we are manually adding in the json here
-    // loadLevel(level1);
     std::shared_ptr<cugl::scene2::SceneNode> _meterUINode;
     _meterUINode = _assets->get<scene2::SceneNode>("night_meters");
 
@@ -361,17 +339,16 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _target = std::make_shared<EnemyModel>();
 
 
-    currentLevel = _level_model;
+    //load first level
+    _chapter = 1;
+    _level = 3;
+    loadLevel(_chapter, _level);
     // loadLevel(currentLevel);
     // _level_model->setFilePath("json/test_level_v2_experiment.json");
-    _level_model->setFilePath("json/empanada-platform-level-01.json");
-    loadLevel(currentLevel);
     addChild(_worldnode);
     addChild(_debugnode);
     addChild(_leftnode);
     addChild(_rightnode);
-
-    save();
 
     _actionManager = cugl::scene2::ActionManager::alloc();
     _BullactionManager = cugl::scene2::ActionManager::alloc();
@@ -478,8 +455,6 @@ void GameScene::dispose() {
         _debugAnimTarget = nullptr;
         _level_model = nullptr;
         Scene2::dispose();
-
-        Scene2::dispose();
     }
 }
 
@@ -502,6 +477,7 @@ void GameScene::reset() {
     _sensorFixtures.clear();
 
     _enemies.clear();
+    _attacks.clear();
     _vulnerables.clear();
     _Bull = nullptr;
 
@@ -522,7 +498,7 @@ void GameScene::reset() {
     }
     // loadLevel(_level_model);
 
-    loadLevel(currentLevel);
+    loadLevel(_chapter, _level);
     addChild(_worldnode);
     addChild(_debugnode);
     addChild(_leftnode);
@@ -655,7 +631,8 @@ void GameScene::preUpdate(float dt) {
             }
             if (minDist < COOKTIME_MAX_DIST) {
                 _slowed = true;
-                _dollarnode->setTargetGestures(_target->getGestureSeq1());
+                //_dollarnode->setTargetGestures(_target->getGestureSeq1());
+                _dollarnode->setTargetGesturesNighttime(std::vector({_target->getGestureSeq1(), _target->getGestureSeq2()}));
             }
 
         }
@@ -694,14 +671,14 @@ void GameScene::preUpdate(float dt) {
 
 
         //animate jumps if not attacking or taking damage
-        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y > 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && !(_avatar->getActiveAction() == "air_attack")&&  !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y > 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
             //CULog("animating jump_up 1");
             _avatar->animate("jump_up");
             auto jumpAction = _avatar->getAction("jump_up");
             _actionManager->clearAllActions(_avatar->getSceneNode());
             _actionManager->activate("jump_up", jumpAction, _avatar->getSceneNode());
         }
-        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y < 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && !(_avatar->getActiveAction() == "air_attack") && !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y < 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
            // CULog("animating jump_down");
             _avatar->animate("jump_down");
             auto jumpAction = _avatar->getAction("jump_down");
@@ -788,7 +765,7 @@ void GameScene::preUpdate(float dt) {
                 float vert = _input->getVertical();
                 cugl::Vec2 dir = Vec2(horiz, vert).normalize();
                 float angle = dir.getAngle();
-                if (horiz == 0 && vert == 0) angle = 0;
+                if (horiz == 0 && vert == 0) angle = 3.14159265 / 2;
 
                 auto att = _avatar->createAirAttack(getAssets(), _scale, angle);
                 addObstacle(std::get<0>(att), std::get<1>(att), true);
@@ -906,31 +883,34 @@ void GameScene::preUpdate(float dt) {
         _avatar->applyForce(0, 0);
 
         //cooktime handling. Assume that _target not null, if it is null then continue
-        if (!_dollarnode->isPending()) {
-            if (_target != nullptr) {
-                _slowed = false;
-                std::string message = "";
-                if (_dollarnode->getLastResult() > 0) {
-                    CULog("NICE!!!!!!!!!!!!!!");
-                    _target->takeDamage(_avatar->getAttack(), 0);
+        //if (!_dollarnode->isPending()) {
+        if (_target != nullptr && !_dollarnode->isPending()) {
+            _slowed = false;
+            std::string message = "";
+            if (_dollarnode->getLastResult() > 0) {
+                CULog("NICE!!!!!!!!!!!!!!");
+                modifier mod = _dollarnode->getIsDurationSequence() ? modifier::duration : modifier::effect;
+                _target->takeDamage(_avatar->getAttack(), 0);
 
-                    //DEFAULT: APPLY DURATION BUFF 
-                    _avatar->applyBuff(EnemyModel::typeToBuff(_target->getType()), modifier::effect);
-                    //set buff label
-                    _buffLabel->setText(DudeModel::getStrForBuff(EnemyModel::typeToBuff(_target->getType())));
-                    _buffLabel->setVisible(true);
-                }
-                else {
-                    CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
-                }
-                message = _feedbackMessages[_dollarnode->getLastResult()];
-                popup(message, cugl::Vec2(_target->getPosition().x * _scale, _target->getPosition().y * 1.1 * _scale));
-
-                _target = nullptr;
+                _avatar->applyBuff(EnemyModel::typeToBuff(_target->getType()), mod);
+                //set buff label
+                _buffLabel->setText(DudeModel::getStrForBuff(EnemyModel::typeToBuff(_target->getType())));
+                _buffLabel->setVisible(true);
             }
             else {
-
+                CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
             }
+            CULog("%i", _dollarnode->getLastResult());
+            message = _feedbackMessages[_dollarnode->getLastResult()];
+            popup(message, cugl::Vec2(_target->getPosition().x * _scale, _target->getPosition().y * 1.1 * _scale));
+                
+            _target = nullptr;
+
+            _dollarnode->setPending(true);
+            //}
+            //else {
+
+            //}
         }
     }
 
@@ -966,6 +946,7 @@ void GameScene::preUpdate(float dt) {
 			if (enemy->getattacktime()) {
 				auto res = enemy->createAttack(_assets, _scale);
 				addObstacle(std::get<0>(res), std::get<1>(res));
+                _attacks.push_back(std::get<0>(res));
 				enemy->setattacktime(false);
 				enemy->setshooted(false);
 			}
@@ -1358,26 +1339,32 @@ void GameScene::fixedUpdate(float step) {
     // 
     if (CAMERA_FOLLOWS_PLAYER) {
 
-        if (currentLevel == _level_model) {
-            // we will have to not hard code this in future: WIDTH_OF_LEVEL / 40.0
-            // _camera->setZoom(210.0/40.0);
-            _camera->setZoom(400.0/40.0);
-            // _camera->setZoom(2.0);
-            // _camera->setZoom(1.5);
+        if (_chapter == 1) {
+            if (_level == 1) {
+                // we will have to not hard code this in future: WIDTH_OF_LEVEL / 40.0
+                // _camera->setZoom(210.0/40.0);
+                _camera->setZoom(400.0 / 40.0);
+            }
+            else if (_level == 2) {
+                _camera->setZoom(400.0 / 40.0);
+            }
+            else if (_level == 3) {
+                _camera->setZoom(210.0 / 40.0);
+            }
         }
-        else if (currentLevel == level2) {
-            _camera->setZoom(210.0 / 40.0);
-        }
-        else  if (currentLevel == level3) {
-            _camera->setZoom(210.0 / 40.0);
-        }
-        else {
-            _camera->setZoom(2.0);
-        }
+        //else if (currentLevel == level2) {
+        //    _camera->setZoom(210.0 / 40.0);
+        //}
+        //else  if (currentLevel == level3) {
+        //    _camera->setZoom(210.0 / 40.0);
+        //}
+        //else {
+        //    _camera->setZoom(2.0);
+        //}
 
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
-        //cugl::Vec3 mapMin = Vec3(SCENE_WIDTH / 2, SCENE_HEIGHT / 2, 0);
-        //cugl::Vec3 mapMax = Vec3(1400 - SCENE_WIDTH / 2, 900 - SCENE_HEIGHT / 2, 0); //replace magic numbers
+        cugl::Vec3 mapMin = Vec3(SCENE_WIDTH / 2, SCENE_HEIGHT / 2, 0);
+        cugl::Vec3 mapMax = Vec3(1400 - SCENE_WIDTH / 2, 900 - SCENE_HEIGHT / 2, 0); //replace magic numbers
         /*target.clamp(mapMin, mapMax);*/
 
         cugl::Vec3 pos = _camera->getPosition();
@@ -1464,6 +1451,7 @@ void GameScene::postUpdate(float remain) {
     //BAD CODE ALEART
     for (auto it = _attacks.begin(); it != _attacks.end();) {
         if ((*it)->killMe()) {
+            CULog("removing attack");
             removeAttack((*it).get());
             it = _attacks.erase(it);
         }
@@ -1486,19 +1474,8 @@ void GameScene::postUpdate(float remain) {
     }
     else if (_countdown == 0) {
         if (_failed == false) {
-
-            if (currentLevel == _level_model) {
-                currentLevel = level2;
-                reset();
-            }
-            else if (currentLevel == level3) {
-                currentLevel = _level_model;
-                reset();
-            }
-            else {
-                currentLevel = _level_model;
-                reset();
-            }
+            advanceLevel();
+            reset();
         }
         else if (_failed) {
             reset();
@@ -2006,19 +1983,63 @@ void GameScene::save() {
     writer->close();
 }
 
-//load level with int specifiers
-void GameScene::loadLevel(int chapter, int level) {
-    std::shared_ptr<Levels> level_obj = nullptr;
-    if (chapter == 1) {
-        if (level == 1) {
-            level_obj = level1;
+bool GameScene::loadSave(std::shared_ptr<JsonValue> save) {
+    if (save->size() == 0) {
+        reset();
+        return true;
+    }
+    
+    int chap = save->getInt("chapter");
+    int level = save->getInt("level");
+    changeCurrentLevel(chap, level);
+    reset();
+
+    // max health, dash cooldown, attack damage, speed
+    float locationX = save->get("player")->getFloat("location_x");
+    float locationY = save->get("player")->getFloat("location_y");
+    float health = save->get("player")->getFloat("health");
+    _avatar->setPosition(locationX, locationY);
+    _avatar->setHealth(health);
+    for (auto& e : _enemies) {
+        std::shared_ptr<JsonValue> enemy = save->get(EnemyModel::typeToStr(e->getType()))->get(e->getId());
+        if (enemy->getBool("isDead", false)) {
+            removeEnemy(e.get());
+            continue;
         }
-        else if (level == 2) {
-            level_obj = level2;
-        }
+        e->setPosition(enemy->getFloat("location_x"), enemy->getFloat("location_y"));
+        e->setHealth(enemy->getFloat("health"));
     }
 
-    loadLevel(level_obj);
+    //todo: persistent
 
+    return true;
+}
+
+//load level with int specifiers
+void GameScene::loadLevel(int chapter, int level) {
+    changeCurrentLevel(chapter, level);
+    loadLevel(currentLevel);
+}
+
+void GameScene::advanceLevel() {
+    _level += 1;
+    _level = _level % 4;
+    if (_level == 0) _level = 1;
+    changeCurrentLevel(_chapter, _level);
+}
+
+void GameScene::changeCurrentLevel(int chapter, int level) {
+    currentLevel = _level_model;
+    if (chapter == 1) {
+        if (level == 1) {
+            _level_model->setFilePath("json/test_level_v2_experiment.json");
+        }
+        else if (level == 2) {
+            _level_model->setFilePath("json/empanada-platform-level-01.json");
+        }
+        else if (level == 3) {
+            currentLevel = level2;
+        }
+    }
 }
 

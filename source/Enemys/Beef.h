@@ -16,6 +16,10 @@ protected:
     cugl::Vec2 _originalPos;
 
     std::shared_ptr<EntitySpriteNode> _dirtPile;
+
+    Size _defaultSize;
+
+    bool _attacked;
 private:
 public:
 
@@ -67,6 +71,8 @@ public:
         _killMeCountdown = 0.1;
     }
 
+    std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Beef::createAttack(std::shared_ptr<AssetManager> _assets, float scale) override;
+
     void setLimit(cugl::Spline2 limit) { _limit = limit; }
 
     Spline2 getLimit() { return _limit; }
@@ -80,6 +86,8 @@ public:
     void setState(std::string state) override;
 
     std::string getNextState(std::string state) override;
+
+    void setTangible(bool b);
 
     //linear projection of a point onto the internal pathLimit
   //  cugl::Vec2 projectOntoPath(Vec2 point) {

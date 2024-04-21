@@ -3,7 +3,7 @@
 
 bool Rice::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, bool isSoldier) {
     EnemyType t = isSoldier ? EnemyType::rice_soldier : EnemyType::rice;
-    return init(pos, size, scale, EnemyModel::defaultSeq(t), EnemyModel::defaultSeq(t), isSoldier);
+    return init(pos, size, scale, EnemyModel::defaultSeq(t), EnemyModel::defaultSeqAlt(t), isSoldier);
 }
 
 
@@ -54,7 +54,7 @@ void Rice::fixedUpdate(float step) {
 	}
 	else if (_state == "pursuing") {
         if (getActiveAction() == "riceStartWalk" || getActiveAction() == "riceWalk") setRequestedActionAndPrio("riceWalk", 20);
-        else setRequestedActionAndPrio("riceStartWalk", 30);
+        else setRequestedActionAndPrio("riceStartWalk", 60);
 
         if (_distanceToPlayer.length() < 0.05) {
             setState("attacking");

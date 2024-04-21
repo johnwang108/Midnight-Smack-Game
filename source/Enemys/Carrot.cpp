@@ -1,7 +1,7 @@
 #include "Carrot.h"
 
 bool Carrot::init(const cugl::Vec2& pos, const cugl::Size& size, float scale) {
-    return init(pos, size, scale, EnemyModel::defaultSeq(EnemyType::carrot), EnemyModel::defaultSeq(EnemyType::carrot));
+    return init(pos, size, scale, EnemyModel::defaultSeq(EnemyType::carrot), EnemyModel::defaultSeqAlt(EnemyType::carrot));
 }
 
 bool Carrot::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::vector<std::string> seq1, std::vector<std::string> seq2) {
@@ -20,7 +20,6 @@ void Carrot::update(float dt) {
 }
 
 void Carrot::fixedUpdate(float step) {
-    CULog(_state.c_str());
     EnemyModel::fixedUpdate(step);
     b2Vec2 velocity = _body->GetLinearVelocity();
 
@@ -32,8 +31,9 @@ void Carrot::fixedUpdate(float step) {
     }
     else if (_state == "jumping") {
         if (isGrounded()) {
-            velocity.y = 10;
-            velocity.x = ENEMY_FORCE * _direction * 10;
+            Vec2 vec = _distanceToPlayer.normalize() * 20;
+            velocity.y = std::max(10.0f, vec.y);
+            velocity.x = vec.x;
         }
     }
     else if (_state == "midair") {

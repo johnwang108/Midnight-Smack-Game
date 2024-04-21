@@ -51,6 +51,8 @@ private:
         _killMeCountdown = 0.1;
     }
 
+    std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> createAttack(std::shared_ptr<AssetManager> _assets, float scale) override;
+
     void setLimit(cugl::Spline2 limit) {_limit = limit;}
 
     Spline2 getLimit() {return _limit;}

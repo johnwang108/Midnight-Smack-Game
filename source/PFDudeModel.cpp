@@ -155,10 +155,14 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
 
         b2Filter filter = getFilterData();
         filter.groupIndex = -1;
+        //0x0010 is the category bit for intangible enemies (todo)
+        //filter.maskBits = 0xFFFF ^ 0x0010;
         setFilterData(filter);
         setName("avatar");
         setEnabled(true);
         _useID = false;
+        resetBuff();
+        initUpgrades();
         return true;
     }
     return false;
@@ -349,7 +353,7 @@ void DudeModel::applyForce(float h, float v) {
                 int negativeAccounter = SIGNUM(vel.x);
                 vel.x = negativeAccounter * vel.x  * whyDoesntSTDMinWorkpls < negativeAccounter * .01 ? 0 : whyDoesntSTDMinWorkpls * vel.x; // If you set y, you will stop a jump in place
             }
-            _body->SetLinearVelocity(vel );
+            _body->SetLinearVelocity(vel);
         }
         else {
             // Damping factor in the air
@@ -360,7 +364,7 @@ void DudeModel::applyForce(float h, float v) {
 
     // Velocity too high, clamp it
     b2Vec2 force(getMovement(), 0);
-    force.x *= isGrounded() ? 2 : 1;
+    force.x *= isGrounded() ? 1 : 0.5;
     _body->ApplyForce(force, _body->GetPosition(), true);
 
 
@@ -396,29 +400,6 @@ void DudeModel::update(float dt) {
 
     Entity::update(dt);
 
-    //if (_duration > 0) {
-    //    _duration -= dt;
-    //    _duration = std::max(0.0f, _duration);
-    //    //reset buff state if duration is over
-    //    if (_duration == 0) {
-    //        resetBuff();
-    //    }
-    //    else {
-    //        _node->setColor(Color4::BLACK);
-    //    }
-    //}
-    //else if (_hasSuper) {
-    //    _node->setColor(Color4::RED);
-    //}
-    //else {
-    //    _node->setColor(Color4::WHITE);
-    //}
-
-
-    //if (_numberOfTouchingEnemies > 0) {
-    //    takeDamage(34, 0);
-    //}
-
     //take damage anim
     if (_knockbackTime > 0) {
         if (int(_knockbackTime * 10) % 2 < 1) {
@@ -437,71 +418,6 @@ void DudeModel::update(float dt) {
     else {
         _lastDamageTime += dt;
     }
-
-    if (!isGrounded()) {
-        //todo hurt anim
-        //if (_body->GetLinearVelocity().y > 0) {
-        //    setRequestedActionAndPrio("jump_up", 20);
-        //}
-        //else if (_body->GetLinearVelocity().y > 0) {
-        //    setRequestedActionAndPrio("jump_down", 20);
-        //}
-        //else if (isShooting()) {
-
-        //}
-    }
-    else {
-        /*if (_isInputWalk) {
-            setRequestedActionAndPrio("walk", 20);
-        }
-        else if (isJumping()) {
-            setRequestedActionAndPrio("jump__ready", 60);
-        }
-        else if (!_isInputWalk && _body->GetLinearVelocity().x == 0 && isGrounded()) {
-            setRequestedActionAndPrio("idle", 1);
-        }
-        else if (isShooting()) {
-            setRequestedActionAndPrio("shoot", 20);
-        }
-        else {
-            setRequestedActionAndPrio("idle", 20);
-        }*/
-    }
-    
-    
-
-    //// Apply cooldowns
-    //if (isJumping()) {
-    //    _jumpCooldown = JUMP_COOLDOWN;
-    //}
-    //else {
-    //    // Only cooldown while grounded
-    //    _jumpCooldown = (_jumpCooldown > 0 ? _jumpCooldown - 1 : 0);
-    //}
-
-    //if (isShooting()) {
-    //    _shootCooldown = SHOOT_COOLDOWN;
-    //}
-    //else {
-    //    _shootCooldown = (_shootCooldown > 0 ? _shootCooldown - 1 : 0);
-    //}
-    //if (canDash() && _dashCooldown == 0) {
-    //    _dashCooldown = DASH_COOLDOWN;
-    //    _rechargingDash = false;
-    //    deltaDashNum(-1);
-    //}
-    //else {
-    //    //if (_dashCooldown > 0) {
-    //    //    if (isGrounded()) _rechargingDash = true;
-    //    //    if (_rechargingDash) _dashCooldown = (_dashCooldown > 0 ? _dashCooldown - 1 : 0;
-    //    //}
-    //    _dashCooldown = _dashCooldown > 0 ? _dashCooldown - 1 : 0.0;
-    //    if (getDashNum() == 0 && _dashCooldown <= 0 && isGrounded()) {
-
-    //        setDashNum(1);
-    //        //TODO: remove hardcode limit on one dash
-    //    }
-    //}
 
     if (_node != nullptr) {
         _node->setPosition(getPosition() * _drawScale);
@@ -528,18 +444,11 @@ void DudeModel::fixedUpdate(float step) {
         _node->setColor(Color4::WHITE);
     }
 
-
     if (_numberOfTouchingEnemies > 0) {
         takeDamage(34, 0);
     }
 
-    if (_dashCooldown > DASH_COOLDOWN - floatyFrames) {
-        setGravityScale(0);
-    }
-    else {
-        setGravityScale(1);
-    }
-
+    gainHealth(_healthBuff);
 
     if (_dashCooldown > DASH_COOLDOWN - floatyFrames) {
         setGravityScale(0);
@@ -656,9 +565,7 @@ void DudeModel::applyBuff(const buff b, modifier m) {
             _hasSuper = false;
         }
         else {
-            _healthBuff = SUPER_HEALTH_BUFF;
-            _duration = 0;
-            _hasSuper = true;
+            gainHealth(1000);
         }
         break;
     case buff::jump:
@@ -708,13 +615,13 @@ void DudeModel::applyBuff(const buff b, modifier m) {
  */
 void DudeModel::resetBuff() {
     _attackBuff = DEFAULT_BUFF;
-    _healthBuff = DEFAULT_BUFF;
+    _healthBuff = 0.0f;
     _jumpBuff = DEFAULT_BUFF;
     _defenseBuff = DEFAULT_BUFF;
     _speedBuff = DEFAULT_BUFF;
     _duration = 0;
     _hasSuper = false;
-    _node->setColor(Color4::WHITE);
+    if (_node != nullptr) _node->setColor(Color4::WHITE);
 }
 
 std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeModel::createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale) {
@@ -740,6 +647,11 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeMo
     attack->setrand(false);
     attack->setShoot(false);
     attack->setnorotate(true);
+    //b2Filter filter = attack->getFilterData();
+    //filter.groupIndex = -1;
+    //0x0010 is the category bit for intangible enemies (beef)
+    //filter.maskBits = 0xFFFF ^ 0x0010;
+    //attack->setFilterData(filter);
 
     std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
     attack->setSceneNode(sprite);
@@ -773,6 +685,11 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeMo
     attack->setShoot(false);
     attack->setnorotate(true);
     attack->setAngle(angle - (3.14159265 / 2));
+    //b2Filter filter = attack->getFilterData();
+    //filter.groupIndex = -1;
+    ////0x0010 is the category bit for intangible enemies (beef)
+    ////filter.maskBits = 0xFFFF ^ 0x0010;
+    //attack->setFilterData(filter);
 
     std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
     attack->setSceneNode(sprite);

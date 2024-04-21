@@ -5,7 +5,7 @@ bool Egg::init(const cugl::Vec2& pos, const cugl::Size& size, float scale) {
 }
 
 bool Egg::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, cugl::Spline2 limit) {
-	return init(pos, size, scale, EnemyModel::defaultSeq(EnemyType::egg), EnemyModel::defaultSeq(EnemyType::egg), limit);
+	return init(pos, size, scale, EnemyModel::defaultSeq(EnemyType::egg), EnemyModel::defaultSeqAlt(EnemyType::egg), limit);
 }
 /**init with gesture sequences*/
 bool Egg::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::vector<std::string> seq1, std::vector<std::string> seq2) {
@@ -57,6 +57,43 @@ void Egg::fixedUpdate(float step) {
     }
 
     _body->SetLinearVelocity(EnemyModel::handleMovement(velocity));
+}
+
+std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Egg::createAttack(std::shared_ptr<AssetManager> _assets, float scale) {
+    Vec2 pos = getPosition();
+
+    std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE);
+    std::shared_ptr<Attack> attack = Attack::alloc(pos,
+        cugl::Size(image->getSize().width / scale,
+            ATTACK_H * image->getSize().height / scale));
+
+    pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
+    pos.y += ATTACK_OFFSET_Y;
+
+
+    if (getDirection() > 0) {
+        attack->setFaceRight(true);
+    }
+    attack->setName("enemy_attack");
+    attack->setBullet(true);
+    attack->setGravityScale(0);
+    attack->setDebugColor(Color4::RED);
+    attack->setDrawScale(scale);
+    attack->setstraight(_distanceToPlayer + getPosition());
+    attack->setEnabled(true);
+    attack->setrand(false);
+    attack->setSpeed(10.0f);
+
+
+
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    attack->setSceneNode(sprite);
+    sprite->setPosition(pos);
+
+    return std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>>(attack, sprite);
+
+    /*std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
+    AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);*/
 }
 
 void Egg::setState(std::string state) {

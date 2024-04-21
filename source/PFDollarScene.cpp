@@ -146,8 +146,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	addChild(_currentGestureLabel);
 	addChild(_indicatorGroup);
 
-	CULog("_box pos, %f, %f", _box->getPosition().x, _box->getPosition().y);
-	
+	_inputtedGestures = std::vector<Path2>();
 
 	update(0);
 
@@ -212,7 +211,7 @@ void DollarScene::update(float timestep) {
 			// for spline
 			_path = _input->getTouchPath();
 		}
-		if (!_currentTargetGestures.empty()) {
+		if (!_isNighttime && !_currentTargetGestures.empty()) {
 			if (matchWithTouchPath()) {
 				_lastResult = gestureResult();
 				_justCompletedGesture = true;
@@ -228,13 +227,24 @@ void DollarScene::update(float timestep) {
 				_header->setText("Similarity: " + std::to_string(_currentSimilarity));
 				_header->setVisible(true);
 				_header->doLayout();
-
 			}
 			else {
 				_currentGestureLabel->setVisible(false);
 				_header->setVisible(false);
 			}
 		}
+		//nighttime
+		else if (_isNighttime && isFocus()) {
+			if (_input->isGestureCompleted()) {
+				Path2 gesture = _path;
+				_input->popTouchPath();
+				_inputtedGestures.push_back(gesture);
+				if (_inputtedGestures.size() == NIGHT_SEQUENCE_LENGTH) {
+					_completed = true;
+				}
+			}
+		}
+
 	}
 
 	if (_readyToCook) {
@@ -257,11 +267,31 @@ void DollarScene::update(float timestep) {
 	}
 
 	if (_completed) {
-		if (_isNighttime) return;
+		if (_isNighttime) {
+			//see which sequence's first gesture is more similar
+			float sim1 = _dollarRecog->similarity(_currentTargetGesturesNighttime[0][0], _inputtedGestures[0]);
+			float sim2 = _dollarRecog->similarity(_currentTargetGesturesNighttime[1][0], _inputtedGestures[0]);
+			float totalSim;
+			if (sim1 > sim2) {
+				totalSim = (sim1 + _dollarRecog->similarity(_currentTargetGesturesNighttime[0][1], _inputtedGestures[1])
+					+ _dollarRecog->similarity(_currentTargetGesturesNighttime[0][2], _inputtedGestures[2]))/3.0f;
+				_isDurationSequence = true;
+			}
+			else {
+				totalSim = (sim2 + _dollarRecog->similarity(_currentTargetGesturesNighttime[1][1], _inputtedGestures[1])
+					+ _dollarRecog->similarity(_currentTargetGesturesNighttime[1][2], _inputtedGestures[2]))/3.0f;
+				_isDurationSequence = false;
+			}
+			CULog("Total sim: %f", totalSim);
+			_currentSimilarity = totalSim;
+			_lastResult = gestureResult();
+			return;
+		}
+
 		_completed = false;
 		_readyToCook = false;
 		_indicatorGroup->setVisible(false);
-		
+
 
 		//TODO spit out ingredient
 		//remove ingredient from indicator 
@@ -342,18 +372,18 @@ bool DollarScene::isPending() {
 	return !_completed;
 };
 
-//if gesture is completed. pop gesture and calculate similarity
+//if gesture is completed. pop gesture and calculate similarity. if nighttime, record the inputted gesture path
 bool DollarScene::matchWithTouchPath() {
 	if (_input->isGestureCompleted()) {
-		CULog("COMPLETED GESTURE");
-		Path2 gesture = _path;
-		_input->popTouchPath();
-		if (gesture.size() > 3) {
-			float sim = _dollarRecog->similarity(_currentTargetGestures[_currentTargetIndex], gesture);
-			if (sim >= 0) _currentSimilarity = sim;
+			CULog("COMPLETED GESTURE");
+			Path2 gesture = _path;
+			_input->popTouchPath();
+			if (gesture.size() > 3) {
+				float sim = _dollarRecog->similarity(_currentTargetGestures[_currentTargetIndex], gesture);
+				if (sim >= 0) _currentSimilarity = sim;
 
-		}
-		return true;
+			}
+			return true;
 	}
 	return false;
 }
@@ -368,6 +398,10 @@ void DollarScene::setFocus(bool focus) {
 	_focus = focus;
 	if (focus) {
 		_input->popTouchPath();
+	}
+	if (_isNighttime) {
+		CULog("clearing");
+		_inputtedGestures.clear();
 	}
 }
 
@@ -636,6 +670,7 @@ void DollarScene::reset() {
 	_focus = false;
 	_completed = false;
 	_lastResult = -1;
+	_inputtedGestures.clear();
 	//todo ready to cook idk if it should be false
 	_readyToCook = false;
 	if (_currentlyHeldIngredient != nullptr) {

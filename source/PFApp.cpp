@@ -213,40 +213,6 @@ void PlatformApp::preUpdate(float dt) {
     else {
 
     }
- //   if (_gameplay.didTransition()) {
-
- //       CULog("1");
- //       _gameplay.setActive(false);
- //       _gameplay.transition(false);
-
- //       _multiScreen.setActive(true);
- //       _multiScreen.preUpdate(dt);
- //       _multiScreen.focusCurr();
- //   }
- //   else if (_multiScreen.didTransition()) {
- //       CULog("2");
-	//	_multiScreen.transition(false);
-	//	_multiScreen.setActive(false);
- //       _multiScreen.unfocusAll();
-
-
-	//	_gameplay.setActive(true);
-	//	_gameplay.preUpdate(dt);
- //      
- //   }
- //   else if (_gameplay.isActive()) {
- //       CULog("3");
-	//	_gameplay.preUpdate(dt);
- //   }
- //   else if (_multiScreen.isActive() || _menu.started()) {
- //       CULog("4");
-	//	_multiScreen.preUpdate(dt);
- //   }
- //   else {
- //       _menu.setStarted(false);
- //       _menu.setActive(true);
- //       _menu.update(dt);
-	//}
 }
 
 /**
@@ -372,6 +338,7 @@ void PlatformApp::transitionScenes() {
         if(_currentScene == "day") {
 			_multiScreen.setActive(true);
 			_multiScreen.focusCurr();
+            _multiScreen.reset();
         }
         else if (_currentScene == "main_menu"){
 			_menu.setActive(true);
@@ -388,6 +355,7 @@ void PlatformApp::transitionScenes() {
         _multiScreen.setTarget("");
         if (_currentScene == "night") {
             _gameplay.setActive(true);
+            _gameplay.reset();
         }
         else if (_currentScene == "main_menu") {
             _menu.setActive(true);
@@ -421,6 +389,7 @@ void PlatformApp::loadSave() {
     std::string root = cugl::Application::get()->getSaveDirectory();
     std::string path = cugl::filetool::join_path({ root,"save.json" });
     auto reader = JsonReader::alloc(path);
+    reader->close();
 
     std::shared_ptr<JsonValue> loadedSave = reader->readJson();
 
@@ -433,17 +402,20 @@ void PlatformApp::loadSave() {
     std::shared_ptr<JsonValue> night = loadedSave->get("night");
     if (startFromNight) {
         //load night
-        _gameplay.dispose();
-        _gameplay.initWithSave(_assets, _input, loadedSave);
+        _gameplay.loadSave(night);
         _gameplay.setActive(true);
+        
+        _multiScreen.transition(false);
+        _multiScreen.setActive(false);
+        _multiScreen.unfocusAll();
     }
     else {
         //load day
-        _multiScreen.dispose();
-        _multiScreen.init(_assets, _input);
+        _multiScreen.loadSave(loadedSave);
         _multiScreen.setActive(true);
         _multiScreen.focusCurr();
-    }
 
-    reader->close();
+        _gameplay.transition(false);
+        _gameplay.setActive(false);
+    }
 }

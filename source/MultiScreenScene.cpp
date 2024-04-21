@@ -560,6 +560,28 @@ void MultiScreenScene::focusCurr() {
 }
 
 void MultiScreenScene::switchStation(int currId, int targId) {
+	//reset current minimap station color
+	std::shared_ptr<scene2::SceneNode> map = _uiScene->getChildByName("uiScene")->getChildByName("Map");
+	std::string s = _scenes[currId]->getName();
+	//can make this a dict later
+	if (s == "pot") {
+		s = "Pot";
+	}
+	else if (s == "panfry") {
+		s = "Pan";
+	}
+	else if (s == "prep") {
+		s = "Sink";
+	}
+	else if (s == "cutting") {
+		s = "Knife";
+	}
+	else if (s == "mixing") {
+		s = "Mixer";
+	}
+	std::shared_ptr<scene2::TexturedNode> im = std::dynamic_pointer_cast<scene2::TexturedNode>(map->getChildByName(s));
+	im->setColor(Color4::WHITE);
+
 	_scenes[currId]->setFocus(false);
 	_scenes[targId]->setFocus(true);
 	_curr = targId;
@@ -570,12 +592,31 @@ void MultiScreenScene::switchStation(int currId, int targId) {
 		_scenes[currId]->removeHeldIngredient();
 		_scenes[targId]->receiveHeldIngredient(ing);
 	}
-
 	std::string newStationName = _scenes[targId]->getName();
 	for (char& c : newStationName) {
 		c = toupper(c);
 	}
 	_stationLabel->setText(newStationName + " STATION");
+
+	//can make this a dict later
+	if (newStationName == "POT") {
+		s = "Pot";
+	}
+	else if (newStationName == "PANFRY") {
+		s = "Pan";
+	}
+	else if (newStationName == "PREP") {
+		s = "Sink";
+	}
+	else if (newStationName == "CUTTING") {
+		s = "Knife";
+	}
+	else if (newStationName == "MIXING") {
+		s = "Mixer";
+	}
+	//set new minimap station color
+	im = std::dynamic_pointer_cast<scene2::TexturedNode>(map->getChildByName(s));
+	im->setColor(Color4::BLUE);
 }
 
 void MultiScreenScene::increaseQuotaProgress() {
@@ -613,9 +654,10 @@ void MultiScreenScene::save() {
 	std::string path = cugl::filetool::join_path({ root,"save.json" });
 
 	auto reader = JsonReader::alloc(path);
+	std::shared_ptr<JsonValue> prevSave = reader->readJson();
+	reader->close();
 
 	std::shared_ptr<JsonValue> json = JsonValue::allocObject();
-	std::shared_ptr<JsonValue> prevSave = reader->readJson();
 	std::shared_ptr<JsonValue> persistent = JsonValue::allocObject();
 
 	//process persistent upgrades
@@ -623,13 +665,30 @@ void MultiScreenScene::save() {
 	//placeholder values for chap and level
 	json->appendValue("chapter", 1.0f);
 	json->appendValue("level", 1.0f);
-	json->appendValue("startFromNight", true);
+	json->appendValue("startFromNight", _ended);
 	json->appendChild("persistent", persistent);
 	json->appendChild("night", JsonValue::allocObject());
 
 	auto writer = JsonWriter::alloc(path);
 	writer->writeJson(json);
 	writer->close();
+}
+
+bool MultiScreenScene::loadSave(std::shared_ptr<JsonValue> save) {
+	//load the save data into the game
+	//should only change persistent save data and startFromNight
+	if (save->size() == 0) {
+		changeCurrentLevel(1, 1);
+	}
+	else {
+		changeCurrentLevel(save->get("chapter")->asInt(), save->get("level")->asInt());
+	}
+	reset();
+	return true;
+}
+
+void MultiScreenScene::changeCurrentLevel(int chapter, int level) {
+	/*TODO*/
 }
 
 void MultiScreenScene::endDay() {

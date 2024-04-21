@@ -135,6 +135,8 @@ protected:
     std::unordered_set<b2Fixture*> _sensorFixtures;
 
     std::shared_ptr<Levels> currentLevel;
+    int _chapter;
+    int _level;
 
     std::shared_ptr<BullModel>			  _Bull;
 
@@ -289,8 +291,8 @@ public:
      *
      * @return  true if the controller is initialized properly, false otherwise.
      */
-    bool init(const std::shared_ptr<cugl::AssetManager>& assets, 
-              const cugl::Rect& rect, std::shared_ptr<PlatformInput> input);
+    bool init(const std::shared_ptr<cugl::AssetManager>& assets,
+        const cugl::Rect& rect, std::shared_ptr<PlatformInput> input);
     
     /**
      * Initializes the controller contents, and starts the game
@@ -551,6 +553,13 @@ public:
     void setTarget(std::string s) { _targetScene = s; };
 
     void save();
+
+    bool loadSave(std::shared_ptr<JsonValue> save);
+
+    void changeCurrentLevel(int chapter, int level);
+
+    /*temp, not planning on using this for long*/
+    void advanceLevel();
 };
 
 

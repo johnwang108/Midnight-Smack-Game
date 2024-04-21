@@ -70,14 +70,14 @@
             "rows": 3,
             "cols": 3,
             "frames": 8,
-            "duration": 0.6
+            "duration": 0.4
         },
         "air_roll": {
             "sheet": "su_air_roll",
             "rows": 2,
             "cols": 2,
             "frames": 3,
-            "duration": 0.25
+            "duration": 0.15
         }
     },
     "rice" : {

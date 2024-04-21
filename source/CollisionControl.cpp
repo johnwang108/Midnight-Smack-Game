@@ -58,8 +58,8 @@ void GameScene::beginContact(b2Contact* contact) {
 
 
     // See if we have landed on the ground.
-    if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1 && bd1->getName() != "attack") ||
-        (_avatar->getSensorName() == fd1 && _avatar.get() != bd2 && bd2->getName() != "attack")) {
+    if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1 && bd1->getName().find("attack") == std::string::npos) ||
+        (_avatar->getSensorName() == fd1 && _avatar.get() != bd2 && bd1->getName().find("attack") == std::string::npos)) {
         _avatar->setGrounded(true);
 
         // Could have more than one ground
@@ -68,8 +68,8 @@ void GameScene::beginContact(b2Contact* contact) {
 
     for (auto& _enemy : _enemies) {
         if (!_enemy->isRemoved()) {
-            if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1 && bd1->getName() != "attack") ||
-                (_enemy->getSensorName() == fd1 && _enemy.get() != bd2) && bd2->getName() != "attack") {
+            if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1 && bd1->getName().find("attack") == std::string::npos) ||
+                (_enemy->getSensorName() == fd1 && _enemy.get() != bd2 && bd2->getName().find("attack") == std::string::npos)) {
                     _enemy->setGrounded(true);
             }
         }
@@ -207,19 +207,21 @@ void GameScene::beginContact(b2Contact* contact) {
 
     // Test bullet collision with enemy
     if (bd1->getName() == ATTACK_NAME && enemies.find(bd2->getName()) != enemies.end()) {
-        Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
-        Vec2 attackerPos = ((Attack*)bd1)->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-        int damage = ((EnemyModel*)bd2)->getHealth();
-        ((EnemyModel*)bd2)->takeDamage(_avatar->getAttack(), direction);
-        damage -= ((EnemyModel*)bd2)->getHealth();
+        if (((EnemyModel*)bd2)->isTangible()) {
+            Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
+            Vec2 attackerPos = ((Attack*)bd1)->getPosition();
+            int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+            int damage = ((EnemyModel*)bd2)->getHealth();
+            ((EnemyModel*)bd2)->takeDamage(_avatar->getAttack(), direction);
+            damage -= ((EnemyModel*)bd2)->getHealth();
 
-        _avatar->addMeter(5.0f);
-
-        if (damage > 0) popup(std::to_string((int)damage), enemyPos * _scale);
-        if (((EnemyModel*)bd2)->getHealth() <= 50) {
-            ((EnemyModel*)bd2)->setVulnerable(true);
+            _avatar->addMeter(5.0f);
+            if (damage > 0) popup(std::to_string((int)damage), enemyPos * _scale);
+            if (((EnemyModel*)bd2)->getHealth() <= 50) {
+                ((EnemyModel*)bd2)->setVulnerable(true);
+            }
         }
+        else CULog("Intangible!");
     }
 
     //else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
@@ -246,7 +248,7 @@ void GameScene::beginContact(b2Contact* contact) {
     }
 
     if (_avatar->getBodySensorName() == fd1 && enemies.find(bd2->getName()) != enemies.end()) {
-        if (!((EnemyModel*)bd2)->isDying()) {
+        if (((EnemyModel*)bd2)->isTangible()) {
             Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
             Vec2 attackerPos = _avatar->getPosition();
             int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
@@ -254,6 +256,7 @@ void GameScene::beginContact(b2Contact* contact) {
             _avatar->addTouching();
             _avatar->takeDamage(34, direction);
         }
+        else CULog("Intangible!");
     }
     //else if (_avatar->getBodySensorName() == fd2 && enemies.find(bd1->getName()) != enemies.end()) {
     //    Vec2 enemyPos = _avatar->getPosition();
@@ -339,8 +342,8 @@ void GameScene::endContact(b2Contact* contact) {
     //Todo:: MAKE THIS BETTER ONCE BEN DONE WITH LEVEL EDITOR. FOR NOW JUST LOOP OVER ALL ENEMIES.
     for (auto& _enemy : _enemies) {
         if (!_enemy->isRemoved()) {
-            if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1 && bd1->getName() != "attack") ||
-                (_enemy->getSensorName() == fd1 && _enemy.get() != bd2) && bd2->getName() != "attack") {
+            if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1 && bd1->getName().find("attack") == std::string::npos) ||
+                (_enemy->getSensorName() == fd1 && _enemy.get() != bd2) && bd2->getName().find("attack") == std::string::npos) {
                 _enemy->setGrounded(false);
             }
         }
@@ -358,12 +361,13 @@ void GameScene::endContact(b2Contact* contact) {
     }
 
     if (_avatar->getBodySensorName() == fd1 && enemies.find(bd2->getName()) != enemies.end()) {
-        if (!((EnemyModel*)bd2)->isDying()) {
+        if (((EnemyModel*)bd2)->isTangible()) {
             Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
             Vec2 attackerPos = _avatar->getPosition();
             int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
             _avatar->takeDamage(34, direction);
         }
+        else CULog("Intangible!");
         _avatar->removeTouching();
     }
 }

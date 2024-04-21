@@ -148,6 +148,10 @@ public:
 	void increaseQuotaProgress();
 
 	void save();
+
+	void changeCurrentLevel(int chapter, int level);
+
+	bool loadSave(std::shared_ptr<JsonValue> save);
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */

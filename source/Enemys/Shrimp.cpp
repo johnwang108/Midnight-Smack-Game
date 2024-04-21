@@ -1,7 +1,7 @@
 #include "Shrimp.h"
 
 bool Shrimp::init(const cugl::Vec2& pos, const cugl::Size& size, float scale) {
-    return init(pos, size, scale, EnemyModel::defaultSeq(EnemyType::shrimp), EnemyModel::defaultSeq(EnemyType::shrimp));
+    return init(pos, size, scale, EnemyModel::defaultSeq(EnemyType::shrimp), EnemyModel::defaultSeqAlt(EnemyType::shrimp));
 }
 
 bool Shrimp::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::vector<std::string> seq1, std::vector<std::string> seq2) {

@@ -224,7 +224,8 @@ protected:
     float _healthUpgrade;
     float _dashUpgrade;
     float _meterGainUpgrade;
-    float _hitStunUpgrade;
+    float _attackUpgrade;
+    float _speedUpgrade;
 
     bool _rechargingDash;
 	/**
@@ -674,7 +675,19 @@ public:
 
     float getHealthCooldown() { return _healthCooldown; };
 
-    void setHealthUpgrade( float f ) { _healthUpgrade = f; };
+    void setHealthUpgrade(float f) { _healthUpgrade = f; };
+    void setDashUpgrade(float f) { _dashUpgrade = f; };
+    void setMeterGainUpgrade(float f) { _meterGainUpgrade = f; };
+    void setAttackUpgrade(float f) { _attackUpgrade = f; };
+    void setSpeedUpgrade(float f) { _speedUpgrade = f; };
+
+    void initUpgrades() {
+        _healthUpgrade = 0.0f;
+        _dashUpgrade = 0.0f;
+        _meterGainUpgrade = 0.0f;
+        _attackUpgrade = 0.0f;
+        _speedUpgrade = 0.0f;
+    }
 
     void gainHealth(float f);
 

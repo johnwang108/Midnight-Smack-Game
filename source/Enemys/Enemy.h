@@ -68,6 +68,8 @@ protected:
     /** Whether the enemy is aggroed*/
     bool _isChasing;
 
+    bool _isTangible;
+
     /** Enemy state*/
     std::string _state;
 
@@ -254,7 +256,7 @@ public:
 
     bool didAttack();
 
-    std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale);
+    virtual std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale);
 
 
     void setVulnerable(bool vulnerable) { _vulnerable = vulnerable; }
@@ -282,12 +284,15 @@ public:
 
     //void syncStateTimes();
 
+    bool isTangible() { return _isTangible; }
+
     void setActiveAction(std::string action) {
         Entity::setActiveAction(action);
     };
 
     virtual void markForDeletion() {
         _killMe = true;
+        _isTangible = false;
     }
 
     bool shouldDelete() {
@@ -326,6 +331,25 @@ public:
             return { "circle", "circle", "pigtail" };
         case EnemyType::rice_soldier:
             return { "circle", "circle", "pigtail" };
+        case EnemyType::egg:
+            return { "v", "v", "v", };
+        case EnemyType::carrot:
+            return { "horizswipe", "vertswipe", "horizswipe" };
+        case EnemyType::beef:
+            return { "v", "circle", "pigtail" };
+        default:
+            return {};
+        }
+    };
+
+    static std::vector<std::string> defaultSeqAlt(EnemyType type) {
+        switch (type) {
+        case EnemyType::shrimp:
+            return { "pigtail", "v", "circle" };
+        case EnemyType::rice:
+            return { "pigtail", "pigtail", "pigtail" };
+        case EnemyType::rice_soldier:
+            return { "pigtail", "pigtail", "pigtail" };
         case EnemyType::egg:
             return { "v", "v", "v", };
         case EnemyType::carrot:
