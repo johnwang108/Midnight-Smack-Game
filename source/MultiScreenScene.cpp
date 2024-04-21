@@ -183,27 +183,27 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 
 	_winScreenRoot = _assets->get<scene2::SceneNode>("dayWinScreen");
 
-	std::shared_ptr<scene2::Button> b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("continue"));
-	b->addListener([=](const std::string& name, bool down) {
-		this->_active = false;
-		this->setTransition(true);
-		this->setTarget("night");
-		});
-	_buttons.push_back(b);
+	//std::shared_ptr<scene2::Button> b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("continue"));
+	//b->addListener([=](const std::string& name, bool down) {
+	//	this->_active = false;
+	//	this->setTransition(true);
+	//	this->setTarget("night");
+	//	});
+	//_buttons.push_back(b);
 
-	b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("retry"));
-	b->addListener([=](const std::string& name, bool down) {
-		this->reset();
-		});
-	_buttons.push_back(b);
+	//b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("retry"));
+	//b->addListener([=](const std::string& name, bool down) {
+	//	this->reset();
+	//	});
+	//_buttons.push_back(b);
 
-	b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("menu"));
-	b->addListener([=](const std::string& name, bool down) {
-		this->_active = false;
-		this->setTransition(true);
-		this->setTarget("main_menu");
-		});
-	_buttons.push_back(b);
+	//b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("menu"));
+	//b->addListener([=](const std::string& name, bool down) {
+	//	this->_active = false;
+	//	this->setTransition(true);
+	//	this->setTarget("main_menu");
+	//	});
+	//_buttons.push_back(b);
 
 
 	std::shared_ptr<scene2::Label> statUps = scene2::Label::allocWithText("", _assets->get<Font>("winter drinkRegular25"));

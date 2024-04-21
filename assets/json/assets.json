@@ -63,14 +63,17 @@
         "egg": {
             "file": "textures/day/food/egg.png"
         },
-      "boiledEgg": {
-        "file": "textures/day/food/boiledEgg.png"
-      },
-      "carrotIdle": {
-        "file": "textures/carrotLevelDesign.png"
-      }, 
+        "boiledEgg": {
+            "file": "textures/day/food/boiledEgg.png"
+        },
+        "carrotIdle": {
+            "file": "textures/carrotLevelDesign.png"
+        },
         "carrotEnemy": {
             "file": "textures/carrotEnemy.png"
+        },
+        "carrot": {
+            "file": "textures/day/food/carrot.png"
         },
         "cutCarrot": {
             "file": "textures/day/food/cutCarrot.png"
