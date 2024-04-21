@@ -152,6 +152,10 @@ public:
 
     int getLastResult() { return _lastResult; }
 
+    float getCurrentSimilarity() { return _currentSimilarity; }
+
+ 
+
     void setFocus(bool focus);
 
     void setTargetGestures(std::vector<std::string> gestures) { 
