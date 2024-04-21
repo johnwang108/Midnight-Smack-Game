@@ -181,8 +181,8 @@ void Level2::populate(GameScene& scene) {
 	_bull->addActionAnimation("bullRun", _assets->get<Texture>("bullRun"), 3, 3, 8, 1.0f);
 	_bull->addActionAnimation("bullStunned", _assets->get<Texture>("bullStunned"), 3, 4, 12, 1.0f);
 	_bull->addActionAnimation("bullStomp", _assets->get<Texture>("bullStomp"), 5, 5, 22, 2.0f);
-	_bull->addActionAnimation("bullDazedtoIdle", _assets->get<Texture>("bullDazedtoIdle"), 2, 2, 4, 2.0f);
-	_bull->addActionAnimation("bullCrash", _assets->get<Texture>("bullCrash"), 4, 4, 15, 3.0f);
+	_bull->addActionAnimation("bullDazedtoIdle", _assets->get<Texture>("bullDazedtoIdle"), 2, 2, 4, 1.0f);
+	_bull->addActionAnimation("bullCrash", _assets->get<Texture>("bullCrash"), 4, 4, 15, 2.0f);
 	_bull->addActionAnimation("bullTurn", _assets->get<Texture>("bullTurn"), 4, 4, 16, 0.75f);
 	
 	scene.addObstacle(_bull, spritenode);

@@ -341,7 +341,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     //load first level
     _chapter = 1;
-    _level = 3;
+    _level = 2;
     loadLevel(_chapter, _level);
     // loadLevel(currentLevel);
     // _level_model->setFilePath("json/test_level_v2_experiment.json");
@@ -1001,162 +1001,36 @@ void GameScene::preUpdate(float dt) {
             if (!_Bull->isChasing()) {
                 Vec2 BullPos = _Bull->getPosition();
                 float distance = avatarPos.distance(BullPos);
-                if (_Bull->getnextchangetime() < 0) {
+                if (_Bull->getnextchangetime() < 0 && _Bull->getacttime()<=0){
                     int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
                     _Bull->setDirection(direction);
                     _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
                 }
             }
-            _Bull->update(dt);
-        }
-        if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
-            if (_ShrimpRice->getHealth() <= 0) {
-                _worldnode->removeChild(_ShrimpRice->getSceneNode());
-                _ShrimpRice->setDebugScene(nullptr);
-                _ShrimpRice->markRemoved(true);
-            }
-
-            if (!_ShrimpRice->isChasing()) {
-                Vec2 BullPos = _ShrimpRice->getPosition();
-                float distance = avatarPos.distance(BullPos);
-                if (_ShrimpRice->getnextchangetime() < 0) {
-                    int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
-                    _ShrimpRice->setDirection(direction);
-                    _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
-                }
-            }
-            _ShrimpRice->update(dt);
-        }
-
-    if (!_overrideAnim) {
-        if (_Bull != nullptr) {
-            _BullactionManager->update(dt);
-            if (_Bull->getangrytime() > 0) {
-                if (!_BullactionManager->isActive("bullStunned")) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullStunned = _Bull->getAction("bullStunned");
-                    _BullactionManager->activate("bullStunned", bullStunned, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate("bullStunned");
-                }
-            }
-            else if (_Bull->isChasing() && ((_Bull->getPosition().x < 15 && _Bull->getDirection() == -1) || _Bull->getPosition().x > 35 && _Bull->getDirection() == 1)) {
-                if (!_BullactionManager->isActive("bullAttack")) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullAttack = _Bull->getAction("bullAttack");
-                    _BullactionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate("bullAttack");
-                }
-            }
-            else if (_Bull->getturing() > 0) {
-                if (!_BullactionManager->isActive("bullTurn")) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullTurn = _Bull->getAction("bullTurn");
-                    _BullactionManager->activate("bullTurn", bullTurn, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate("bullTurn");
-                }
-            }
-            else if (_Bull->getsprintpreparetime() <= 0 && _Bull->getknockbacktime() <= 0) {
-                if (!_BullactionManager->isActive("bullRun")) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullRun = _Bull->getAction("bullRun");
-                    _BullactionManager->activate("bullRun", bullRun, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate("bullRun");
-                }
-            }
-            else if (_Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0) {
-                if (!_BullactionManager->isActive(_Bull->getattacktype())) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullTelegraph = _Bull->getAction(_Bull->getattacktype());
-                    _BullactionManager->activate(_Bull->getattacktype(), bullTelegraph, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate(_Bull->getattacktype());
-                }
-            }
-
-
-
-        }
-
-        if (_ShrimpRice != nullptr) {
-            _SHRactionManager->update(dt);
-
-            if (_ShrimpRice->getattackcombo() > 0) {
-                if (!_SHRactionManager->isActive("SFR_Attack")) {
-                    auto SFR_Attack = _ShrimpRice->getAction("SFR_Attack");
-                    _SHRactionManager->activate("SFR_Attack", SFR_Attack, _ShrimpRice->getSceneNode());
-                }
-                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                    _ShrimpRice->animate("SFR_Attack");
-                }
-            }
-            else if (_ShrimpRice->getWheelofDoom() > 0) {
-                if (!_SHRactionManager->isActive("SFRWheelofDoom")) {
-                    auto SFRWheelofDoom = _ShrimpRice->getAction("SFRWheelofDoom");
-                    _SHRactionManager->activate("SFRWheelofDoom", SFRWheelofDoom, _ShrimpRice->getSceneNode());
-                }
-                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                    _ShrimpRice->animate("SFRWheelofDoom");
-                }
-            }
-            else if (_ShrimpRice->getknockbacktime() <= 0) {
-                if (!_SHRactionManager->isActive("SFR_Move")) {
-                    auto SFR_Move = _ShrimpRice->getAction("SFR_Move");
-                    _SHRactionManager->activate("SFR_Move", SFR_Move, _ShrimpRice->getSceneNode());
-                }
-                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                    _ShrimpRice->animate("SFR_Move");
-                }
-            }
-
-        }if (_Bull != nullptr && !_Bull->isRemoved()) {
-            if (_Bull->getHealth() <= 0) {
-                _worldnode->removeChild(_Bull->getSceneNode());
-                _Bull->setDebugScene(nullptr);
-                _Bull->markRemoved(true);
-            }
-            if (_Bull->getangrytime() > 0 && _Bull->getknockbacktime() <= 0) {
-                if (int(_Bull->getangrytime() * 10) % 2 < 1) {
-                    _Bull->createAttack(*this);
-                }
-            }
-            if (_Bull->getshake() && _Bull->getknockbacktime() <= 0) {
-                _Bull->setshake(false);
-                _Bull->createAttack2(*this);
-            }
-            if (_Bull->getshoot()) {
-                _Bull->setshoot(false);
-                _Bull->createAttack3(*this);
-            }
-            if (!_Bull->isChasing()) {
+            if (_Bull->isChasing() && ((_Bull->getPosition().x > 20 && _Bull->getDirection() == -1) || (_Bull->getPosition().x < 30 && _Bull->getDirection() == 1))) {
                 Vec2 BullPos = _Bull->getPosition();
-                float distance = avatarPos.distance(BullPos);
-                if (_Bull->getnextchangetime() < 0) {
-                    int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
-                    _Bull->setDirection(direction);
-                    _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+                int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
+                if (direction != _Bull->getDirection()) {
+                    _Bull->setbreaking(2.0f);
                 }
-            }
+			}
             _Bull->update(dt);
         }
-        if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
+    if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
             if (_ShrimpRice->getHealth() <= 0) {
                 _worldnode->removeChild(_ShrimpRice->getSceneNode());
                 _ShrimpRice->setDebugScene(nullptr);
                 _ShrimpRice->markRemoved(true);
             }
-
-            if (!_ShrimpRice->isChasing()) {
+            if (_ShrimpRice->getattacktype()=="SFRWave2") {
                 Vec2 BullPos = _ShrimpRice->getPosition();
                 float distance = avatarPos.distance(BullPos);
+                if (distance < 4) {
+                    _ShrimpRice->setpassattack(true);
+                }
+            }
+            if (!_ShrimpRice->isChasing()) {
+                Vec2 BullPos = _ShrimpRice->getPosition();
                 if (_ShrimpRice->getnextchangetime() < 0) {
                     int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
                     _ShrimpRice->setDirection(direction);
@@ -1166,97 +1040,94 @@ void GameScene::preUpdate(float dt) {
             _ShrimpRice->update(dt);
         }
 
-        if (_Bull != nullptr) {
-            _BullactionManager->update(dt);
-            if (_Bull->getangrytime() > 0) {
-                if (!_BullactionManager->isActive("bullStunned")) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullStunned = _Bull->getAction("bullStunned");
-                    _BullactionManager->activate("bullStunned", bullStunned, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate("bullStunned");
-                }
-            }
-            else if (_Bull->isChasing() && ((_Bull->getPosition().x < 15 && _Bull->getDirection() == -1) || _Bull->getPosition().x > 35 && _Bull->getDirection() == 1)) {
-                if (!_BullactionManager->isActive("bullAttack")) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullAttack = _Bull->getAction("bullAttack");
-                    _BullactionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate("bullAttack");
-                }
-            }
-            else if (_Bull->getturing() > 0) {
-                if (!_BullactionManager->isActive("bullTurn")) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullTurn = _Bull->getAction("bullTurn");
-                    _BullactionManager->activate("bullTurn", bullTurn, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate("bullTurn");
-                }
-            }
-            else if (_Bull->getsprintpreparetime() <= 0 && _Bull->getknockbacktime() <= 0) {
-                if (!_BullactionManager->isActive("bullRun")) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullRun = _Bull->getAction("bullRun");
-                    _BullactionManager->activate("bullRun", bullRun, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate("bullRun");
-                }
-            }
-            else if (_Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0) {
-                if (!_BullactionManager->isActive(_Bull->getattacktype())) {
-                    _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                    auto bullTelegraph = _Bull->getAction(_Bull->getattacktype());
-                    _BullactionManager->activate(_Bull->getattacktype(), bullTelegraph, _Bull->getSceneNode());
-                }
-                if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                    _Bull->animate(_Bull->getattacktype());
-                }
-            }
 
 
 
+
+    if (_Bull != nullptr) {
+        _BullactionManager->update(dt);
+        if (_Bull->getangrytime()>0) {
+            if (!_BullactionManager->isActive("bullStunned")) {
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullStunned = _Bull->getAction("bullStunned");
+                _BullactionManager->activate("bullStunned", bullStunned, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate("bullStunned");
+            }
+        }
+        else if (_Bull->getbreaking()<=0 &&_Bull->isChasing() && ((_Bull->getPosition().x < 13 && _Bull->getDirection() == -1) || (_Bull->getPosition().x > 37 && _Bull->getDirection() == 1))) {
+            if (!_BullactionManager->isActive("bullAttack")){
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullAttack = _Bull->getAction("bullAttack");
+                _BullactionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate("bullAttack");
+            }
+        }
+        else if (_Bull->getacttime() > 0) {
+            if (!_BullactionManager->isActive(_Bull->getact())) {
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullTurn = _Bull->getAction(_Bull->getact());
+                _BullactionManager->activate(_Bull->getact(), bullTurn, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate(_Bull->getact());
+            }
+        }
+        else if (_Bull->getsprintpreparetime() <= 0 && _Bull->getknockbacktime() <= 0) {
+            if (!_BullactionManager->isActive("bullRun")) {
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullRun = _Bull->getAction("bullRun");
+                _BullactionManager->activate("bullRun", bullRun, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate("bullRun");
+            }
+        }
+        else if ( _Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0) {
+            if (!_BullactionManager->isActive(_Bull->getattacktype())) {
+                _BullactionManager->clearAllActions(_Bull->getSceneNode());
+                auto bullTelegraph = _Bull->getAction(_Bull->getattacktype());
+                _BullactionManager->activate(_Bull->getattacktype(), bullTelegraph, _Bull->getSceneNode());
+            }
+            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
+                _Bull->animate(_Bull->getattacktype());
+            }
         }
 
-        if (_ShrimpRice != nullptr) {
-            _SHRactionManager->update(dt);
 
-            if (_ShrimpRice->getattackcombo() > 0) {
-                if (!_SHRactionManager->isActive("SFR_Attack")) {
-                    auto SFR_Attack = _ShrimpRice->getAction("SFR_Attack");
-                    _SHRactionManager->activate("SFR_Attack", SFR_Attack, _ShrimpRice->getSceneNode());
-                }
-                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                    _ShrimpRice->animate("SFR_Attack");
-                }
-            }
-            else if (_ShrimpRice->getWheelofDoom() > 0) {
-                if (!_SHRactionManager->isActive("SFRWheelofDoom")) {
-                    auto SFRWheelofDoom = _ShrimpRice->getAction("SFRWheelofDoom");
-                    _SHRactionManager->activate("SFRWheelofDoom", SFRWheelofDoom, _ShrimpRice->getSceneNode());
-                }
-                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                    _ShrimpRice->animate("SFRWheelofDoom");
-                }
-            }
-            else if (_ShrimpRice->getknockbacktime() <= 0) {
-                if (!_SHRactionManager->isActive("SFR_Move")) {
-                    auto SFR_Move = _ShrimpRice->getAction("SFR_Move");
-                    _SHRactionManager->activate("SFR_Move", SFR_Move, _ShrimpRice->getSceneNode());
-                }
-                if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                    _ShrimpRice->animate("SFR_Move");
-                }
-            }
-
-        }
+        
     }
-    
+
+    if (_ShrimpRice != nullptr) {
+        _SHRactionManager->update(dt);
+        
+        if (_ShrimpRice->getattacktype()!="none" && _ShrimpRice->getknockbacktime() <= 0) {
+            if (!_SHRactionManager->isActive(_ShrimpRice->getattacktype())) {
+                _SHRactionManager->clearAllActions(_ShrimpRice->getSceneNode());
+                auto SFR_Attack = _ShrimpRice->getAction(_ShrimpRice->getattacktype());
+                _SHRactionManager->activate(_ShrimpRice->getattacktype(), SFR_Attack, _ShrimpRice->getSceneNode());
+            }
+            if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                _ShrimpRice->animate(_ShrimpRice->getattacktype());
+            }
+        }     
+        else if (_ShrimpRice->getknockbacktime() <= 0) {
+            if (!_SHRactionManager->isActive("SFR_Move")) {
+                _SHRactionManager->clearAllActions(_ShrimpRice->getSceneNode());
+                auto SFR_Move = _ShrimpRice->getAction("SFR_Move");
+                _SHRactionManager->activate("SFR_Move", SFR_Move, _ShrimpRice->getSceneNode());
+            }
+            if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                _ShrimpRice->animate("SFR_Move");
+            }
+		}
+        
+    }
+
+
 
     if ((_afterimages.size() > 4 || (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() > _avatar->getFloatyFrames())) && !_afterimages.empty()) {
         std::shared_ptr<scene2::SceneNode> afterimage = _afterimages.front();
@@ -1265,6 +1136,7 @@ void GameScene::preUpdate(float dt) {
     }
      
     _actionManager->update(dt);
+
 }
 
 
@@ -1351,6 +1223,9 @@ void GameScene::fixedUpdate(float step) {
             else if (_level == 3) {
                 _camera->setZoom(210.0 / 40.0);
             }
+            else if (_level == 4) {
+                _camera->setZoom(210.0 / 40.0);
+            }
         }
         //else if (currentLevel == level2) {
         //    _camera->setZoom(210.0 / 40.0);
@@ -1363,9 +1238,21 @@ void GameScene::fixedUpdate(float step) {
         //}
 
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
-        cugl::Vec3 mapMin = Vec3(SCENE_WIDTH / 2, SCENE_HEIGHT / 2, 0);
-        cugl::Vec3 mapMax = Vec3(1400 - SCENE_WIDTH / 2, 900 - SCENE_HEIGHT / 2, 0); //replace magic numbers
-        /*target.clamp(mapMin, mapMax);*/
+        ////cugl::Vec3 mapMin = Vec3(SCENE_WIDTH / 2, SCENE_HEIGHT / 2, 0);
+        ////cugl::Vec3 mapMax = Vec3(1400 - SCENE_WIDTH / 2, 900 - SCENE_HEIGHT / 2, 0); //replace magic numbers
+        //float width = _background->getBoundingRect().getMinX();
+        //cugl::Vec3 cameraLL = _camera->unproject(Vec2(_camera->getViewport().getMinX(), _camera->getViewport().getMinY()));
+        //cugl::Vec3 cameraUR = _camera->unproject(Vec2(_camera->getViewport().getMaxX(), _camera->getViewport().getMaxY()));
+
+        //float cameraWidth = cameraUR.x - cameraLL.x;
+        //float cameraHeight = cameraUR.y - cameraLL.y;
+
+        //cugl::Vec3 mapMin = Vec3(_background->getBoundingRect().getMinX() + cameraWidth, _background->getBoundingRect().getMinY() + cameraHeight, 0);
+        //cugl::Vec3 mapMax = Vec3(_background->getBoundingRect().getMaxX() - cameraWidth, _background->getBoundingRect().getMaxY() - cameraHeight, 0);
+
+        //CULog("Min: %f %f", mapMin.x, mapMin.y);
+        //CULog("Max: %f %f", mapMax.x, mapMax.y);
+        //target.clamp(mapMin, mapMax);
 
         cugl::Vec3 pos = _camera->getPosition();
 
@@ -1538,46 +1425,6 @@ void GameScene::setFailure(bool value) {
 }
 
 
-/**
- * Add a new bullet to the world and send it in the right direction.
- */
-// void GameScene::createAttack() {
-    /*Vec2 pos = _avatar->getPosition();
-    pos.x += (_avatar->isFacingRight() ? ATTACK_OFFSET_H : -ATTACK_OFFSET_H);
-    pos.y += ATTACK_OFFSET_V;
-    std::shared_ptr<Texture> image;
-    if (_avatar->isFacingRight()) {
-        image = _assets->get<Texture>(ATTACK_TEXTURE_R);
-    }
-    else {
-        image = _assets->get<Texture>(ATTACK_TEXTURE_L);
-    }
-
-
-    std::shared_ptr<Attack> attack = Attack::alloc(pos,
-        cugl::Size(0.6 * ATTACK_W * image->getSize().width / _scale,
-            ATTACK_H * image->getSize().height / _scale));
-    attack->setName(ATTACK_NAME);
-    attack->setDensity(HEAVY_DENSITY);
-    attack->setBullet(true);
-    attack->setGravityScale(0);
-    attack->setDebugColor(DEBUG_COLOR);
-    attack->setDrawScale(_scale);
-
-
-
-    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
-    attack->setSceneNode(sprite);
-    sprite->setVisible(true);
-    sprite->setPosition(pos);
-
-    addObstacle(attack, sprite, true);
-
-    std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
-    AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);
-
-    _attacks.push_back(attack);*/
-// }
 
 /**
  * Removes a new bullet from the world.
@@ -1599,149 +1446,7 @@ void GameScene::removeAttack(T* attack) {
 }
 
 
-#pragma mark -
-#pragma mark Collision Handling
-/**
- * Processes the start of a collision
- *
- * This method is called when we first get a collision between two objects.  We use
- * this method to test if it is the "right" kind of collision.  In particular, we
- * use it to test if we make it to the win door.
- *
- * @param  contact  The two bodies that collided
- */
 
-// void GameScene::beginContact(b2Contact* contact) {
-    //b2Fixture* fix1 = contact->GetFixtureA();
-    //b2Fixture* fix2 = contact->GetFixtureB();
-
-    //b2Body* body1 = fix1->GetBody();
-    //b2Body* body2 = fix2->GetBody();
-
-
-    //std::string* fd1 = reinterpret_cast<std::string*>(fix1->GetUserData().pointer);
-    //std::string* fd2 = reinterpret_cast<std::string*>(fix2->GetUserData().pointer);
-
-    //physics2::Obstacle* bd1 = reinterpret_cast<physics2::Obstacle*>(body1->GetUserData().pointer);
-    //physics2::Obstacle* bd2 = reinterpret_cast<physics2::Obstacle*>(body2->GetUserData().pointer);
-
-
-    //if (bd1->getName() == BACKGROUND_NAME || bd2->getName() == BACKGROUND_NAME) {
-    //    return;
-    //}
-
-    //// Check if the player hits a wall NOT PLATFORM (not implemented for that atm)
-    //if ((bd1 == _avatar.get() && bd2->getName() == WALL_NAME) ||
-    //    (bd2 == _avatar.get() && bd1->getName() == WALL_NAME)) {
-    //    _avatar->setContactingWall(true);
-    //    _avatar->setVX(0);
-    //}
-
-
-
-    //// See if we have landed on the ground.
-    //if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
-    //    (_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
-    //    _avatar->setGrounded(true);
-    //    // Could have more than one ground
-    //    _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
-    //}
-
-    //for (auto& _enemy : _enemies) {
-    //    if (!_enemy->isRemoved()) {
-    //        if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1) ||
-    //            (_enemy->getSensorName() == fd1 && _enemy.get() != bd2)) {
-    //            _enemy->setGrounded(true);
-    //        }
-
-    //    }
-    //}
-    //if (_Bull != nullptr && _Bull->isChasing() && bd1 == _Bull.get() && bd2->getName() == WALL_NAME) {
-    //    Vec2 wallPos = ((physics2::PolygonObstacle*)bd2)->getPosition();
-    //    Vec2 bullPos = _Bull->getPosition();
-    //    int direction = (wallPos.x > bullPos.x) ? 1 : -1;
-    //    _Bull->setIsChasing(false);
-    //    _Bull->takeDamage(0, direction, true);
-    //}
-    //else if (_Bull != nullptr && _Bull->isChasing() && bd1->getName() == WALL_NAME && bd2 == _Bull.get()) {
-    //    Vec2 wallPos = ((physics2::PolygonObstacle*)bd1)->getPosition();
-    //    Vec2 bullPos = _Bull->getPosition();
-    //    int direction = (wallPos.x > bullPos.x) ? 1 : -1;
-    //    _Bull->setIsChasing(false);
-    //    _Bull->takeDamage(0, direction, true);
-    //}
-    //if (_Bull != nullptr && bd1 == _Bull.get() && bd2 == _avatar.get()) {
-    //    Vec2 avatarPos = _avatar->getPosition();
-    //    Vec2 bullPos = _Bull->getPosition();
-    //    int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
-    //    _avatar->takeDamage(34, direction);
-    //}
-    //else if (_Bull != nullptr && bd1 == _avatar.get() && bd2 == _Bull.get()) {
-    //    Vec2 avatarPos = _avatar->getPosition();
-    //    Vec2 bullPos = _Bull->getPosition();
-    //    int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
-    //    _avatar->takeDamage(34, direction);
-    //}
-
-    //if (_Bull != nullptr && bd1->getName() == ATTACK_NAME && bd2->getName() == BULL_TEXTURE && _Bull->getknockbacktime() <= 0) {
-    //    Vec2 enemyPos = _Bull->getPosition();
-    //    Vec2 attackerPos = ((Attack*)bd1)->getPosition();
-    //    int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-    //    if (_Bull->getHealth() == 66.0f) {
-    //        _Bull->takeDamage(17, direction, true);
-    //        _Bull->setangrytime(4);
-    //    }
-    //    else {
-    //        _Bull->takeDamage(17, direction, false);
-    //    }
-    //    CULog("Bull Health: %f", _Bull->getHealth());
-    //}
-    //else if (_Bull != nullptr && bd2->getName() == ATTACK_NAME && bd1->getName() == BULL_TEXTURE && _Bull->getknockbacktime() <= 0) {
-    //    Vec2 enemyPos = _Bull->getPosition();
-    //    Vec2 attackerPos = ((Attack*)bd2)->getPosition();
-    //    int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-    //    if (_Bull->getHealth() == 66.0f) {
-    //        _Bull->takeDamage(17, direction, true);
-    //        _Bull->setangrytime(4);
-    //    }
-    //    else {
-    //        _Bull->takeDamage(17, direction, false);
-    //    }
-    //    CULog("Bull Health: %f", _Bull->getHealth());
-    //}
-    //if (bd1->getName() == "shake" && bd2 == _avatar.get()) {
-    //    Vec2 enemyPos = ((Attack*)bd1)->getPosition();
-    //    Vec2 attackerPos = _avatar->getPosition();
-    //    int direction = (attackerPos.x < enemyPos.x) ? -1 : 1;
-    //    _avatar->takeDamage(34, direction);
-    //}
-    //else if (bd2->getName() == "shake" && bd1 == _avatar.get()) {
-    //    Vec2 enemyPos = ((Attack*)bd2)->getPosition();
-    //    Vec2 attackerPos = _avatar->getPosition();
-    //    int direction = (attackerPos.x < enemyPos.x) ? -1 : 1;
-    //    _avatar->takeDamage(34, direction);
-    //}
-    //if (bd1->getName() == "enemy_attack" && bd2 == _avatar.get()) {
-    //    Vec2 enemyPos = ((EnemyAttack*)bd1)->getPosition();
-    //    Vec2 attackerPos = _avatar->getPosition();
-    //    int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
-    //    _avatar->takeDamage(34, direction);
-    //    removeAttack((EnemyAttack*)bd1);
-    //}
-    //else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
-    //    Vec2 enemyPos = ((EnemyAttack*)bd2)->getPosition();
-    //    Vec2 attackerPos = _avatar->getPosition();
-    //    int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
-    //    _avatar->takeDamage(34, direction);
-    //    removeAttack((EnemyAttack*)bd2);
-    //}
-
-    //// If we hit the "win" door, we are done
-    //if (!_failed && ((bd1 == _avatar.get() && bd2 == _goalDoor.get()) ||
-    //    (bd1 == _goalDoor.get() && bd2 == _avatar.get()))) {
-    //    setComplete(true);
-    //}
-// }
 
 
 //Basically the same as removeAttack, can refactor
@@ -1758,84 +1463,6 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
 }
 
-/**
- * Callback method for the start of a collision
- *
- * This method is called when two objects cease to touch.  The main use of this method
- * is to determine when the characer is NOT on the ground.  This is how we prevent
- * double jumping.
- */
-
-//void GameScene::endContact(b2Contact* contact) {
-//    b2Fixture* fix1 = contact->GetFixtureA();
-//    b2Fixture* fix2 = contact->GetFixtureB();
-//
-//    b2Body* body1 = fix1->GetBody();
-//    b2Body* body2 = fix2->GetBody();
-//
-//    std::string* fd1 = reinterpret_cast<std::string*>(fix1->GetUserData().pointer);
-//    std::string* fd2 = reinterpret_cast<std::string*>(fix2->GetUserData().pointer);
-//
-//    physics2::Obstacle* bd1 = reinterpret_cast<physics2::Obstacle*>(body1->GetUserData().pointer);
-//    physics2::Obstacle* bd2 = reinterpret_cast<physics2::Obstacle*>(body2->GetUserData().pointer);
-//
-//    if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
-//        (_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
-//        _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
-//        if (_sensorFixtures.empty()) {
-//            _avatar->setGrounded(false);
-//        }
-//    }
-//    // Check if the player is no longer in contact with any walls
-//    bool p1 = (_avatar->getSensorName() == fd2);
-//    bool p2 = (bd1->getName() != WALL_NAME);
-//    bool p3 = (_avatar->getSensorName() == fd1);
-//    bool p4 = (bd2->getName() != WALL_NAME);
-//    bool p5 = _avatar->contactingWall();
-//    if (!(p1 || p2 || p3) && p4 && p5) {
-//        _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
-//        _avatar->setContactingWall(false);
-//    }
-//    // Test bullet collision with enemy
-//    if (bd1->getName() == ATTACK_NAME && bd2->getName() == ENEMY_NAME) {
-//        Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
-//        Vec2 attackerPos = ((Attack*)bd1)->getPosition();
-//        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-//        ((EnemyModel*)bd2)->takeDamage(34, direction);
-//        if (((EnemyModel*)bd2)->getHealth() <= 50) {
-//            ((EnemyModel*)bd2)->setVulnerable(true);
-//        }
-//    }
-//    else if (bd2->getName() == ATTACK_NAME && bd1->getName() == ENEMY_NAME) {
-//        Vec2 enemyPos = ((EnemyModel*)bd1)->getPosition();
-//        Vec2 attackerPos = ((Attack*)bd2)->getPosition();
-//        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-//        ((EnemyModel*)bd1)->takeDamage(34, direction);
-//        if (((EnemyModel*)bd1)->getHealth() <= 50) {
-//            ((EnemyModel*)bd1)->setVulnerable(true);
-//        }
-//    }
-//
-//
-//
-//
-//
-//
-//
-//    if (bd1->getName() == ENEMY_NAME && bd2 == _avatar.get()) {
-//        Vec2 enemyPos = ((DudeModel*)bd2)->getPosition();
-//        Vec2 attackerPos = ((EnemyModel*)bd1)->getPosition();
-//        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
-//        _avatar->takeDamage(34, direction);
-//    }
-//    else if (bd2->getName() == ENEMY_NAME && bd1 == _avatar.get()) {
-//        Vec2 enemyPos = ((DudeModel*)bd1)->getPosition();
-//        Vec2 attackerPos = ((EnemyModel*)bd2)->getPosition();
-//        int direction = (attackerPos.x > enemyPos.x) ? -1 : 1;
-//        _avatar->takeDamage(34, direction);
-//    }
-//
-//}
 
 /**
  * Returns the active screen size of this scene.
@@ -2023,7 +1650,7 @@ void GameScene::loadLevel(int chapter, int level) {
 
 void GameScene::advanceLevel() {
     _level += 1;
-    _level = _level % 4;
+    _level = _level % 5;
     if (_level == 0) _level = 1;
     changeCurrentLevel(_chapter, _level);
 }
@@ -2039,6 +1666,9 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
         }
         else if (level == 3) {
             currentLevel = level2;
+        }
+        else if (level == 4) {
+            currentLevel = level3;
         }
     }
 }

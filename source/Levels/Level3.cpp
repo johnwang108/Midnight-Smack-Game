@@ -183,7 +183,7 @@ void Level3::populate(GameScene& scene) {
 	_shrimprice->addActionAnimation("SFRWave1", _assets->get<Texture>("SFRWave1"), 3, 3, 8, 1.125f);
 	_shrimprice->addActionAnimation("SFRWave2", _assets->get<Texture>("SFRWave2"), 3, 3, 7, 1.125f);
 	_shrimprice->addActionAnimation("SFRWave3", _assets->get<Texture>("SFRWave3"), 4, 5, 18, 1.125f);
-	_shrimprice->addActionAnimation("SFRWheelofDoom", _assets->get<Texture>("SFRWheelofDoom"), 3, 4, 12, 0.5f);
+	_shrimprice->addActionAnimation("SFRWheelofDoom", _assets->get<Texture>("SFRWheelofDoom"), 3, 4, 12, 0.1f);
 
 	scene.addObstacle(_shrimprice, spritenode);
 

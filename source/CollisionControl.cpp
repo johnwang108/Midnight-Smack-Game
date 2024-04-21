@@ -86,10 +86,8 @@ void GameScene::beginContact(b2Contact* contact) {
         else {
             _Bull->setIsChasing(false);
             _Bull->takeDamage(0, direction, true);
-            _BullactionManager->clearAllActions(_Bull->getSceneNode());
-            auto bullCrash = _Bull->getAction("bullCrash");
-            _Bull->animate("bullCrash");
-            _BullactionManager->activate("bullCrash", bullCrash, _Bull->getSceneNode());
+            _Bull->setact("bullCrash", 3.0f);
+
         }
 
 
@@ -106,10 +104,8 @@ void GameScene::beginContact(b2Contact* contact) {
         else {
             _Bull->setIsChasing(false);
             _Bull->takeDamage(0, direction, true);
-            _BullactionManager->clearAllActions(_Bull->getSceneNode());
-            auto bullCrash = _Bull->getAction("bullCrash");
-            _Bull->animate("bullCrash");
-            _BullactionManager->activate("bullCrash", bullCrash, _Bull->getSceneNode());
+            _Bull->setact("bullCrash", 2.0f);
+
         }
       //  popup(std::to_string(5), bullPos * _scale);
     }
@@ -291,7 +287,7 @@ void GameScene::beginContact(b2Contact* contact) {
         popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
         CULog("shrimpBoss: %f", _ShrimpRice->getHealth());
     }
-    if (_ShrimpRice != nullptr && bd1 == _ShrimpRice.get() && bd2 == _ShrimpRice.get()) {
+    if (_ShrimpRice != nullptr && bd1 == _ShrimpRice.get() && bd2 == _avatar.get()) {
         Vec2 avatarPos = _avatar->getPosition();
         Vec2 bullPos = _ShrimpRice->getPosition();
         int direction = (avatarPos.x > bullPos.x) ? 1 : -1;

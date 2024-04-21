@@ -3,7 +3,7 @@
 #include "LevelModel.h"
 #include "../PFDudeModel.h"
 #include "../PFGameScene.h"
-#include <direct.h>
+//#include <direct.h>
 #include "Levels.h"
 
 #pragma mark -
@@ -434,7 +434,7 @@ void LevelModel::populate(GameScene& scene) {
 			// now, our tileSource string will be /../../assets/json/egg_64_enemy.tsj or something
 			// So, every tileSet will needed to be added into the assets/json folder as well :(
 
-			CULog(_getcwd(NULL, 0));
+	//		CULog(_getcwd(NULL, 0));
 			// CULog(level_file_path.c_str());
 			jsonReader = cugl::JsonReader::allocWithAsset(tileSource);
 			// _assets->attach<JsonValue>(jsonReader);
@@ -530,7 +530,7 @@ void LevelModel::populate(GameScene& scene) {
 						//means that we have found a key in our unordered map
 						std::string pathWeWant = idToImage.at(tileId);
 						CULog(pathWeWant.c_str());
-						CULog(_getcwd(NULL, 0));
+//						CULog(_getcwd(NULL, 0));
 						CULog("----------- ");
 						if (_assets == nullptr) {
 							CULog("you gotta define assets bro");

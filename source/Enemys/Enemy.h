@@ -328,15 +328,15 @@ public:
         case EnemyType::shrimp:
             return { "pigtail", "v", "circle" };
         case EnemyType::rice:
-            return { "circle", "circle", "pigtail" };
+            return { "circle", "v", "pigtail" };
         case EnemyType::rice_soldier:
-            return { "circle", "circle", "pigtail" };
+            return { "circle", "v", "pigtail" };
         case EnemyType::egg:
             return { "v", "v", "v", };
         case EnemyType::carrot:
-            return { "horizswipe", "vertswipe", "horizswipe" };
+            return { "v", "v", "v" };
         case EnemyType::beef:
-            return { "v", "circle", "pigtail" };
+            return { "pigtail", "circle", "circle" };
         default:
             return {};
         }
@@ -347,15 +347,15 @@ public:
         case EnemyType::shrimp:
             return { "pigtail", "v", "circle" };
         case EnemyType::rice:
-            return { "pigtail", "pigtail", "pigtail" };
+            return { "pigtail", "v", "pigtail" };
         case EnemyType::rice_soldier:
-            return { "pigtail", "pigtail", "pigtail" };
+            return { "pigtail", "v", "pigtail" };
         case EnemyType::egg:
             return { "v", "v", "v", };
         case EnemyType::carrot:
-            return { "horizswipe", "vertswipe", "horizswipe" };
-        case EnemyType::beef:
             return { "v", "circle", "pigtail" };
+        case EnemyType::beef:
+            return { "pigtail", "v", "pigtail" };
         default:
             return {};
         }
