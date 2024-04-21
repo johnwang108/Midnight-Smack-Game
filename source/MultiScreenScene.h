@@ -83,7 +83,7 @@ protected:
 	int _quota;
 	int _currentScore; 
 	
-	// 0 = playing, 1 = win, -1 = lose
+	// 0 = pre-game, 1 = playing, 2 = win, -1 = lose
 	int _gameState;
 
 	
@@ -149,6 +149,9 @@ public:
 
 	void save();
 	void loadSave();
+
+	std::shared_ptr<cugl::scene2::PolygonNode> createObjectiveNode(std::shared_ptr<DayObjective> obj);
+	void showObjectiveNodes(bool val);
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */

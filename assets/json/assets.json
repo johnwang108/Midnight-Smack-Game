@@ -1,5 +1,11 @@
 {
     "textures": {
+        "rushObjective": {
+            "file": "textures/day/food/shrimp.png"
+        },
+        "accuracyObjective": {
+            "file": "textures/day/food/beef.png"
+        },
         "endScreenBackground": {
             "file": "textures/day/endScreenBackground.png"
         },

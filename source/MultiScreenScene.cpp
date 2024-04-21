@@ -3,9 +3,16 @@
 #include <algorithm> 
 #include "Levels/Levels.h"
 #include <cctype>
+#include <iomanip> 
 
 #define CAMERA_MOVE_SPEED 50.0f
 #define FEEDBACK_DURATION 2.0f
+
+#define OBJ_CARD_HEIGHT 500
+#define OBJ_CARD_WIDTH 300
+
+//left side spacing, (1280 - 3*300)/4
+#define OBJ_CARD_SPACING 95.0f
 
 using namespace cugl;
 
@@ -98,6 +105,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 
 	std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("json/dayLevel1.json");
 	readLevel(reader->readJson());
+
 
 	_stationMap["potStation"] = 0;
 	_stationMap["prepStation"] = 1;
@@ -199,12 +207,20 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	//_buttons.push_back(b);
 
 	_winScreenRoot->setVisible(false);
+
+	for (int i = 0; i < _bonusObjectives.size(); i++) {
+		std::shared_ptr<scene2::PolygonNode> bonusObj = createObjectiveNode(_bonusObjectives[i]);
+		bonusObj->setPosition(OBJ_CARD_WIDTH/2 + OBJ_CARD_SPACING + (OBJ_CARD_SPACING * i) + (OBJ_CARD_WIDTH * i), 400);
+		_uiScene->addChild(bonusObj);
+	}
 	
 
 	_uiScene->addChild(_gestureFeedback);
 	_uiScene->addChild(quotaRoot);
 	_uiScene->addChild(uiRoot);
 	_uiScene->addChild(_winScreenRoot);
+
+
 	//_uiScene->addChild(_uiNode);
 
 	//std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("exLevel");
@@ -368,9 +384,6 @@ void MultiScreenScene::readLevel(std::shared_ptr<JsonValue> leveljson) {
 		CULogError("Objectives is not an array type");
 	}
 
-	CULog("hi");
-
-	
 }
  
 
@@ -403,6 +416,17 @@ void MultiScreenScene::preUpdate(float timestep) {
 	if (_ended && !_animating) return;
 
 	_currentTime += timestep;
+
+	//if game state is in pre state, show bonus objectives
+	if (_gameState == 0) {
+		if (_currentTime >= 5.0f) {
+			_gameState = 1;
+			showObjectiveNodes(false);
+			_currentTime = 0;
+		}
+	} 
+
+
 
 	//timer stuff
 	_currentMinute = (5 * (int) _currentTime) - (60 * (_currentHour-6));
@@ -633,6 +657,15 @@ void MultiScreenScene::reset() {
 	_gestureFeedback->setVisible(false);
 	_gestureFeedback->setText("");
 	_currentScore = 0;
+	_gameState = 0;
+
+	for (int i = 0; i < _bonusObjectives.size(); i++) {
+		_bonusObjectives[i]->setComplete(false);
+	}
+
+	showObjectiveNodes(true);
+
+
 	
 	for (int i = 0; i < 5; i++) {
 		_scenes[i]->reset();
@@ -669,6 +702,8 @@ void MultiScreenScene::loadSave() {
 	auto reader = JsonReader::alloc(path);
 }
 
+
+
 void MultiScreenScene::endDay() {
 	_ended = true;
 	if (_currentScore >= _quota) {
@@ -685,3 +720,69 @@ void MultiScreenScene::endDay() {
 }
 
 
+std::shared_ptr<scene2::PolygonNode> MultiScreenScene::createObjectiveNode(std::shared_ptr<DayObjective> obj) {
+	std::shared_ptr<scene2::PolygonNode> objNode = scene2::PolygonNode::allocWithPoly(Rect(0,0,OBJ_CARD_WIDTH, OBJ_CARD_HEIGHT));
+	std::string objSceneName = "dayObjective" + std::to_string(obj->getId());
+	objNode->setName(objSceneName);
+	objNode->setColor(Color4::GRAY);
+
+	std::shared_ptr<scene2::Label> objName = scene2::Label::allocWithText(obj->getName(), _assets->get<Font>("winter drinkRegular40"));
+	objName->setContentSize(Vec2(OBJ_CARD_WIDTH, OBJ_CARD_HEIGHT));
+	objName->setWrap(true);
+	objName->setHorizontalAlignment(HorizontalAlign::CENTER);
+	//objName->setScale(Vec2(0.5, 0.5));
+	
+	objNode->addChild(objName);
+
+	float descStartHeight = OBJ_CARD_HEIGHT / 4;
+	float descPadding = 15;
+
+	std::string objType = obj->getType();
+	std::shared_ptr<scene2::PolygonNode> objImage;
+	std::shared_ptr<scene2::Label> objText = scene2::Label::allocWithText("", _assets->get<Font>("winter drinkRegular25"));
+	objText->setPosition(Vec2(descPadding, descStartHeight));
+
+	if (objType == "rush") {
+
+		std::ostringstream textStream;
+		textStream << "Complete " << obj->getQuantity() << " dishes in " << std::fixed << std::setprecision(1) << obj->getReqTime() << " seconds";
+		objText->setText(textStream.str(), true);
+
+		objImage = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("rushObjective"));
+
+	}
+	else {
+
+		std::ostringstream textStream;
+		textStream << "Cut carrots with an accuracy of at least " << std::fixed << std::setprecision(1) << obj->getReqAccuracy();
+		objText->setText(textStream.str(), true);
+		
+
+		objImage = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("accuracyObjective"));
+	}
+
+	objText->setWrap(true);
+	objText->setContentSize(Vec2(OBJ_CARD_WIDTH - descPadding, OBJ_CARD_HEIGHT / 2));
+
+	objImage->setContentSize(Vec2(2 * OBJ_CARD_WIDTH / 3, 2 * OBJ_CARD_WIDTH / 3));
+	objImage->setAnchor(Vec2::ANCHOR_CENTER);
+	objImage->setPosition(OBJ_CARD_WIDTH/2, OBJ_CARD_HEIGHT/3);
+
+	objNode->addChild(objText);
+	objNode->addChild(objImage);
+
+
+	std::shared_ptr<scene2::Label> rewardText = scene2::Label::allocWithText("Reward: " + obj->getReward(), _assets->get<Font>("winter drinkRegular25"));
+	rewardText->setContentSize(Vec2(OBJ_CARD_WIDTH, OBJ_CARD_HEIGHT / 8));
+	rewardText->setHorizontalAlignment(HorizontalAlign::CENTER);
+	objNode->addChild(rewardText);
+
+	return objNode;
+}
+
+void MultiScreenScene::showObjectiveNodes(bool val) {
+	for (int i = 0; i < _bonusObjectives.size(); i++) {
+		std::string childToGet = "dayObjective" + std::to_string(i);
+		_uiScene->getChildByName(childToGet)->setVisible(val);
+	}
+}
