@@ -16,16 +16,16 @@ bool ShrimpRice::init(const Vec2& pos, const Size& size, float scale) {
         _SFR_attack_chance=0.002f;
         _healthCooldown = 0.1f;
         _knockbackTime = 0;
-        _attackcombo = 0;
         _attacktype = "none";
-        _WheelofDoom = 0;
-        _waveattack1=0;
+        _act = "none";
+        _acttime = 0;
         b2Filter filter = getFilterData();
         filter.groupIndex = -1;
         setFilterData(filter);
         setDensity(SHRIMPRICE_DENSITY);
         setFriction(0.0f);
         setFixedRotation(true);
+
         return true;
     }
     return false;
@@ -48,59 +48,49 @@ void ShrimpRice::update(float dt) {
     b2Vec2 velocity = _body->GetLinearVelocity();
     velocity.x = _direction * SHRIMPRICE_CHASE_SPEED*1.5; 
 
-    if (_attacktype=="none" && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _SFR_attack_chance) {
+    if (_acttime<=0 && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _SFR_attack_chance) {
         float pa = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-     //   pa=0.8;
-        if (pa <= 0.33) {
-            _attackcombo = 1.125;
-            _attacktype="SFR_Attack";
+        pa=0.8;
+        if (pa <= 0.25) {
+            setact("SFR_Attack", 1.125);
 		}
-        else if(pa<=0.66 && pa>0.33){
-            _WheelofDoom = 2 + 2 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-            _attacktype="SFRWheelofDoom";
-        }else{
-            _waveattack1=1.125;
-            _attacktype="SFRWave1";
+        else if(pa<=0.5 && pa>0.25){
+            setact("SFRWheelofDoom", 2 + 2 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+        }else if(pa <= 0.75 && pa > 0.5) {
+            setact("SFRWave1", 1.125);
+        }
+        else {
+            setact("SFRJoustState1", 1.125);
         }
 
     }
-    if(_waveattack1 > 0){
-        _waveattack1-=dt;
-        if(_waveattack1<=0){
-            _attacktype="SFRWave2";
+    if (_acttime > 0) {
+        _acttime -= dt;
+        if (_act == "SFRWave2") {
+            velocity.x *= 6;
         }
-    }
-    if(_attacktype=="SFRWave2"){
-        velocity.x *= 6;
-    }
-    if(_passattack){
-        _waveattack3=1.125;
-        _attacktype="SFRWave3";
-        _passattack=false;
-    }
+        if (_act == "SFRWheelofDoom") {
+            velocity.x *= 4;
+            velocity.y = 8;
+        }
+        if (_acttime <= 0) {
+            if (_act == "SFRWave1") {
+                setact("SFRWave2", 10);
+            }
+            if (_act == "SFRWheelofDoom") {
+                _knockbackTime = 2;
+            }
+            if (_act == "SFRJoustState2") {
+                setact("SFRJoustState3", 0.3);
+            }
+            if (_act == "SFRJoustState1") {
+                setact("SFRJoustState2", 4.5);
+            }
+
+		}
+	}
+
     
-    if(_waveattack3 > 0){
-        _waveattack3 -= dt;
-        if(_waveattack3<=0){
-            _attacktype="none";
-        }
-    }
-    
-    if (_attackcombo > 0) {
-        _attackcombo -= dt;
-        if(_attackcombo<=0){
-            _attacktype="none";
-        }
-    }
-    if (_WheelofDoom > 0) {
-        _WheelofDoom -= dt;
-        velocity.x *=4;
-        velocity.y=8;
-        if(_WheelofDoom<=0){
-            _attacktype="none";
-            _knockbackTime=2;
-        }
-    }
 
     if (_direction != _lastDirection) {
         // If direction changed, flip the image

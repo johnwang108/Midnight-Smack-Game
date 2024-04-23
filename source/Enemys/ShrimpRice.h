@@ -30,7 +30,6 @@ protected:
     bool _isChasing;
     int _direction;
     float _SFR_attack_chance;
-    float _attackcombo;
     float _knockbackTime;
     float _nextChangeTime;
     b2Fixture* _sensorFixture;
@@ -38,10 +37,8 @@ protected:
     std::shared_ptr<AssetManager> _assets;
     int _lastDirection;
     std::string _attacktype;
-    float _WheelofDoom;
-    float _waveattack1;
-    float _waveattack3;
-    bool _passattack;
+    std::string _act;
+    float _acttime;
 
 
 public:
@@ -76,12 +73,16 @@ public:
     void setDirection(int d) { _direction = d; }
     void setnextchangetime(double nextChangeTime) { _nextChangeTime = nextChangeTime; }
     float getknockbacktime() { return _knockbackTime; }
-    float getattackcombo() { return _attackcombo; }
-    float getWheelofDoom() { return _WheelofDoom; }
+
     std::string getattacktype() { return _attacktype; }
     void setattacktype(std::string type){_attacktype=type;}
-    void setpassattack(bool t){_passattack=true;}
-    void setwave3(float time){_waveattack3=time;}
+
+    void setact(std::string act, float time) {
+        _acttime = time;
+        _act = act;
+    }
+    float getacttime() { return _acttime; }
+    std::string getact() { return _act; }
 };
 
 #endif /* __SHRIMPRICE_H__ */

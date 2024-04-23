@@ -331,7 +331,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
    // currentLevel = _level_model;
    // _level_model->setFilePath("json/test_level_v2_experiment.json");
-    currentLevel = level2;
+    currentLevel = level3;
     loadLevel(currentLevel);
    // loadLevel(currentLevel);
     addChild(_worldnode);
@@ -943,11 +943,11 @@ void GameScene::preUpdate(float dt) {
                 _ShrimpRice->setDebugScene(nullptr);
                 _ShrimpRice->markRemoved(true);
             }
-            if (_ShrimpRice->getattacktype()=="SFRWave2") {
+            if (_ShrimpRice->getact()=="SFRWave2") {
                 Vec2 BullPos = _ShrimpRice->getPosition();
                 float distance = avatarPos.distance(BullPos);
                 if (distance < 4) {
-                    _ShrimpRice->setpassattack(true);
+                    _ShrimpRice->setact("SFRWave3",1.125);
                 }
             }
             if (!_ShrimpRice->isChasing()) {
@@ -1025,16 +1025,16 @@ void GameScene::preUpdate(float dt) {
     if (_ShrimpRice != nullptr) {
         _SHRactionManager->update(dt);
         
-        if (_ShrimpRice->getattacktype()!="none" && _ShrimpRice->getknockbacktime() <= 0) {
-            if (!_SHRactionManager->isActive(_ShrimpRice->getattacktype())) {
+        if (_ShrimpRice->getacttime() > 0) {
+            if (!_SHRactionManager->isActive(_ShrimpRice->getact())) {
                 _SHRactionManager->clearAllActions(_ShrimpRice->getSceneNode());
-                auto SFR_Attack = _ShrimpRice->getAction(_ShrimpRice->getattacktype());
-                _SHRactionManager->activate(_ShrimpRice->getattacktype(), SFR_Attack, _ShrimpRice->getSceneNode());
+                auto bullTurn = _ShrimpRice->getAction(_ShrimpRice->getact());
+                _SHRactionManager->activate(_ShrimpRice->getact(), bullTurn, _ShrimpRice->getSceneNode());
             }
             if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                _ShrimpRice->animate(_ShrimpRice->getattacktype());
+                _ShrimpRice->animate(_ShrimpRice->getact());
             }
-        }     
+        }
         else if (_ShrimpRice->getknockbacktime() <= 0) {
             if (!_SHRactionManager->isActive("SFR_Move")) {
                 _SHRactionManager->clearAllActions(_ShrimpRice->getSceneNode());
