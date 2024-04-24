@@ -68,6 +68,8 @@ protected:
     /** Whether the enemy is aggroed*/
     bool _isChasing;
 
+    bool _isTangible;
+
     /** Enemy state*/
     std::string _state;
 
@@ -108,14 +110,16 @@ protected:
     //distance to player = player position - enemy position
     cugl::Vec2 _distanceToPlayer;
 
-    /**used for soldier rice */
-    cugl::Vec2 _targetPosition;
-    float _closeEnough;
+    float _killMeCountdown;
+
+    ///**used for soldier rice */
+    //cugl::Vec2 _targetPosition;
+    //float _closeEnough;
 
     /**Limits on movement for egg and beef*/
     cugl::Spline2 _limit;
 
-    cugl::Vec2 _lastVelocity;
+    bool _killMe;
 
 
 public:
@@ -133,13 +137,9 @@ public:
      */
 
     /** default constructor, sets both gesture sequences to the default for that enemy type*/
-    virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type);
+    virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale);
 
-    virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type, cugl::Spline2 limit);
-    /**init with gesture sequences*/
-    virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type, std::vector<std::string> seq1, std::vector<std::string> seq2);
-
-    virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, EnemyType type, std::vector<std::string> seq1, std::vector<std::string> seq2, cugl::Spline2 limit);
+    virtual bool init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::vector<std::string> seq1, std::vector<std::string> seq2);
 
     /**
      * Creates and returns a new enemy at the given position with the specified size and type.
@@ -155,20 +155,19 @@ public:
 
 
 
-    /**Allocs with animations defined from json.
+    /**Allocs with animations defined from json. Don't use.
     * 
     * */
-    static std::shared_ptr<EnemyModel> allocWithConstants(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::shared_ptr<AssetManager> _assets,EnemyType type) {
-        std::shared_ptr<EnemyModel> result = std::make_shared<EnemyModel>();
-        bool res = result->init(pos, size, scale, type);
+    virtual  std::shared_ptr<EnemyModel> allocWithConstants(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::shared_ptr<AssetManager> _assets) { return nullptr; };
+        //std::shared_ptr<EnemyModel> result = std::make_shared<EnemyModel>();
+        //bool res = result->init(pos, size, scale);
 
-        if (res) {
-            CULog(typeToStr(type).c_str());
-            result->loadAnimationsFromConstant(typeToStr(type), _assets);
-        }
+        //if (res) {
+        //    CULog(typeToStr(type).c_str());
+        //    result->loadAnimationsFromConstant(typeToStr(type), _assets);
+        //}
 
-        return res ? result : nullptr;
-    }
+        //return res ? result : nullptr;
 
     /**
      * Sets the scene graph node representing this enemy.
@@ -193,10 +192,6 @@ public:
     void updatePlayerDistance(cugl::Vec2 playerPosition);
 
     bool isChasing() const { return _isChasing; }
-
-    void setnextchangetime(double nextChangeTime) { _nextChangeTime = nextChangeTime; }
-
-    double getnextchangetime() { return _nextChangeTime; }
 
     void takeDamage(float damage, const int attackDirection);
 
@@ -235,9 +230,9 @@ public:
      *
      * @param delta Number of seconds since last animation frame
      */
-    void update(float dt) override;
+    virtual void update(float dt) override;
 
-    void fixedUpdate(float step);
+    virtual void fixedUpdate(float step);
 
     /**
      * Applies the force to the body of this dude
@@ -261,7 +256,7 @@ public:
 
     bool didAttack();
 
-    std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale);
+    virtual std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale);
 
 
     void setVulnerable(bool vulnerable) { _vulnerable = vulnerable; }
@@ -276,23 +271,35 @@ public:
 
     EnemyType getType() { return _type; }
 
-    b2Vec2 handleMovement(b2Vec2 velocity);
+    virtual b2Vec2 handleMovement(b2Vec2 velocity);
 
-    void setState(std::string state);
+    virtual void setState(std::string state);
 
-    std::string getNextState(std::string state);
+    virtual std::string getNextState(std::string state) { return ""; };
 
     /**Sets the predefined path limits, still wip */
     void setLimit(cugl::Spline2 limit) { _limit = limit; }
 
-    /**Sets the target location to move to for rice soldiers */
-    void setTargetPosition(cugl::Vec2 target) { _targetPosition = target; }
-
     std::string getState() { return _state; }
+
+    //void syncStateTimes();
+
+    bool isTangible() { return _isTangible; }
 
     void setActiveAction(std::string action) {
         Entity::setActiveAction(action);
     };
+
+    virtual void markForDeletion() {
+        _killMe = true;
+        _isTangible = false;
+    }
+
+    bool shouldDelete() {
+		return _killMe && _killMeCountdown < 0;
+	}
+
+    bool isDying() { return _killMe; }
 
     static std::string typeToStr(EnemyType type) {
         switch (type) {
@@ -321,15 +328,34 @@ public:
         case EnemyType::shrimp:
             return { "pigtail", "v", "circle" };
         case EnemyType::rice:
-            return { "circle", "circle", "pigtail" };
+            return { "circle", "v", "pigtail" };
         case EnemyType::rice_soldier:
-            return { "circle", "circle", "pigtail" };
+            return { "circle", "v", "pigtail" };
         case EnemyType::egg:
             return { "v", "v", "v", };
         case EnemyType::carrot:
-            return { "horizswipe", "vertswipe", "horizswipe" };
+            return { "v", "v", "v" };
         case EnemyType::beef:
+            return { "pigtail", "circle", "circle" };
+        default:
+            return {};
+        }
+    };
+
+    static std::vector<std::string> defaultSeqAlt(EnemyType type) {
+        switch (type) {
+        case EnemyType::shrimp:
+            return { "pigtail", "v", "circle" };
+        case EnemyType::rice:
+            return { "pigtail", "v", "pigtail" };
+        case EnemyType::rice_soldier:
+            return { "pigtail", "v", "pigtail" };
+        case EnemyType::egg:
+            return { "v", "v", "v", };
+        case EnemyType::carrot:
             return { "v", "circle", "pigtail" };
+        case EnemyType::beef:
+            return { "pigtail", "v", "pigtail" };
         default:
             return {};
         }
@@ -345,11 +371,11 @@ public:
         case EnemyType::rice_soldier:
             return buff::defense;
         case EnemyType::egg:
-            return buff::jump;
-        case EnemyType::carrot:
-            return buff::speed;
-        case EnemyType::beef:
             return buff::health;
+        case EnemyType::carrot:
+            return buff::jump;
+        case EnemyType::beef:
+            return buff::speed;
         }
         return buff::none;
     };

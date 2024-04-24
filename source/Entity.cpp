@@ -19,21 +19,28 @@ bool Entity::init(cugl::Vec2 pos, cugl::Size size) {
     return CapsuleObstacle::init(pos, size);
 }
 /** Register a new animation in the dict*/
-void Entity::addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool isPassive) {
+void Entity::addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool reverse) {
     std::vector<int> forward;
-    for (int ii = 0; ii < size; ii++) {
-        forward.push_back(ii);
-    }
+    if (reverse) {
+        for (int ii = size - 1; ii >= 0; ii--) {
+			forward.push_back(ii);
+		}
+	}
+    else {
+        for (int ii = 0; ii < size; ii++) {
+			forward.push_back(ii);
+		}
+	}
     _actions[action_name] = cugl::scene2::Animate::alloc(forward, duration);
     _sheets[action_name] = sheet;
-    _info[action_name] = std::make_tuple(rows, cols, size, duration, isPassive);
+    _info[action_name] = std::make_tuple(rows, cols, size, duration);
 }
 
 /**Unsure if override needed. Begins an animation, switching the sheet if needed.*/
 void Entity::animate(std::string action_name) {
     std::string name = action_name;
 
-    //info = {int rows, int cols, int size, float duration, bool isPassive}
+    //info = {int rows, int cols, int size, float duration}
     auto info = _info[name];
 
     //first, switch the sheet
@@ -73,8 +80,8 @@ void Entity::changeSheet(std::string action_name) {
 void Entity::loadAnimationsFromConstant(std::string entityName, std::shared_ptr<AssetManager> _assets) {
     auto reader = JsonReader::allocWithAsset("./json/constants.json");
     std::shared_ptr<JsonValue> json = reader->readJson();
-    std::shared_ptr<JsonValue> su = json->get(entityName);
-    auto children = su->children();
+    std::shared_ptr<JsonValue> entity = json->get(entityName);
+    auto children = entity->children();
     for (auto it = children.begin(); it != children.end(); ++it) {
         std::shared_ptr<JsonValue> action = *it;
         std::string action_name = action->key();
@@ -83,13 +90,6 @@ void Entity::loadAnimationsFromConstant(std::string entityName, std::shared_ptr<
         int cols = action->getInt("cols");
         int size = action->getInt("frames");
         float duration = action->getFloat("duration");
-        //CULog("Info about action");
-        //CULog("Action name: %s", action_name.c_str());
-        //CULog("Sheet name: %s", sheet_name.c_str());
-        //CULog("Rows: %d", rows);
-        //CULog("Cols: %d", cols);
-        //CULog("Size: %d", size);
-        //CULog("Duration: %f", duration);
-        addActionAnimation(action_name, _assets->get<Texture>(sheet_name), rows, cols, size, duration, false);
+        addActionAnimation(action_name, _assets->get<Texture>(sheet_name), rows, cols, size, duration);
     }
 }

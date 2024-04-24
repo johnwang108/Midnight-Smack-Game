@@ -43,7 +43,7 @@ protected:
 	std::unordered_map<std::string, std::shared_ptr<cugl::Texture>> _sheets;
 
 	/** info about each action's sheet: rows, cols, size, duration. Currently unused*/
-	std::unordered_map<std::string, std::tuple<int, int, int, float, bool>> _info;
+	std::unordered_map<std::string, std::tuple<int, int, int, float>> _info;
 
 	std::string _activeAction;
 
@@ -82,7 +82,7 @@ public:
 
 	const std::shared_ptr<cugl::scene2::SceneNode> getSceneNode() { return _node; }
 
-	void addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool isPassive = true);
+	void addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool reverse = false);
 
 	void animate(std::string action_name);
 
@@ -90,8 +90,8 @@ public:
 
 	std::shared_ptr<cugl::scene2::Animate> getAction(std::string action_name) { return _actions[action_name]; };
 
-	/**Unused*/
-	void getInfo(std::string action_name) {};
+	/** info = {int rows, int cols, int size, float duration}*/
+	std::tuple<int, int, int, float> getInfo(std::string action_name) { return _info[action_name]; };
 
 	std::string getActiveAction() { return _activeAction; };
 
@@ -154,5 +154,8 @@ public:
 	
 	int getActiveFrame() { return _activeFrame; };
 
+	float getActionDuration(std::string actionName) {return std::get<3>(_info[actionName]); };
+
+	void setHealth(float health) { _health = health; };
 };
 #endif /* __ENTITY_H__ */

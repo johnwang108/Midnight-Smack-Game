@@ -3,9 +3,16 @@
 #include <algorithm> 
 #include "Levels/Levels.h"
 #include <cctype>
+#include <iomanip> 
 
 #define CAMERA_MOVE_SPEED 50.0f
 #define FEEDBACK_DURATION 2.0f
+
+#define OBJ_CARD_HEIGHT 500
+#define OBJ_CARD_WIDTH 300
+
+//left side spacing, (1280 - 3*300)/4
+#define OBJ_CARD_SPACING 95.0f
 
 using namespace cugl;
 
@@ -99,6 +106,7 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("json/dayLevel1.json");
 	readLevel(reader->readJson());
 
+
 	_stationMap["potStation"] = 0;
 	_stationMap["prepStation"] = 1;
 	_stationMap["panfryStation"] = 2;
@@ -175,14 +183,32 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 
 	_winScreenRoot = _assets->get<scene2::SceneNode>("dayWinScreen");
 
-	std::shared_ptr<scene2::Button> b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("continuebutton"));
-	b->addListener([=](const std::string& name, bool down) {
-		this->_active = false;
-		this->setTransition(true);
-		this->setTarget("night");
-		});
-	_buttons.push_back(b);
+	//std::shared_ptr<scene2::Button> b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("continue"));
+	//b->addListener([=](const std::string& name, bool down) {
+	//	this->_active = false;
+	//	this->setTransition(true);
+	//	this->setTarget("night");
+	//	});
+	//_buttons.push_back(b);
 
+	//b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("retry"));
+	//b->addListener([=](const std::string& name, bool down) {
+	//	this->reset();
+	//	});
+	//_buttons.push_back(b);
+
+	//b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("menu"));
+	//b->addListener([=](const std::string& name, bool down) {
+	//	this->_active = false;
+	//	this->setTransition(true);
+	//	this->setTarget("main_menu");
+	//	});
+	//_buttons.push_back(b);
+
+
+	std::shared_ptr<scene2::Label> statUps = scene2::Label::allocWithText("", _assets->get<Font>("winter drinkRegular25"));
+	statUps->setName("statUps");
+	_winScreenRoot->addChild(statUps);
 	//b = std::dynamic_pointer_cast<scene2::Button>(_winScreenRoot->getChildByName("retrybutton"));
 	//b->addListener([=](const std::string& name, bool down) {
 	//	this->reset();
@@ -199,12 +225,29 @@ bool MultiScreenScene::init(const std::shared_ptr<AssetManager>& assets, std::sh
 	//_buttons.push_back(b);
 
 	_winScreenRoot->setVisible(false);
+
+
 	
 
 	_uiScene->addChild(_gestureFeedback);
 	_uiScene->addChild(quotaRoot);
 	_uiScene->addChild(uiRoot);
 	_uiScene->addChild(_winScreenRoot);
+
+	std::shared_ptr<scene2::PolygonNode> grayFade = scene2::PolygonNode::allocWithPoly(Rect(0, 0, _size.width, _size.height));
+	grayFade->setName("blackOverlay");
+	grayFade->setTexture(_assets->get<Texture>("blackBackground"));
+	_uiScene->addChild(grayFade);
+
+	for (int i = 0; i < _bonusObjectives.size(); i++) {
+		std::shared_ptr<scene2::PolygonNode> bonusObj = createObjectiveNode(_bonusObjectives[i]);
+		bonusObj->setPosition(OBJ_CARD_WIDTH / 2 + OBJ_CARD_SPACING + (OBJ_CARD_SPACING * i) + (OBJ_CARD_WIDTH * i), 400);
+		_uiScene->addChild(bonusObj);
+	}
+
+	
+
+
 	//_uiScene->addChild(_uiNode);
 
 	//std::shared_ptr<JsonReader> reader = JsonReader::allocWithAsset("exLevel");
@@ -281,8 +324,6 @@ void MultiScreenScene::readLevel(std::shared_ptr<JsonValue> leveljson) {
 	_dishToPrepare = leveljson->get("cooking")->asString();
 	_quota = leveljson->get("quota")->asInt();
 	_dayDuration = leveljson->get("duration")->asInt();
-	//todo load in bonus objectives
-	_bonusObjectives = {1};
 
 	std::shared_ptr<JsonReader> gestureReader = JsonReader::allocWithAsset("json/dayIngredientGestures.json");
 	std::shared_ptr<JsonValue> gestureVals = gestureReader->readJson();
@@ -335,6 +376,41 @@ void MultiScreenScene::readLevel(std::shared_ptr<JsonValue> leveljson) {
 	else {
 		CULogError("Events is not an array type");
 	}
+
+	//todo load in bonus objectives
+	_bonusObjectives = {};
+	std::shared_ptr<JsonValue> objectives = leveljson->get("goals");
+	if (objectives->type() == JsonValue::Type::ArrayType) {
+		for (int i = 0; i < objectives->size(); i++) {
+			std::shared_ptr<JsonValue> item = objectives->get(i);
+			if (item == nullptr) {
+				CULogError("Objective JSON Object %d is nullptr", i);
+				continue;
+			}
+
+			std::shared_ptr<DayObjective> newObjective = std::make_shared<DayObjective>();
+			newObjective->setComplete(false);
+			try {
+
+				newObjective->setId(i);
+				newObjective->setName(item->get("name")->asString());
+				newObjective->setType(item->get("type")->asString());
+				newObjective->setQuantity(item->get("quantity")->asInt());
+				newObjective->setReqTime(item->get("time")->asFloat());
+				newObjective->setReqAccuracy(item->get("accuracy")->asFloat());
+				newObjective->setTargetName(item->get("ingredient")->asString());
+				newObjective->setReward(item->get("reward")->asString());
+			}
+			catch (...) {
+				CULogError("Error creating objective %d", i);
+			}
+			_bonusObjectives.push_back(newObjective);
+		}
+	}
+	else {
+		CULogError("Objectives is not an array type");
+	}
+
 }
  
 
@@ -368,6 +444,21 @@ void MultiScreenScene::preUpdate(float timestep) {
 
 	_currentTime += timestep;
 
+	//if game state is in pre state, show bonus objectives
+	if (_gameState == 0) {
+		if (_currentTime >= 5.0f) {
+			_gameState = 1;
+			showObjectiveNodes(false);
+			_currentTime = 0;
+		}
+		else {
+			return;
+		}
+		
+	} 
+
+
+
 	//timer stuff
 	_currentMinute = (5 * (int) _currentTime) - (60 * (_currentHour-6));
 	if (_currentMinute >= 60) {
@@ -399,7 +490,13 @@ void MultiScreenScene::preUpdate(float timestep) {
 	_progBar->setScissor(scissor2);
 
 	//todo bonus objectives
-	if (_currentTime >= _dayDuration || _bonusObjectives.size() == 0) {
+	bool oneBonusObjectiveIncomplete = false;
+
+	for (int i = 0; i < _bonusObjectives.size(); i++) {
+		if (!_bonusObjectives[i]->getComplete()) oneBonusObjectiveIncomplete = true;
+	}
+
+	if (_currentTime >= _dayDuration || (!oneBonusObjectiveIncomplete && _currentScore >= _quota)) {
 		endDay();
 	}
 	
@@ -442,6 +539,8 @@ void MultiScreenScene::preUpdate(float timestep) {
 		if (submittedIng != nullptr) {
 			increaseQuotaProgress();
 			_scenes[i]->clearSubmittedIngredient();
+			_ingredientCompletionTimes[submittedIng->getName()] = _currentTime;
+			_ingredientCompletionCounts[submittedIng->getName()] += 1;
 		}
 	}
 
@@ -452,11 +551,19 @@ void MultiScreenScene::preUpdate(float timestep) {
 	if (_scenes[_curr]->getJustCompletedGesture()) {
 		_gestureInitiatedTime = _currentTime;
 		_gestureFeedback->setPositionY(_size.height - _gestureFeedback->getHeight());
+		int lastResult = _scenes[_curr]->getLastResult();
+		_gestureFeedback->setText(_feedbackMessages[lastResult], true);
+		std::shared_ptr<Ingredient> ing = _scenes[_curr]->getIngredientInStation();
+		if (ing != nullptr) {
+			float sim = _scenes[_curr]->getCurrentSimilarity();
+
+			_ingredientAccuracy[ing->getName()] = sim;
+		}
+		
 	}
 	if (_currentTime - _gestureInitiatedTime < FEEDBACK_DURATION) {
 		int lastResult = _scenes[_curr]->getLastResult();
 		if (lastResult != -1) {
-			_gestureFeedback->setText(_feedbackMessages[lastResult]);
 			_gestureFeedback->setPositionY(_gestureFeedback->getPositionY() - 1.0f);
 			_gestureFeedback->setVisible(true);
 		}
@@ -498,9 +605,9 @@ void MultiScreenScene::preUpdate(float timestep) {
 		
 		if (_scenes[_curr]->getCurrentlyHeldIngredient() != nullptr) {
 			std::shared_ptr<scene2::Button> button = _scenes[_curr]->getCurrentlyHeldIngredient()->getButton();
-			CULog("Button Pos Before: %f %f", button->getPositionX(), button->getPositionY());
+			//CULog("Button Pos Before: %f %f", button->getPositionX(), button->getPositionY());
 			button->setPosition(button->getPosition() + movementAmount);
-			CULog("Button Pos After: %f %f", button->getPositionX(), button->getPositionY());
+			//CULog("Button Pos After: %f %f", button->getPositionX(), button->getPositionY());
 		}
 	
 	}
@@ -512,7 +619,9 @@ void MultiScreenScene::preUpdate(float timestep) {
 	
 	
 	// find current touch position, set curHeld->button to be that pos
-
+	for (int i = 0; i < _bonusObjectives.size(); i++) {
+		checkObjectiveCompletion(_bonusObjectives[i]);
+	}
 }
 
 /*
@@ -560,6 +669,28 @@ void MultiScreenScene::focusCurr() {
 }
 
 void MultiScreenScene::switchStation(int currId, int targId) {
+	//reset current minimap station color
+	std::shared_ptr<scene2::SceneNode> map = _uiScene->getChildByName("uiScene")->getChildByName("Map");
+	std::string s = _scenes[currId]->getName();
+	//can make this a dict later
+	if (s == "pot") {
+		s = "Pot";
+	}
+	else if (s == "panfry") {
+		s = "Pan";
+	}
+	else if (s == "prep") {
+		s = "Sink";
+	}
+	else if (s == "cutting") {
+		s = "Knife";
+	}
+	else if (s == "mixing") {
+		s = "Mixer";
+	}
+	std::shared_ptr<scene2::TexturedNode> im = std::dynamic_pointer_cast<scene2::TexturedNode>(map->getChildByName(s));
+	im->setColor(Color4::WHITE);
+
 	_scenes[currId]->setFocus(false);
 	_scenes[targId]->setFocus(true);
 	_curr = targId;
@@ -570,12 +701,31 @@ void MultiScreenScene::switchStation(int currId, int targId) {
 		_scenes[currId]->removeHeldIngredient();
 		_scenes[targId]->receiveHeldIngredient(ing);
 	}
-
 	std::string newStationName = _scenes[targId]->getName();
 	for (char& c : newStationName) {
 		c = toupper(c);
 	}
 	_stationLabel->setText(newStationName + " STATION");
+
+	//can make this a dict later
+	if (newStationName == "POT") {
+		s = "Pot";
+	}
+	else if (newStationName == "PANFRY") {
+		s = "Pan";
+	}
+	else if (newStationName == "PREP") {
+		s = "Sink";
+	}
+	else if (newStationName == "CUTTING") {
+		s = "Knife";
+	}
+	else if (newStationName == "MIXING") {
+		s = "Mixer";
+	}
+	//set new minimap station color
+	im = std::dynamic_pointer_cast<scene2::TexturedNode>(map->getChildByName(s));
+	im->setColor(Color4::BLUE);
 }
 
 void MultiScreenScene::increaseQuotaProgress() {
@@ -594,9 +744,26 @@ void MultiScreenScene::reset() {
 	_curr = 2;
 	_ended = false;
 	_currentTime = 0.0f;
+	_currentHour = 6;
+	_currentMinute = 0;
 	_gestureFeedback->setVisible(false);
 	_gestureFeedback->setText("");
 	_currentScore = 0;
+	_gameState = 0;
+	_ingredientAccuracy.clear();
+	_ingredientCompletionTimes.clear();
+	_ingredientCompletionCounts.clear();
+
+
+	for (int i = 0; i < _bonusObjectives.size(); i++) {
+		_bonusObjectives[i]->setComplete(false);
+	}
+
+	
+
+	showObjectiveNodes(true);
+
+
 	
 	for (int i = 0; i < 5; i++) {
 		_scenes[i]->reset();
@@ -608,30 +775,49 @@ void MultiScreenScene::reset() {
 
 void MultiScreenScene::save() {
 	//save the current state of the game
-	//should only change daytime and persistent save data
+	//should only change persistent save data and startFromNight
 	std::string root = cugl::Application::get()->getSaveDirectory();
 	std::string path = cugl::filetool::join_path({ root,"save.json" });
 
 	auto reader = JsonReader::alloc(path);
-	auto writer = JsonWriter::alloc(path);
+	std::shared_ptr<JsonValue> prevSave = reader->readJson();
+	reader->close();
 
 	std::shared_ptr<JsonValue> json = JsonValue::allocObject();
+	std::shared_ptr<JsonValue> persistent = JsonValue::allocObject();
 
-	//placeholder values
+	//process persistent upgrades
+
+	//placeholder values for chap and level
 	json->appendValue("chapter", 1.0f);
 	json->appendValue("level", 1.0f);
+	json->appendValue("startFromNight", _ended);
+	json->appendChild("persistent", persistent);
+	json->appendChild("night", JsonValue::allocObject());
 
-	std::shared_ptr<JsonValue> day = JsonValue::allocArray();
-
-	json->appendChild("day", day);
-
+	auto writer = JsonWriter::alloc(path);
+	writer->writeJson(json);
+	writer->close();
 }
 
-void MultiScreenScene::loadSave() {
-	std::string root = cugl::Application::get()->getSaveDirectory();
-	std::string path = cugl::filetool::join_path({ root,"save.json" });
-	auto reader = JsonReader::alloc(path);
+bool MultiScreenScene::loadSave(std::shared_ptr<JsonValue> save) {
+	//load the save data into the game
+	//should only change persistent save data and startFromNight
+	if (save->size() == 0) {
+		changeCurrentLevel(1, 1);
+	}
+	else {
+		changeCurrentLevel(save->get("chapter")->asInt(), save->get("level")->asInt());
+	}
+	reset();
+	return true;
 }
+
+void MultiScreenScene::changeCurrentLevel(int chapter, int level) {
+	/*TODO*/
+}
+
+
 
 void MultiScreenScene::endDay() {
 	_ended = true;
@@ -641,6 +827,27 @@ void MultiScreenScene::endDay() {
 	else {
 		_gameState = -1;
 	}
+
+	std::shared_ptr<scene2::Label> statUps = std::dynamic_pointer_cast<scene2::Label>(_winScreenRoot->getChildByName("statUps"));
+	std::ostringstream textStream;
+	for (int i = 0; i < _bonusObjectives.size(); i++) {
+		
+		if (_bonusObjectives[i]->getComplete()) {
+			if (i != 0) {
+				textStream << ", ";
+			}
+			textStream << "+" << _bonusObjectives[i]->getReward();
+		}
+	}
+	if (textStream.str() == "") {
+		statUps->setText("no bonus objectives completed");
+	}
+	else {
+		statUps->setText(textStream.str(), true);
+	}
+	statUps->setPosition(750, 220);
+	statUps->setWrap(true);
+
 	for (auto it = _buttons.begin(); it != _buttons.end(); ++it) {
 		auto button = *it;
 		button->activate();
@@ -649,3 +856,111 @@ void MultiScreenScene::endDay() {
 }
 
 
+std::shared_ptr<scene2::PolygonNode> MultiScreenScene::createObjectiveNode(std::shared_ptr<DayObjective> obj) {
+	std::shared_ptr<scene2::PolygonNode> objNode = scene2::PolygonNode::allocWithPoly(Rect(0,0,OBJ_CARD_WIDTH, OBJ_CARD_HEIGHT));
+	std::string objSceneName = "dayObjective" + std::to_string(obj->getId());
+	objNode->setName(objSceneName);
+	objNode->setColor(Color4::GRAY);
+	//objNode->setTexture(_assets->get<Texture>("objectiveCardBackground"));
+
+	std::shared_ptr<scene2::Label> objName = scene2::Label::allocWithText(obj->getName(), _assets->get<Font>("winter drinkRegular40"));
+	objName->setContentSize(Vec2(OBJ_CARD_WIDTH, OBJ_CARD_HEIGHT));
+	objName->setWrap(true);
+	objName->setHorizontalAlignment(HorizontalAlign::CENTER);
+	//objName->setScale(Vec2(0.5, 0.5));
+	
+	objNode->addChild(objName);
+
+	float descStartHeight = OBJ_CARD_HEIGHT / 4;
+	float descPadding = 15;
+
+	std::string objType = obj->getType();
+	std::shared_ptr<scene2::PolygonNode> objImage;
+	std::shared_ptr<scene2::Label> objText = scene2::Label::allocWithText("", _assets->get<Font>("winter drinkRegular25"));
+	objText->setPosition(Vec2(descPadding, descStartHeight));
+
+	if (objType == "rush") {
+
+		std::ostringstream textStream;
+		textStream << "Complete " << obj->getQuantity() << " dishes in " << std::fixed << std::setprecision(1) << obj->getReqTime() << " seconds";
+		objText->setText(textStream.str(), true);
+
+		objImage = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("rushObjective"));
+
+	}
+	else if (objType == "accuracy") {
+
+		std::ostringstream textStream;
+		textStream << "Cut carrots with an accuracy of at least " << std::fixed << std::setprecision(1) << obj->getReqAccuracy();
+		objText->setText(textStream.str(), true);
+		
+
+		objImage = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("accuracyObjective"));
+	}
+
+	objText->setWrap(true);
+	objText->setContentSize(Vec2(OBJ_CARD_WIDTH - descPadding, OBJ_CARD_HEIGHT / 2));
+
+	objImage->setContentSize(Vec2(2 * OBJ_CARD_WIDTH / 3, 2 * OBJ_CARD_WIDTH / 3));
+	objImage->setAnchor(Vec2::ANCHOR_CENTER);
+	objImage->setPosition(OBJ_CARD_WIDTH/2, OBJ_CARD_HEIGHT/3);
+
+	objNode->addChild(objText);
+	objNode->addChild(objImage);
+
+
+	std::shared_ptr<scene2::Label> rewardText = scene2::Label::allocWithText("Reward: " + obj->getReward(), _assets->get<Font>("winter drinkRegular25"));
+	rewardText->setContentSize(Vec2(OBJ_CARD_WIDTH, OBJ_CARD_HEIGHT / 8));
+	rewardText->setHorizontalAlignment(HorizontalAlign::CENTER);
+	objNode->addChild(rewardText);
+
+	return objNode;
+}
+
+void MultiScreenScene::showObjectiveNodes(bool val) {
+	for (int i = 0; i < _bonusObjectives.size(); i++) {
+		std::string childToGet = "dayObjective" + std::to_string(i);
+		_uiScene->getChildByName(childToGet)->setVisible(val);
+	}
+	_uiScene->getChildByName("blackOverlay")->setVisible(val);
+}
+
+void MultiScreenScene::checkObjectiveCompletion(std::shared_ptr<DayObjective> obj) {
+
+	std::string objType = obj->getType();
+	if (objType == "rush") {
+
+		if (obj->getComplete()) return;
+
+		//have to use iterator here, because accessing by [] on an undefined key will return a default value
+		//which would be 0.0f which would always mark as complete
+		float completionTime;
+		auto iterator = _ingredientCompletionTimes.find(obj->getTargetName());
+		if (iterator != _ingredientCompletionTimes.end()) {
+			completionTime = iterator->second;
+		}
+		else {
+			completionTime = FLT_MAX;
+		}
+		
+		int completionCount = _ingredientCompletionCounts[obj->getTargetName()];
+		if (completionCount >= obj->getQuantity() && completionTime <= obj->getReqTime()) {
+			obj->setComplete(true);
+			CULog("completed rush obj");
+		}
+	}
+	else if (objType == "accuracy") {
+		//no need for that here, because 0.0 will always be less than required accuracy
+		float itemAccuracy = _ingredientAccuracy[obj->getTargetName()];
+		if (itemAccuracy >= obj->getReqAccuracy()) {
+			obj->setComplete(true);
+			CULog("win accuracy");
+		}
+		else {
+			obj->setComplete(false);
+		}
+	}
+	else {
+		CULogError("Attempted to Check Completion of Unimplemented Objective Type");
+	}
+}

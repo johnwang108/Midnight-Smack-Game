@@ -1,0 +1,14 @@
+{ "columns":14,
+ "image":"..\/textures\/carrotEnemy.png",
+ "imageheight":639,
+ "imagewidth":463,
+ "margin":0,
+ "name":"carrotEnemy",
+ "spacing":0,
+ "tilecount":266,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

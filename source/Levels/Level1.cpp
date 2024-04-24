@@ -128,7 +128,8 @@ void Level1::populate(GameScene& scene) {
 		std::vector<Vec3> path;
 		path = { Vec3(0,100,120), Vec3(100,100,120), Vec3(100,0,120), Vec3(0,-30,120) };
 		if (ii % 3 == 1) {
-			platObj->initiatePath(path, 2.0f);
+			//platObj->initiatePath(path, 2.0f);
+			
 		}
 		things.push_back(platObj);
 		scene.addObstacle(platObj->getObj(), platObj->getSprite(), 1);
@@ -170,7 +171,7 @@ void Level1::populate(GameScene& scene) {
 	image = _assets->get<Texture>("beefIdle");
 
 	spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
-	std::shared_ptr<EnemyModel> _enemy = EnemyModel::allocWithConstants({ 30.0f, 6.0f }, size, _scale, _assets, EnemyType::beef);
+	std::shared_ptr<EnemyModel> _enemy = Beef::allocWithConstants({ 30.0f, 6.0f }, size, _scale, _assets);
 	spritenode->setScale(0.1f);
 	spritenode->setAnchor(Vec2(0.5, 0.5));
 	_enemy->setSceneNode(spritenode);
@@ -186,7 +187,7 @@ void Level1::populate(GameScene& scene) {
 
 	Vec2 rice_pos = RICE_POS;
 	image = _assets->get<Texture>("riceLeader");
-	_enemy = EnemyModel::allocWithConstants(rice_pos, riceSize, _scale, _assets, EnemyType::rice);
+	_enemy = Rice::allocWithConstants(rice_pos, riceSize, _scale, _assets, false);
 	spritenode = EntitySpriteNode::allocWithSheet(image, 3,4,12);
 	spritenode->setScale(0.12f);
 	spritenode->setAnchor(riceAnchor);
@@ -198,7 +199,7 @@ void Level1::populate(GameScene& scene) {
 
 	rice_pos = RICE_POS;
 	image = _assets->get<Texture>("riceLeader");
-	_enemy = EnemyModel::allocWithConstants({20.0f, 6.0f}, riceSize, _scale, _assets, EnemyType::rice);
+	_enemy = Rice::allocWithConstants({20.0f, 6.0f}, riceSize, _scale, _assets, false);
 	spritenode = EntitySpriteNode::allocWithSheet(image, 3, 4, 12);
 	spritenode->setScale(0.12f);
 	spritenode->setAnchor(riceAnchor);
@@ -209,7 +210,7 @@ void Level1::populate(GameScene& scene) {
 	_enemies.push_back(_enemy);
 
 	image = _assets->get<Texture>("riceSoldier");
-	std::shared_ptr<EnemyModel> _enemy1 = EnemyModel::allocWithConstants({27.0f, 6.0f}, riceSize, _scale, _assets, EnemyType::rice_soldier);
+	std::shared_ptr<EnemyModel> _enemy1 = Rice::allocWithConstants({27.0f, 6.0f}, riceSize, _scale, _assets, true);
 	spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 15);
 	spritenode->setScale(0.2f);
 	spritenode->setAnchor(riceAnchor);
@@ -220,7 +221,7 @@ void Level1::populate(GameScene& scene) {
 	_enemies.push_back(_enemy1);
 
 	image = _assets->get<Texture>("riceSoldier");
-	std::shared_ptr<EnemyModel> _enemy2 = EnemyModel::allocWithConstants({ 29.0f, 6.0f }, riceSize, _scale, _assets, EnemyType::rice_soldier);
+	std::shared_ptr<EnemyModel> _enemy2 = Rice::allocWithConstants({ 29.0f, 6.0f }, riceSize, _scale, _assets, true);
 	spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 15);
 	spritenode->setScale(0.2f);
 	spritenode->setAnchor(riceAnchor);
@@ -230,8 +231,8 @@ void Level1::populate(GameScene& scene) {
 	scene.addObstacle(_enemy2, spritenode);
 	_enemies.push_back(_enemy2);
 
-	EnemyModel* _enemy1Weak = _enemy1.get();
-	EnemyModel* _enemy2Weak = _enemy2.get();
+	Rice* _enemy1Weak = (Rice*)_enemy1.get();
+	Rice* _enemy2Weak = (Rice*)_enemy2.get();
 
 	scene2::SceneNode* weak = _enemy->getSceneNode().get();
 	_enemy->setListener([=](physics2::Obstacle* obs) {

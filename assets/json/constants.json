@@ -70,14 +70,14 @@
             "rows": 3,
             "cols": 3,
             "frames": 8,
-            "duration": 0.6
+            "duration": 0.4
         },
-        "air_recover": {
+        "air_roll": {
             "sheet": "su_air_roll",
             "rows": 2,
             "cols": 2,
             "frames": 3,
-            "duration": 0.25
+            "duration": 0.15
         }
     },
     "rice" : {
@@ -157,6 +157,13 @@
             "cols": 4,
             "frames": 9,
             "duration": 1.25
+        },
+        "riceAcknowledge":{
+            "sheet": "riceSoldier",
+            "rows": 4,
+            "cols": 4,
+            "frames": 15,
+            "duration": 1.5
         },
         "riceYell":{
             "sheet": "riceLeader",
@@ -250,6 +257,13 @@
             "cols": 4,
             "frames": 15,
             "duration": 1.5
+        },
+        "riceYell":{
+            "sheet": "riceLeader",
+            "rows": 3,
+            "cols": 4,
+            "frames": 12,
+            "duration": 1.1667
         }
     },
     "egg": {},
@@ -260,7 +274,63 @@
             "rows": 3,
             "cols": 3,
             "frames": 7,
-            "duration": 1.0
+            "duration": 1.714
+        },
+        "beefDig": {
+            "sheet": "beefDig",
+            "rows": 3,
+            "cols": 4,
+            "frames": 10,
+            "duration": 1.363636
+        },
+        "beefHurt": {
+            "sheet": "beefHurt",
+            "rows": 3,
+            "cols": 3,
+            "frames": 8,
+            "duration": 1.5
+        },
+        "beefDeath": {
+            "sheet": "beefDeath",
+            "rows": 3,
+            "cols": 4,
+            "frames": 11,
+            "duration": 1.333
+        },
+        "beefAttack": {
+            "sheet": "beefAttack",
+            "rows": 4,
+            "cols": 4,
+            "frames": 13,
+            "duration": 1.1538
+        },
+        "beefDigDirt": {
+            "sheet": "beefDigDirt",
+            "rows": 3,
+            "cols": 4,
+            "frames": 10,
+            "duration": 1.363636
+        },
+        "beefIdleDirt": {
+            "sheet": "beefIdleDirt",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 3.5
+        },
+        "beefStartMove": {
+            "sheet": "beefStartMove",
+            "rows": 3,
+            "cols": 3,
+            "frames": 7,
+            "duration": 1.714
+        },
+        "beefMove": {
+            "sheet": "beefMove",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 3.0
         }
     },
     "carrot" : {},

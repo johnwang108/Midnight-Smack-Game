@@ -16,36 +16,47 @@ private:
     float BASIC_RESTITUTION;
     Color4 DEBUG_COLOR;
     int WALL_VERTS;
+
     int breakableCoolDown;
+    int respawnTime;
+    int breakingClock;
+    bool activeDisplay;
+
     bool doesDamage;
+
     float ogX;
     float ogY;
     int pathNodeCoolDown;
-
     std::vector<Vec3> path;
     float movementForce;
     int currentPathNode;
+
     Poly2 _collisionPoly;
     std::string name;
     std::shared_ptr<scene2::SceneNode> sprite;
+
+    void Wall::setActive(bool state);
 public:
     Wall();
     bool init(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION, float BASIC_RESTITUTION,
-        Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, int breakableCooldown = -1, bool doesDamage = false);
+        Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, bool doesDamage = false);
     static std::shared_ptr<Wall> alloc(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION, float BASIC_RESTITUTION,
-        Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, int breakableCooldown = -1, bool doesDamage = false);
+        Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, bool doesDamage = false);
     std::shared_ptr<physics2::PolygonObstacle> getObj();
     Poly2 getCollisionPoly();
     std::shared_ptr<scene2::SceneNode> getSprite();
 
-    void initiatePath(std::vector<Vec3> path, int movementForce);
+    void initPath(std::vector<Vec3> path, int movementForce);
+    void initBreakable(int duration, int respawnTime);
     void update(float dt);
+    void fixedUpdate(float step);
     Vec3 queryPath(int temp);
     void applyPathMovement(float step);
+    void applyBreaking();
     float getOGX();
     float getOGY();
-    int getPathNodeCoolDown();
-    void setPathNodeCoolDown(int val);
+    void resetBreaking();
+    int getBreakingClock();
 };
 
 #endif /* __WALL_H__ */

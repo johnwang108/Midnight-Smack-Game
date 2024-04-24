@@ -9,6 +9,11 @@
 //#include "/../Users/benlo/source/repos/Midnight-Smack-Folder/Midnight-Smack-Game/source/PFAttack.h"
 #include "../PFDudeModel.h"
 #include "../Enemys/Enemy.h"
+#include "../Enemys/Rice.h"
+#include "../Enemys/Beef.h"
+#include "../Enemys/Shrimp.h"
+#include "../Enemys/Carrot.h"
+#include "../Enemys/Egg.h"
 #include "../Enemys/Bull.h"
 #include "Levels.h"
 
@@ -74,7 +79,7 @@ public:
 	void loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height);
 
 	/** loads the main platform, specifically its physical parts*/
-	void loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height);
+	std::shared_ptr<physics2::PolygonObstacle> loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height);
 
 	/** Clears the root scene graph node for the level*/
 	// void clearRootNode();

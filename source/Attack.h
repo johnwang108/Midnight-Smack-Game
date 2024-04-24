@@ -177,6 +177,9 @@ public:
 
     void setSpeed(float speed) { _speed = speed; }
     float getSpeed() { return _speed; }
+    void setLifetime(float lifetime) { _lifetime = lifetime; }
+
+    float getLifetime() { return _lifetime; }
 };
 
 #endif /* __ATTACK_H__ */

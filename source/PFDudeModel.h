@@ -71,12 +71,13 @@
 #define DUDE_MANUEL_MAXSPEED   5.0f
 
 #define MAX_METER 100.0f
+#define MAX_HEALTH 100.0f
 
 #define METER_COST 60.0f
 #define floatyFrames   10
 
-/** Cooldown (in animation frames) for shooting */
-#define DASH_COOLDOWN  20
+/** Cooldown (in animation frames) for dashing */
+#define DASH_COOLDOWN  60
 
 
 #pragma mark -
@@ -172,6 +173,7 @@ protected:
     float _dashCooldown;
     bool _contactingWall;
     bool _isOnDangerousGround;
+    bool _isInputWalk;
 
     //float _health;
 
@@ -222,8 +224,10 @@ protected:
     float _healthUpgrade;
     float _dashUpgrade;
     float _meterGainUpgrade;
-    float _hitStunUpgrade;
+    float _attackUpgrade;
+    float _speedUpgrade;
 
+    bool _rechargingDash;
 	/**
 	* Redraws the outline of the physics fixtures to the debug node
 	*
@@ -411,16 +415,16 @@ public:
         bool res = result->init(pos, size, scale);
 
         if (res) {
-            result->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 4, 16, 1.0f, true);
-            result->addActionAnimation("idle_blink", _assets->get<Texture>("su_idle_blink"), 4, 5, 18, 2.0f, true);
-            result->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 5, 18, 0.6f, true);
-            result->addActionAnimation("recover", _assets->get<Texture>("su_attack_recover"), 3, 4, 10, 0.83f, true);
-            result->addActionAnimation("run", _assets->get<Texture>("su_run"), 3, 4, 10, 0.83f, true);
+            result->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 4, 16, 1.0f);
+            result->addActionAnimation("idle_blink", _assets->get<Texture>("su_idle_blink"), 4, 5, 18, 2.0f);
+            result->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 5, 18, 0.6f);
+            result->addActionAnimation("recover", _assets->get<Texture>("su_attack_recover"), 3, 4, 10, 0.83f);
+            result->addActionAnimation("run", _assets->get<Texture>("su_run"), 3, 4, 10, 0.83f);
 
-            result->addActionAnimation("jump_up", _assets->get<Texture>("su_jump_airborne_up"), 2, 2, 3, 0.25f, false);
-            result->addActionAnimation("jump_down", _assets->get<Texture>("su_jump_airborne_down"), 2, 2, 3, 0.25f, false);
-            result->addActionAnimation("jump_land", _assets->get<Texture>("su_jump_land"), 2, 2, 3, 0.25f, false);
-            result->addActionAnimation("jump_ready", _assets->get<Texture>("su_jump_ready"), 1, 2, 2, 0.16f, false);
+            result->addActionAnimation("jump_up", _assets->get<Texture>("su_jump_airborne_up"), 2, 2, 3, 0.25f);
+            result->addActionAnimation("jump_down", _assets->get<Texture>("su_jump_airborne_down"), 2, 2, 3, 0.25f);
+            result->addActionAnimation("jump_land", _assets->get<Texture>("su_jump_land"), 2, 2, 3, 0.25f);
+            result->addActionAnimation("jump_ready", _assets->get<Texture>("su_jump_ready"), 1, 2, 2, 0.16f);
         }
 
         return res ? result : nullptr;
@@ -623,6 +627,8 @@ public:
      * @param delta Number of seconds since last animation frame
      */
     void update(float dt) override;
+
+    void fixedUpdate(float step);
     
     /**
      * Applies the force to the body of this dude
@@ -663,15 +669,35 @@ public:
     bool useMeter(float f = METER_COST);
 
     std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale);
+    std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAirAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale, float angle);;
 
     float getLastDamageTime() { return _lastDamageTime; };
+
     float getHealthCooldown() { return _healthCooldown; };
+
+    void setHealthUpgrade(float f) { _healthUpgrade = f; };
+    void setDashUpgrade(float f) { _dashUpgrade = f; };
+    void setMeterGainUpgrade(float f) { _meterGainUpgrade = f; };
+    void setAttackUpgrade(float f) { _attackUpgrade = f; };
+    void setSpeedUpgrade(float f) { _speedUpgrade = f; };
+
+    void initUpgrades() {
+        _healthUpgrade = 0.0f;
+        _dashUpgrade = 0.0f;
+        _meterGainUpgrade = 0.0f;
+        _attackUpgrade = 0.0f;
+        _speedUpgrade = 0.0f;
+    }
+
+    void gainHealth(float f);
 
     int getDashCooldown() {return _dashCooldown; };
 
     int getDashCooldownMax() { return DASH_COOLDOWN; }
 
     int getFloatyFrames() { return floatyFrames; };
+
+    void setInputWalk(bool b) { _isInputWalk = b; };
 
     float getAttackBuff() {
         if (_duration > 0) {
