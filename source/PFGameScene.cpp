@@ -339,11 +339,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _target = std::make_shared<EnemyModel>();
 
 
-   // currentLevel = _level_model;
-   // _level_model->setFilePath("json/test_level_v2_experiment.json");
-    currentLevel = level3;
-    loadLevel(currentLevel);
-   // loadLevel(currentLevel);
+
+   _chapter = 1;
+   _level = 4;
+    loadLevel(_chapter, _level);
+ //   currentLevel = level3;
+
     addChild(_worldnode);
     addChild(_debugnode);
     addChild(_leftnode);
@@ -1028,7 +1029,11 @@ void GameScene::preUpdate(float dt) {
                     _ShrimpRice->setact("SFRWave3",1.125);
                 }
             }
-            if (!_ShrimpRice->isChasing()) {
+            if (_ShrimpRice->gettimetosummon()) {
+                _ShrimpRice->Summon(*this);
+                _ShrimpRice->settimetosummon(false);
+            }
+            if (!_ShrimpRice->isChasing() && _ShrimpRice->getcanturn()) {
                 Vec2 BullPos = _ShrimpRice->getPosition();
                 if (_ShrimpRice->getnextchangetime() < 0) {
                     int direction = (avatarPos.x > BullPos.x) ? 1 : -1;

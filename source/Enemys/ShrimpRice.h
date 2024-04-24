@@ -8,7 +8,7 @@
 using namespace cugl;
 
 #define SHRIMPRICE_SENSOR_NAME     "ShrimpRicesensor" // If the SHRIMPRICE requires a unique sensor
-#define SHRIMPRICE_CHASE_SPEED     2.0f         // Using the CHASE_SPEED for consistency
+#define SHRIMPRICE_CHASE_SPEED     3.0f         // Using the CHASE_SPEED for consistency
 #define SHRIMPRICE_DENSITY         2.0f         // Assuming the SHRIMPRICE is heavier than a regular enemy
 #define SHRIMPRICE_FORCE           1.0f         // Force specific to the SHRIMPRICE's movement, potentially stronger
 #define SHRIMPRICE_MAXSPEED        5.0f         // A reasonable max speed for the SHRIMPRICE, ensuring it's fast but manageable
@@ -39,6 +39,9 @@ protected:
     std::string _attacktype;
     std::string _act;
     float _acttime;
+    bool _canturn;
+    bool _angry;
+    bool _timetosummon;
 
 
 public:
@@ -83,6 +86,10 @@ public:
     }
     float getacttime() { return _acttime; }
     std::string getact() { return _act; }
+    bool getcanturn() { return _canturn; }
+    void Summon(GameScene& scene);
+    bool gettimetosummon() { return _timetosummon; }
+    void settimetosummon(bool time) { _timetosummon = time; }
 };
 
 #endif /* __SHRIMPRICE_H__ */

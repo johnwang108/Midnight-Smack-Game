@@ -25,6 +25,9 @@ bool ShrimpRice::init(const Vec2& pos, const Size& size, float scale) {
         setDensity(SHRIMPRICE_DENSITY);
         setFriction(0.0f);
         setFixedRotation(true);
+        _canturn = true;
+        _angry = false;
+        _timetosummon = false;
 
         return true;
     }
@@ -41,16 +44,22 @@ void ShrimpRice::update(float dt) {
 
     if (_knockbackTime > 0) {
         _knockbackTime -= dt;
-        setGravityScale(1.5);
+     //   setGravityScale(1.5);
         return;
     }
 
     b2Vec2 velocity = _body->GetLinearVelocity();
-    velocity.x = _direction * SHRIMPRICE_CHASE_SPEED*1.5; 
+    if (_angry) {
+        velocity.x = _direction * SHRIMPRICE_CHASE_SPEED;
+    }
+    else {
+        velocity.x = _direction * SHRIMPRICE_CHASE_SPEED * 1.3;
+	}
+    
 
     if (_acttime<=0 && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _SFR_attack_chance) {
         float pa = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-        pa=0.8;
+        pa=0.6;
         if (pa <= 0.25) {
             setact("SFR_Attack", 1.125);
 		}
@@ -61,6 +70,7 @@ void ShrimpRice::update(float dt) {
         }
         else {
             setact("SFRJoustState1", 1.125);
+            _canturn = false;
         }
 
     }
@@ -70,27 +80,45 @@ void ShrimpRice::update(float dt) {
             velocity.x *= 6;
         }
         if (_act == "SFRWheelofDoom") {
-            velocity.x *= 4;
-            velocity.y = 8;
+            velocity.x *= 0;
+        }
+        if (_act == "SFRJoustState2") {
+            velocity.x *= 12;
+        }
+        if (_act == "SFRJoustState3") {
+            velocity.x *= 0;
         }
         if (_acttime <= 0) {
+            if (_act == "SFRWave3") {
+                _timetosummon = true;
+            }
             if (_act == "SFRWave1") {
                 setact("SFRWave2", 10);
             }
             if (_act == "SFRWheelofDoom") {
-                _knockbackTime = 2;
+            //    _knockbackTime = 2;
+            }
+            if (_act == "SFRJoustState3") {
+                setact("SFR_Idle", 1.291);
             }
             if (_act == "SFRJoustState2") {
-                setact("SFRJoustState3", 0.3);
+                setact("SFRJoustState3", 0.6);
             }
             if (_act == "SFRJoustState1") {
-                setact("SFRJoustState2", 4.5);
+                setact("SFRJoustState2", 3.375);
+            }
+            if (_act == "SFR_Idle") {
+                _canturn = true;
             }
 
 		}
 	}
 
-    
+    if (!_angry) {
+        if (_health <= 40) {
+            _angry = true;
+        }
+    }
 
     if (_direction != _lastDirection) {
         // If direction changed, flip the image
@@ -134,7 +162,29 @@ void ShrimpRice::takeDamage(float damage, int attackDirection, bool knockback) {
         }
     }
 }
+void ShrimpRice::Summon(GameScene& scene) {
 
+    Vec2 enemyPos = getPosition()-Vec2(0,2);
+    std::shared_ptr<EnemyModel> new_enemy;
+    std::shared_ptr<EntitySpriteNode> spritenode;
+    std::vector<std::shared_ptr<EnemyModel>> Enemies=scene.getEnemies();
+
+    std::shared_ptr<Texture> image = _assets->get<Texture>("riceSoldier");
+    spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 15);
+    float imageWidth = image->getWidth() / 4;
+    float imageHeight = image->getHeight() / 4;
+    Size singularSpriteSize = Size(imageWidth, imageHeight);
+    new_enemy = Rice::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, true);
+    
+    spritenode->setScale(0.2f);
+    spritenode->setAnchor(Vec2(0.5, 0.35));
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    scene.addObstacle(new_enemy, spritenode);
+    Enemies.push_back(new_enemy);
+
+    scene.setEnemies(Enemies);
+}
 
 void ShrimpRice::dispose() {
     _core = nullptr;
