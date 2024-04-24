@@ -1228,7 +1228,7 @@ void GameScene::fixedUpdate(float step) {
                 _camera->setZoom(210.0 / 40.0);
             }
             else if (_level == 4) {
-                _camera->setZoom(210.0 / 40.0);
+                _camera->setZoom(400.0 / 40.0);
             }
         }
         //else if (currentLevel == level2) {

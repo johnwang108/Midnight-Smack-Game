@@ -51,7 +51,7 @@
 
 
 /**Modif for the max height jump in ~(Sues +1)*/
-float jmpHeight = 1;
+float jmpHeight = 1.5;
 /**Modif dash, as a multiple of DASH_JUMP*/
 float dashModif = 1.3;
 /**The aount of frames following a dash that SUe floats for*/
@@ -72,7 +72,7 @@ float dashModif = 1.3;
 /** Height of the sensor attached to the player's feet */
 #define SENSOR_HEIGHT   0.1f
 /** The density of the character */
-#define DUDE_DENSITY    1.0f
+#define DUDE_DENSITY    .80f
 /** The impulse for the character jump */
 #define DUDE_JUMP       (sqrt( 3 * 2 * (9.8) * getHeight() * jmpHeight ) * getMass() * getJumpBuff())
 /** The impulse for the character dash */

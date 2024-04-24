@@ -13,7 +13,7 @@ bool ShrimpRice::init(const Vec2& pos, const Size& size, float scale) {
         _direction = -1;
         _lastDirection = -1;
         _health = 100.0f;
-        _SFR_attack_chance=0.002f;
+        _SFR_attack_chance=0.003f;
         _healthCooldown = 0.1f;
         _knockbackTime = 0;
         _attacktype = "none";
@@ -59,7 +59,7 @@ void ShrimpRice::update(float dt) {
 
     if (_acttime<=0 && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _SFR_attack_chance) {
         float pa = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-        pa=0.6;
+       // pa=0.8;
         if (pa <= 0.25) {
             setact("SFR_Attack", 1.125);
 		}
