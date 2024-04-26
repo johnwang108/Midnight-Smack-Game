@@ -204,13 +204,13 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _winnode = scene2::Label::allocWithText(WIN_MESSAGE, _assets->get<Font>(MESSAGE_FONT));
     _winnode->setAnchor(Vec2::ANCHOR_CENTER);
-    _winnode->setPosition(dimen.width/2,dimen.height/2);
+    _winnode->setPosition(1280/2,800/2);
     _winnode->setForeground(WIN_COLOR);
     setComplete(false);
 
     _losenode = scene2::Label::allocWithText(LOSE_MESSAGE, _assets->get<Font>(MESSAGE_FONT));
     _losenode->setAnchor(Vec2::ANCHOR_CENTER);
-    _losenode->setPosition(dimen.width / 2, dimen.height / 2);
+    _losenode->setPosition(1280 / 2, 800 / 2);
     _losenode->setForeground(LOSE_COLOR);
     setFailure(false);
 

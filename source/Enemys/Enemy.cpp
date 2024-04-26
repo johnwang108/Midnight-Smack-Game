@@ -167,9 +167,11 @@ void EnemyModel::fixedUpdate(float step) {
     //updating counters
     if (_killMeCountdown > 0) {
         _killMeCountdown -= step;
+        return;
     }
     else if (_killMeCountdown < 0) {
 		_killMe = true;
+        return;
     }
 
     if (_knockbackTime > 0) {
