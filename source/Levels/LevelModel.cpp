@@ -730,7 +730,6 @@ void LevelModel::populate(GameScene& scene) {
 									float imageHeight = image->getHeight() / 4;
 									Size singularSpriteSize = Size(imageWidth, imageHeight);
 									new_enemy = Rice::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, false);
-									spritenode->setScale(1.0f);
 								}
 								else {
 									image = _assets->get<Texture>("riceSoldier");

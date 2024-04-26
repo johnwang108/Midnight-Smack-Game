@@ -11,6 +11,7 @@ protected:
     bool _isSoldier;
     cugl::Vec2 _targetPosition;
     float _closeEnough;
+    std::vector<std::shared_ptr<Rice>> _soldiers;
 
 private:
 
@@ -69,6 +70,22 @@ public:
         if (_killMeCountdown != 0.0f) return;
         EnemyModel::markForDeletion();
         _killMeCountdown = getActionDuration("riceDeath");
+    }
+
+    void leaderListener(physics2::Obstacle* obs) {
+
+        _node->setPosition(obs->getPosition() * _drawScale);
+        _node->setAngle(obs->getAngle());
+        if (getState() == "pursuing") {
+            for (auto& soldier : _soldiers) {
+                soldier->setTargetPosition(getPosition() + _distanceToPlayer);
+            };
+        }
+        else {
+            for (auto& soldier : _soldiers) {
+                soldier->setTargetPosition(getPosition());
+            };
+        }
     }
 };
 

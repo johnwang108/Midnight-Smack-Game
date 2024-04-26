@@ -62,10 +62,12 @@ void Rice::fixedUpdate(float step) {
         }
         if (_type == EnemyType::rice) {
             velocity.x = ENEMY_FORCE * _direction * 2;
+            //CULog("here :(");
         }
         else {
             float dir = SIGNUM(_targetPosition.x - getPosition().x);
-            velocity.x = ENEMY_FORCE * dir * 5;
+            //velocity.x = ENEMY_FORCE * dir * 5;
+            velocity.x = ENEMY_FORCE * _direction * 5;
         }
 	}
 	else if (_state == "attacking") {
@@ -116,6 +118,9 @@ void Rice::fixedUpdate(float step) {
 }
 
 void Rice::setState(std::string state) {
+    if (_state == "yelling" && state != "stunned" && !shouldDelete()) {
+        setattacktime(true);
+    }
     EnemyModel::setState(state);
     if (state == "chasing") {
         _behaviorCounter = 0;
@@ -161,5 +166,5 @@ std::string Rice::getNextState(std::string state) {
     else if (state == "patrolling") {
         return "patrolling";
     }
-    return 0;
+    return "0";
 }

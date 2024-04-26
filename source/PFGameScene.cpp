@@ -204,13 +204,13 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _winnode = scene2::Label::allocWithText(WIN_MESSAGE, _assets->get<Font>(MESSAGE_FONT));
     _winnode->setAnchor(Vec2::ANCHOR_CENTER);
-    _winnode->setPosition(0,0);
+    _winnode->setPosition(dimen.width/2,dimen.height/2);
     _winnode->setForeground(WIN_COLOR);
     setComplete(false);
 
     _losenode = scene2::Label::allocWithText(LOSE_MESSAGE, _assets->get<Font>(MESSAGE_FONT));
     _losenode->setAnchor(Vec2::ANCHOR_CENTER);
-    _losenode->setPosition(0,0);
+    _losenode->setPosition(dimen.width / 2, dimen.height / 2);
     _losenode->setForeground(LOSE_COLOR);
     setFailure(false);
 
@@ -939,6 +939,7 @@ void GameScene::preUpdate(float dt) {
 
 
     Vec2 avatarPos = _avatar->getPosition();
+    std::vector<std::shared_ptr<Rice>> spawns = std::vector<std::shared_ptr<Rice>>();
     for (auto& enemy : _enemies) {
         if (enemy != nullptr && !enemy->isRemoved()) {
             Vec2 enemyPos = enemy->getPosition();
@@ -946,11 +947,34 @@ void GameScene::preUpdate(float dt) {
 
             enemy->updatePlayerDistance(_avatar->getPosition());
 			if (enemy->getattacktime()) {
-				auto res = enemy->createAttack(_assets, _scale);
-				addObstacle(std::get<0>(res), std::get<1>(res));
-                _attacks.push_back(std::get<0>(res));
-				enemy->setattacktime(false);
-				enemy->setshooted(false);
+                //spawn rice if rice
+                if (enemy->getType() == EnemyType::rice) {
+                    std::shared_ptr<Texture> image = _assets->get<Texture>("riceSoldier");
+                    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
+                    float imageWidth = image->getWidth() / 4;
+                    float imageHeight = image->getHeight() / 4;
+                    Size singularSpriteSize = Size(imageWidth, imageHeight);
+                    std::shared_ptr<Rice> riceSpawn = Rice::allocWithConstants(enemyPos + Vec2((rand() % 2) * enemy->getDirection(), rand() % 2), singularSpriteSize / (5 * getScale()), getScale(), _assets, true);
+
+                    riceSpawn->setState("acknowledging");
+                    riceSpawn->setListener([=](physics2::Obstacle* obs) {
+                        riceSpawn->setTargetPosition(_avatar->getPosition());
+                        riceSpawn->setPosition(obs->getPosition()* _scale);
+                        riceSpawn->setAngle(obs->getAngle());
+                        });
+                    riceSpawn->setSceneNode(spritenode);
+                    spritenode->setScale(0.375 / 1.75);
+                    addObstacle(riceSpawn, spritenode);
+                    spawns.push_back(riceSpawn);
+                    CULog("spawning");
+                }
+                else {
+                    auto res = enemy->createAttack(_assets, _scale);
+                    addObstacle(std::get<0>(res), std::get<1>(res));
+                    _attacks.push_back(std::get<0>(res));
+                }
+                enemy->setattacktime(false);
+                enemy->setshooted(false);
 			}
 
             std::string actionKey = enemy->getActiveAction() + enemy->getId();
@@ -978,10 +1002,13 @@ void GameScene::preUpdate(float dt) {
                 //CULog("animating %s", actionName.c_str());
             }
             enemy->update(dt);
-          
         }
     }
 
+    for (auto& spawn : spawns) {
+        _enemies.push_back(spawn);
+    }
+    spawns.clear();
 
         if (_Bull != nullptr && !_Bull->isRemoved()) {
             if (_Bull->getHealth() <= 0) {
@@ -1266,14 +1293,9 @@ void GameScene::fixedUpdate(float step) {
         float cameraWidth = invZoom * (_camera->getViewport().getMaxX() - _camera->getViewport().getMinX()) / 2;
         float cameraHeight = invZoom * (_camera->getViewport().getMaxY() - _camera->getViewport().getMinY()) / 2;
 
-        CULog("%f", cameraWidth);
-        CULog("%f", cameraHeight);
         if (_level == 1 || _level == 2) {
             cugl::Vec3 mapMin = Vec3(_background->getBoundingRect().getMinX() + cameraWidth, _background->getBoundingRect().getMinY() + cameraHeight, 0);
             cugl::Vec3 mapMax = Vec3(_background->getBoundingRect().getMaxX() - cameraWidth, _background->getBoundingRect().getMaxY() - cameraHeight, 0);
-
-            CULog("Min: %f %f", mapMin.x, mapMin.y);
-            CULog("Max: %f %f", mapMax.x, mapMax.y);
             target.clamp(mapMin, mapMax);
         }
        
@@ -1292,7 +1314,6 @@ void GameScene::fixedUpdate(float step) {
         pos.smooth(target, step, smooth);
         //pos = _avatar->getPosition() * _scale;
         _camera->setPosition(pos);
-        CULog("Camera Position: %f %f", pos.x, pos.y);
         _camera->update();
         //_dollarnode->setPosition(pos);
     }
@@ -1607,7 +1628,7 @@ void GameScene::save() {
     player->appendValue("health", (double) _avatar->getHealth());
     night->appendChild("player", player);
 
-    std::vector<std::string> types = { "egg", "carrot", "shrimp", "rice", "beef" };
+    std::vector<std::string> types = { "egg", "carrot", "shrimp", "rice", "beef", "rice_soldier"};
     for (auto t = types.begin(); t != types.end(); t++) {
         std::string type = *t;
         night->appendChild(type, JsonValue::allocObject());
