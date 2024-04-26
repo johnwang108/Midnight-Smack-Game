@@ -267,7 +267,64 @@
         }
     },
     "egg": {},
-    "shrimp": {},
+    "shrimp": {
+        "shrimpAlarm":{
+            "sheet": "shrimpAlarm",
+            "rows": 3,
+            "cols": 3,
+            "frames": 7,
+            "duration": 1
+        },
+        "shrimpStand":{
+            "sheet": "shrimpAlarmToStand",
+            "rows": 3,
+            "cols": 3,
+            "frames": 8,
+            "duration": 1
+        },
+        "shrimpIdle":{
+            "sheet": "shrimpIdle",
+            "rows": 3,
+            "cols": 4,
+            "frames": 11,
+            "duration": 1
+        },
+        "shrimpRun":{
+            "sheet": "shrimpRun",
+            "rows": 3,
+            "cols": 3,
+            "frames": 9,
+            "duration": 1
+        },
+        "shrimpCurl":{
+            "sheet": "shrimpStandToRoll",
+            "rows": 3,
+            "cols": 4,  
+            "frames": 11,
+            "duration": 1
+        },
+        "shrimpWalkStart":{
+            "sheet": "shrimpWalkState1",
+            "rows": 2,
+            "cols": 2,
+            "frames": 3,
+            "duration": 1
+        },
+        "shrimpWalk":{
+            "sheet": "shrimpWalkState2",
+            "rows": 3,
+            "cols": 3,
+            "frames": 7,
+            "duration": 1
+        },
+        "shrimpUncurl": {
+            "sheet": "shrimpRollToIdle",
+            "rows": 2,
+            "cols": 3,
+            "frames": 6,
+            "duration": 1
+        }
+    },
     "beef": {
         "beefIdle": {
             "sheet": "beefIdle",

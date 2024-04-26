@@ -464,6 +464,33 @@
         "riceDeath": {
             "file": "textures/Sheets/Enemies/Rice/riceDeath.png"
         },
+        "shrimpIdle": {
+            "file": "textures/Sheets/Enemies/Shrimp/shrimpIdle.png"
+        },
+        "shrimpAlarm": {
+            "file": "textures/Sheets/Enemies/Shrimp/shrimpAlarm.png"
+        },
+        "shrimpAlarmToStand": {
+            "file": "textures/Sheets/Enemies/Shrimp/shrimpAlarmToStand.png"
+        },
+        "shrimpRun": {
+            "file": "textures/Sheets/Enemies/Shrimp/shrimpRun.png"
+        },
+        "shrimpStandToRoll": {
+            "file": "textures/Sheets/Enemies/Shrimp/shrimpStandToRoll.png"
+        },
+        "shrimpWalkState1": {
+            "file": "textures/Sheets/Enemies/Shrimp/shrimpWalkState1.png"
+        },
+        "shrimpWalkState2": {
+            "file": "textures/Sheets/Enemies/Shrimp/shrimpWalkState2.png"
+        },
+        "shrimpRollToIdle": {
+            "file": "textures/Sheets/Enemies/Shrimp/shrimpRollToIdle.png"
+        },
+        "shrimpRoll": {
+            "file": "textures/Sheets/Enemies/Shrimp/shrimpRoll.png"
+        },
         "dreamBackground": {
             "file": "textures/dream-background.png"
         },

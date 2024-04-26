@@ -36,6 +36,10 @@ void Entity::addActionAnimation(std::string action_name, std::shared_ptr<cugl::T
     _info[action_name] = std::make_tuple(rows, cols, size, duration);
 }
 
+void Entity::setAction(std::string action_name, std::vector<int> vec, float duration) {
+    _actions[action_name] = cugl::scene2::Animate::alloc(vec, duration);
+}
+
 /**Unsure if override needed. Begins an animation, switching the sheet if needed.*/
 void Entity::animate(std::string action_name) {
     std::string name = action_name;

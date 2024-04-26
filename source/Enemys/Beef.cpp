@@ -140,6 +140,7 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Beef::
     attack->setSpeed(0.0f);
     attack->setnorotate(true);
     attack->setGo(false);
+    
     //attack->setLifetime(attack->getLifetime() * 1.2);
 
 
@@ -147,6 +148,7 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Beef::
     std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
     attack->setSceneNode(sprite);
     sprite->setPosition(pos);
+    sprite->setVisible(false);
 
     return std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>>(attack, sprite);
 

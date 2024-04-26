@@ -157,5 +157,7 @@ public:
 	float getActionDuration(std::string actionName) {return std::get<3>(_info[actionName]); };
 
 	void setHealth(float health) { _health = health; };
+
+	void setAction(std::string action_name, std::vector<int> vec, float duration);
 };
 #endif /* __ENTITY_H__ */

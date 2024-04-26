@@ -19,7 +19,7 @@
 #pragma mark -
 #pragma mark Physics Constants
 /** The new heavier gravity for this world (so it is not so floaty) */
-#define DEFAULT_GRAVITY -28.9f
+#define DEFAULT_GRAVITY -34.9f
 /** The density for most physics objects */
 #define BASIC_DENSITY   0.0f
 /** The density for a bullet */

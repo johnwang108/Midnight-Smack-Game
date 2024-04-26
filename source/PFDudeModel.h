@@ -689,6 +689,14 @@ public:
         _speedUpgrade = 0.0f;
     }
 
+    void setUpgrades(float health, float dash, float meter, float attack, float speed) {
+		_healthUpgrade = health;
+		_dashUpgrade = dash;
+		_meterGainUpgrade = meter;
+		_attackUpgrade = attack;
+		_speedUpgrade = speed;
+	}
+
     void gainHealth(float f);
 
     int getDashCooldown() {return _dashCooldown; };

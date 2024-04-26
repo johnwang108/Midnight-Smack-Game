@@ -756,15 +756,23 @@ void LevelModel::populate(GameScene& scene) {
 
 								image = _assets->get<Texture>("carrotIdle");
 								spritenode = EntitySpriteNode::allocWithSheet(image, 1, 1, 1);
-								// float imageWidth = image->getWidth() / 4;
-								// float imageHeight = image->getHeight() / 4;
 								Size singularSpriteSize = Size(image->getWidth(), image->getHeight());
 								new_enemy = Carrot::allocWithConstants(enemyPos, singularSpriteSize / (scene.getScale()), scene.getScale(), _assets);
-
 								new_enemy->setSceneNode(spritenode);
 								new_enemy->setDebugColor(DEBUG_COLOR);
 								scene.addObstacle(new_enemy, spritenode);
 								_enemies.push_back(new_enemy);
+								
+								//image = _assets->get<Texture>("shrimpIdle");
+								//spritenode = EntitySpriteNode::allocWithSheet(image, 1, 1, 1);
+								////Size singularSpriteSize = Size(image->getWidth(), image->getHeight());
+								//Size s = Size(2.0f, 2.0f);
+								//new_enemy = Shrimp::allocWithConstants(enemyPos,s, scene.getScale(), _assets);
+								//new_enemy->setSceneNode(spritenode);
+								//new_enemy->setDebugColor(DEBUG_COLOR);
+								//scene.addObstacle(new_enemy, spritenode);
+								//_enemies.push_back(new_enemy);
+								
 								//image = _assets->get<Texture>("beefIdle");
 								//spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
 								//float imageWidth = image->getWidth() / 3;

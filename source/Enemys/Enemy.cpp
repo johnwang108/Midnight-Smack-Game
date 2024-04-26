@@ -294,7 +294,7 @@ void EnemyModel::updatePlayerDistance(cugl::Vec2 playerPosition) {
     if (_distanceToPlayer.length() <= typeToAggroRange(_type) && _state == "patrolling") {
         setIsChasing(true);
     }
-    else if (_distanceToPlayer.length() >  2 * typeToAggroRange(_type) && _state != "patrolling") {
+    else if (_distanceToPlayer.length() > 1.5f * typeToAggroRange(_type) && _state != "patrolling") {
 		setIsChasing(false);
 	}
     //CULog("Distance to player: %f", _distanceToPlayer.length());

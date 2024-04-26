@@ -972,6 +972,8 @@ void GameScene::preUpdate(float dt) {
                 enemy->animate(actionName);
                 auto action = enemy->getAction(actionName);
                 _actionManager->activate(actionName + enemy->getId(), action, enemy->getSceneNode());
+
+                //CULog("animating %s", actionName.c_str());
             }
             enemy->update(dt);
           
@@ -1621,7 +1623,7 @@ bool GameScene::loadSave(std::shared_ptr<JsonValue> save) {
     changeCurrentLevel(chap, level);
     reset();
 
-    // max health, dash cooldown, attack damage, speed
+    // max health, dash cooldown, attack damage, speed, metergain
     float locationX = save->get("player")->getFloat("location_x");
     float locationY = save->get("player")->getFloat("location_y");
     float health = save->get("player")->getFloat("health");
