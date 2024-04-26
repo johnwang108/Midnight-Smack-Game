@@ -346,8 +346,11 @@ void DudeModel::applyForce(float h, float v) {
         setVY(0);
         setVX(0);
         _body->ApplyLinearImpulse(DUDE_DASH * force, _body->GetPosition(), true);
+        _body->SetLinearDamping(getLinearDamping() * 2);
         //deltaDashNum(-1);
-    }
+    } else {
+		_body->SetLinearDamping(1.0f);
+	}
 }
 
 /**

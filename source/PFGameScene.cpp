@@ -342,7 +342,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
    _chapter = 1;
-   _level = 4;
+   _level = 1;
     loadLevel(_chapter, _level);
  //   currentLevel = level3;
 
@@ -1268,12 +1268,15 @@ void GameScene::fixedUpdate(float step) {
 
         CULog("%f", cameraWidth);
         CULog("%f", cameraHeight);
-        cugl::Vec3 mapMin = Vec3(_background->getBoundingRect().getMinX()+ cameraWidth, _background->getBoundingRect().getMinY() + cameraHeight, 0);
-        cugl::Vec3 mapMax = Vec3(_background->getBoundingRect().getMaxX()- cameraWidth, _background->getBoundingRect().getMaxY()- cameraHeight, 0);
+        if (_level == 1 || _level == 2) {
+            cugl::Vec3 mapMin = Vec3(_background->getBoundingRect().getMinX() + cameraWidth, _background->getBoundingRect().getMinY() + cameraHeight, 0);
+            cugl::Vec3 mapMax = Vec3(_background->getBoundingRect().getMaxX() - cameraWidth, _background->getBoundingRect().getMaxY() - cameraHeight, 0);
 
-        CULog("Min: %f %f", mapMin.x, mapMin.y);
-        CULog("Max: %f %f", mapMax.x, mapMax.y);
-        target.clamp(mapMin, mapMax);
+            CULog("Min: %f %f", mapMin.x, mapMin.y);
+            CULog("Max: %f %f", mapMax.x, mapMax.y);
+            target.clamp(mapMin, mapMax);
+        }
+       
 
         cugl::Vec3 pos = _camera->getPosition();
 
