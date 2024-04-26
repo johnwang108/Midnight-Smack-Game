@@ -158,7 +158,7 @@ public:
     /**Allocs with animations defined from json. Don't use.
     * 
     * */
-    virtual  std::shared_ptr<EnemyModel> allocWithConstants(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::shared_ptr<AssetManager> _assets) { return nullptr; };
+   // virtual  std::shared_ptr<EnemyModel> allocWithConstants(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::shared_ptr<AssetManager> _assets) { return nullptr; };
         //std::shared_ptr<EnemyModel> result = std::make_shared<EnemyModel>();
         //bool res = result->init(pos, size, scale);
 

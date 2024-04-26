@@ -8,7 +8,7 @@
 using namespace cugl;
 
 #define SHRIMPRICE_SENSOR_NAME     "ShrimpRicesensor" // If the SHRIMPRICE requires a unique sensor
-#define SHRIMPRICE_CHASE_SPEED     2.0f         // Using the CHASE_SPEED for consistency
+#define SHRIMPRICE_CHASE_SPEED     3.0f         // Using the CHASE_SPEED for consistency
 #define SHRIMPRICE_DENSITY         2.0f         // Assuming the SHRIMPRICE is heavier than a regular enemy
 #define SHRIMPRICE_FORCE           1.0f         // Force specific to the SHRIMPRICE's movement, potentially stronger
 #define SHRIMPRICE_MAXSPEED        5.0f         // A reasonable max speed for the SHRIMPRICE, ensuring it's fast but manageable
@@ -30,7 +30,6 @@ protected:
     bool _isChasing;
     int _direction;
     float _SFR_attack_chance;
-    float _attackcombo;
     float _knockbackTime;
     float _nextChangeTime;
     b2Fixture* _sensorFixture;
@@ -38,10 +37,11 @@ protected:
     std::shared_ptr<AssetManager> _assets;
     int _lastDirection;
     std::string _attacktype;
-    float _WheelofDoom;
-    float _waveattack1;
-    float _waveattack3;
-    bool _passattack;
+    std::string _act;
+    float _acttime;
+    bool _canturn;
+    bool _angry;
+    bool _timetosummon;
 
 
 public:
@@ -76,12 +76,20 @@ public:
     void setDirection(int d) { _direction = d; }
     void setnextchangetime(double nextChangeTime) { _nextChangeTime = nextChangeTime; }
     float getknockbacktime() { return _knockbackTime; }
-    float getattackcombo() { return _attackcombo; }
-    float getWheelofDoom() { return _WheelofDoom; }
+
     std::string getattacktype() { return _attacktype; }
     void setattacktype(std::string type){_attacktype=type;}
-    void setpassattack(bool t){_passattack=true;}
-    void setwave3(float time){_waveattack3=time;}
+
+    void setact(std::string act, float time) {
+        _acttime = time;
+        _act = act;
+    }
+    float getacttime() { return _acttime; }
+    std::string getact() { return _act; }
+    bool getcanturn() { return _canturn; }
+    void Summon(GameScene& scene);
+    bool gettimetosummon() { return _timetosummon; }
+    void settimetosummon(bool time) { _timetosummon = time; }
 };
 
 #endif /* __SHRIMPRICE_H__ */

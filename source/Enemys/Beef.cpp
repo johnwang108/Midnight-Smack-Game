@@ -199,4 +199,5 @@ std::string Beef::getNextState(std::string state) {
     else if (state == "patrolling") {
         return "patrolling";
     }
+    return 0;
 }

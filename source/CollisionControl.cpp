@@ -267,34 +267,53 @@ void GameScene::beginContact(b2Contact* contact) {
     //}
     
     if (_ShrimpRice != nullptr && bd1->getName() == ATTACK_NAME && bd2->getName() == "shrimpBoss" && _ShrimpRice->getknockbacktime() <= 0) {
-        Vec2 enemyPos = _ShrimpRice->getPosition();
-        Vec2 attackerPos = ((Attack*)bd1)->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-        _avatar->addMeter(5.0f);
+        if (_ShrimpRice->getact() == "SFRJoustState2") {
+            _ShrimpRice->setact("SFRJoustState3", 0.6);
+            
+        }
+        else {
+            Vec2 enemyPos = _ShrimpRice->getPosition();
+            Vec2 attackerPos = ((Attack*)bd1)->getPosition();
+            int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+            _avatar->addMeter(5.0f);
 
-        _ShrimpRice->takeDamage(_avatar->getAttack() / 4, direction, false);
+            _ShrimpRice->takeDamage(_avatar->getAttack() / 4, direction, false);
 
-        popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
-        CULog("shrimpBoss: %f", _ShrimpRice->getHealth());
+            popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos* _scale);
+            CULog("shrimpBoss: %f", _ShrimpRice->getHealth());
+        }
+
     }
     else if (_ShrimpRice != nullptr && bd2->getName() == ATTACK_NAME && bd1->getName() == "shrimpBoss" && _ShrimpRice->getknockbacktime() <= 0) {
-        Vec2 enemyPos = _ShrimpRice->getPosition();
-        Vec2 attackerPos = ((Attack*)bd2)->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        if (_ShrimpRice->getact() == "SFRJoustState2") {
+            _ShrimpRice->setact("SFRJoustState3", 0.6);
+        }
+        else {
+            Vec2 enemyPos = _ShrimpRice->getPosition();
+            Vec2 attackerPos = ((Attack*)bd2)->getPosition();
+            int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
 
-        _ShrimpRice->takeDamage(_avatar->getAttack() / 4, direction, false);
+            _ShrimpRice->takeDamage(_avatar->getAttack() / 4, direction, false);
 
-        popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
-        CULog("shrimpBoss: %f", _ShrimpRice->getHealth());
+            popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos* _scale);
+            CULog("shrimpBoss: %f", _ShrimpRice->getHealth());
+        }
+
     }
     if (_ShrimpRice != nullptr && bd1 == _ShrimpRice.get() && bd2 == _avatar.get()) {
+        if (_ShrimpRice->getact() == "SFRJoustState2") {
+            _ShrimpRice->setact("SFRJoustState2", 0.5);
+        }
         Vec2 avatarPos = _avatar->getPosition();
         Vec2 bullPos = _ShrimpRice->getPosition();
         int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
-        _avatar->addTouching();
+      //  _avatar->addTouching();
         _avatar->takeDamage(34, direction);
     }
     else if (_ShrimpRice != nullptr && bd1 == _avatar.get() && bd2 == _ShrimpRice.get()) {
+        if (_ShrimpRice->getact() == "SFRJoustState2") {
+            _ShrimpRice->setact("SFRJoustState2", 0.5);
+        }
         Vec2 avatarPos = _avatar->getPosition();
         Vec2 bullPos = _ShrimpRice->getPosition();
         int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
@@ -355,7 +374,7 @@ void GameScene::endContact(b2Contact* contact) {
         _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
         _avatar->setContactingWall(false);
     }
-
+    
     if (_avatar->getBodySensorName() == fd1 && enemies.find(bd2->getName()) != enemies.end()) {
         if (((EnemyModel*)bd2)->isTangible()) {
             Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
@@ -366,6 +385,7 @@ void GameScene::endContact(b2Contact* contact) {
         else CULog("Intangible!");
         _avatar->removeTouching();
     }
+    
 }
 
 

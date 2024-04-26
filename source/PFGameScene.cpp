@@ -340,12 +340,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _target = std::make_shared<EnemyModel>();
 
 
-    //load first level
-    _chapter = 1;
-    _level = 2;
+
+   _chapter = 1;
+   _level = 4;
     loadLevel(_chapter, _level);
-    // loadLevel(currentLevel);
-    // _level_model->setFilePath("json/test_level_v2_experiment.json");
+ //   currentLevel = level3;
+
     addChild(_worldnode);
     addChild(_debugnode);
     addChild(_leftnode);
@@ -1026,14 +1026,18 @@ void GameScene::preUpdate(float dt) {
                 _ShrimpRice->setDebugScene(nullptr);
                 _ShrimpRice->markRemoved(true);
             }
-            if (_ShrimpRice->getattacktype()=="SFRWave2") {
+            if (_ShrimpRice->getact()=="SFRWave2") {
                 Vec2 BullPos = _ShrimpRice->getPosition();
                 float distance = avatarPos.distance(BullPos);
                 if (distance < 4) {
-                    _ShrimpRice->setpassattack(true);
+                    _ShrimpRice->setact("SFRWave3",1.125);
                 }
             }
-            if (!_ShrimpRice->isChasing()) {
+            if (_ShrimpRice->gettimetosummon()) {
+                _ShrimpRice->Summon(*this);
+                _ShrimpRice->settimetosummon(false);
+            }
+            if (!_ShrimpRice->isChasing() && _ShrimpRice->getcanturn()) {
                 Vec2 BullPos = _ShrimpRice->getPosition();
                 if (_ShrimpRice->getnextchangetime() < 0) {
                     int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
@@ -1108,16 +1112,16 @@ void GameScene::preUpdate(float dt) {
     if (_ShrimpRice != nullptr) {
         _SHRactionManager->update(dt);
         
-        if (_ShrimpRice->getattacktype()!="none" && _ShrimpRice->getknockbacktime() <= 0) {
-            if (!_SHRactionManager->isActive(_ShrimpRice->getattacktype())) {
+        if (_ShrimpRice->getacttime() > 0) {
+            if (!_SHRactionManager->isActive(_ShrimpRice->getact())) {
                 _SHRactionManager->clearAllActions(_ShrimpRice->getSceneNode());
-                auto SFR_Attack = _ShrimpRice->getAction(_ShrimpRice->getattacktype());
-                _SHRactionManager->activate(_ShrimpRice->getattacktype(), SFR_Attack, _ShrimpRice->getSceneNode());
+                auto bullTurn = _ShrimpRice->getAction(_ShrimpRice->getact());
+                _SHRactionManager->activate(_ShrimpRice->getact(), bullTurn, _ShrimpRice->getSceneNode());
             }
             if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                _ShrimpRice->animate(_ShrimpRice->getattacktype());
+                _ShrimpRice->animate(_ShrimpRice->getact());
             }
-        }     
+        }
         else if (_ShrimpRice->getknockbacktime() <= 0) {
             if (!_SHRactionManager->isActive("SFR_Move")) {
                 _SHRactionManager->clearAllActions(_ShrimpRice->getSceneNode());
@@ -1228,7 +1232,7 @@ void GameScene::fixedUpdate(float step) {
                 _camera->setZoom(210.0 / 40.0);
             }
             else if (_level == 4) {
-                _camera->setZoom(210.0 / 40.0);
+                _camera->setZoom(400.0 / 40.0);
             }
         }
         //else if (currentLevel == level2) {
