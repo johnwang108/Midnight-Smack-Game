@@ -788,6 +788,10 @@ void MultiScreenScene::save() {
 
 	//process persistent upgrades
 
+	for (int i = 0; i < _bonusObjectives.size(); i++) {
+
+	}
+
 	//placeholder values for chap and level
 	json->appendValue("chapter", 1.0f);
 	json->appendValue("level", 1.0f);

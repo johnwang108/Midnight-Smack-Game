@@ -64,11 +64,11 @@
 #pragma mark -
 #pragma mark Physics Constants
 /** The factor to multiply by the input */
-#define DUDE_FORCE      sqrt(2 * (9.8) * getHeight() * 30 ) * getMass()
+#define DUDE_FORCE      sqrt(2 * (9.8) * getHeight() * 100 ) * getMass()
 /** The amount to slow the character down */
 #define DUDE_DAMPING    10.0f
 /** The maximum character speed */
-#define DUDE_MANUEL_MAXSPEED   5.0f
+#define DUDE_MANUEL_MAXSPEED   7.0f
 
 #define MAX_METER 100.0f
 #define MAX_HEALTH 100.0f
@@ -488,7 +488,7 @@ public:
      * @return left/right movement of this character.
      */
     float getMovement() const { return _movement; }
-    
+
     /**
      * Sets left/right movement of this character.
      *
@@ -496,7 +496,7 @@ public:
      *
      * @param value left/right movement of this character.
      */
-    void setMovement(float value);
+    void setMovement(float h);
 
     /**
      * Returns true if the dude is actively firing.

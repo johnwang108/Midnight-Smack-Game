@@ -184,6 +184,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
         endContact(contact);
         };
 
+
     // IMPORTANT: SCALING MUST BE UNIFORM
     // This means that we cannot change the aspect ratio of the physics world
     // Shift to center if a bad fit
@@ -736,6 +737,7 @@ void GameScene::preUpdate(float dt) {
                 afterimage->setAnchor(Vec2(0.5, 0.35));
                 afterimage->setPosition(_avatar->getSceneNode()->getPosition());
                 afterimage->setPositionY(afterimage->getPositionY() + 0.0f);
+                afterimage->flipHorizontal(_avatar->getSpriteNode()->isFlipHorizontal());
                 Color4 b = Color4::CYAN;
                 b.a = 255;
                 afterimage->setColor(b);
@@ -875,7 +877,7 @@ void GameScene::preUpdate(float dt) {
             _dollarnode->setReadyToCook(true);
         }
 
-        _avatar->setMovement(0);
+        //_avatar->setMovement(0, 0);
         //_avatar->setJumping(_input->didJump());
         _avatar->setJumping(false);
         //_avatar->setDash(_input->didDash());
@@ -1242,19 +1244,32 @@ void GameScene::fixedUpdate(float step) {
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
         ////cugl::Vec3 mapMin = Vec3(SCENE_WIDTH / 2, SCENE_HEIGHT / 2, 0);
         ////cugl::Vec3 mapMax = Vec3(1400 - SCENE_WIDTH / 2, 900 - SCENE_HEIGHT / 2, 0); //replace magic numbers
-        //float width = _background->getBoundingRect().getMinX();
+        // 
+        //CULog("%f",  _background->getBoundingRect().getMinX());
+        //CULog("%f", _background->getBoundingRect().getMaxX());
+        //CULog("%f", _background->getBoundingRect().getMinY());
+        //CULog("%f", _background->getBoundingRect().getMaxY());
+
+        //CULog("%f", _camera->getViewport().getMinX());
+        //CULog("%f", _camera->getViewport().getMaxX());
+        //CULog("%f", _camera->getViewport().getMinY());
+        //CULog("%f", _camera->getViewport().getMaxY());
+        //CULog("%f", _camera->getZoom() * (_camera->getViewport().getMaxX() - _camera->getViewport().getMinX()));
         //cugl::Vec3 cameraLL = _camera->unproject(Vec2(_camera->getViewport().getMinX(), _camera->getViewport().getMinY()));
         //cugl::Vec3 cameraUR = _camera->unproject(Vec2(_camera->getViewport().getMaxX(), _camera->getViewport().getMaxY()));
 
-        //float cameraWidth = cameraUR.x - cameraLL.x;
-        //float cameraHeight = cameraUR.y - cameraLL.y;
+        float invZoom = 1 / _camera->getZoom();
+        float cameraWidth = invZoom * (_camera->getViewport().getMaxX() - _camera->getViewport().getMinX()) / 2;
+        float cameraHeight = invZoom * (_camera->getViewport().getMaxY() - _camera->getViewport().getMinY()) / 2;
 
-        //cugl::Vec3 mapMin = Vec3(_background->getBoundingRect().getMinX() + cameraWidth, _background->getBoundingRect().getMinY() + cameraHeight, 0);
-        //cugl::Vec3 mapMax = Vec3(_background->getBoundingRect().getMaxX() - cameraWidth, _background->getBoundingRect().getMaxY() - cameraHeight, 0);
+        CULog("%f", cameraWidth);
+        CULog("%f", cameraHeight);
+        cugl::Vec3 mapMin = Vec3(_background->getBoundingRect().getMinX()+ cameraWidth, _background->getBoundingRect().getMinY() + cameraHeight, 0);
+        cugl::Vec3 mapMax = Vec3(_background->getBoundingRect().getMaxX()- cameraWidth, _background->getBoundingRect().getMaxY()- cameraHeight, 0);
 
-        //CULog("Min: %f %f", mapMin.x, mapMin.y);
-        //CULog("Max: %f %f", mapMax.x, mapMax.y);
-        //target.clamp(mapMin, mapMax);
+        CULog("Min: %f %f", mapMin.x, mapMin.y);
+        CULog("Max: %f %f", mapMax.x, mapMax.y);
+        target.clamp(mapMin, mapMax);
 
         cugl::Vec3 pos = _camera->getPosition();
 
@@ -1268,8 +1283,9 @@ void GameScene::fixedUpdate(float step) {
         //float smooth = std::min(0.2f, (target - pos).length());
         float smooth = 0.2;
         pos.smooth(target, step, smooth);
-        pos = _avatar->getPosition() * _scale;
+        //pos = _avatar->getPosition() * _scale;
         _camera->setPosition(pos);
+        CULog("Camera Position: %f %f", pos.x, pos.y);
         _camera->update();
         //_dollarnode->setPosition(pos);
     }
@@ -1640,6 +1656,7 @@ bool GameScene::loadSave(std::shared_ptr<JsonValue> save) {
     }
 
     //todo: persistent
+
 
     return true;
 }
