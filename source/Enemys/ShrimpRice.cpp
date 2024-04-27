@@ -28,6 +28,7 @@ bool ShrimpRice::init(const Vec2& pos, const Size& size, float scale) {
         _canturn = true;
         _angry = false;
         _timetosummon = false;
+        _movestate1 = 0;
 
         return true;
     }
@@ -59,13 +60,10 @@ void ShrimpRice::update(float dt) {
 
     if (_acttime<=0 && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _SFR_attack_chance) {
         float pa = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-       // pa=0.8;
-        if (pa <= 0.25) {
-            setact("SFR_Attack", 1.125);
-		}
-        else if(pa<=0.5 && pa>0.25){
-            setact("SFRWheelofDoom", 2 + 2 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
-        }else if(pa <= 0.75 && pa > 0.5) {
+       // pa=0.2;
+        if(pa<=0.33){
+            setact("SFRWheelofDoom", 0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+        }else if(pa <= 0.66 && pa > 0.33) {
             setact("SFRWave1", 1.125);
         }
         else {
@@ -74,6 +72,11 @@ void ShrimpRice::update(float dt) {
         }
 
     }
+
+    if (_movestate1 > 0) {
+        _movestate1 -= dt;
+    }
+
     if (_acttime > 0) {
         _acttime -= dt;
         if (_act == "SFRWave2") {
@@ -85,8 +88,14 @@ void ShrimpRice::update(float dt) {
         if (_act == "SFRJoustState2") {
             velocity.x *= 12;
         }
+        if (_act == "SFR_Attack") {
+            velocity.x *= 3;
+        }
         if (_act == "SFRJoustState3") {
             velocity.x *= 0;
+        }
+        if (_act == "SFRJoustState1") {
+            velocity.x *= -1;
         }
         if (_acttime <= 0) {
             if (_act == "SFRWave3") {
@@ -96,7 +105,7 @@ void ShrimpRice::update(float dt) {
                 setact("SFRWave2", 10);
             }
             if (_act == "SFRWheelofDoom") {
-            //    _knockbackTime = 2;
+                setact("SFR_Attack", 3.375);
             }
             if (_act == "SFRJoustState3") {
                 setact("SFR_Idle", 1.291);
@@ -110,9 +119,16 @@ void ShrimpRice::update(float dt) {
             if (_act == "SFR_Idle") {
                 _canturn = true;
             }
-
+            if (_act == "SFRTurn") {
+                scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
+                if (image != nullptr) {
+                    image->flipHorizontal(!image->isFlipHorizontal());
+                }
+            }
+            _movestate1 = 0.7;
 		}
 	}
+
 
     if (!_angry) {
         if (_health <= 40) {
@@ -121,11 +137,7 @@ void ShrimpRice::update(float dt) {
     }
 
     if (_direction != _lastDirection) {
-        // If direction changed, flip the image
-        scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
-        if (image != nullptr) {
-            image->flipHorizontal(!image->isFlipHorizontal());
-        }
+        setact("SFRTurn", 0.61f);
     }
 
     _lastDirection = _direction;

@@ -269,6 +269,15 @@
         "SFR_Move": {
             "file": "textures/SFR_Move.png"
         },
+        "SFRTurn": {
+            "file": "textures/SFRTurn.png"
+        },
+        "SFRMoveState1": {
+            "file": "textures/SFRMoveState1.png"
+        },
+        "SFRMoveState2": {
+            "file": "textures/SFRMoveState2.png"
+        },
         "cooktime": {
             "file": "textures/cutting_board.png",
             "wrapS": "repeat",

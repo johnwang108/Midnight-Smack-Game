@@ -37,7 +37,7 @@
 /**Scalar for width of a box attack, hacky*/
 #define ATTACK_W        2.0f
 /**Scalar for height of a box attack, hacky*/
-#define ATTACK_H        0.5f
+//#define ATTACK_H        0.5f
 /** The number of frame to wait before reinitializing the game */
 #define EXIT_COUNT      240
 

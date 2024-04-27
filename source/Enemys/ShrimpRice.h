@@ -42,6 +42,7 @@ protected:
     bool _canturn;
     bool _angry;
     bool _timetosummon;
+    float _movestate1;
 
 
 public:
@@ -90,6 +91,8 @@ public:
     void Summon(GameScene& scene);
     bool gettimetosummon() { return _timetosummon; }
     void settimetosummon(bool time) { _timetosummon = time; }
+    float getmovestate1() { return _movestate1; }
+    void setmovestate1(float state) { _movestate1 = state; }
 };
 
 #endif /* __SHRIMPRICE_H__ */

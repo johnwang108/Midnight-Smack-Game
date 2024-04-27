@@ -342,7 +342,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
    _chapter = 1;
-   _level = 1;
+   _level = 4;
     loadLevel(_chapter, _level);
  //   currentLevel = level3;
 
@@ -1149,16 +1149,26 @@ void GameScene::preUpdate(float dt) {
                 _ShrimpRice->animate(_ShrimpRice->getact());
             }
         }
-        else if (_ShrimpRice->getknockbacktime() <= 0) {
-            if (!_SHRactionManager->isActive("SFR_Move")) {
+        else if (_ShrimpRice->getknockbacktime() <= 0 && _ShrimpRice->getmovestate1()>0) {
+            if (!_SHRactionManager->isActive("SFRMoveState1")) {
                 _SHRactionManager->clearAllActions(_ShrimpRice->getSceneNode());
-                auto SFR_Move = _ShrimpRice->getAction("SFR_Move");
-                _SHRactionManager->activate("SFR_Move", SFR_Move, _ShrimpRice->getSceneNode());
+                auto SFR_Move = _ShrimpRice->getAction("SFRMoveState1");
+                _SHRactionManager->activate("SFRMoveState1", SFR_Move, _ShrimpRice->getSceneNode());
             }
             if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
-                _ShrimpRice->animate("SFR_Move");
+                _ShrimpRice->animate("SFRMoveState1");
             }
 		}
+        else if (_ShrimpRice->getknockbacktime() <= 0) {
+            if (!_SHRactionManager->isActive("SFRMoveState2")) {
+                _SHRactionManager->clearAllActions(_ShrimpRice->getSceneNode());
+                auto SFR_Move = _ShrimpRice->getAction("SFRMoveState2");
+                _SHRactionManager->activate("SFRMoveState2", SFR_Move, _ShrimpRice->getSceneNode());
+            }
+            if (!_SHRactionManager->isActive(_ShrimpRice->getActiveAction())) {
+                _ShrimpRice->animate("SFRMoveState2");
+            }
+        }
         
     }
 
