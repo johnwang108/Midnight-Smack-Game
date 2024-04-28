@@ -144,7 +144,6 @@ void ShrimpRice::update(float dt) {
 
     if (_direction != _lastDirection) {
         setact("SFRTurn", 0.61f);
-        _knockbackTime = 0.61;
     }
 
     _lastDirection = _direction;
@@ -176,8 +175,8 @@ void ShrimpRice::takeDamage(float damage, int attackDirection, bool knockback) {
             _knockbackTime = 4;
         }
         else {
-            b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE * 10, BULL_KNOCKBACK_FORCE_UP*3);
-            _body->ApplyLinearImpulseToCenter(impulse, true);
+        //    b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE * 10, BULL_KNOCKBACK_FORCE_UP*3);
+        //    _body->ApplyLinearImpulseToCenter(impulse, true);
             _knockbackTime = 0.5;
         }
     }
