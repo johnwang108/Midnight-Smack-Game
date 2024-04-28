@@ -1048,13 +1048,13 @@ void GameScene::preUpdate(float dt) {
             _Bull->update(dt);
         }
     if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
+            Vec2 BullPos = _ShrimpRice->getPosition();
             if (_ShrimpRice->getHealth() <= 0) {
                 _worldnode->removeChild(_ShrimpRice->getSceneNode());
                 _ShrimpRice->setDebugScene(nullptr);
                 _ShrimpRice->markRemoved(true);
             }
             if (_ShrimpRice->getact()=="SFRWave2") {
-                Vec2 BullPos = _ShrimpRice->getPosition();
                 float distance = avatarPos.distance(BullPos);
                 if (distance < 4) {
                     _ShrimpRice->setact("SFRWave3",1.125);
@@ -1065,12 +1065,18 @@ void GameScene::preUpdate(float dt) {
                 _ShrimpRice->settimetosummon(false);
             }
             if (!_ShrimpRice->isChasing() && _ShrimpRice->getcanturn()) {
-                Vec2 BullPos = _ShrimpRice->getPosition();
                 if (_ShrimpRice->getnextchangetime() < 0) {
                     int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
                     _ShrimpRice->setDirection(direction);
                     _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
                 }
+            }
+            if (_ShrimpRice->getangrytime() > 0 && !_enemies.empty()) {
+                for (auto& enemy : _enemies) {
+                    Vec2 EnyPos = enemy->getPosition();
+                    int direction = (BullPos.x > EnyPos.x) ? 1 : -1;
+                    enemy->setPosition(enemy->getPosition() + Vec2(direction*0.3, 0.0f));
+				}
             }
             _ShrimpRice->update(dt);
         }

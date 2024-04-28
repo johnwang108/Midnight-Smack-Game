@@ -29,6 +29,7 @@ bool ShrimpRice::init(const Vec2& pos, const Size& size, float scale) {
         _angry = false;
         _timetosummon = false;
         _movestate1 = 0;
+        _angrytime = 0;
 
         return true;
     }
@@ -70,7 +71,7 @@ void ShrimpRice::update(float dt) {
             setact("SFRJoustState1", 1.125);
             _canturn = false;
         }
-
+        _SFR_attack_chance = 0.003f;
     }
 
     if (_movestate1 > 0) {
@@ -81,6 +82,9 @@ void ShrimpRice::update(float dt) {
         _acttime -= dt;
         if (_act == "SFRWave2") {
             velocity.x *= 6;
+        }
+        if (_act == "SFR_Idle") {
+            velocity.x *= 0;
         }
         if (_act == "SFRWheelofDoom") {
             velocity.x *= 0;
@@ -133,11 +137,14 @@ void ShrimpRice::update(float dt) {
     if (!_angry) {
         if (_health <= 40) {
             _angry = true;
+            setact("SFR_Idle", 5.0f);
+            _angrytime = 10;
         }
     }
 
     if (_direction != _lastDirection) {
         setact("SFRTurn", 0.61f);
+        _knockbackTime = 0.61;
     }
 
     _lastDirection = _direction;
@@ -158,6 +165,7 @@ void ShrimpRice::takeDamage(float damage, int attackDirection, bool knockback) {
     if (_lastDamageTime >= _healthCooldown) {
         _lastDamageTime = 0;
         _health -= damage;
+        _SFR_attack_chance += 0.001f;
         if (_health <= 0) {
             _health = 0;
         }

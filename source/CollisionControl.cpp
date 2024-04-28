@@ -319,6 +319,17 @@ void GameScene::beginContact(b2Contact* contact) {
         int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
         _avatar->takeDamage(34, direction);
     }
+    if (_ShrimpRice != nullptr&& !_enemies.empty()&& _ShrimpRice->getangrytime()>0) {
+        for (auto& _enemy : _enemies) {
+            if (!_enemy->isRemoved()) {
+                if (( _enemy.get() == bd1 && _ShrimpRice.get() == bd2) ||
+                    (_enemy.get() == bd2 && _ShrimpRice.get() == bd1)) {
+                    _enemy->markForDeletion();
+                    _ShrimpRice->takeDamage(-10, 0, false);
+                }
+            }
+        }
+    }
 }
 
 

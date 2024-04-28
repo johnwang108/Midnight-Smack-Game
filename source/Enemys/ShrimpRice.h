@@ -43,6 +43,7 @@ protected:
     bool _angry;
     bool _timetosummon;
     float _movestate1;
+    float _angrytime;
 
 
 public:
@@ -93,6 +94,8 @@ public:
     void settimetosummon(bool time) { _timetosummon = time; }
     float getmovestate1() { return _movestate1; }
     void setmovestate1(float state) { _movestate1 = state; }
+    float getangrytime() { return _angrytime; }
+    void setangrytime(float time) { _angrytime = time; }
 };
 
 #endif /* __SHRIMPRICE_H__ */
