@@ -1064,7 +1064,7 @@ void GameScene::preUpdate(float dt) {
                 _ShrimpRice->Summon(*this);
                 _ShrimpRice->settimetosummon(false);
             }
-            if (!_ShrimpRice->isChasing() && _ShrimpRice->getcanturn()) {
+            if (_ShrimpRice->getcanturn() && _ShrimpRice->getacttime()<=0) {
                 if (_ShrimpRice->getnextchangetime() < 0) {
                     int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
                     _ShrimpRice->setDirection(direction);

@@ -27,7 +27,6 @@ protected:
     float _health;
     float _healthCooldown;
     float _lastDamageTime;
-    bool _isChasing;
     int _direction;
     float _SFR_attack_chance;
     float _knockbackTime;
@@ -44,10 +43,12 @@ protected:
     bool _timetosummon;
     float _movestate1;
     float _angrytime;
+    int _attackcount;
+    int _W3att;
 
 
 public:
-    ShrimpRice() : Entity(), _drawScale(1.0f), _health(100.0f), _healthCooldown(0.2f), _lastDamageTime(0), _isChasing(true), _direction(-1) {}
+    ShrimpRice() : Entity(), _drawScale(1.0f), _health(100.0f), _healthCooldown(0.2f), _lastDamageTime(0), _direction(-1) {}
 
     virtual ~ShrimpRice() { dispose(); }
 
@@ -72,7 +73,6 @@ public:
     void setassets(std::shared_ptr<AssetManager> assets) { _assets = assets; }
 
     float getHealth() { return _health; }
-    bool isChasing() const { return _isChasing; }
 
     double getnextchangetime() { return _nextChangeTime; }
     void setDirection(int d) { _direction = d; }
