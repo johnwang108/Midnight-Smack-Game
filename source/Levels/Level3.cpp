@@ -147,7 +147,7 @@ void Level3::populate(GameScene& scene) {
 	image = _assets->get<Texture>("su_idle");
 	//hardcoded size
 	cugl::Size s = PLAYER_SIZE_DEFAULT;
-	_avatar = DudeModel::alloc(dudePos, s, _scale);
+	_avatar = DudeModel::allocWithConstants(dudePos, s, _scale, _assets);
 	std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
 
 	//CALCULATE sue sprite size from sue obstacle size. Goal: su's feet line up with foot sensor, and head (not hat) with top of obstacle. Todo still
@@ -156,16 +156,6 @@ void Level3::populate(GameScene& scene) {
 	spritenode->setPosition(dudePos);
 	_avatar->setSceneNode(spritenode);
 	_avatar->setDebugColor(DEBUG_COLOR);
-	_avatar->addActionAnimation("idle", _assets->get<Texture>("su_idle"), 4, 4, 16, 1.0f, true);
-	_avatar->addActionAnimation("idle_blink", _assets->get<Texture>("su_idle_blink"), 4, 5, 18, 2.0f, true);
-	_avatar->addActionAnimation("attack", _assets->get<Texture>("su_attack_sheet"), 4, 5, 18, 0.6f, true);
-	_avatar->addActionAnimation("recover", _assets->get<Texture>("su_attack_recover"), 3, 4, 10, 0.83f, true);
-	_avatar->addActionAnimation("run", _assets->get<Texture>("su_run"), 3, 4, 10, 0.83f, true);
-
-	_avatar->addActionAnimation("jump_up", _assets->get<Texture>("su_jump_airborne_up"), 2, 2, 3, 0.25f, false);
-	_avatar->addActionAnimation("jump_down", _assets->get<Texture>("su_jump_airborne_down"), 2, 2, 3, 0.25f, false);
-	_avatar->addActionAnimation("jump_land", _assets->get<Texture>("su_jump_land"), 2, 2, 3, 0.25f, false);
-	_avatar->addActionAnimation("jump_ready", _assets->get<Texture>("su_jump_ready"), 1, 2, 2, 0.16f, false);
 
 	scene.addObstacle(_avatar, spritenode); // Put this at the very front
 
@@ -184,16 +174,16 @@ void Level3::populate(GameScene& scene) {
 	_shrimprice->setDebugColor(DEBUG_COLOR);
 	_shrimprice->setassets(_assets);
 
-	_shrimprice->addActionAnimation("SFR_Idle", _assets->get<Texture>("SFR_Idle"), 6, 6, 31, 1.291f, false);
-	_shrimprice->addActionAnimation("SFR_Move", _assets->get<Texture>("SFR_Move"), 4, 4, 14, 0.583f, false);
-	_shrimprice->addActionAnimation("SFR_Attack", _assets->get<Texture>("SFR_Attack"), 6, 5, 28, 1.125f, false);
-	_shrimprice->addActionAnimation("SFRJoustState1", _assets->get<Texture>("SFRJoustState1"), 4, 5, 18, 1.125f, false);
-	_shrimprice->addActionAnimation("SFRJoustState2", _assets->get<Texture>("SFRJoustState2"), 3, 4, 12, 1.125f, false);
-	_shrimprice->addActionAnimation("SFRJoustState3", _assets->get<Texture>("SFRJoustState3"), 2, 2, 3, 0.3f, false);
-	_shrimprice->addActionAnimation("SFRWave1", _assets->get<Texture>("SFRWave1"), 3, 3, 8, 1.125f, false);
-	_shrimprice->addActionAnimation("SFRWave2", _assets->get<Texture>("SFRWave2"), 3, 3, 7, 1.125f, false);
-	_shrimprice->addActionAnimation("SFRWave3", _assets->get<Texture>("SFRWave3"), 4, 5, 18, 1.125f, false);
-	_shrimprice->addActionAnimation("SFRWheelofDoom", _assets->get<Texture>("SFRWheelofDoom"), 3, 4, 12, 0.5f, false);
+	_shrimprice->addActionAnimation("SFR_Idle", _assets->get<Texture>("SFR_Idle"), 6, 6, 31, 1.291f);
+	_shrimprice->addActionAnimation("SFR_Move", _assets->get<Texture>("SFR_Move"), 4, 4, 14, 0.583f);
+	_shrimprice->addActionAnimation("SFR_Attack", _assets->get<Texture>("SFR_Attack"), 6, 5, 28, 1.125f);
+	_shrimprice->addActionAnimation("SFRJoustState1", _assets->get<Texture>("SFRJoustState1"), 4, 5, 18, 1.125f);
+	_shrimprice->addActionAnimation("SFRJoustState2", _assets->get<Texture>("SFRJoustState2"), 3, 4, 12, 1.125f);
+	_shrimprice->addActionAnimation("SFRJoustState3", _assets->get<Texture>("SFRJoustState3"), 2, 2, 3, 0.3f);
+	_shrimprice->addActionAnimation("SFRWave1", _assets->get<Texture>("SFRWave1"), 3, 3, 8, 1.125f);
+	_shrimprice->addActionAnimation("SFRWave2", _assets->get<Texture>("SFRWave2"), 3, 3, 7, 1.125f);
+	_shrimprice->addActionAnimation("SFRWave3", _assets->get<Texture>("SFRWave3"), 4, 5, 18, 1.125f);
+	_shrimprice->addActionAnimation("SFRWheelofDoom", _assets->get<Texture>("SFRWheelofDoom"), 3, 4, 12, 0.5f);
 
 	scene.addObstacle(_shrimprice, spritenode);
 

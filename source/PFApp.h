@@ -28,6 +28,7 @@ protected:
     std::shared_ptr<cugl::SpriteBatch> _batch;
     /** The global asset manager */
     std::shared_ptr<cugl::AssetManager> _assets;
+    std::shared_ptr<PlatformInput> _input;
     
     // Player modes
     /** The primary controller for the game world */
@@ -217,6 +218,8 @@ public:
      * at all. The default implmentation does nothing.
      */
     virtual void draw() override;
+
+    void loadSave();
 
     void transitionScenes();
 };

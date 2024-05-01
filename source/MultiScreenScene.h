@@ -148,7 +148,6 @@ public:
 	void increaseQuotaProgress();
 
 	void save();
-	void loadSave();
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */

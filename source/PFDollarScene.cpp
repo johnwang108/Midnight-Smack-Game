@@ -206,7 +206,6 @@ bool DollarScene::initGestureRecognizer() {
 void DollarScene::update(float timestep) {
 	//pop new path if this node is focused on and the input controller contains a nonempty path.
 	_justCompletedGesture = false;
-	CULog("focus: %f, ready to cook: %f", _focus ? 1.0f : 0.0f, _readyToCook ? 1.0f : 0.0f);
 	if (_focus && _readyToCook) {
 		CULog("cooking");
 		if (!(_input->getTouchPath().empty())) {

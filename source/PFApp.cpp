@@ -150,16 +150,16 @@ void PlatformApp::update(float dt) {
     } else if (!_loaded) {
         _loading.dispose(); // Disables the input listeners in this mode
 
-        std::shared_ptr<PlatformInput> input = std::make_shared<PlatformInput>();
+        _input = std::make_shared<PlatformInput>();
 
-        _multiScreen.init(_assets, input);
+        _multiScreen.init(_assets, _input);
         _multiScreen.setActive(false);
 
         /*_dayUIScene = std::make_shared<cugl::scene2::SceneNode>();
         _dayUIScene->init();
         _dayUIScene->setActive(MULTI_SCREEN);*/
 
-        _gameplay.init(_assets, input);
+        _gameplay.init(_assets, _input);
         _gameplay.setActive(false);
 
         _menu.init(_assets, "menu");
@@ -364,11 +364,16 @@ void PlatformApp::transitionScenes() {
 		_currentScene = _gameplay.getTarget();
         _gameplay.setTarget("");
         if(_currentScene == "day") {
+            CULog("ASDF :)");
 			_multiScreen.setActive(true);
 			_multiScreen.focusCurr();
         }
         else if (_currentScene == "main_menu"){
 			_menu.setActive(true);
+        }
+        else {
+            CULog("ASDF :(");
+            CULog(_currentScene.c_str());
         }
         CULog("Transed");
         CULog("From gameplay");
@@ -408,4 +413,32 @@ void PlatformApp::transitionScenes() {
         CULog("Transed");
         CULog("From menu");
     }
+}
+
+void PlatformApp::loadSave() {
+    std::string root = cugl::Application::get()->getSaveDirectory();
+    std::string path = cugl::filetool::join_path({ root,"save.json" });
+    auto reader = JsonReader::alloc(path);
+
+    std::shared_ptr<JsonValue> loadedSave = reader->readJson();
+
+    //Todo:: load enemies separately from level.
+
+    int chapter = loadedSave->getInt("chapter");
+    int level = loadedSave->getInt("level");
+    bool startFromNight = loadedSave->getBool("startFromNight");
+    std::shared_ptr<JsonValue> persistent = loadedSave->get("persistent");
+    std::shared_ptr<JsonValue> night = loadedSave->get("night");
+    if (startFromNight) {
+        //load night
+        _gameplay.dispose();
+        _gameplay.initWithSave(_assets, _input, loadedSave);
+
+    }
+    else {
+        //load day
+
+    }
+
+    reader->close();
 }

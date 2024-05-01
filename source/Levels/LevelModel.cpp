@@ -502,6 +502,8 @@ void LevelModel::populate(GameScene& scene) {
 
 	//initialize our backgrounds variable
 	// _drawings = {};
+
+	std::shared_ptr<physics2::PolygonObstacle> mainPlatform;
 	if (layers != nullptr && layers->isArray()) {
 		for (int i = 0; i < layers->size(); i++) {
 			std::shared_ptr<cugl::JsonValue> layer = layers->get(i);
@@ -727,7 +729,7 @@ void LevelModel::populate(GameScene& scene) {
 									float imageWidth = image->getWidth() / 4;
 									float imageHeight = image->getHeight() / 4;
 									Size singularSpriteSize = Size(imageWidth, imageHeight);
-									new_enemy = EnemyModel::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, EnemyType::rice);
+									new_enemy = Rice::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, false);
 									spritenode->setScale(1.0f);
 								}
 								else {
@@ -736,7 +738,7 @@ void LevelModel::populate(GameScene& scene) {
 									float imageWidth = image->getWidth() / 4;
 									float imageHeight = image->getHeight() / 4;
 									Size singularSpriteSize = Size(imageWidth, imageHeight);
-									new_enemy = EnemyModel::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, EnemyType::rice_soldier);
+									new_enemy = Rice::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, true);
 								}
 
 								// spritenode->setScale(0.12f);
@@ -757,7 +759,7 @@ void LevelModel::populate(GameScene& scene) {
 								// float imageWidth = image->getWidth() / 4;
 								// float imageHeight = image->getHeight() / 4;
 								Size singularSpriteSize = Size(image->getWidth(), image->getHeight());
-								new_enemy = EnemyModel::allocWithConstants(enemyPos, singularSpriteSize / (scene.getScale()), scene.getScale(), _assets, EnemyType::carrot);
+								new_enemy = Carrot::allocWithConstants(enemyPos, singularSpriteSize / (scene.getScale()), scene.getScale(), _assets);
 
 								new_enemy->setSceneNode(spritenode);
 								new_enemy->setDebugColor(DEBUG_COLOR);
@@ -786,8 +788,7 @@ void LevelModel::populate(GameScene& scene) {
 								float imageHeight = image->getHeight() / 3;
 								Size singularSpriteSize = Size(imageWidth, imageHeight);
 								// enemyPos.y -= 100.0f;
-								new_enemy = EnemyModel::allocWithConstants(enemyPos, singularSpriteSize / (6 * scene.getScale()), scene.getScale(), _assets, EnemyType::beef);
-
+								new_enemy = Beef::allocWithConstants(enemyPos, singularSpriteSize / (6 * scene.getScale()), scene.getScale(), _assets);
 								spritenode->setScale(0.1f);
 								new_enemy->setSceneNode(spritenode);
 								new_enemy->setDebugColor(DEBUG_COLOR);
@@ -836,7 +837,7 @@ void LevelModel::populate(GameScene& scene) {
 					else if (object->getString("name") == "Main_Platform") {
 						CULog("We are in loadMainPlatform!");
 						CULog(object->getString("id").c_str());
-						loadMainPlatform(object, scene, sprite, window_height * 32.0f);
+						mainPlatform = loadMainPlatform(object, scene, sprite, window_height * 32.0f);
 					}
 					else {
 						CULog(object->getString("name").c_str());
@@ -902,7 +903,7 @@ std::string LevelModel::getLevelScenery(std::string levelNumber) {
 	return "textures\\dream-background.png";
 }
 
-void LevelModel::loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height) {
+std::shared_ptr<physics2::PolygonObstacle> LevelModel::loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height) {
 
 	float startingX = json->getFloat("x");
 	float startingY = json->getFloat("y");
@@ -976,6 +977,7 @@ void LevelModel::loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameSc
 	sprite->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 	scene.addObstacle(platobj, sprite, 1);
 
+	return platobj;
 	CULog("we reached the end of loadMainPlatform!!");
 
 }

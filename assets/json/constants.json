@@ -158,6 +158,13 @@
             "frames": 9,
             "duration": 1.25
         },
+        "riceAcknowledge":{
+            "sheet": "riceSoldier",
+            "rows": 4,
+            "cols": 4,
+            "frames": 15,
+            "duration": 1.5
+        },
         "riceYell":{
             "sheet": "riceLeader",
             "rows": 3,
@@ -250,6 +257,13 @@
             "cols": 4,
             "frames": 15,
             "duration": 1.5
+        },
+        "riceYell":{
+            "sheet": "riceLeader",
+            "rows": 3,
+            "cols": 4,
+            "frames": 12,
+            "duration": 1.1667
         }
     },
     "egg": {},

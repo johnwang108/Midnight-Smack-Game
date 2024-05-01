@@ -102,6 +102,13 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_pt
     return init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
 }
 
+bool GameScene::initWithSave(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::shared_ptr<JsonValue> save) {
+    bool res = init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
+    if (save->size() == 0) return res;
+    float locationX = save->get("player")->getFloat("location_x");
+    float locationY = save->get("player")->getFloat("location_y");
+}
+
 /**
  * Initializes the controller contents, and starts the game
  *
@@ -201,13 +208,13 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _winnode = scene2::Label::allocWithText(WIN_MESSAGE, _assets->get<Font>(MESSAGE_FONT));
     _winnode->setAnchor(Vec2::ANCHOR_CENTER);
-    _winnode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
+    _winnode->setPosition(0,0);
     _winnode->setForeground(WIN_COLOR);
     setComplete(false);
 
     _losenode = scene2::Label::allocWithText(LOSE_MESSAGE, _assets->get<Font>(MESSAGE_FONT));
     _losenode->setAnchor(Vec2::ANCHOR_CENTER);
-    _losenode->setPosition(dimen.width / 2.0f, dimen.height / 2.0f);
+    _losenode->setPosition(0,0);
     _losenode->setForeground(LOSE_COLOR);
     setFailure(false);
 
@@ -255,19 +262,24 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _meterUINode = _assets->get<scene2::SceneNode>("night_meters");
 
 
-    auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
-    auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
-    _healthBarForeground = healthBarForeground;
-    _healthBarBackground = healthBarBackground;
+    //auto healthBarBackground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsbroken"));
+    //auto healthBarForeground = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("heartsfull"));
+    //_healthBarForeground = healthBarForeground;
+    //_healthBarBackground = healthBarBackground;
 
-    _healthBarForeground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
-    _healthBarForeground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarBackground->getHeight());
-    _healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
-    _healthBarBackground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarForeground->getHeight());
+    //_healthBarForeground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
+    //_healthBarForeground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarBackground->getHeight());
+    //_healthBarBackground->setAnchor(Vec2::ANCHOR_MIDDLE_LEFT);
+    //_healthBarBackground->setPosition(HEALTHBAR_X_OFFSET, dimen.height - _healthBarForeground->getHeight());
 
     // _healthBarForeground->setContentSize(_healthBarForeground->getWidth() * 3, _healthBarForeground->getHeight() * 3);
     // _healthBarBackground->setContentSize(_healthBarBackground->getWidth() * 3, _healthBarBackground->getHeight() * 3);
 
+    _healthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("healthbar")->getChildByName("heartsfull"));
+    _healthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("healthbar")->getChildByName("heartsbroken"));
+
+    _cookBarOutline = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifeoutline"));
+    _cookBarFill = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifefill"));
 
     _cookBarOutline = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifeoutline"));
     _cookBarFill = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifefill"));
@@ -344,7 +356,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_leftnode);
     addChild(_rightnode);
 
-    //save();
+    save();
 
     _actionManager = cugl::scene2::ActionManager::alloc();
     _BullactionManager = cugl::scene2::ActionManager::alloc();
@@ -403,17 +415,55 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 void GameScene::dispose() {
     if (_active) {
         _input->dispose();
-        _world = nullptr;
+        _assets = nullptr;
+        _input = nullptr;
         _worldnode = nullptr;
         _debugnode = nullptr;
         _winnode = nullptr;
         _losenode = nullptr;
         _leftnode = nullptr;
         _rightnode = nullptr;
-        //_dollarnode->dispose();
+        _bgScene = nullptr;
+        _uiScene = nullptr;
         _dollarnode = nullptr;
-        _complete = false;
-        _debug = false;
+        _world = nullptr;
+        _goalDoor = nullptr;
+        _background = nullptr;
+        _avatar = nullptr;
+        _enemies.clear();
+        _afterimages.clear();
+        _vulnerables.clear();
+        _target = nullptr;
+        for (auto& attack : _attacks) {
+            attack = nullptr;
+        }
+        _attacks.clear();
+        currentLevel = nullptr;
+        _Bull = nullptr;
+        _ShrimpRice = nullptr;
+        level2 = nullptr;
+        level1 = nullptr;
+        level3 = nullptr;
+        _healthBarForeground = nullptr;
+        _healthBarBackground = nullptr;
+        _BullhealthBarBackground = nullptr;
+        _BullhealthBarForeground = nullptr;
+        _SFRhealthBarBackground = nullptr;
+        _SFRhealthBarForeground = nullptr;
+        _cookBarFill = nullptr;
+        _cookBarOutline = nullptr;
+        _cookBarIcons.clear();
+        _cookBarGlows.clear();
+        _buffLabel = nullptr;
+        _popups.clear();
+        _actionManager = nullptr;
+        _BullactionManager = nullptr;
+        _SHRactionManager = nullptr;
+        _pauseButton = nullptr;
+        _debugAnimTarget = nullptr;
+        _level_model = nullptr;
+        Scene2::dispose();
+
         Scene2::dispose();
     }
 }
@@ -558,12 +608,13 @@ void GameScene::preUpdate(float dt) {
     if (_input->didDebug()) { setDebug(!isDebug()); }
     if (_input->didReset()) { reset(); }
     if (_input->didExit()) {
-        CULog("Shutting down");
-        Application::get()->quit();
+        transition(true);
+        setTarget("main_menu");
     }
 
     if (_input->didTransition()) {
         transition(true);
+        setTarget("day");
         CULog("TTTTTTTTTTT");
         return;
     }
@@ -871,32 +922,27 @@ void GameScene::preUpdate(float dt) {
 				enemy->setshooted(false);
 			}
 
-            if (enemy->getHealth() <= 0) {
-                removeEnemy(enemy.get());
-            }
-            else {
-                std::string actionKey = enemy->getActiveAction() + enemy->getId();
+            std::string actionKey = enemy->getActiveAction() + enemy->getId();
 
-                //pausing shit
-                //if (enemy->getPaused() && !_actionManager->isPaused(actionKey)) {
-                //    CULog("Pausing");
-                //    enemy->getSpriteNode()->setFrame(enemy->getPausedFrame());
-                //    _actionManager->pauseAllActions(enemy->getSceneNode());
-                //}
-                //else if (!enemy->getPaused() && _actionManager->isPaused(actionKey)){
-                //    CULog("Unpausing");
-                //    enemy->getSpriteNode()->setFrame(enemy->getActiveFrame());
-                //    _actionManager->unpauseAllActions(enemy->getSceneNode());
-                //}
+            //pausing shit
+            //if (enemy->getPaused() && !_actionManager->isPaused(actionKey)) {
+            //    CULog("Pausing");
+            //    enemy->getSpriteNode()->setFrame(enemy->getPausedFrame());
+            //    _actionManager->pauseAllActions(enemy->getSceneNode());
+            //}
+            //else if (!enemy->getPaused() && _actionManager->isPaused(actionKey)){
+            //    CULog("Unpausing");
+            //    enemy->getSpriteNode()->setFrame(enemy->getActiveFrame());
+            //    _actionManager->unpauseAllActions(enemy->getSceneNode());
+            //}
 
-                if ((enemy->getActiveAction() != "" && !_actionManager->isActive(actionKey)) || enemy->getPriority() > enemy->getActivePriority())
-                {
-                    _actionManager->clearAllActions(enemy->getSceneNode());
-                    std::string actionName = enemy->getRequestedAction();
-                    enemy->animate(actionName);
-                    auto action = enemy->getAction(actionName);
-                    _actionManager->activate(actionName + enemy->getId(), action, enemy->getSceneNode());
-                }
+            if ((enemy->getActiveAction() != "" && !_actionManager->isActive(actionKey)) || enemy->getPriority() > enemy->getActivePriority())
+            {
+                _actionManager->clearAllActions(enemy->getSceneNode());
+                std::string actionName = enemy->getRequestedAction();
+                enemy->animate(actionName);
+                auto action = enemy->getAction(actionName);
+                _actionManager->activate(actionName + enemy->getId(), action, enemy->getSceneNode());
             }
             enemy->update(dt);
           
@@ -1314,6 +1360,12 @@ void GameScene::fixedUpdate(float step) {
         if (enemy != nullptr && !enemy->isRemoved()) {
             enemy->fixedUpdate(step);
 		}
+        if (enemy->getHealth() <= 0) {
+            enemy->markForDeletion();
+        }
+        if (enemy->shouldDelete()) {
+            removeEnemy(enemy.get());
+        }
     }
     _world->update(step);
 }
@@ -1845,94 +1897,67 @@ void GameScene::save() {
     std::string path = cugl::filetool::join_path({ root,"save.json" });
 
     auto reader = JsonReader::alloc(path);
-
-    std::shared_ptr<JsonValue> prev_json = reader->readJson();
+    std::shared_ptr<JsonValue> prevSave = reader->readJson();
     reader->close();
-
-    //write basic info.
-    //placeholders
 
     std::shared_ptr<JsonValue> json = JsonValue::allocObject();
 
-    json->appendValue("chapter", 1.0f);
-    json->appendValue("level", 1.0f);
-    
+    std::shared_ptr<JsonValue> persistent = prevSave->get("persistent");
     std::shared_ptr<JsonValue> night = JsonValue::allocObject();
-    
-    night->appendValue("location_x_player", _avatar->getPosition().x);
-    night->appendValue("location_y_player", _avatar->getPosition().y);
-    night->appendValue("health_player", _avatar->getHealth());
+    //CHAPTER COMPLETION LOGIC
+    if (isComplete()) {
+        //if completed, don't need to save state. Just increment chapter and level accordingly
+        json->appendValue("chapter", 1.0f);
+        json->appendValue("level", 2.0f);
+        json->appendValue("startFromNight", false);
+        json->appendChild("persistent", persistent);
+        json->appendChild("night", night);
+        return;
+    }
+    else {
+        if (persistent == nullptr || persistent->isNull()) {
+            persistent = JsonValue::allocObject();
+        }
+        else {
+            persistent->_parent = nullptr;
+        }
+    }
+    std::shared_ptr<JsonValue> player = JsonValue::allocObject();
+    player->appendValue("location_x", (double) _avatar->getPosition().x);
+    player->appendValue("location_y", (double) _avatar->getPosition().y);
+    player->appendValue("health", (double) _avatar->getHealth());
+    night->appendChild("player", player);
 
     std::vector<std::string> types = { "egg", "carrot", "shrimp", "rice", "beef" };
     for (auto t = types.begin(); t != types.end(); t++) {
         std::string type = *t;
-        night->appendArray("location_x_" + type);
-        night->appendArray("location_y_" + type);
-        night->appendArray("health_" + type);
+        night->appendChild(type, JsonValue::allocObject());
     }
     
+    int id = 0;
     for (auto& e : _enemies) {
         if (e->isRemoved()) {
 			continue;
 		}
         std::string type = EnemyModel::typeToStr(e->getType());
-		night->insertValue(0, "location_x_" + type, e->getPosition().x);
-        night->insertValue(0, "location_y_" + type, e->getPosition().y);
-        night->insertValue(0, "health_" + type, e->getHealth());
+        std::shared_ptr<JsonValue> x = JsonValue::allocObject();
+		x->appendValue("location_x", (double) e->getPosition().x);
+        x->appendValue("location_y", (double) e->getPosition().y);
+        x->appendValue("health", (double) e->getHealth());
+        night->get(type)->appendChild(std::to_string(id), x);
+        id += 1;
 	}
 
+    //placeholder  values for chapter and level
+    json->appendValue("chapter", 1.0f);
+    json->appendValue("level", 1.0f);
+    json->appendValue("startFromNight", true);
+    json->appendChild("persistent", persistent);
     json->appendChild("night", night);
 
-    std::shared_ptr<JsonValue> day = prev_json->get("day");
-    std::shared_ptr<JsonValue> persistent = prev_json->get("persistent");
-    if (persistent == nullptr || persistent->isNull()) {
-        persistent = JsonValue::allocObject();
-    }
-    else {
-        persistent->_parent = nullptr;
-    }
-    if (day == nullptr || day->isNull()) {
-        day = JsonValue::allocObject();
-    }
-    else {
-        day->_parent = nullptr;
-    }
-
-    json->appendChild("day", day);
-    json->appendChild("persistent", persistent);
-
-    json->appendValue("test", 0.0f);
-
     auto writer = JsonWriter::alloc(path);
-
     writer->writeJson(json);
-    
     writer->close();
-}
-
-void GameScene::loadSave() {
-	/*std::string root = cugl::Application::get()->getSaveDirectory();
-    std::string path = cugl::filetool::join_path({ root,"save.json" });*/
-
-
-    //CULog("PATH");
-    //CULog(path.c_str());
-
-    std::string root = cugl::Application::get()->getSaveDirectory();
-    std::string path = cugl::filetool::join_path({ root,"save.json" });
-    auto reader = JsonReader::alloc(path);
-
-    std::shared_ptr<JsonValue> loaded_json = reader->readJson();
-
-    //Todo:: load enemies separately from level.
-
-    int chapter = loaded_json->getInt("chapter");
-    int level = loaded_json->getInt("level");
-
-    loadLevel(chapter, level);
-
-    reader->close();
-    
 }
 
 //load level with int specifiers
