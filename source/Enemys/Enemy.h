@@ -258,7 +258,9 @@ public:
 
     bool didAttack();
 
-    virtual std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale);
+    virtual std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale) { 
+        return std::tuple< std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>>(nullptr, nullptr);
+    };
 
 
     void setVulnerable(bool vulnerable) { _vulnerable = vulnerable; }

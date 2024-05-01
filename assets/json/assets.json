@@ -500,6 +500,21 @@
         "shrimpRoll": {
             "file": "textures/Sheets/Enemies/Shrimp/shrimpRoll.png"
         },
+        "eggIdle": {
+            "file": "textures/Sheets/Enemies/Egg/eggIdle.png"
+        },
+        "eggAttack": {
+            "file": "textures/Sheets/Enemies/Egg/eggAttack.png"
+        },
+        "eggDeath": {
+            "file": "textures/Sheets/Enemies/Egg/eggDeath.png"
+        },
+        "eggWalk": {
+            "file": "textures/Sheets/Enemies/Egg/eggWalk.png"
+        },
+        "eggHurt": {
+            "file": "textures/Sheets/Enemies/Egg/eggHurt.png"
+        },
         "dreamBackground": {
             "file": "textures/dream-background.png"
         },

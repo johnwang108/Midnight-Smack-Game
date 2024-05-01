@@ -68,7 +68,7 @@ public:
     void markForDeletion() override {
         if (_killMeCountdown != 0.0f) return;
         EnemyModel::markForDeletion();
-        _killMeCountdown = 0.1;
+        _killMeCountdown = getActionDuration("beefDeath");
     }
 
     std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> createAttack(std::shared_ptr<AssetManager> _assets, float scale) override;

@@ -9,7 +9,7 @@ bool Entity::init(cugl::Vec2 pos, cugl::Size size) {
 
     _entityID = ID++;
 
-    CULog("Entity ID: %d", _entityID);
+    //CULog("Entity ID: %d", _entityID);
     _activated = false;
     _finished = false;
     _activeAction = "";

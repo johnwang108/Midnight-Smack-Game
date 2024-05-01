@@ -26,6 +26,37 @@ bool Egg::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::
 
 void Egg::update(float dt) {
 	EnemyModel::update(dt);
+    b2Vec2 velocity = _body->GetLinearVelocity();
+    if (_killMeCountdown != 0.0f) {
+        setRequestedActionAndPrio("eggDeath", 1000);
+    }
+    else if (_state == "chasing") {
+        setRequestedActionAndPrio("eggIdle", 1);
+    }
+    else if (_state == "stunned") {
+        setRequestedActionAndPrio("eggHurt", 100);
+    }
+    else if (_state == "windup") {
+        setRequestedActionAndPrio("eggWindup", 50);
+    }
+    else if (_state == "spitting") {
+        setRequestedActionAndPrio("eggAttack", 51);
+    }
+    else if (_state == "patrolling") {
+        if (velocity.x == 0) setRequestedActionAndPrio("eggIdle", 1);
+	    setRequestedActionAndPrio("eggWalk", 2);
+    }
+    else if (_state == "short_windup") {
+        int prio = 50;
+        if (getActiveAction() == "eggAttack") prio = getActivePriority() + 1;
+        CULog("short windup");
+        CULog(getActiveAction().c_str());
+        setRequestedActionAndPrio("eggWindupQuick", prio);
+    }
+    else {
+        CULog("error: egg");
+        CULog(_state.c_str());
+    }
 }
 
 void Egg::fixedUpdate(float step) {
@@ -43,7 +74,6 @@ void Egg::fixedUpdate(float step) {
     }
     else if (_state == "spitting") {
         velocity.x = 0;
-        setattacktime(true);
     }
     else if (_state == "patrolling") {
         velocity.x = ENEMY_FORCE * _direction * 0.25;
@@ -56,6 +86,9 @@ void Egg::fixedUpdate(float step) {
         CULog(_state.c_str());
     }
 
+    if (_state != "patrolling") {
+        setDirection(SIGNUM(_distanceToPlayer.x));
+    }
     _body->SetLinearVelocity(EnemyModel::handleMovement(velocity));
 }
 
@@ -82,7 +115,8 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Egg::c
     attack->setstraight(_distanceToPlayer + getPosition());
     attack->setEnabled(true);
     attack->setrand(false);
-    attack->setSpeed(10.0f);
+    attack->setLifetime(attack->getLifetime() * 5);
+    attack->setSpeed(attack->getSpeed() * 0.2);
 
 
 
@@ -96,25 +130,27 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Egg::c
     AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);*/
 }
 
+
 void Egg::setState(std::string state) {
     EnemyModel::setState(state);
     if (state == "chasing") {
         _behaviorCounter = 0;
     }
     else if (state == "stunned") {
-        _behaviorCounter = -1;
+        _behaviorCounter = getActionDuration("eggHurt");
     }
     else if (state == "patrollling") {
         _behaviorCounter = -1;
     }
     else if (state == "windup") {
-        _behaviorCounter = 2.0f;
+        _behaviorCounter = getActionDuration("eggWindup");
     }
     else if (state == "spitting") {
-        _behaviorCounter = 1;
+        setattacktime(true);
+        _behaviorCounter = getActionDuration("eggAttack");
     }
     else if (state == "short_windup") {
-        _behaviorCounter = 1.0f;
+        _behaviorCounter = getActionDuration("eggWindupQuick");
     }
 }
 

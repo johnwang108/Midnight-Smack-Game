@@ -372,7 +372,7 @@ void LevelModel::populate(GameScene& scene) {
 	//_scale = scene.getScale();
 	_background = scene.getBackground();
 	_avatar = scene.getAvatar();
-	_enemies = scene.getEnemies();
+	//_enemies = scene.getEnemies();
 	_goalDoor = scene.getGoalDoor();
 
 
@@ -721,9 +721,9 @@ void LevelModel::populate(GameScene& scene) {
 							//right now we are only going to be checking for rice,
 							// because animations are not done yet for other enemies
 
-							if (pathWeWant.find("rice") != std::string::npos || pathWeWant.find("egg") != std::string::npos) {
-								
-								if (numOfRice == 0) {
+							if (pathWeWant.find("rice") != std::string::npos) {
+								scene.spawnRice(enemyPos, false);
+								/*if (numOfRice == 0) {
 									image = _assets->get<Texture>("riceLeader");
 									spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
 									float imageWidth = image->getWidth() / 4;
@@ -739,82 +739,52 @@ void LevelModel::populate(GameScene& scene) {
 									Size singularSpriteSize = Size(imageWidth, imageHeight);
 									new_enemy = Rice::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, true);
 								}
-
-								// spritenode->setScale(0.12f);
-								spritenode->setScale(0.2f);
 								spritenode->setAnchor(Vec2(0.5, 0.35));
 								new_enemy->setSceneNode(spritenode);
 								new_enemy->setDebugColor(DEBUG_COLOR);
 								scene.addObstacle(new_enemy, spritenode);
-								_enemies.push_back(new_enemy);
+								_enemies.push_back(new_enemy);*/
 								numOfRice += 1;
 							}
 
 							else if (pathWeWant.find("carrot") != std::string::npos) {
-								CULog("we found a carrot!");
+								scene.spawnCarrot(enemyPos);
 
-								image = _assets->get<Texture>("carrotIdle");
-								spritenode = EntitySpriteNode::allocWithSheet(image, 1, 1, 1);
+								/*image = _assets->get<Texture>("eggIdle");
+								spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
 								Size singularSpriteSize = Size(image->getWidth(), image->getHeight());
-								new_enemy = Carrot::allocWithConstants(enemyPos, singularSpriteSize / (scene.getScale()), scene.getScale(), _assets);
+								Size s = Size(2.25f, 6.0f);
+								new_enemy = Egg::allocWithConstants(enemyPos, s, scene.getScale(), _assets);
 								new_enemy->setSceneNode(spritenode);
 								new_enemy->setDebugColor(DEBUG_COLOR);
+								spritenode->setAnchor(0.5, 0.35);
 								scene.addObstacle(new_enemy, spritenode);
-								_enemies.push_back(new_enemy);
-								
-								//image = _assets->get<Texture>("shrimpIdle");
-								//spritenode = EntitySpriteNode::allocWithSheet(image, 1, 1, 1);
-								////Size singularSpriteSize = Size(image->getWidth(), image->getHeight());
-								//Size s = Size(2.0f, 2.0f);
-								//new_enemy = Shrimp::allocWithConstants(enemyPos,s, scene.getScale(), _assets);
-								//new_enemy->setSceneNode(spritenode);
-								//new_enemy->setDebugColor(DEBUG_COLOR);
-								//scene.addObstacle(new_enemy, spritenode);
-								//_enemies.push_back(new_enemy);
-								
+								_enemies.push_back(new_enemy);*/
+							}
+
+							else if (pathWeWant.find("beef") != std::string::npos) {
+
+								scene.spawnBeef(enemyPos);
 								//image = _assets->get<Texture>("beefIdle");
 								//spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
 								//float imageWidth = image->getWidth() / 3;
 								//float imageHeight = image->getHeight() / 3;
 								//Size singularSpriteSize = Size(imageWidth, imageHeight);
-								//enemyPos.y -= 100.0f;
-								//new_enemy = EnemyModel::allocWithConstants(enemyPos, singularSpriteSize / (6 * scene.getScale()), scene.getScale(), _assets, EnemyType::beef);
-
-								//spritenode->setScale(0.1f);
+								//// enemyPos.y -= 100.0f;
+								//Size beefSize = cugl::Size(8.0f, 8.0f);
+								//new_enemy = Beef::allocWithConstants(enemyPos, beefSize, scene.getScale(), _assets);
 								//new_enemy->setSceneNode(spritenode);
 								//new_enemy->setDebugColor(DEBUG_COLOR);
-								//// new_enemy->setLimit(cugl::Spline2(enemyPos, Vec2(enemyPos.x, enemyPos.y + 5.0f)));
+								//new_enemy->setLimit(cugl::Spline2(enemyPos, Vec2(enemyPos.x, enemyPos.y + 1.0)));
 								//scene.addObstacle(new_enemy, spritenode);
 								//_enemies.push_back(new_enemy);
 							}
-
-							else if (pathWeWant.find("beef") != std::string::npos) {
-								image = _assets->get<Texture>("beefIdle");
-								spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
-								float imageWidth = image->getWidth() / 3;
-								float imageHeight = image->getHeight() / 3;
-								Size singularSpriteSize = Size(imageWidth, imageHeight);
-								// enemyPos.y -= 100.0f;
-								Size beefSize = cugl::Size(8.0f, 8.0f);
-								new_enemy = Beef::allocWithConstants(enemyPos, beefSize, scene.getScale(), _assets);
-								spritenode->setScale(0.1f);
-								new_enemy->setSceneNode(spritenode);
-								new_enemy->setDebugColor(DEBUG_COLOR);
-								new_enemy->setLimit(cugl::Spline2(enemyPos, Vec2(enemyPos.x, enemyPos.y + 1.0)));
-								scene.addObstacle(new_enemy, spritenode);
-								_enemies.push_back(new_enemy);
+							else if (pathWeWant.find("egg") != std::string::npos) {
+								scene.spawnEgg(enemyPos);
 							}
-							//else if (pathWeWant.find("egg") != std::string::npos) {
-							//	new_enemy = EnemyModel::alloc(enemyPos, image->getSize() / (2 + scene.getScale()), scene.getScale(), EnemyType::egg);
-							//	new_enemy->setName("egg" + std::to_string(tileId));
-							//}
-
-							//-------------------------------
-							// new_enemy->setSceneNode(spritenode);
-							// new_enemy->setDebugColor(Color4::YELLOW);
-							// scene.addObstacle(new_enemy, sprite);
-							// _enemies.push_back(new_enemy);
-
+							else if (pathWeWant.find("shrimp") != std::string::npos) {
+								scene.spawnShrimp(enemyPos);
+							}
 						}
 						else {
 							CULog("we're not reading anything what the heck man??");
@@ -891,7 +861,7 @@ void LevelModel::populate(GameScene& scene) {
 	// this set background probably won't work
 	scene.setBackground(_background);
 	scene.setAvatar(_avatar);
-	scene.setEnemies(_enemies);
+	//scene.setEnemies(_enemies);
 	scene.setGoalDoor(_goalDoor);
 
 
@@ -1020,7 +990,7 @@ void LevelModel::loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json,
 
 	platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_BOTTOM_LEFT);
 	// CULog(std::to_string(platobj->isRemoved()).c_str());
-	// platobj->setName(std::string(PLATFORM_NAME));
+	platobj->setName(std::string(PLATFORM_NAME));
 
 	platobj->setBodyType(b2_staticBody);
 	platobj->setDensity(BASIC_DENSITY);
@@ -1039,4 +1009,3 @@ void LevelModel::loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json,
 	sprite->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 	scene.addObstacle(platobj, sprite, 1);
 }
-

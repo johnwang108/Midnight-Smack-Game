@@ -342,7 +342,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
    _chapter = 1;
-   _level = 4;
+   _level = 1;
     loadLevel(_chapter, _level);
  //   currentLevel = level3;
 
@@ -355,16 +355,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _BullactionManager = cugl::scene2::ActionManager::alloc();
     _SHRactionManager = cugl::scene2::ActionManager::alloc();
 
-    _afterimages = std::vector < std::shared_ptr < scene2::SpriteNode >> ();
+    _afterimages = std::vector < std::shared_ptr < scene2::SpriteNode>>();
 
-    //15 frame attack animation
-
-
-    // i just changed level2 to _level_model
-    // this will change for boss battle levels and so forth
-    // currentLevel = _level_model;
-    // currentLevel = level1;
-    // loadLevel(_level_model);
     //App class will set active true
     setActive(false);
     transition(false);
@@ -477,9 +469,26 @@ void GameScene::reset() {
     _background = nullptr;
     _sensorFixtures.clear();
 
+    for (auto& enemy : _enemies) {
+        enemy = nullptr;
+    }
     _enemies.clear();
+    for (auto& attack : _attacks) {
+        attack = nullptr;
+    }
     _attacks.clear();
+    for (auto& v : _vulnerables) {
+        v = nullptr;
+    }
     _vulnerables.clear();
+    for (auto& a : _afterimages) {
+        a = nullptr;
+    }
+    _afterimages.clear();
+    for (auto& p : _popups) {
+		std::get<0>(p) = nullptr;
+	}
+    _popups.clear();
     _Bull = nullptr;
 
     removeChild(_worldnode);
@@ -854,21 +863,22 @@ void GameScene::preUpdate(float dt) {
 
     _dollarnode->update(dt);
     if (!_slowed) {
-        _dollarnode->setVisible(false);
-        if (_dollarnode->isFocus()) {
-            _dollarnode->setFocus(false);
-            _dollarnode->setReadyToCook(false);
-        }
+        //_dollarnode->setVisible(false);
+        //if (_dollarnode->isFocus()) {
+        //    _dollarnode->setFocus(false);
+        //    _dollarnode->setReadyToCook(false);
+        //}
 
-        _avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
-        _avatar->setJumping(_input->didJump());
-        _avatar->setDash(_input->didDash());
-        _avatar->setInputWalk(_input->getHorizontal() != 0);
-        _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
-        if (_avatar->isJumping() && _avatar->isGrounded()) {
-            std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
-            AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
-        }
+        ////_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
+        //_avatar->setAllMovement(_input->getHorizontal(), _input->getVertical());
+        //_avatar->setJumping(_input->didJump());
+        //_avatar->setDash(_input->didDash());
+        //_avatar->setInputWalk(_input->getHorizontal() != 0);
+        //_avatar->applyForce(_input->getHorizontal(), _input->getVertical());
+        //if (_avatar->isJumping() && _avatar->isGrounded()) {
+        //    std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
+        //    AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
+        //}
     }
     else {
         _dollarnode->setVisible(true);
@@ -876,14 +886,6 @@ void GameScene::preUpdate(float dt) {
             _dollarnode->setFocus(true);
             _dollarnode->setReadyToCook(true);
         }
-
-        //_avatar->setMovement(0, 0);
-        //_avatar->setJumping(_input->didJump());
-        _avatar->setJumping(false);
-        //_avatar->setDash(_input->didDash());
-        _avatar->setDash(false);
-        _avatar->applyForce(0, 0);
-
         //cooktime handling. Assume that _target not null, if it is null then continue
         //if (!_dollarnode->isPending()) {
         if (_target != nullptr && !_dollarnode->isPending()) {
@@ -942,6 +944,7 @@ void GameScene::preUpdate(float dt) {
     std::vector<std::shared_ptr<Rice>> spawns = std::vector<std::shared_ptr<Rice>>();
     for (auto& enemy : _enemies) {
         if (enemy != nullptr && !enemy->isRemoved()) {
+            enemy->update(dt);
             Vec2 enemyPos = enemy->getPosition();
             float distance = avatarPos.distance(enemyPos);
 
@@ -966,7 +969,6 @@ void GameScene::preUpdate(float dt) {
                     spritenode->setScale(0.375 / 1.75);
                     addObstacle(riceSpawn, spritenode);
                     spawns.push_back(riceSpawn);
-                    CULog("spawning");
                 }
                 else {
                     auto res = enemy->createAttack(_assets, _scale);
@@ -979,18 +981,6 @@ void GameScene::preUpdate(float dt) {
 
             std::string actionKey = enemy->getActiveAction() + enemy->getId();
 
-            //pausing shit
-            //if (enemy->getPaused() && !_actionManager->isPaused(actionKey)) {
-            //    CULog("Pausing");
-            //    enemy->getSpriteNode()->setFrame(enemy->getPausedFrame());
-            //    _actionManager->pauseAllActions(enemy->getSceneNode());
-            //}
-            //else if (!enemy->getPaused() && _actionManager->isPaused(actionKey)){
-            //    CULog("Unpausing");
-            //    enemy->getSpriteNode()->setFrame(enemy->getActiveFrame());
-            //    _actionManager->unpauseAllActions(enemy->getSceneNode());
-            //}
-
             if ((enemy->getActiveAction() != "" && !_actionManager->isActive(actionKey)) || enemy->getPriority() > enemy->getActivePriority())
             {
                 _actionManager->clearAllActions(enemy->getSceneNode());
@@ -1001,7 +991,6 @@ void GameScene::preUpdate(float dt) {
 
                 //CULog("animating %s", actionName.c_str());
             }
-            enemy->update(dt);
         }
     }
 
@@ -1341,6 +1330,29 @@ void GameScene::fixedUpdate(float step) {
         setComplete(true);
     }
 
+    if (!_slowed) {
+        _dollarnode->setVisible(false);
+        if (_dollarnode->isFocus()) {
+            _dollarnode->setFocus(false);
+            _dollarnode->setReadyToCook(false);
+        }
+
+        //_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
+        _avatar->setAllMovement(_input->getHorizontal(), _input->getVertical());
+        _avatar->setJumping(_input->didJump());
+        _avatar->setDash(_input->didDash());
+        _avatar->setInputWalk(_input->getHorizontal() != 0);
+        _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
+        if (_avatar->isJumping() && _avatar->isGrounded()) {
+            std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
+            AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
+        }
+    }
+    else {
+        _avatar->setAllMovement(0, 0);
+        _avatar->setJumping(false);
+        _avatar->setDash(false);
+    }
     _avatar->fixedUpdate(step);
     for (auto& enemy : _enemies) {
         if (enemy != nullptr && !enemy->isRemoved()) {
@@ -1503,6 +1515,7 @@ void GameScene::removeAttack(T* attack) {
     _worldnode->removeChild(attack->getSceneNode());
     attack->setDebugScene(nullptr);
     attack->markRemoved(true);
+    attack->dispose();
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
@@ -1521,6 +1534,7 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
     _worldnode->removeChild(enemy->getSceneNode());
     enemy->setDebugScene(nullptr);
     enemy->markRemoved(true);
+    enemy->dispose();
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
@@ -1737,3 +1751,59 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
     }
 }
 
+void GameScene::spawnShrimp(Vec2 pos) {
+    std::shared_ptr<Texture> image = _assets->get<Texture>("shrimpIdle");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 1, 1, 1);
+    Size s = Size(2.0f, 2.0f);
+    std::shared_ptr<EnemyModel> new_enemy = Shrimp::allocWithConstants(pos,s, getScale(), _assets);
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(new_enemy, spritenode);
+    _enemies.push_back(new_enemy);
+}
+void GameScene::spawnBeef(Vec2 pos) {
+    std::shared_ptr<Texture> image = _assets->get<Texture>("beefIdle");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
+    Size s = cugl::Size(8.0f, 8.0f);
+    std::shared_ptr<EnemyModel> new_enemy = Beef::allocWithConstants(pos, s, getScale(), _assets);
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(new_enemy, spritenode);
+    _enemies.push_back(new_enemy);
+}
+void GameScene::spawnEgg(Vec2 pos) {
+    std::shared_ptr<Texture> image = _assets->get<Texture>("eggIdle");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
+    Size s = Size(2.25f, 6.0f);
+    std::shared_ptr<EnemyModel> new_enemy = Egg::allocWithConstants(pos, s, getScale(), _assets);
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    spritenode->setAnchor(0.5, 0.35);
+    addObstacle(new_enemy, spritenode);
+    _enemies.push_back(new_enemy);
+}
+void GameScene::spawnRice(Vec2 pos, bool isSoldier) {
+    std::shared_ptr<Texture> image = _assets->get<Texture>("riceLeader");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
+    float imageWidth = image->getWidth() / 4;
+    float imageHeight = image->getHeight() / 4;
+    Size singularSpriteSize = Size(imageWidth, imageHeight);
+    std::shared_ptr<EnemyModel> new_enemy = Rice::allocWithConstants(pos, singularSpriteSize / (5 * getScale()), getScale(), _assets, isSoldier);
+    spritenode->setAnchor(Vec2(0.5, 0.35));
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(new_enemy, spritenode);
+    _enemies.push_back(new_enemy);
+}
+
+void GameScene::spawnCarrot(Vec2 pos) {
+    std::shared_ptr<Texture> image = _assets->get<Texture>("eggIdle");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
+    Size s = Size(2.25f, 6.0f);
+    std::shared_ptr<EnemyModel> new_enemy = Egg::allocWithConstants(pos, s, getScale(), _assets);
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    spritenode->setAnchor(0.5, 0.35);
+    addObstacle(new_enemy, spritenode);
+    _enemies.push_back(new_enemy);
+}
