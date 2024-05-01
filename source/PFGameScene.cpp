@@ -37,9 +37,6 @@ using namespace cugl;
 #pragma mark Level Geography
 
 /** This is adjusted by screen aspect ratio to get the height */
-// #define SCENE_WIDTH 6720
-// #define SCENE_HEIGHT 800
-
 #define SCENE_WIDTH 12800
 #define SCENE_HEIGHT 960
 
@@ -99,11 +96,21 @@ _debug(false)
  * @return true if the controller is initialized properly, false otherwise.
  */
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
-    return init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
+    _level_model->setFilePath("json/empanada-platform-level-01.json");
+    // _level_model->setFilePath("json/bull-boss-level.json");
+    setSceneWidth(_level_model->loadLevelWidth());
+    setSceneHeight(_level_model->loadLevelHeight());
+    return init(assets, Rect(0, 0, getSceneWidth(), getSceneHeight()), Vec2(0, DEFAULT_GRAVITY), input);
 }
 
 bool GameScene::initWithSave(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::shared_ptr<JsonValue> save) {
-    bool res = init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
+    /*setSceneWidth(400);
+    setSceneHeight(30);*/
+    _level_model->setFilePath("json/empanada-platform-level-01.json");
+    // _level_model->setFilePath("json/bull-boss-level.json");
+    setSceneWidth(_level_model->loadLevelWidth());
+    setSceneHeight(_level_model->loadLevelHeight());
+    bool res = init(assets, Rect(0, 0, getSceneWidth(), getSceneHeight()), Vec2(0, DEFAULT_GRAVITY), input);
     if (save->size() == 0) return res;
     float locationX = save->get("player")->getFloat("location_x");
     float locationY = save->get("player")->getFloat("location_y");
@@ -149,6 +156,15 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets, const Rect& re
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     const Rect& rect, const Vec2& gravity, std::shared_ptr<PlatformInput> input) {
     // Initialize the scene to a locked height (iPhone X is narrow, but wide)
+    /*_scene_width = 400;
+    _scene_height = 30;
+    setSceneWidth(400);
+    setSceneHeight(30);*/
+    _level_model->setFilePath("json/empanada-platform-level-01.json");
+    // _level_model->setFilePath("json/bull-boss-level.json");
+    setSceneWidth(_level_model->loadLevelWidth());
+    setSceneHeight(_level_model->loadLevelHeight());
+
     Size dimen = computeActiveSize();
     // SDL_ShowCursor(SDL_DISABLE);
 
@@ -192,8 +208,11 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     // IMPORTANT: SCALING MUST BE UNIFORM
     // This means that we cannot change the aspect ratio of the physics world
     // Shift to center if a bad fit
-    _scale = dimen.width == SCENE_WIDTH ? dimen.width / rect.size.width : dimen.height / rect.size.height;
-    Vec2 offset((dimen.width - SCENE_WIDTH) / 2.0f, (dimen.height - SCENE_HEIGHT) / 2.0f);
+
+     _scale = dimen.width == (getSceneWidth() * 32.0f) ? dimen.width / rect.size.width : dimen.height / rect.size.height;
+     Vec2 offset((dimen.width - (getSceneWidth() * 32.0f)) / 2.0f, (dimen.height - (getSceneHeight() * 32.0f)) / 2.0f);
+    /*_scale = dimen.width == (SCENE_WIDTH) ? dimen.width / rect.size.width : dimen.height / rect.size.height;
+    Vec2 offset((dimen.width - SCENE_WIDTH) / 2.0f, (dimen.height - SCENE_HEIGHT) / 2.0f);*/
 
     // Create the scene graph
     std::shared_ptr<Texture> image;
@@ -346,17 +365,15 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _target = std::make_shared<EnemyModel>();
 
 
+    // _level_model->setFilePath("json/empanada-platform-level-01.json");
     currentLevel = _level_model;
-    // loadLevel(currentLevel);
-    // _level_model->setFilePath("json/test_level_v2_experiment.json");
-    _level_model->setFilePath("json/empanada-platform-level-01.json");
-    loadLevel(currentLevel);
+    loadLevel(_level_model);
     addChild(_worldnode);
     addChild(_debugnode);
     addChild(_leftnode);
     addChild(_rightnode);
 
-    save();
+    // save();
 
     _actionManager = cugl::scene2::ActionManager::alloc();
     _BullactionManager = cugl::scene2::ActionManager::alloc();
@@ -1438,8 +1455,26 @@ void GameScene::postUpdate(float remain) {
     else if (_countdown == 0) {
         if (_failed == false) {
 
-            if (currentLevel == _level_model) {
-                currentLevel = level2;
+            //this is where we will change the scene width and heights for everything
+
+            if (_level_model->getFilePath() == "json/empanada-platform-level-01.json") {
+                _bgScene->setColor(Color4::BLACK);
+                _level_model->removeBackgroundImages(*this);
+                _level_model->setFilePath("json/test_level_v2_experiment.json");
+                currentLevel = _level_model;
+                
+                CULog("We should switch to our first initial level");
+                // currentLevel
+                reset();
+            }
+            else if (_level_model->getFilePath() == "json/test_level_v2_experiment.json") {
+                _bgScene->setColor(Color4::BLACK);
+                _level_model->removeBackgroundImages(*this);
+                _level_model->setFilePath("json/bull-boss-level.json");
+                currentLevel = _level_model;
+
+                CULog("We should switch to the bull boss level");
+                // currentLevel
                 reset();
             }
             else if (currentLevel == level3) {
@@ -1819,12 +1854,12 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
 Size GameScene::computeActiveSize() const {
     Size dimen = Application::get()->getDisplaySize();
     float ratio1 = dimen.width / dimen.height;
-    float ratio2 = ((float)SCENE_WIDTH) / ((float)SCENE_HEIGHT);
+    float ratio2 = ((float)_scene_width) / ((float)_scene_height);
     if (ratio1 < ratio2) {
-        dimen *= SCENE_WIDTH / dimen.width;
+        dimen *= (_scene_width * 32.0f) / dimen.width;
     }
     else {
-        dimen *= SCENE_HEIGHT / dimen.height;
+        dimen *= (_scene_height * 32.0f) / dimen.height;
     }
     return dimen;
 }

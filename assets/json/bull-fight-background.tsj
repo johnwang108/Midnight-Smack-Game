@@ -1,0 +1,14 @@
+{ "columns":80,
+ "image":"..\/textures\/Bull_Arena.png",
+ "imageheight":1600,
+ "imagewidth":2560,
+ "margin":0,
+ "name":"bull-fight-background",
+ "spacing":0,
+ "tilecount":4000,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}
