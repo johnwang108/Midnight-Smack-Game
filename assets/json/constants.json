@@ -359,6 +359,13 @@
             "cols": 3,
             "frames": 6,
             "duration": 1
+        },
+        "shrimpRoll": {
+            "sheet": "shrimpRoll",
+            "rows": 1,
+            "cols": 1,
+            "frames": 1,
+            "duration": 1
         }
     },
     "beef": {

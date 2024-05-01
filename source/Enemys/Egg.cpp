@@ -47,7 +47,11 @@ void Egg::update(float dt) {
 	    setRequestedActionAndPrio("eggWalk", 2);
     }
     else if (_state == "short_windup") {
-        setRequestedActionAndPrio("eggWindupQuick", 50);
+        int prio = 50;
+        if (getActiveAction() == "eggAttack") prio = getActivePriority() + 1;
+        CULog("short windup");
+        CULog(getActiveAction().c_str());
+        setRequestedActionAndPrio("eggWindupQuick", prio);
     }
     else {
         CULog("error: egg");
@@ -82,6 +86,9 @@ void Egg::fixedUpdate(float step) {
         CULog(_state.c_str());
     }
 
+    if (_state != "patrolling") {
+        setDirection(SIGNUM(_distanceToPlayer.x));
+    }
     _body->SetLinearVelocity(EnemyModel::handleMovement(velocity));
 }
 

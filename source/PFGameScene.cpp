@@ -355,16 +355,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _BullactionManager = cugl::scene2::ActionManager::alloc();
     _SHRactionManager = cugl::scene2::ActionManager::alloc();
 
-    _afterimages = std::vector < std::shared_ptr < scene2::SpriteNode >> ();
+    _afterimages = std::vector < std::shared_ptr < scene2::SpriteNode>>();
 
-    //15 frame attack animation
-
-
-    // i just changed level2 to _level_model
-    // this will change for boss battle levels and so forth
-    // currentLevel = _level_model;
-    // currentLevel = level1;
-    // loadLevel(_level_model);
     //App class will set active true
     setActive(false);
     transition(false);
@@ -894,11 +886,6 @@ void GameScene::preUpdate(float dt) {
             _dollarnode->setFocus(true);
             _dollarnode->setReadyToCook(true);
         }
-
-        _avatar->setJumping(false);
-        _avatar->setDash(false);
-        _avatar->applyForce(0, 0);
-
         //cooktime handling. Assume that _target not null, if it is null then continue
         //if (!_dollarnode->isPending()) {
         if (_target != nullptr && !_dollarnode->isPending()) {
@@ -1527,6 +1514,7 @@ void GameScene::removeAttack(T* attack) {
     _worldnode->removeChild(attack->getSceneNode());
     attack->setDebugScene(nullptr);
     attack->markRemoved(true);
+    attack->dispose();
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
@@ -1545,6 +1533,7 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
     _worldnode->removeChild(enemy->getSceneNode());
     enemy->setDebugScene(nullptr);
     enemy->markRemoved(true);
+    enemy->dispose();
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
@@ -1761,3 +1750,59 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
     }
 }
 
+void GameScene::spawnShrimp(Vec2 pos) {
+    std::shared_ptr<Texture> image = _assets->get<Texture>("shrimpIdle");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 1, 1, 1);
+    Size s = Size(2.0f, 2.0f);
+    std::shared_ptr<EnemyModel> new_enemy = Shrimp::allocWithConstants(pos,s, getScale(), _assets);
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(new_enemy, spritenode);
+    _enemies.push_back(new_enemy);
+}
+void GameScene::spawnBeef(Vec2 pos) {
+    std::shared_ptr<Texture> image = _assets->get<Texture>("beefIdle");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
+    Size s = cugl::Size(8.0f, 8.0f);
+    std::shared_ptr<EnemyModel> new_enemy = Beef::allocWithConstants(pos, s, getScale(), _assets);
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(new_enemy, spritenode);
+    _enemies.push_back(new_enemy);
+}
+void GameScene::spawnEgg(Vec2 pos) {
+    std::shared_ptr<Texture> image = _assets->get<Texture>("eggIdle");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
+    Size s = Size(2.25f, 6.0f);
+    std::shared_ptr<EnemyModel> new_enemy = Egg::allocWithConstants(pos, s, getScale(), _assets);
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    spritenode->setAnchor(0.5, 0.35);
+    addObstacle(new_enemy, spritenode);
+    _enemies.push_back(new_enemy);
+}
+void GameScene::spawnRice(Vec2 pos, bool isSoldier) {
+    std::shared_ptr<Texture> image = _assets->get<Texture>("riceLeader");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
+    float imageWidth = image->getWidth() / 4;
+    float imageHeight = image->getHeight() / 4;
+    Size singularSpriteSize = Size(imageWidth, imageHeight);
+    std::shared_ptr<EnemyModel> new_enemy = Rice::allocWithConstants(pos, singularSpriteSize / (5 * getScale()), getScale(), _assets, isSoldier);
+    spritenode->setAnchor(Vec2(0.5, 0.35));
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(new_enemy, spritenode);
+    _enemies.push_back(new_enemy);
+}
+
+void GameScene::spawnCarrot(Vec2 pos) {
+    std::shared_ptr<Texture> image = _assets->get<Texture>("eggIdle");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
+    Size s = Size(2.25f, 6.0f);
+    std::shared_ptr<EnemyModel> new_enemy = Egg::allocWithConstants(pos, s, getScale(), _assets);
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    spritenode->setAnchor(0.5, 0.35);
+    addObstacle(new_enemy, spritenode);
+    _enemies.push_back(new_enemy);
+}

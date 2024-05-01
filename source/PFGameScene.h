@@ -560,6 +560,13 @@ public:
 
     /*temp, not planning on using this for long*/
     void advanceLevel();
+
+    //Enemy spawn functions with default params.
+    void spawnShrimp(Vec2 pos);
+    void spawnBeef(Vec2 pos);
+    void spawnEgg(Vec2 pos);
+    void spawnRice(Vec2 pos, bool isSoldier = true);
+    void spawnCarrot(Vec2 pos);
 };
 
 

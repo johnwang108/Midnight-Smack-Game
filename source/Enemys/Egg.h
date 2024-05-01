@@ -48,6 +48,8 @@ public:
         result->addActionAnimation("eggWindupQuick", _assets->get<Texture>("eggAttack"),
             std::get<0>(info), std::get<1>(info),
             std::get<2>(info), std::get<3>(info) * EGG_ATTACK_SPEEDUP_MULTIPLIER);
+        frames = { 0, 1, 2, 3, 4, 5, 6 };
+        result->setAction("eggWindupQuick", frames, result->getActionDuration("eggWindupQuick")); //9 attack frames out of 16 total frames
         return res ? result : nullptr;
     }
 
