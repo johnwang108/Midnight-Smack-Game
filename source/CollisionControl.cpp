@@ -244,7 +244,7 @@ void GameScene::beginContact(b2Contact* contact) {
     }
 
     if (_avatar->getBodySensorName() == fd1 && enemies.find(bd2->getName()) != enemies.end()) {
-        if (((EnemyModel*)bd2)->isTangible()) {
+        if (((EnemyModel*)bd2)->isTangible() && !((EnemyModel*)bd2)->getnocoll()) {
             Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
             Vec2 attackerPos = _avatar->getPosition();
             int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
@@ -387,7 +387,7 @@ void GameScene::endContact(b2Contact* contact) {
     }
     
     if (_avatar->getBodySensorName() == fd1 && enemies.find(bd2->getName()) != enemies.end()) {
-        if (((EnemyModel*)bd2)->isTangible()) {
+        if (((EnemyModel*)bd2)->isTangible() && !((EnemyModel*)bd2)->getnocoll()) {
             Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
             Vec2 attackerPos = _avatar->getPosition();
             int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;

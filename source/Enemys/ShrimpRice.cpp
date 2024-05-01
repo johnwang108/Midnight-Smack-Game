@@ -83,7 +83,7 @@ void ShrimpRice::update(float dt) {
             setact("SFRWave1", 1.125);
         }
         else if (pa <= 0.86 && pa > 0.53) {
-            setact("SFRJoustState1", 1.125);
+            setact("SFRJoustState1", 2.25);
             _canturn = false;
         }
         else {
@@ -123,7 +123,7 @@ void ShrimpRice::update(float dt) {
             velocity.x *= 0;
         }
         if (_act == "SFRJoustState1") {
-            velocity.x *= -1;
+            velocity.x *= -2;
         }
         if (_act == "SFRWave3") {
             velocity.x = 0;
@@ -148,7 +148,7 @@ void ShrimpRice::update(float dt) {
                 }
             }
             if (_act == "SFRWave1") {
-                setact("SFRWave2", 10);
+                setact("SFRWave2", 5);
             }
             if (_act == "SFRWheelofDoom") {
                 setact("SFR_Attack", 3.375);

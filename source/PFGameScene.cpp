@@ -1073,6 +1073,7 @@ void GameScene::preUpdate(float dt) {
             }
             if (_ShrimpRice->getangrytime() > 0 && !_enemies.empty()) {
                 for (auto& enemy : _enemies) {
+                    enemy->setnocoll(true);
                     Vec2 EnyPos = enemy->getPosition();
                     int direction = (BullPos.x > EnyPos.x) ? 1 : -1;
                     enemy->setPosition(enemy->getPosition() + Vec2(direction*0.3, 0.0f));

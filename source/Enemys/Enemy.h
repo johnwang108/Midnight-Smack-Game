@@ -120,6 +120,8 @@ protected:
     cugl::Spline2 _limit;
 
     bool _killMe;
+    
+    bool _nocoll;
 
 
 public:
@@ -300,6 +302,9 @@ public:
 	}
 
     bool isDying() { return _killMe; }
+    
+    void setnocoll(bool coll){_nocoll=false;}
+    bool getnocoll(){return _nocoll;}
 
     static std::string typeToStr(EnemyType type) {
         switch (type) {
