@@ -32,7 +32,10 @@ bool Beef::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std:
 
 void Beef::update(float dt) {
 	EnemyModel::update(dt);
-    if (_state == "chasing") {
+    if (_killMeCountdown != 0.0f) {
+        setRequestedActionAndPrio("beefDeath", 1000);
+    }
+    else if (_state == "chasing") {
         setRequestedActionAndPrio("beefIdle", 1);
     }
     else if (_state == "burrowing") {
@@ -48,7 +51,6 @@ void Beef::update(float dt) {
         setRequestedActionAndPrio("beefRise", 32);
     }
     else if (_state == "attacking") {
-        //todo: make attack hitbox way bigger
         setRequestedActionAndPrio("beefAttack", 33);
     }
     else if (_state == "stunned") {
@@ -62,8 +64,10 @@ void Beef::update(float dt) {
 void Beef::fixedUpdate(float step) {
 	EnemyModel::fixedUpdate(step);
 	b2Vec2 velocity = _body->GetLinearVelocity();
-
-    if (_state == "chasing") {
+    if (_killMeCountdown != 0.0f) {
+        velocity.x = 0;
+    }
+    else if (_state == "chasing") {
         setTangible(true);
         velocity.x = 0;
     }
@@ -116,14 +120,13 @@ b2Vec2 Beef::handleMovement(b2Vec2 velocity) {
 std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Beef::createAttack(std::shared_ptr<AssetManager> _assets, float scale) {
     Vec2 pos = getPosition();
 
-    std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE);
     Size size = getDimension();
     size.width *= 1.8;
     size.height *= 1.2;
     std::shared_ptr<Attack> attack = Attack::alloc(pos, size);
 
-    pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
-    pos.y += ATTACK_OFFSET_Y;
+    //pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
+    //pos.y += ATTACK_OFFSET_Y;
 
 
     if (getDirection() > 0) {
@@ -145,7 +148,7 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Beef::
 
 
 
-    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::alloc();
     attack->setSceneNode(sprite);
     sprite->setPosition(pos);
     sprite->setVisible(false);

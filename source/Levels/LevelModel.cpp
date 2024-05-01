@@ -753,15 +753,26 @@ void LevelModel::populate(GameScene& scene) {
 							else if (pathWeWant.find("carrot") != std::string::npos) {
 								CULog("we found a carrot!");
 
-								image = _assets->get<Texture>("carrotIdle");
-								spritenode = EntitySpriteNode::allocWithSheet(image, 1, 1, 1);
+								image = _assets->get<Texture>("eggIdle");
+								spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
 								Size singularSpriteSize = Size(image->getWidth(), image->getHeight());
-								new_enemy = Carrot::allocWithConstants(enemyPos, singularSpriteSize / (scene.getScale()), scene.getScale(), _assets);
+								Size s = Size(2.25f, 6.0f);
+								new_enemy = Egg::allocWithConstants(enemyPos, s, scene.getScale(), _assets);
 								new_enemy->setSceneNode(spritenode);
 								new_enemy->setDebugColor(DEBUG_COLOR);
+								spritenode->setAnchor(0.5, 0.35);
 								scene.addObstacle(new_enemy, spritenode);
 								_enemies.push_back(new_enemy);
-								
+
+								//image = _assets->get<Texture>("carrotIdle");
+								//spritenode = EntitySpriteNode::allocWithSheet(image, 1, 1, 1);
+								//Size singularSpriteSize = Size(image->getWidth(), image->getHeight());
+								//new_enemy = Carrot::allocWithConstants(enemyPos, singularSpriteSize / (scene.getScale()), scene.getScale(), _assets);
+								//new_enemy->setSceneNode(spritenode);
+								//new_enemy->setDebugColor(DEBUG_COLOR);
+								//scene.addObstacle(new_enemy, spritenode);
+								//_enemies.push_back(new_enemy);
+								//
 								//image = _assets->get<Texture>("shrimpIdle");
 								//spritenode = EntitySpriteNode::allocWithSheet(image, 1, 1, 1);
 								////Size singularSpriteSize = Size(image->getWidth(), image->getHeight());
@@ -797,7 +808,6 @@ void LevelModel::populate(GameScene& scene) {
 								// enemyPos.y -= 100.0f;
 								Size beefSize = cugl::Size(8.0f, 8.0f);
 								new_enemy = Beef::allocWithConstants(enemyPos, beefSize, scene.getScale(), _assets);
-								spritenode->setScale(0.1f);
 								new_enemy->setSceneNode(spritenode);
 								new_enemy->setDebugColor(DEBUG_COLOR);
 								new_enemy->setLimit(cugl::Spline2(enemyPos, Vec2(enemyPos.x, enemyPos.y + 1.0)));
@@ -1039,4 +1049,20 @@ void LevelModel::loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json,
 	sprite->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 	scene.addObstacle(platobj, sprite, 1);
 }
-
+//
+//
+//void LevelModel::loadShrimp(Vec2 pos) {
+//
+//}
+//void LevelModel::loadShrimp(Vec2 pos) {
+//
+//}
+//void LevelModel::loadShrimp(Vec2 pos) {
+//
+//}
+//void LevelModel::loadShrimp(Vec2 pos) {
+//
+//}
+//void LevelModel::loadShrimp(Vec2 pos) {
+//
+//}

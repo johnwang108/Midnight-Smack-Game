@@ -266,7 +266,43 @@
             "duration": 1.1667
         }
     },
-    "egg": {},
+    "egg": {
+        "eggDeath":{
+            "sheet": "eggDeath",
+            "rows": 4,
+            "cols": 4,
+            "frames": 15,
+            "duration": 1.25
+        },
+        "eggAttack":{
+            "sheet": "eggAttack",
+            "rows": 4,
+            "cols": 4,
+            "frames": 16,
+            "duration": 1.333
+        },
+        "eggWalk":{
+            "sheet": "eggWalk",
+            "rows": 5,
+            "cols": 6,
+            "frames": 26,
+            "duration": 1.857
+        },
+        "eggIdle":{
+            "sheet": "eggIdle",
+            "rows": 3,
+            "cols": 3,
+            "frames": 7,
+            "duration": 0.875
+        },
+        "eggHurt":{
+            "sheet": "eggHurt",
+            "rows": 2,
+            "cols": 2,
+            "frames": 4,
+            "duration": 0.5
+        }
+    },
     "shrimp": {
         "shrimpAlarm":{
             "sheet": "shrimpAlarm",

@@ -63,8 +63,13 @@
 
 #pragma mark -
 #pragma mark Physics Constants
+//:)
+#define LEVELS_H_GRAVITY -34.9f
 /** The factor to multiply by the input */
-#define DUDE_FORCE      sqrt(2 * (9.8) * getHeight() * 100 ) * getMass()
+#define DUDE_FORCE      10.0f//sqrt(2 * (9.8) * getHeight() * 100 ) * getMass()
+#define FALL_MULTIPLIER 2.5f
+#define FALL_MULTIPLIER_LOW 2.0f
+#define DUDE_DAMPING_BASE 0.0f
 /** The amount to slow the character down */
 #define DUDE_DAMPING    10.0f
 /** The maximum character speed */
@@ -138,6 +143,8 @@ private:
 protected:
 	/** The current horizontal movement of the character */
 	float _movement;
+
+    float _vertical;
 	/** Which direction is the character facing */
 	bool _faceRight;
 	/** How long until we can jump again */
@@ -498,6 +505,8 @@ public:
      */
     void setMovement(float h);
 
+    void setAllMovement(float h, float v);
+
     /**
      * Returns true if the dude is actively firing.
      *
@@ -569,7 +578,7 @@ public:
      *
      * @return ow hard the brakes are applied to get a dude to stop moving
      */
-    float getDamping() const { return DUDE_DAMPING; }
+    float getDamping() const { return _body->GetLinearDamping(); }
     
     /**
      * Returns the upper limit on dude left-right movement.
@@ -636,6 +645,14 @@ public:
      * This method should be called after the force attribute is set.
      */
     void applyForce(float h, float v);
+
+    void walk(Vec2 dir);
+
+    void jump(Vec2 dir);
+    
+    void handleJump(float dt);
+
+    void dash(Vec2 dir);
 
     void takeDamage(float damage, const int attackDirection);
 	

@@ -342,7 +342,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
    _chapter = 1;
-   _level = 4;
+   _level = 1;
     loadLevel(_chapter, _level);
  //   currentLevel = level3;
 
@@ -477,9 +477,26 @@ void GameScene::reset() {
     _background = nullptr;
     _sensorFixtures.clear();
 
+    for (auto& enemy : _enemies) {
+        enemy = nullptr;
+    }
     _enemies.clear();
+    for (auto& attack : _attacks) {
+        attack = nullptr;
+    }
     _attacks.clear();
+    for (auto& v : _vulnerables) {
+        v = nullptr;
+    }
     _vulnerables.clear();
+    for (auto& a : _afterimages) {
+        a = nullptr;
+    }
+    _afterimages.clear();
+    for (auto& p : _popups) {
+		std::get<0>(p) = nullptr;
+	}
+    _popups.clear();
     _Bull = nullptr;
 
     removeChild(_worldnode);
@@ -854,21 +871,22 @@ void GameScene::preUpdate(float dt) {
 
     _dollarnode->update(dt);
     if (!_slowed) {
-        _dollarnode->setVisible(false);
-        if (_dollarnode->isFocus()) {
-            _dollarnode->setFocus(false);
-            _dollarnode->setReadyToCook(false);
-        }
+        //_dollarnode->setVisible(false);
+        //if (_dollarnode->isFocus()) {
+        //    _dollarnode->setFocus(false);
+        //    _dollarnode->setReadyToCook(false);
+        //}
 
-        _avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
-        _avatar->setJumping(_input->didJump());
-        _avatar->setDash(_input->didDash());
-        _avatar->setInputWalk(_input->getHorizontal() != 0);
-        _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
-        if (_avatar->isJumping() && _avatar->isGrounded()) {
-            std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
-            AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
-        }
+        ////_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
+        //_avatar->setAllMovement(_input->getHorizontal(), _input->getVertical());
+        //_avatar->setJumping(_input->didJump());
+        //_avatar->setDash(_input->didDash());
+        //_avatar->setInputWalk(_input->getHorizontal() != 0);
+        //_avatar->applyForce(_input->getHorizontal(), _input->getVertical());
+        //if (_avatar->isJumping() && _avatar->isGrounded()) {
+        //    std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
+        //    AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
+        //}
     }
     else {
         _dollarnode->setVisible(true);
@@ -877,10 +895,7 @@ void GameScene::preUpdate(float dt) {
             _dollarnode->setReadyToCook(true);
         }
 
-        //_avatar->setMovement(0, 0);
-        //_avatar->setJumping(_input->didJump());
         _avatar->setJumping(false);
-        //_avatar->setDash(_input->didDash());
         _avatar->setDash(false);
         _avatar->applyForce(0, 0);
 
@@ -942,6 +957,7 @@ void GameScene::preUpdate(float dt) {
     std::vector<std::shared_ptr<Rice>> spawns = std::vector<std::shared_ptr<Rice>>();
     for (auto& enemy : _enemies) {
         if (enemy != nullptr && !enemy->isRemoved()) {
+            enemy->update(dt);
             Vec2 enemyPos = enemy->getPosition();
             float distance = avatarPos.distance(enemyPos);
 
@@ -966,7 +982,6 @@ void GameScene::preUpdate(float dt) {
                     spritenode->setScale(0.375 / 1.75);
                     addObstacle(riceSpawn, spritenode);
                     spawns.push_back(riceSpawn);
-                    CULog("spawning");
                 }
                 else {
                     auto res = enemy->createAttack(_assets, _scale);
@@ -979,18 +994,6 @@ void GameScene::preUpdate(float dt) {
 
             std::string actionKey = enemy->getActiveAction() + enemy->getId();
 
-            //pausing shit
-            //if (enemy->getPaused() && !_actionManager->isPaused(actionKey)) {
-            //    CULog("Pausing");
-            //    enemy->getSpriteNode()->setFrame(enemy->getPausedFrame());
-            //    _actionManager->pauseAllActions(enemy->getSceneNode());
-            //}
-            //else if (!enemy->getPaused() && _actionManager->isPaused(actionKey)){
-            //    CULog("Unpausing");
-            //    enemy->getSpriteNode()->setFrame(enemy->getActiveFrame());
-            //    _actionManager->unpauseAllActions(enemy->getSceneNode());
-            //}
-
             if ((enemy->getActiveAction() != "" && !_actionManager->isActive(actionKey)) || enemy->getPriority() > enemy->getActivePriority())
             {
                 _actionManager->clearAllActions(enemy->getSceneNode());
@@ -1001,7 +1004,6 @@ void GameScene::preUpdate(float dt) {
 
                 //CULog("animating %s", actionName.c_str());
             }
-            enemy->update(dt);
         }
     }
 
@@ -1340,6 +1342,29 @@ void GameScene::fixedUpdate(float step) {
         setComplete(true);
     }
 
+    if (!_slowed) {
+        _dollarnode->setVisible(false);
+        if (_dollarnode->isFocus()) {
+            _dollarnode->setFocus(false);
+            _dollarnode->setReadyToCook(false);
+        }
+
+        //_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
+        _avatar->setAllMovement(_input->getHorizontal(), _input->getVertical());
+        _avatar->setJumping(_input->didJump());
+        _avatar->setDash(_input->didDash());
+        _avatar->setInputWalk(_input->getHorizontal() != 0);
+        _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
+        if (_avatar->isJumping() && _avatar->isGrounded()) {
+            std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
+            AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
+        }
+    }
+    else {
+        _avatar->setAllMovement(0, 0);
+        _avatar->setJumping(false);
+        _avatar->setDash(false);
+    }
     _avatar->fixedUpdate(step);
     for (auto& enemy : _enemies) {
         if (enemy != nullptr && !enemy->isRemoved()) {

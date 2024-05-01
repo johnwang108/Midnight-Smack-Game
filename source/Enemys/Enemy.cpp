@@ -197,7 +197,7 @@ void EnemyModel::fixedUpdate(float step) {
     if (_behaviorCounter > 0) {
         _behaviorCounter -= step;
     }
-    else if (_behaviorCounter <= 0 || (_behaviorCounter < (-1.0 * step) && getNextState(_state) != _state)) {
+    if (_behaviorCounter <= 0 || (_behaviorCounter < (-1.0 * step) && getNextState(_state) != _state)) {
         setState(getNextState(_state));
     }
     _lastDamageTime += step;
@@ -238,42 +238,6 @@ void EnemyModel::dispose() {
 }
 
 //when called, it will return a tuple <attack, node> of the attack 
-std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> EnemyModel::createAttack(std::shared_ptr<AssetManager> _assets, float scale) {
-    Vec2 pos = getPosition();
-
-    std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE);
-    std::shared_ptr<Attack> attack = Attack::alloc(pos,
-        cugl::Size(image->getSize().width / scale,
-            ATTACK_H * image->getSize().height / scale));
-
-    pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
-    pos.y += ATTACK_OFFSET_Y;
-
-
-    if (getDirection() > 0) {
-        attack->setFaceRight(true);
-    }
-    attack->setName("enemy_attack");
-    attack->setBullet(true);
-    attack->setGravityScale(0);
-    attack->setDebugColor(DEBUG_COLOR);
-    attack->setDrawScale(scale);
-    //attack->setstraight(_distanceToPlayer + getPosition());
-    attack->setEnabled(true);
-    attack->setrand(false);
-    attack->setSpeed(10.0f);
-
-
-
-    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
-    attack->setSceneNode(sprite);
-    sprite->setPosition(pos);
-
-    return std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>>(attack, sprite);
-
-    /*std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
-    AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);*/
-}
 
 /** begins the aggro behavior, maintains player location information*/
 void EnemyModel::setIsChasing(bool isChasing) {

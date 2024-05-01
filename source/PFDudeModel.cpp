@@ -59,7 +59,7 @@ float dashModif = 1.3;
 #pragma mark -
 #pragma mark Physics Constants
 /** Cooldown (in animation frames) for jumping */
-#define JUMP_COOLDOWN   5
+#define JUMP_COOLDOWN   0
 
 /** Cooldown (in animation frames) for shooting */
 #define SHOOT_COOLDOWN  20
@@ -74,9 +74,9 @@ float dashModif = 1.3;
 /** The density of the character */
 #define DUDE_DENSITY    .80f
 /** The impulse for the character jump */
-#define DUDE_JUMP       (sqrt( 3 * 2 * (9.8) * getHeight() * jmpHeight ) * getMass() * getJumpBuff())
+#define DUDE_JUMP       20.0f * getJumpBuff()//(sqrt( 3 * 2 * (9.8) * getHeight() * jmpHeight ) * getMass() * getJumpBuff())
 /** The impulse for the character dash */
-#define DUDE_DASH       (DUDE_JUMP * dashModif)
+#define DUDE_DASH       (DUDE_JUMP * dashModif * 1.5)
 /** Debug color for the sensor */
 #define DEBUG_COLOR     Color4::RED
 
@@ -202,6 +202,11 @@ void DudeModel::setMovement(float h) {
     _faceRight = face;
 }
 
+void DudeModel::setAllMovement(float h, float v) {
+    setMovement(h);
+    _vertical = v;
+}
+
 #pragma mark -
 #pragma mark Physics Methods
 /**
@@ -299,58 +304,87 @@ void DudeModel::dispose() {
  * This method should be called after the force attribute is set.
  */
 void DudeModel::applyForce(float h, float v) {
-    if (!isEnabled()) {
-        return;
+ //   if (!isEnabled()) {
+ //       return;
+ //   }
+
+ //   // Don't want to be moving. Damp out player motion
+ //   if (getMovement() == 0.0f || h * getVX() <= 0 || fabs(getVX()) >= getMaxSpeed()) {
+ //       if (isGrounded() && (_dashCooldown <= DASH_COOLDOWN * .1)) {
+ //           // Instant friction on the ground
+ //           b2Vec2 vel = _body->GetLinearVelocity();
+ //           float LogVal = std::log(abs(vel.x) + 1);
+ //           float whyDoesntSTDMinWorkpls = LogVal < .8 ? LogVal : .8;
+ //           if (abs(getVX()) > 0) {
+ //               int negativeAccounter = SIGNUM(vel.x);
+ //               vel.x = negativeAccounter * vel.x  * whyDoesntSTDMinWorkpls < negativeAccounter * .01 ? 0 : whyDoesntSTDMinWorkpls * vel.x; // If you set y, you will stop a jump in place
+ //           }
+ //           _body->SetLinearVelocity(vel);
+ //       }
+ //       else {
+ //           // Damping factor in the air
+ //           b2Vec2 force(-getDamping() * getVX() * 2, 0);
+ //           _body->ApplyForce(force, _body->GetPosition(), true);
+ //       }
+ //   }
+
+ //   // Velocity too high, clamp it
+ //   b2Vec2 force(getMovement(), 0);
+ //   force.x *= isGrounded() ? 1 : 0.5;
+ //   _body->ApplyForce(force, _body->GetPosition(), true);
+
+ //   // Jump!
+
+ //   if (isJumping() && isGrounded()) {
+ //       setVY(0);
+ //       b2Vec2 force(0, DUDE_JUMP);
+ //       _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
+ //   }
+ //   else if (isJumping() && contactingWall() && !isGrounded()) {
+ //       setVY(0);
+ //       b2Vec2 force(4 * DUDE_JUMP * 5 * (isFacingRight() ? 1 : -1), DUDE_JUMP * 1.2);
+ //       _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
+ //   }
+ //   if (canDash() && getDashNum() > 0) {
+ //       b2Vec2 force(SIGNUM(h), SIGNUM(v) * .8);
+ //       setVY(0);
+ //       setVX(0);
+ //       _body->ApplyLinearImpulse(DUDE_DASH * force, _body->GetPosition(), true);
+ //       _body->SetLinearDamping(getLinearDamping() * 2);
+ //       //deltaDashNum(-1);
+ //   } else {
+	//	_body->SetLinearDamping(1.0f);
+	//}
+}
+
+void DudeModel::walk(Vec2 dir) {
+    if (_dashCooldown > DASH_COOLDOWN - floatyFrames) return;
+    _body->SetLinearVelocity(b2Vec2(dir.x * DUDE_FORCE, getLinearVelocity().y));
+}
+
+void DudeModel::jump(Vec2 dir) {
+    b2Vec2 vel = _body->GetLinearVelocity();
+    vel.y = 0;
+    vel += b2Vec2(dir.x * DUDE_JUMP, DUDE_JUMP);
+    _body->SetLinearVelocity(vel);
+    CULog("jumping");
+}
+
+void DudeModel::handleJump(float dt) {
+    Vec2 vel = getLinearVelocity();
+    if (vel.y < 0) {
+        vel += Vec2(0, LEVELS_H_GRAVITY * (FALL_MULTIPLIER - 1) * dt);
     }
-
-    // Don't want to be moving. Damp out player motion
-    if (getMovement() == 0.0f || h * getVX() <= 0 || fabs(getVX()) >= getMaxSpeed()) {
-        if (isGrounded() && (_dashCooldown <= DASH_COOLDOWN * .1)) {
-            // Instant friction on the ground
-            b2Vec2 vel = _body->GetLinearVelocity();
-            float LogVal = std::log(abs(vel.x) + 1);
-            float whyDoesntSTDMinWorkpls = LogVal < .8 ? LogVal : .8;
-            if (abs(getVX()) > 0) {
-                int negativeAccounter = SIGNUM(vel.x);
-                vel.x = negativeAccounter * vel.x  * whyDoesntSTDMinWorkpls < negativeAccounter * .01 ? 0 : whyDoesntSTDMinWorkpls * vel.x; // If you set y, you will stop a jump in place
-            }
-            _body->SetLinearVelocity(vel);
-        }
-        else {
-            // Damping factor in the air
-            b2Vec2 force(-getDamping() * getVX() * 2, 0);
-            _body->ApplyForce(force, _body->GetPosition(), true);
-        }
-    }
-
-    // Velocity too high, clamp it
-    b2Vec2 force(getMovement(), 0);
-    force.x *= isGrounded() ? 1 : 0.5;
-    _body->ApplyForce(force, _body->GetPosition(), true);
-
-
-    // Jump!
-
-    if (isJumping() && isGrounded()) {
-        setVY(0);
-        b2Vec2 force(0, DUDE_JUMP);
-        _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
-    }
-    else if (isJumping() && contactingWall() && !isGrounded()) {
-        setVY(0);
-        b2Vec2 force(4 * DUDE_JUMP * 5 * (isFacingRight() ? 1 : -1), DUDE_JUMP * 1.2);
-        _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
-    }
-    if (canDash() && getDashNum() > 0) {
-        b2Vec2 force(SIGNUM(h), SIGNUM(v) * .8);
-        setVY(0);
-        setVX(0);
-        _body->ApplyLinearImpulse(DUDE_DASH * force, _body->GetPosition(), true);
-        _body->SetLinearDamping(getLinearDamping() * 2);
-        //deltaDashNum(-1);
-    } else {
-		_body->SetLinearDamping(1.0f);
+    else if (vel.y > 0 && !isJumping()) {
+		vel += Vec2(0, LEVELS_H_GRAVITY * (FALL_MULTIPLIER_LOW - 1) * dt);
 	}
+}
+
+void DudeModel::dash(Vec2 dir) {
+    setVY(0);
+    setVX(0);
+    _body->SetLinearVelocity(b2Vec2(dir.x * DUDE_DASH, dir.y * DUDE_DASH));
+    setLinearDamping(DUDE_DAMPING);
 }
 
 /**
@@ -416,14 +450,19 @@ void DudeModel::fixedUpdate(float step) {
 
     if (_dashCooldown > DASH_COOLDOWN - floatyFrames) {
         setGravityScale(0);
+        //slow down dash
+        setLinearDamping(std::max(DUDE_DAMPING_BASE, getLinearDamping() * 0.9f));
     }
     else {
-        setGravityScale(1);
+        handleJump(step);
+        setLinearDamping(DUDE_DAMPING_BASE);
+        setGravityScale(1.3f);
     }
 
     // Apply cooldowns
-    if (isJumping()) {
+    if (isJumping() && isGrounded()) {
         _jumpCooldown = JUMP_COOLDOWN;
+        jump(Vec2(_movement, _vertical));
     }
     else {
         // Only cooldown while grounded
@@ -437,15 +476,12 @@ void DudeModel::fixedUpdate(float step) {
         _shootCooldown = (_shootCooldown > 0 ? _shootCooldown - 1 : 0);
     }
     if (canDash() && _dashCooldown == 0) {
+        dash(Vec2(_movement, _vertical));
         _dashCooldown = DASH_COOLDOWN;
         _rechargingDash = false;
         deltaDashNum(-1);
     }
     else {
-        //if (_dashCooldown > 0) {
-        //    if (isGrounded()) _rechargingDash = true;
-        //    if (_rechargingDash) _dashCooldown = (_dashCooldown > 0 ? _dashCooldown - 1 : 0;
-        //}
         _dashCooldown = _dashCooldown > 0 ? _dashCooldown - 1 : 0.0;
         if (getDashNum() == 0 && _dashCooldown <= 0 && isGrounded()) {
             
@@ -453,6 +489,8 @@ void DudeModel::fixedUpdate(float step) {
             //TODO: remove hardcode limit on one dash
         }
     }
+    //movement
+    walk(Vec2(_movement, _vertical));
 }
 
 
