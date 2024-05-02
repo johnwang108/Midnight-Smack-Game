@@ -80,6 +80,8 @@ void Inventory::addIngredient(std::shared_ptr<Ingredient> ingredient) {
     }
     _currentIngredients.push_front(ingredient);
     ingredient->setCurrentInventorySlot(_currentIngredients.size() - 1);
+    ingredient->getButton()->setAnchor(Vec2::ANCHOR_CENTER);
+    _slots[_currentIngredients.size() - 1]->addChild(ingredient->getButton());
 }
 
 

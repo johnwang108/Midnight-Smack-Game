@@ -488,6 +488,8 @@ public:
     void removeAttack(T* attack);
 
     void removeEnemy(EnemyModel* enemy);
+    void addEnemyToInventory(EnemyType);
+
 
     std::shared_ptr<AssetManager> getAssets() const { return _assets; }
 

@@ -64,6 +64,18 @@ using namespace cugl;
 
 #define HEALTHBAR_X_OFFSET 15
 
+struct IngredientProperties {
+    std::string name;
+    std::vector<std::string> gestures;
+};
+std::map<EnemyType, IngredientProperties> enemyToIngredientMap = {
+    {EnemyType::beef, {"beef", EnemyModel::defaultSeq(EnemyType::beef)}},
+    {EnemyType::carrot, {"carrot", EnemyModel::defaultSeq(EnemyType::carrot)}},
+    {EnemyType::egg, {"egg", EnemyModel::defaultSeq(EnemyType::egg)}},
+    {EnemyType::rice, {"rice", EnemyModel::defaultSeq(EnemyType::rice)}},
+    {EnemyType::rice_soldier, {"rice", EnemyModel::defaultSeq(EnemyType::rice_soldier)}},
+    {EnemyType::shrimp, {"shrimp", EnemyModel::defaultSeq(EnemyType::shrimp)}}
+};
 
 
 #pragma mark -
@@ -246,7 +258,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode->setPosition(0,0);
 
     _inventoryNode = std::make_shared<Inventory>();
-    _inventoryNode->init(_assets, Size(900.0f, 180.0f));
+    _inventoryNode->init(_assets, _input, Size(900.0f, 180.0f));
     _inventoryNode->setName("inventoryNode");
     _inventoryNode->setAnchor(Vec2::ANCHOR_BOTTOM_CENTER);
     _inventoryNode->setPosition(Vec2(1280.0 / 2.0f, 0));
@@ -1550,12 +1562,26 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
         return;
     }
     CULog("removing");
+
+    addEnemyToInventory(enemy->getType());
+
     _worldnode->removeChild(enemy->getSceneNode());
     enemy->setDebugScene(nullptr);
     enemy->markRemoved(true);
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
+}
+
+void GameScene::addEnemyToInventory(EnemyType enemyType) {
+    IngredientProperties props = enemyToIngredientMap[enemyType];
+
+    std::shared_ptr<Ingredient> ing = std::make_shared<Ingredient>("", props.gestures, 0.0f);
+    ing->setName(props.name);
+    std::shared_ptr<Texture> tex = _assets->get<Texture>(ing->getName());
+    ing->init(tex);
+
+    _inventoryNode->addIngredient(ing);
 }
 
 
