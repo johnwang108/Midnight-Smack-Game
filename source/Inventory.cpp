@@ -132,7 +132,7 @@ void Inventory::reset() {
     _enlarged = false;
 }
 
-shared_ptr<scene2::PolygonNode> Inventory:: createInventoryNode(Rect invRect, int invIndex) {
+shared_ptr<scene2::PolygonNode> Inventory::createInventoryNode(Rect invRect, int invIndex) {
     shared_ptr<scene2::PolygonNode> slotNode = scene2::PolygonNode::allocWithPoly(invRect);
     string slotName = "slot" + to_string(invIndex);
 
