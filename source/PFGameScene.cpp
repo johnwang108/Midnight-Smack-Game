@@ -215,22 +215,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     setFailure(false);
 
 
-    _leftnode = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>(LEFT_IMAGE));
-    _leftnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_MIDDLE_RIGHT);
-    _leftnode->setScale(0.35f);
-    _leftnode->setVisible(false);
-
-    _rightnode = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>(RIGHT_IMAGE));
-    _rightnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_MIDDLE_LEFT);
-    _rightnode->setScale(0.35f);
-    _rightnode->setVisible(false);
-
-    /*_gestureFeedback = scene2::Label::allocWithText("Perfect", _assets->get<Font>(MESSAGE_FONT));
-    _gestureFeedback->setAnchor(Vec2::ANCHOR_TOP_CENTER);
-    _gestureFeedback->setPosition(0, 0);
-    _gestureFeedback->setForeground(Color4::BLACK);
-    _gestureFeedback->setVisible(false);*/
-
 
 
     _slowed = false;
@@ -348,8 +332,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     addChild(_worldnode);
     addChild(_debugnode);
-    addChild(_leftnode);
-    addChild(_rightnode);
 
     _actionManager = cugl::scene2::ActionManager::alloc();
     _BullactionManager = cugl::scene2::ActionManager::alloc();
@@ -406,8 +388,6 @@ void GameScene::dispose() {
         _debugnode = nullptr;
         _winnode = nullptr;
         _losenode = nullptr;
-        _leftnode = nullptr;
-        _rightnode = nullptr;
         _bgScene = nullptr;
         _uiScene = nullptr;
         _dollarnode = nullptr;
@@ -493,8 +473,6 @@ void GameScene::reset() {
 
     removeChild(_worldnode);
     removeChild(_debugnode);
-    removeChild(_leftnode);
-    removeChild(_rightnode);
     // removeChild(_gestureFeedback);
 
     setFailure(false);
@@ -511,8 +489,6 @@ void GameScene::reset() {
     loadLevel(_chapter, _level);
     addChild(_worldnode);
     addChild(_debugnode);
-    addChild(_leftnode);
-    addChild(_rightnode);
     // addChild(_gestureFeedback);
 }
 

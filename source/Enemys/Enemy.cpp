@@ -272,3 +272,11 @@ other than time.*/
 void EnemyModel::setState(std::string state) {
     _state = state;   
 }
+
+void EnemyModel::jump(Vec2 dir) {
+    //do nothing
+    b2Vec2 vel = _body->GetLinearVelocity();
+    //vel.y = 0;
+    //vel += b2Vec2(dir.x * DUDE_JUMP, DUDE_JUMP);
+    _body->SetLinearVelocity(vel);
+}

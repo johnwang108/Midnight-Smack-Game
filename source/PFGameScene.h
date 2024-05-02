@@ -69,10 +69,6 @@ protected:
     std::shared_ptr<cugl::scene2::Label> _winnode;
     /** Reference to the lose message label */
     std::shared_ptr<cugl::scene2::Label> _losenode;
-    /** Reference to the left joystick image */
-    std::shared_ptr<cugl::scene2::PolygonNode> _leftnode;
-    /** Reference to the right joystick image */
-    std::shared_ptr<cugl::scene2::PolygonNode> _rightnode;
 
     std::shared_ptr<Scene2> _bgScene;
     std::shared_ptr<Scene2> _uiScene;

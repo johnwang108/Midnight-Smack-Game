@@ -275,11 +275,25 @@
             "duration": 1.25
         },
         "eggAttack":{
-            "sheet": "eggAttack",
-            "rows": 4,
-            "cols": 4,
-            "frames": 16,
-            "duration": 1.333
+            "sheet": "eggAttackSecond",
+            "rows": 3,
+            "cols": 3,
+            "frames": 9,
+            "duration": 0.7481
+        },
+        "eggWindup":{
+            "sheet": "eggAttackFirst",
+            "rows": 3,
+            "cols": 3,
+            "frames": 7,
+            "duration": 1
+        },
+        "eggWindupQuick":{
+            "sheet": "eggAttackFirst",
+            "rows": 3,
+            "cols": 3,
+            "frames": 7,
+            "duration": 0.33
         },
         "eggWalk":{
             "sheet": "eggWalk",
