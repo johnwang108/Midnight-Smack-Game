@@ -40,6 +40,8 @@
 #include "Levels/Level1.h"
 #include "Levels/Level2.h"
 #include "Levels/Level3.h"
+
+#include "Inventory.h"
 // #include "Levels/Level3.h"
 #include "Levels/LevelModel.h"
 
@@ -76,6 +78,7 @@ protected:
 
     std::shared_ptr<Scene2> _bgScene;
     std::shared_ptr<Scene2> _uiScene;
+    std::shared_ptr<Inventory> _inventoryNode;
 
     std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
 

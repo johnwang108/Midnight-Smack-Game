@@ -245,6 +245,11 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode->setNighttime(true);
     _dollarnode->setPosition(0,0);
 
+    _inventoryNode = std::make_shared<Inventory>();
+    _inventoryNode->init(_assets, Size(900.0f, 180.0f));
+    _inventoryNode->setName("inventoryNode");
+    _inventoryNode->setAnchor(Vec2::ANCHOR_BOTTOM_CENTER);
+    _inventoryNode->setPosition(Vec2(1280.0 / 2.0f, 0));
 
 #pragma mark: UI
 
@@ -316,6 +321,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _uiScene->addChild(_winnode);
     _uiScene->addChild(_losenode);
+    _uiScene->addChild(_inventoryNode);
+
+
 # pragma mark: Background
 
     _bgScene = cugl::Scene2::alloc(dimen);
