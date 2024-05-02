@@ -16,6 +16,7 @@
 class Inventory : public cugl::scene2::SceneNode {
 protected:
 	std::shared_ptr<cugl::AssetManager> _assets;
+	std::shared_ptr<PlatformInput> _input;
 
 	std::shared_ptr<cugl::scene2::SceneNode> _bottomBar;
 	std::deque<std::shared_ptr<Ingredient>> _currentIngredients;
@@ -30,14 +31,14 @@ public:
 	Inventory();
 	~Inventory() { dispose(); }
 	void dispose();
-	bool init( std::shared_ptr<cugl::AssetManager>& assets, Size size);
+	bool init( std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, Size size);
 	void update(float timestep);
 	void setFocus(bool focus) { _focus = focus; }
 
 	std::shared_ptr<Ingredient> getCurrentlyHeldIngredient() { return _currentlyHeldIngredient; }
 	void addIngredient(std::shared_ptr<Ingredient> ingredient);
 	/* Internal use, searches through all ingredients to see which is held */
-	std::shared_ptr<Ingredient> findHeldIngredient();
+	std::shared_ptr<Ingredient> findAndRemoveHeldIngredient();
 	void Inventory::shiftAllIngredientsUp(int startInd);
 	std::shared_ptr<scene2::PolygonNode> createInventoryNode(Rect, int);
 	//remove ingredient from slot and return the ingredient

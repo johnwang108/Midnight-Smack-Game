@@ -16,6 +16,7 @@ Ingredient::Ingredient(std::string startStation, std::vector<std::string> gestur
 	_falling = false;
 	_inPot = false;
 	_launching = false;
+	_currentInventorySlot = -1;
 }
 
 void Ingredient::init(std::shared_ptr<Texture> texture) {
@@ -23,6 +24,7 @@ void Ingredient::init(std::shared_ptr<Texture> texture) {
 	_falling = false;
 	_inPot = false;
 	_launching = false;
+	_currentInventorySlot = -1;
 	_poly =  PolygonNode::allocWithTexture(texture);
 	if (_button != nullptr) {
 		_button->dispose();

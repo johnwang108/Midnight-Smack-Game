@@ -18,11 +18,13 @@ void Inventory::dispose() {
     _assets = nullptr;
 }
 
-bool Inventory::init(shared_ptr<AssetManager>& assets, Size size) {
+bool Inventory::init(shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input, Size size) {
     if (assets == nullptr) {
         return false;
     }
     _assets = assets;
+    _input = input;
+
     //_childOffset = -1;
     _selectedSlot = 0;
     _enlarged = false;
@@ -43,7 +45,29 @@ bool Inventory::init(shared_ptr<AssetManager>& assets, Size size) {
 }
 
 void Inventory::update(float timestep) {
-    // Update logic here
+    if (_currentlyHeldIngredient == nullptr) {
+        _currentlyHeldIngredient = findAndRemoveHeldIngredient();
+    }
+    else {
+        if (!_currentlyHeldIngredient->getBeingHeld()) {
+            _currentlyHeldIngredient = nullptr;
+            //handle dropping held ingredient somehow
+            //todo add it back
+        }
+    }
+    if (_currentlyHeldIngredient != nullptr) {
+         //ingredient is being held so transform it to mouse
+         std::shared_ptr<scene2::Button> button = _currentlyHeldIngredient->getButton();
+         //CULog("%f, %f", _input->getTouchPos().x, _input->getTouchPos().y);
+         Vec2 transformedMouse = _input->getTouchPos();
+
+         button->setPositionX(transformedMouse.x);// +_currentlyHeldIngredient->getButton()->getWidth() / 2);
+         button->setPositionY(transformedMouse.y);
+
+         //CULog("Button Pos X: %f, Button Y: %f", button->getPositionX(), button->getPositionY());
+         //button->setPosition(_input->getTouchPos());
+    }
+
 }
 
 
@@ -55,6 +79,7 @@ void Inventory::addIngredient(std::shared_ptr<Ingredient> ingredient) {
         shiftAllIngredientsUp(0);
     }
     _currentIngredients.push_front(ingredient);
+    ingredient->setCurrentInventorySlot(_currentIngredients.size() - 1);
 }
 
 
@@ -93,6 +118,8 @@ shared_ptr<Ingredient> Inventory::popIngredientFromSlot(int slotToClear) {
     shared_ptr<Ingredient> ingToRemove = _currentIngredients[slotToClear];
     removeIngredientFromSlotNode(ingToRemove, slotToClear);
     _currentIngredients.erase(_currentIngredients.erase(_currentIngredients.begin() + slotToClear));
+
+    shiftAllIngredientsUp(slotToClear);
     return ingToRemove;
 }   
 
@@ -102,13 +129,14 @@ void Inventory::removeIngredientFromSlotNode(shared_ptr<Ingredient> ing, int slo
     slotNode->removeChild(ing->getButton());
 }
 
-std::shared_ptr<Ingredient> Inventory::findHeldIngredient() {
+std::shared_ptr<Ingredient> Inventory::findAndRemoveHeldIngredient() {
     for (std::shared_ptr<Ingredient> ing : _currentIngredients) {
         if (ing->getBeingHeld() == true) {
             ing->setFalling(false);
             ing->setLaunching(false);
             //todo handle removing from slot scene graph (caller will move it to uiScene?)
-
+            popIngredientFromSlot(ing->getCurrentInventorySlot());
+            addChild(ing->getButton());
            /* for (std::shared_ptr<scene2::SceneNode> child : _conveyorBelt->getChildren()) {
                 if (child == ing->getButton()) {
                     _conveyorBelt->removeChild(ing->getButton());
