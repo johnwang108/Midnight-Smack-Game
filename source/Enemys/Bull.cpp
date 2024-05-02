@@ -163,20 +163,21 @@ void BullModel::update(float dt) {
 
         if (_CA > 0) {
             _CA -= dt;
-            _node->setScale(0.6*0.5/4);
             float t = 10-_CAcount;
             float yyy;
             if (_CA > t/2) {
                 yyy = 25 * (dt / t);
+                _node->setScale((0.5 + 0.5 * ((_CA-(t/2))/(t/2)))*0.5/4);
             }
             else {
                 yyy = -25 * (dt / t);
+                _node->setScale((1 - 0.5 * (_CA/(t/2)))*0.5/4);
             }
 
-            setPosition(getPosition() + Vec2(-_direction * (65) * (dt / t), yyy));
+            setPosition(getPosition() + Vec2(-_direction * (70) * (dt / t), yyy));
 
             if (_CA <= 0) {
-                _running = 1;
+                _running = 1.3;
                 setGravityScale(1);
                 setact("bullTurn", 0.75f);
             }
