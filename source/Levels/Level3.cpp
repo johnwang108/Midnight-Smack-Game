@@ -117,7 +117,7 @@ void Level3::populate(GameScene& scene) {
 	for (int ii = 0; ii < ALT_PLATFORM_COUNT; ii++) {
 		std::shared_ptr<physics2::PolygonObstacle> platobj;
 		Poly2 platform(reinterpret_cast<Vec2*>(ALT_PLATFORMS[ii]), sizeof(ALT_PLATFORMS[ii]) / sizeof(float) / 2);
-
+        
 		EarclipTriangulator triangulator;
 		triangulator.set(platform.vertices);
 		triangulator.calculate();
@@ -126,8 +126,9 @@ void Level3::populate(GameScene& scene) {
 
 		platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_CENTER);
 		// You cannot add constant "".  Must stringify
-		platobj->setName(std::string(PLATFORM_NAME) + cugl::strtool::to_string(ii));
-
+        platobj->setName(std::string(PLATFORM_NAME));// + cugl::strtool::to_string(ii));
+        
+        
 		// Set the physics attributes
 		platobj->setBodyType(b2_staticBody);
 		platobj->setDensity(BASIC_DENSITY);

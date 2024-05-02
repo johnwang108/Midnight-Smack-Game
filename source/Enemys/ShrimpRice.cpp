@@ -218,25 +218,8 @@ void ShrimpRice::takeDamage(float damage, int attackDirection, bool knockback) {
 void ShrimpRice::Summon(GameScene& scene) {
 
     Vec2 enemyPos = getPosition()-Vec2(-_direction*2,2);
-    std::shared_ptr<EnemyModel> new_enemy;
-    std::shared_ptr<EntitySpriteNode> spritenode;
-    std::vector<std::shared_ptr<EnemyModel>> Enemies=scene.getEnemies();
+    scene.spawnRice(enemyPos);
 
-    std::shared_ptr<Texture> image = _assets->get<Texture>("riceSoldier");
-    spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 15);
-    float imageWidth = image->getWidth() / 4;
-    float imageHeight = image->getHeight() / 4;
-    Size singularSpriteSize = Size(imageWidth, imageHeight);
-    new_enemy = Rice::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, true);
-    
-    spritenode->setScale(0.2f);
-    spritenode->setAnchor(Vec2(0.5, 0.35));
-    new_enemy->setSceneNode(spritenode);
-    new_enemy->setDebugColor(DEBUG_COLOR);
-    scene.addObstacle(new_enemy, spritenode);
-    Enemies.push_back(new_enemy);
-
-    scene.setEnemies(Enemies);
 }
 
 void ShrimpRice::dispose() {
