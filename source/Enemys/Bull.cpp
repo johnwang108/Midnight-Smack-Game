@@ -156,24 +156,24 @@ void BullModel::update(float dt) {
             
             if(_turing<=0){
                 setact("bullTurn", 0.75f);
-                _CA=10;
+                _CA=10-_CAcount;
             }
             return;
         }
 
         if (_CA > 0) {
             _CA -= dt;
-            // _node->setVisible(false);
-            
+            _node->setScale(0.6*0.5/4);
+            float t = 10-_CAcount;
             float yyy;
-            if (_CA > 5) {
-                yyy = 25 * (dt / 10);
+            if (_CA > t/2) {
+                yyy = 25 * (dt / t);
             }
             else {
-                yyy = -25 * (dt / 10);
+                yyy = -25 * (dt / t);
             }
 
-            setPosition(getPosition() + Vec2(-_direction * (65) * (dt / 10), yyy));
+            setPosition(getPosition() + Vec2(-_direction * (65) * (dt / t), yyy));
 
             if (_CA <= 0) {
                 _running = 1;
