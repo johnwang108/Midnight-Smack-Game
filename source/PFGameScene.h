@@ -591,4 +591,4 @@ public:
 };
 
 
-#endif /* __PF_GAME_SCENE_H__ */
+#endif /*__PF_GAME_SCENE_H__ */

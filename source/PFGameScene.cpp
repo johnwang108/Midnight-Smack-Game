@@ -96,7 +96,8 @@ _debug(false)
  * @return true if the controller is initialized properly, false otherwise.
  */
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
-    _level_model->setFilePath("json/empanada-platform-level-01.json");
+    _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/empanada-platform-level-01.json");
     // _level_model->setFilePath("json/bull-boss-level.json");
     setSceneWidth(_level_model->loadLevelWidth());
     setSceneHeight(_level_model->loadLevelHeight());
@@ -106,7 +107,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_pt
 bool GameScene::initWithSave(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::shared_ptr<JsonValue> save) {
     /*setSceneWidth(400);
     setSceneHeight(30);*/
-    _level_model->setFilePath("json/empanada-platform-level-01.json");
+    _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/empanada-platform-level-01.json");
     // _level_model->setFilePath("json/bull-boss-level.json");
     setSceneWidth(_level_model->loadLevelWidth());
     setSceneHeight(_level_model->loadLevelHeight());
@@ -114,7 +116,7 @@ bool GameScene::initWithSave(const std::shared_ptr<cugl::AssetManager>& assets, 
     if (save->size() == 0) return res;
     float locationX = save->get("player")->getFloat("location_x");
     float locationY = save->get("player")->getFloat("location_y");
-    bool res = init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
+    // bool res = init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
     loadSave(save);
     return res;
 }
@@ -163,7 +165,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _scene_height = 30;
     setSceneWidth(400);
     setSceneHeight(30);*/
-    _level_model->setFilePath("json/empanada-platform-level-01.json");
+    _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/empanada-platform-level-01.json");
     // _level_model->setFilePath("json/bull-boss-level.json");
     setSceneWidth(_level_model->loadLevelWidth());
     setSceneHeight(_level_model->loadLevelHeight());
@@ -350,10 +353,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
    _chapter = 1;
    _level = 1;
-    loadLevel(_chapter, _level);
- //   currentLevel = level3;
-
-    // _level_model->setFilePath("json/empanada-platform-level-01.json");
+   // loadLevel(_chapter, _level);
+   // 
+   // _level_model->setFilePath("json/empanada-platform-level-01.json");
     currentLevel = _level_model;
     loadLevel(_level_model);
     addChild(_worldnode);
@@ -511,8 +513,8 @@ void GameScene::reset() {
         _debugAnimTarget = _ShrimpRice;
     }
     // loadLevel(_level_model);
-
-    loadLevel(_chapter, _level);
+    loadLevel(_level_model);
+    // loadLevel(_chapter, _level);
     addChild(_worldnode);
     addChild(_debugnode);
     // addChild(_gestureFeedback);
@@ -1253,22 +1255,33 @@ void GameScene::fixedUpdate(float step) {
     // 
     if (CAMERA_FOLLOWS_PLAYER) {
 
-        if (_chapter == 1) {
-            if (_level == 1) {
-                // we will have to not hard code this in future: WIDTH_OF_LEVEL / 40.0
-                // _camera->setZoom(210.0/40.0);
-                _camera->setZoom(400.0 / 40.0);
-            }
-            else if (_level == 2) {
-                _camera->setZoom(400.0 / 40.0);
-            }
-            else if (_level == 3) {
-                _camera->setZoom(210.0 / 40.0);
-            }
-            else if (_level == 4) {
-                _camera->setZoom(400.0 / 40.0);
-            }
+        if (_level_model->getFilePath() == "json/intermediate.json") {
+            _camera->setZoom(155.0 / 40.0);
+            // _camera->setZoom(1.0);
         }
+
+        else if (_level_model->getFilePath() != "") {
+            _camera->setZoom(400.0 / 40.0);
+        }
+
+        // this might crash cuz 
+        //if (_chapter == 1) {
+        //    if (_level == 1) {
+        //        // we will have to not hard code this in future: WIDTH_OF_LEVEL / 40.0
+        //        // _camera->setZoom(210.0/40.0);
+        //        _camera->setZoom(400.0 / 40.0);
+        //    }
+        //    else if (_level == 2) {
+        //        _camera->setZoom(400.0 / 40.0);
+        //    }
+        //    else if (_level == 3) {
+        //        _camera->setZoom(210.0 / 40.0);
+        //    }
+        //    else if (_level == 4) {
+        //        _camera->setZoom(400.0 / 40.0);
+        //    }
+        //}
+
         //else if (currentLevel == level2) {
         //    _camera->setZoom(210.0 / 40.0);
         //}
@@ -1440,7 +1453,17 @@ void GameScene::postUpdate(float remain) {
 
             //this is where we will change the scene width and heights for everything
 
-            if (_level_model->getFilePath() == "json/empanada-platform-level-01.json") {
+            if (_level_model->getFilePath() == "json/intermediate.json") {
+                _bgScene->setColor(Color4::BLACK);
+                _level_model->removeBackgroundImages(*this);
+                _level_model->setFilePath("json/empanada-platform-level-01.json");
+                currentLevel = _level_model;
+
+                CULog("We should switch to our first initial level");
+                // currentLevel
+                reset();
+            }
+            else if (_level_model->getFilePath() == "json/empanada-platform-level-01.json") {
                 _bgScene->setColor(Color4::BLACK);
                 _level_model->removeBackgroundImages(*this);
                 _level_model->setFilePath("json/test_level_v2_experiment.json");
@@ -1469,9 +1492,9 @@ void GameScene::postUpdate(float remain) {
                 reset();
             }
         }
-            advanceLevel();
-            reset();
-        }
+            // advanceLevel();
+            // reset();
+        // }
         else if (_failed) {
             reset();
         }
