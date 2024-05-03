@@ -63,7 +63,21 @@ using namespace cugl;
 #define FEEDBACK_DURATION 1.2f
 
 #define HEALTHBAR_X_OFFSET 15
+#define DISCARD_HOLD_TIME 2.0f
+#define MIN_DISCARD_START_TIME 0.25f
 
+struct IngredientProperties {
+    std::string name;
+    std::vector<std::string> gestures;
+};
+std::map<EnemyType, IngredientProperties> enemyToIngredientMap = {
+    {EnemyType::beef, {"beef", EnemyModel::defaultSeq(EnemyType::beef)}},
+    {EnemyType::carrot, {"carrot", EnemyModel::defaultSeq(EnemyType::carrot)}},
+    {EnemyType::egg, {"egg", EnemyModel::defaultSeq(EnemyType::egg)}},
+    {EnemyType::rice, {"rice", EnemyModel::defaultSeq(EnemyType::rice)}},
+    {EnemyType::rice_soldier, {"rice", EnemyModel::defaultSeq(EnemyType::rice_soldier)}},
+    {EnemyType::shrimp, {"shrimp", EnemyModel::defaultSeq(EnemyType::shrimp)}}
+};
 
 
 #pragma mark -
@@ -228,6 +242,11 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode->setNighttime(true);
     _dollarnode->setPosition(0,0);
 
+    _inventoryNode = std::make_shared<Inventory>();
+    _inventoryNode->init(_assets, _input, Size(1280.0f, 180.0f));
+    _inventoryNode->setName("inventoryNode");
+    _inventoryNode->setAnchor(Vec2::ANCHOR_BOTTOM_CENTER);
+    _inventoryNode->setPosition(Vec2(1280.0f / 2.0f, 0));
 
 #pragma mark: UI
 
@@ -299,6 +318,10 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _uiScene->addChild(_winnode);
     _uiScene->addChild(_losenode);
+    _uiScene->addChild(_inventoryNode);
+
+
+# pragma mark: Background
 
     //_bgScene = cugl::Scene2::alloc(dimen);
     //_bgScene->init(dimen);
@@ -598,33 +621,15 @@ void GameScene::preUpdate(float dt) {
         return;
     }
 
-    //Inventory!
-
-
-
-    //TODO handle vulnerables smarter
-    if (_input->didSlow()) {
-        if (!_slowed) {
-            CULog("Activate!");
-            float minDist = FLT_MAX;
-            for (auto& e : _enemies) {
-                if (e->isRemoved() || !(e->isVulnerable())) {
-                    continue;
-                }
-                if ((e->getPosition() - _avatar->getPosition()).length() < minDist) {
-                    _target = e;
-                    minDist = (e->getPosition() - _avatar->getPosition()).length();
-                }
-            }
-            if (minDist < COOKTIME_MAX_DIST) {
-                _slowed = true;
-                //_dollarnode->setTargetGestures(_target->getGestureSeq1());
-                _dollarnode->setTargetGesturesNighttime(std::vector({_target->getGestureSeq1(), _target->getGestureSeq2()}));
-            }
-
-        }
-
+    if (_input->getInventoryLeftPressed()) {
+        _inventoryNode->selectPreviousSlot();
     }
+    else if (_input->getInventoryRightPressed()) {
+        _inventoryNode->selectNextSlot();
+    }
+    //TODO handle vulnerables smarter
+    checkForCooktime();
+    
 
     //handle animations
 
@@ -1398,6 +1403,57 @@ void GameScene::postUpdate(float remain) {
     }
 }
 
+/* Checks input for cooktime or discard 
+*  if discard, it removes ingredient from inventory
+*  if cooktime, it initiates cooktime by setting _slowed = true, and the dollar node gestures
+*/
+void GameScene::checkForCooktime() {
+    if (_input->getLastSlowHeldDuration() > 0.0f) {
+        CULog("Slow Duration %f, %d", _input->getLastSlowHeldDuration(), _input->justReleasedSlow());
+    }
+    if (_input->getLastSlowHeldDuration() < MIN_DISCARD_START_TIME && _input->justReleasedSlow() && _avatar->getMeter() > METER_COST) {
+
+        std::shared_ptr<Ingredient> ing = _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
+        //
+        if (ing != nullptr) {
+            _slowed = true;
+            _dollarnode->setTargetGesturesNighttime({ ing->getGestures(), ing->getGestures() });
+            _avatar->useMeter();
+        }
+
+        //Old CookTime Style commented out
+        //if (_slowed) {
+        //    //_slowed = !_slowed;
+        //    //_target = nullptr;
+        //}
+        ////activate cooktime
+        //else {
+        //    CULog("Activate!");
+        //    float minDist = FLT_MAX;
+        //    for (auto& e : _enemies) {
+        //        if (e->isRemoved() || !(e->isVulnerable())) {
+        //            continue;
+        //        }
+        //        if ((e->getPosition() - _avatar->getPosition()).length() < minDist) {
+        //            _target = e;
+        //            minDist = (e->getPosition() - _avatar->getPosition()).length();
+        //        }
+        //    }
+        //    if (minDist < COOKTIME_MAX_DIST) {
+        //        _slowed = true;
+        //        //_dollarnode->setTargetGestures(_target->getGestureSeq1());
+        //        _dollarnode->setTargetGesturesNighttime(std::vector({_target->getGestureSeq1(), _target->getGestureSeq2()}));
+        //    }
+
+        //}
+
+    }
+    else if (_input->getLastSlowHeldDuration() > DISCARD_HOLD_TIME && _input->justReleasedSlow()) {
+        std::shared_ptr<Ingredient> ing = _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
+        //i think thats all
+    }
+}
+
 //void GameScene::renderBG(std::shared_ptr<cugl::SpriteBatch> batch) {
 //    _bgScene->render(batch);
 //}
@@ -1484,6 +1540,9 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
         return;
     }
     CULog("removing");
+
+    addEnemyToInventory(enemy->getType());
+
     _worldnode->removeChild(enemy->getSceneNode());
     enemy->setDebugScene(nullptr);
     enemy->markRemoved(true);
@@ -1491,6 +1550,17 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
+}
+
+void GameScene::addEnemyToInventory(EnemyType enemyType) {
+    IngredientProperties props = enemyToIngredientMap[enemyType];
+
+    std::shared_ptr<Ingredient> ing = std::make_shared<Ingredient>("", props.gestures, 0.0f);
+    ing->setName(props.name);
+    std::shared_ptr<Texture> tex = _assets->get<Texture>(ing->getName());
+    ing->init(tex);
+
+    _inventoryNode->addIngredient(ing);
 }
 
 

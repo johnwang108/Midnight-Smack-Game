@@ -33,6 +33,7 @@ private:
 	std::shared_ptr<cugl::scene2::Button> _button;
 	bool _beingHeld;
 	bool _launching;
+	int _currentInventorySlot;
 
 public: 
 	
@@ -47,6 +48,9 @@ public:
 
 	std::string getName() { return _name; }
 	void setName(std::string newName) { _name = newName; }
+
+	void setCurrentInventorySlot(int slot) { _currentInventorySlot = slot; }
+	int getCurrentInventorySlot() { return _currentInventorySlot; }
 
 	float getStartTime() { return _startTime; }
 

@@ -25,7 +25,7 @@ public:
 		return result;
 	}
 
-	void interact() {};
+	void interact();
 
 	void setTargetIngredients(std::unordered_map<IngredientType, int> ingredients) {
 		_targetIngredients = ingredients;
