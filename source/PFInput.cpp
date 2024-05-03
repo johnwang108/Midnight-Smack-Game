@@ -103,6 +103,8 @@ PlatformInput::PlatformInput() :
     _jumpPressed(false),
     _slowPressed(false),
     _slowReleased(false),
+    _inventoryLeftPressed(false),
+    _inventoryRightPressed(false),
     _keyJump(false),
     _keyFire(false),
     _keyReset(false),
@@ -112,6 +114,8 @@ PlatformInput::PlatformInput() :
     _keyRight(false),
     _keySlow(false),
     _keySlowReleased(false),
+    _keyInventoryLeft(false),
+    _keyInventoryRight(false),
     _slowHeldDuration(0.0f),
     _horizontal(0.0f),
     _vertical(0.0f),
@@ -367,6 +371,9 @@ void PlatformInput::update(float dt) {
     _dashPressed = _dashKey;
     _transitionPressed = _keyTransition;
     _interactPressed = _keyInteract;
+
+    _inventoryLeftPressed = _keyInventoryLeft;
+    _inventoryRightPressed = _keyInventoryRight;
 
     _animatePressed = _keyAnimate;
     _backgroundPressed = _keyBackground;
