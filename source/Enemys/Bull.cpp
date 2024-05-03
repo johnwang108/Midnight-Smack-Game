@@ -22,13 +22,13 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         _P2start = false;
         _shoot = false;
         _summoned = false;
-        _running = false;
+        _running = 0;
         _CA=0;
         _CAcount = 0;
         _breaking = 0;
         _attacktype = "none";
         _turing = 0;
-        b2Filter filter = getFilterData();
+        filter = getFilterData();
         filter.groupIndex = -1;
         setFilterData(filter);
         setDensity(BULL_DENSITY);
@@ -119,16 +119,21 @@ void BullModel::update(float dt) {
         return;
     }
     
-    if (_running) {
-        _running = false;
-        _node->setVisible(true);
-        _body->SetEnabled(true);
-        //  setPosition(getPosition() + -_direction * Vec2(40, 0));
+    if (_running>0) {
+        _running -= dt;
+        setPosition(getPosition()+Vec2(_direction*0.2,0));
+        if(_running<=0){
+            _body->SetEnabled(true);
+            if(_CAcount<=0){
+                _breaking=4;
+            }
+        }
     }
+    
     if (_breaking > 0) {
         _breaking -= dt;
         velocity.x *= BULL_CHASE_SPEED*_breaking / 2;
-        if (_breaking < 0.1) {
+        if (_breaking <= 0) {
             _isChasing = false;
         }
     }
@@ -137,30 +142,44 @@ void BullModel::update(float dt) {
         velocity.x *= BULL_CHASE_SPEED;
         if (_CAcount > 0) {
             velocity.x *= _CAcount / 1.2;
+        }
+        if (_CAcount == 6 && _CA <= 0 && _turing<=0) {
+            _CAcount = 0;
             _bull_attack_chance = BULL_ATTACK_CHANCE * 1.5;
         }
-        if (_CAcount == 6 && _CA <= 0) {
-            _CAcount = 0;
-            _breaking = 10;
+        
+        if(_turing>0){
+            _turing-=dt;
+            _body->SetEnabled(false);
+           // _body->SetLinearVelocity(velocity);
+            setPosition(getPosition()+Vec2(_direction*0.2,0));
+            
+            if(_turing<=0){
+                setact("bullTurn", 0.75f);
+                _CA=10-_CAcount;
+            }
+            return;
         }
+
         if (_CA > 0) {
             _CA -= dt;
-            // _node->setVisible(false);
-            _body->SetEnabled(false);
-
+            float t = 10-_CAcount;
             float yyy;
-            if (_CA > 5) {
-                yyy = 25 * (dt / 10);
+            if (_CA > t/2) {
+                yyy = 25 * (dt / t);
+                _node->setScale((0.5 + 0.5 * ((_CA-(t/2))/(t/2)))*0.5/4);
             }
             else {
-                yyy = -25 * (dt / 10);
+                yyy = -25 * (dt / t);
+                _node->setScale((1 - 0.5 * (_CA/(t/2)))*0.5/4);
             }
 
-            setPosition(getPosition() + Vec2(-_direction * (38) * (dt / 10), yyy));
+            setPosition(getPosition() + Vec2(-_direction * (70) * (dt / t), yyy));
 
             if (_CA <= 0) {
-                _running = true;
+                _running = 1.3;
                 setGravityScale(1);
+                setact("bullTurn", 0.75f);
             }
             return;
         }
@@ -170,7 +189,6 @@ void BullModel::update(float dt) {
 
     if (_direction != _lastDirection) {
         // If direction changed, flip the image
-        _turing = 0.75;
         setact("bullTurn", 0.75f);
     }
 
@@ -395,33 +413,12 @@ void BullModel::createAttack3(GameScene& scene) {
 }
 void BullModel::Summon(GameScene& scene) {
 
-    cugl::Size shrimpSize = cugl::Size(2.0f, 2.0f);
+    scene.spawnCarrot(getPosition() + Vec2(5.0f, 10.0f));
+    scene.spawnCarrot(getPosition() + Vec2(-5.0f, 10.0f));
 
-    /*std::vector<std::shared_ptr<EnemyModel>> Enemies=scene.getEnemies();
-    std::shared_ptr<Texture> image = _assets->get<Texture>("shrimp_rolling");
-    std::shared_ptr<EnemyModel> _enemy = EnemyModel::alloc({ getPosition() + Vec2(5.0f, 10.0f) }, shrimpSize, scene.getScale(), EnemyType::shrimp);
-    std::shared_ptr<EntitySpriteNode> sprite = EntitySpriteNode::allocWithSheet(image);
-    sprite->setScale(0.1f);
-    _enemy->setSceneNode(sprite);
-    _enemy->setName(ENEMY_NAME);
-    _enemy->setDebugColor(DEBUG_COLOR);
-    scene.addObstacle(_enemy, sprite);
-    Enemies.push_back(_enemy);
-
-    image = _assets->get<Texture>("shrimp_rolling");
-    _enemy = EnemyModel::alloc({ getPosition() + Vec2(-5.0f, 10.0f) }, shrimpSize, scene.getScale(), EnemyType::shrimp);
-    sprite = EntitySpriteNode::allocWithTexture(image);
-    sprite->setScale(0.1f);
-    _enemy->setSceneNode(sprite);
-    _enemy->setName(ENEMY_NAME);
-    _enemy->setDebugColor(DEBUG_COLOR);
-    scene.addObstacle(_enemy, sprite);
-    Enemies.push_back(_enemy);
-
-    scene.setEnemies(Enemies);*/
 }
 
 void BullModel::circleattack(GameScene& scene) {
-    _CA = 10;
+    _turing=1.3;
     setGravityScale(0);
 }

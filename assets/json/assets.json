@@ -287,6 +287,12 @@
         "SFRMoveState2": {
             "file": "textures/SFRMoveState2.png"
         },
+        "shrimpbar": {
+            "file": "textures/shrimpbar.png"
+        },
+        "bosshealth": {
+            "file": "textures/bosshealth.png"
+        },
         "cooktime": {
             "file": "textures/cutting_board.png",
             "wrapS": "repeat",
@@ -415,6 +421,15 @@
         },
         "bullRun": {
             "file": "textures/bullRun.png"
+        },
+        "SFRStunState1": {
+            "file": "textures/SFRStunState1.png"
+        },
+        "SFRStunState2": {
+            "file": "textures/SFRStunState2.png"
+        },
+        "SFRGlint": {
+            "file": "textures/SFRGlint.png"
         },
         "beefIdle": {
             "file": "textures/Sheets/Enemies/Beef/beefIdle.png"
@@ -1178,6 +1193,84 @@
                 "key": "barWidget"
             }
         },
+        "SFR" : {
+    "type": "Node",
+    "format": {
+        "type": "Anchored"
+    },
+    "data": {
+        "anchor": [
+            0,
+            0
+        ],
+        "size": [
+            586,
+            74
+        ],
+        "angle": 0,
+        "position": [
+            347,
+            692
+        ],
+        "visible": true
+    },
+    "children": {
+        "bosshealth": {
+            "type": "Image",
+            "data": {
+                "texture": "bosshealth",
+                "anchor": [
+                    0,
+                    1
+                ],
+                "size": [
+                    586,
+                    73
+                ],
+                "angle": 0,
+                "position": [
+                    0,
+                    1
+                ],
+                "visible": true
+            },
+            "layout": {
+                "x_anchor": "left",
+                "y_anchor": "top",
+                "absolute": false,
+                "x_offset": 0,
+                "y_offset": 0
+            }
+        },
+        "shrimpbar": {
+            "type": "Image",
+            "data": {
+                "texture": "shrimpbar",
+                "anchor": [
+                    0,
+                    1
+                ],
+                "size": [
+                    586,
+                    73.98
+                ],
+                "angle": 0,
+                "position": [
+                    0,
+                    0.02
+                ],
+                "visible": true
+            },
+            "layout": {
+                "x_anchor": "left",
+                "y_anchor": "top",
+                "absolute": false,
+                "x_offset": 0,
+                "y_offset": 0
+            }
+        }
+    }
+},
         "bullbar": {
             "type": "Node",
             "format": {

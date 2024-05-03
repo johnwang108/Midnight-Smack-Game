@@ -13,7 +13,7 @@ bool ShrimpRice::init(const Vec2& pos, const Size& size, float scale) {
         _lastDirection = -1;
         _health = 100.0f;
         _SFR_attack_chance=0.003f;
-        _healthCooldown = 0.1f;
+        _healthCooldown = 0.5f;
         _knockbackTime = 0;
         _attacktype = "none";
         _act = "none";
@@ -31,6 +31,7 @@ bool ShrimpRice::init(const Vec2& pos, const Size& size, float scale) {
         _angrytime = 0;
         _attackcount = 0;
         _W3att = 0;
+        _parry=false;
         return true;
     }
     return false;
@@ -51,7 +52,10 @@ void ShrimpRice::update(float dt) {
         velocity.x = _direction * SHRIMPRICE_CHASE_SPEED * 1.3;
     }
 
-
+    if(_delay>0){
+        _delay-=dt;
+    }
+    
     if (_direction != _lastDirection && _W3att <= 0) {
         setact("SFRTurn", 0.61f);
     }
@@ -76,14 +80,14 @@ void ShrimpRice::update(float dt) {
 
     if (_acttime<=0 && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _SFR_attack_chance && _W3att<=0) {
         float pa = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-       // pa=0.9;
+      //  pa=0.7;
         if(pa<=0.2){
             setact("SFRWheelofDoom", 0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
         }else if(pa <= 0.53 && pa > 0.2) {
             setact("SFRWave1", 1.125);
         }
         else if (pa <= 0.86 && pa > 0.53) {
-            setact("SFRJoustState1", 1.125);
+            setact("SFRJoustState1", 2.25);
             _canturn = false;
         }
         else {
@@ -107,6 +111,12 @@ void ShrimpRice::update(float dt) {
         if (_act == "SFRWave2") {
             velocity.x *= 6;
         }
+        if (_act == "SFRStunState1") {
+            velocity.x *= 0;
+        }
+        if (_act == "SFRStunState2") {
+            velocity.x *= 0;
+        }
         if (_act == "SFR_Idle") {
             velocity.x *= 0;
         }
@@ -123,7 +133,7 @@ void ShrimpRice::update(float dt) {
             velocity.x *= 0;
         }
         if (_act == "SFRJoustState1") {
-            velocity.x *= -1;
+            velocity.x *= -2;
         }
         if (_act == "SFRWave3") {
             velocity.x = 0;
@@ -148,13 +158,13 @@ void ShrimpRice::update(float dt) {
                 }
             }
             if (_act == "SFRWave1") {
-                setact("SFRWave2", 10);
+                setact("SFRWave2", 5);
             }
             if (_act == "SFRWheelofDoom") {
                 setact("SFR_Attack", 3.375);
             }
             if (_act == "SFRJoustState3") {
-                setact("SFR_Idle", 1.291);
+                _canturn = true;
             }
             if (_act == "SFRJoustState2") {
                 setact("SFRJoustState3", 0.6);
@@ -162,28 +172,31 @@ void ShrimpRice::update(float dt) {
             if (_act == "SFRJoustState1") {
                 setact("SFRJoustState2", 3.375);
             }
-            if (_act == "SFR_Idle") {
+            if (_act == "SFRStunState2") {
                 _canturn = true;
             }
-
+            if (_act == "SFRStunState1") {
+                setact("SFRStunState2", 1.84);
+            }
             _movestate1 = 0.7;
 		}
 	}
-
+    if(_angrytime>0){
+        _angrytime-=dt;
+    }
 
     if (!_angry) {
         if (_health <= 40) {
             _angry = true;
-            setact("SFR_Idle", 5.0f);
-            _angrytime = 10;
+            setact("SFRStunState2", 5.0f);
+            _angrytime = 5;
         }
     }
 
 
-
     _body->SetLinearVelocity(velocity);
 
-
+    
     if (_node != nullptr) {
         _node->setPosition(getPosition() * _drawScale);
         _node->setAngle(getAngle());
@@ -201,12 +214,13 @@ void ShrimpRice::takeDamage(float damage, int attackDirection, bool knockback) {
         if (_health <= 0) {
             _health = 0;
         }
-        else if (knockback || _attackcount>=3) {
-            b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE*300 , 0);
+        else if (knockback || _attackcount>=4) {
+            _attackcount=0;
+            b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE*250 , 0);
+            setact("SFRStunState1", 0.6);
            // _body->SetLinearVelocity(b2Vec2(0, 0));
             _body->ApplyLinearImpulseToCenter(impulse, true);
             _knockbackTime = 1;
-            _acttime = 0;
         }
         else {
         //    b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE * 10, BULL_KNOCKBACK_FORCE_UP*3);
@@ -218,25 +232,42 @@ void ShrimpRice::takeDamage(float damage, int attackDirection, bool knockback) {
 void ShrimpRice::Summon(GameScene& scene) {
 
     Vec2 enemyPos = getPosition()-Vec2(-_direction*2,2);
-    std::shared_ptr<EnemyModel> new_enemy;
-    std::shared_ptr<EntitySpriteNode> spritenode;
-    std::vector<std::shared_ptr<EnemyModel>> Enemies=scene.getEnemies();
-
-    std::shared_ptr<Texture> image = _assets->get<Texture>("riceSoldier");
-    spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 15);
-    float imageWidth = image->getWidth() / 4;
-    float imageHeight = image->getHeight() / 4;
-    Size singularSpriteSize = Size(imageWidth, imageHeight);
-    new_enemy = Rice::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, true);
+    scene.spawnRice(enemyPos);
     
-    spritenode->setScale(0.2f);
-    spritenode->setAnchor(Vec2(0.5, 0.35));
-    new_enemy->setSceneNode(spritenode);
-    new_enemy->setDebugColor(DEBUG_COLOR);
-    scene.addObstacle(new_enemy, spritenode);
-    Enemies.push_back(new_enemy);
 
-    scene.setEnemies(Enemies);
+}
+
+void ShrimpRice::parry(GameScene& scene) {
+    if(_delay<=0){
+        _attacks=scene.getattacks();
+        float _scale = scene.getScale();
+        
+        std::shared_ptr<Texture> image = _assets->get<Texture>("SFRGlint");
+        Vec2 pos = getPosition()+Vec2(_direction*3,0);
+        
+        std::shared_ptr<Attack> attack = Attack::alloc(pos,
+                                                       cugl::Size(0.5*image->getSize().width ,0.5*image->getSize().height));
+        
+        attack->setName("parry");
+        attack->setGravityScale(0);
+        attack->setBullet(true);
+        attack->setDebugColor(DEBUG_COLOR);
+        attack->setDrawScale(_scale);
+        attack->setEnabled(false);
+        attack->setrand(false);
+        attack->setShoot(false);
+        attack->setnorotate(true);
+        
+        std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+        sprite->setPosition(pos);
+        sprite->setScale(0.5);
+        attack->setSceneNode(sprite);
+        
+        
+        scene.addObstacle(attack, sprite, true);
+        _attacks.push_back(attack);
+        scene.setattacks(_attacks);
+    }
 }
 
 void ShrimpRice::dispose() {

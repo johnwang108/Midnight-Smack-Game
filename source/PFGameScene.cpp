@@ -330,12 +330,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _BullhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
     _uiScene->addChild(_bullBarNode);
 
-    //std::shared_ptr<cugl::scene2::SceneNode> _SFRBarNode;
-    //_SFRBarNode = _assets->get<scene2::SceneNode>("shrimpbar");
-
-    //_SFRhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
-    //_SFRhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
-   // _uiScene->addChild(_SFRBarNode);
+    std::shared_ptr<cugl::scene2::SceneNode> _SFRBarNode;
+    _SFRBarNode = _assets->get<scene2::SceneNode>("SFR");
+    _SFRhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("shrimpbar"));
+    _SFRhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("bosshealth"));
+    _uiScene->addChild(_SFRBarNode);
+    
 
 
     /*_pauseButton = std::dynamic_pointer_cast<scene2::Button>(_assets->get<scene2::SceneNode>("mymenubutton"));*/
@@ -1076,7 +1076,7 @@ void GameScene::preUpdate(float dt) {
                     _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
                 }
             }
-            if (_Bull->isChasing() && ((_Bull->getPosition().x > 20 && _Bull->getDirection() == -1) || (_Bull->getPosition().x < 30 && _Bull->getDirection() == 1))) {
+            if (_Bull->getCAcount()<=0 && _Bull->isChasing() && ((_Bull->getPosition().x > 20 && _Bull->getDirection() == -1) || (_Bull->getPosition().x < 30 && _Bull->getDirection() == 1))) {
                 Vec2 BullPos = _Bull->getPosition();
                 int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
                 if (direction != _Bull->getDirection()) {
@@ -1111,11 +1111,24 @@ void GameScene::preUpdate(float dt) {
             }
             if (_ShrimpRice->getangrytime() > 0 && !_enemies.empty()) {
                 for (auto& enemy : _enemies) {
+                    enemy->setnocoll(true);
                     Vec2 EnyPos = enemy->getPosition();
                     int direction = (BullPos.x > EnyPos.x) ? 1 : -1;
                     enemy->setPosition(enemy->getPosition() + Vec2(direction*0.3, 0.0f));
 				}
             }
+            else if(_ShrimpRice->getHealth()<=35&&_enemies.size()>=4){
+                _ShrimpRice->setact("SFRStunState2", 5.0f);
+                _ShrimpRice->setangrytime(5);
+            }
+            if(_ShrimpRice->getparry()&&!_ShrimpRice->getparry2()){
+                _ShrimpRice->setparry(false);
+                _ShrimpRice->setparry2(false);
+                _ShrimpRice->setact("SFRStunState1", 0.6);
+                _ShrimpRice->parry(*this);
+                _ShrimpRice->setdelay(0.5);
+            }
+        
             _ShrimpRice->update(dt);
         }
 
@@ -1135,7 +1148,7 @@ void GameScene::preUpdate(float dt) {
                 _Bull->animate("bullStunned");
             }
         }
-        else if (_Bull->getbreaking()<=0 &&_Bull->isChasing() && ((_Bull->getPosition().x < 13 && _Bull->getDirection() == -1) || (_Bull->getPosition().x > 37 && _Bull->getDirection() == 1))) {
+        else if (_Bull->getCAcount()<=0 && _Bull->getbreaking()<=0 &&_Bull->isChasing() && ((_Bull->getPosition().x < 13 && _Bull->getDirection() == -1) || (_Bull->getPosition().x > 37 && _Bull->getDirection() == 1))) {
             if (!_BullactionManager->isActive("bullAttack")){
                 _BullactionManager->clearAllActions(_Bull->getSceneNode());
                 auto bullAttack = _Bull->getAction("bullAttack");
@@ -1165,7 +1178,7 @@ void GameScene::preUpdate(float dt) {
                 _Bull->animate("bullRun");
             }
         }
-        else if ( _Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0) {
+        else if ( _Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0 &&_Bull->getattacktype()!="none") {
             if (!_BullactionManager->isActive(_Bull->getattacktype())) {
                 _BullactionManager->clearAllActions(_Bull->getSceneNode());
                 auto bullTelegraph = _Bull->getAction(_Bull->getattacktype());
@@ -1304,7 +1317,7 @@ void GameScene::fixedUpdate(float step) {
                 _camera->setZoom(400.0 / 40.0);
             }
             else if (_level == 3) {
-                _camera->setZoom(210.0 / 40.0);
+                _camera->setZoom(400.0 / 40.0);
             }
             else if (_level == 4) {
                 _camera->setZoom(400.0 / 40.0);
@@ -1370,17 +1383,17 @@ void GameScene::fixedUpdate(float step) {
 
     //su
     _avatar->fixedUpdate(step);
-
-    //enemies
-    for (auto& enemy : _enemies) {
+    for (auto it = _enemies.rbegin(); it != _enemies.rend(); ++it) {
+        auto& enemy = *it;
         if (enemy != nullptr && !enemy->isRemoved()) {
             enemy->fixedUpdate(step);
-		}
-        if (enemy->getHealth() <= 0) {
-            enemy->markForDeletion();
-        }
-        if (enemy->shouldDelete()) {
-            removeEnemy(enemy.get());
+            if (enemy->getHealth() <= 0) {
+                enemy->markForDeletion();
+            }
+            if (enemy->shouldDelete()) {
+                removeEnemy(enemy.get());
+                _enemies.erase(std::next(it).base());
+            }
         }
     }
 
