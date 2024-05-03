@@ -347,7 +347,7 @@ public:
     };
 
     static std::vector<std::string> defaultSeqAlt(EnemyType type) {
-        switch (type) {
+        /*switch (type) {
         case EnemyType::shrimp:
             return { "pigtail", "v", "circle" };
         case EnemyType::rice:
@@ -362,7 +362,8 @@ public:
             return { "pigtail", "v", "pigtail" };
         default:
             return {};
-        }
+        }*/
+        return defaultSeq(type);
     };
 
     //Dict for enemy type to buff 

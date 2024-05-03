@@ -722,7 +722,10 @@ void LevelModel::populate(GameScene& scene) {
 							// because animations are not done yet for other enemies
 
 							if (pathWeWant.find("rice") != std::string::npos) {
-								scene.spawnRice(enemyPos, false);
+								//scene.spawnRice(enemyPos, false);'
+
+								std::unordered_map<IngredientType, int> map = { {IngredientType::rice, 1} };
+								scene.spawnPlate(enemyPos, map);
 								/*if (numOfRice == 0) {
 									image = _assets->get<Texture>("riceLeader");
 									spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);

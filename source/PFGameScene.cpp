@@ -222,7 +222,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
     _dollarnode = std::make_shared<DollarScene>();
-    //_dollarnode->init(_assets, _input, cugl::Rect(Vec2::ZERO, computeActiveSize()/2), "cooktime");
     _dollarnode->init(_assets, _input, "cooktime");
     _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
     _dollarnode->setVisible(false);
@@ -286,9 +285,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
    // _uiScene->addChild(_SFRBarNode);
 
 
-    _buffLabel = scene2::Label::allocWithText("NO BUFF", _assets->get<Font>(MESSAGE_FONT));
-    _buffLabel->setAnchor(Vec2::ANCHOR_CENTER);
-    _buffLabel->setPosition(dimen.width - _buffLabel->getWidth()/2, dimen.height - _buffLabel->getHeight());
+    //_buffLabel = scene2::Label::allocWithText("NO BUFF", _assets->get<Font>(MESSAGE_FONT));
+    //_buffLabel->setAnchor(Vec2::ANCHOR_CENTER);
+    //_buffLabel->setPosition(dimen.width - _buffLabel->getWidth()/2, dimen.height - _buffLabel->getHeight());
 
     /*_pauseButton = std::dynamic_pointer_cast<scene2::Button>(_assets->get<scene2::SceneNode>("mymenubutton"));*/
 
@@ -300,11 +299,10 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _uiScene->addChild(_winnode);
     _uiScene->addChild(_losenode);
-# pragma mark: Background
 
-    _bgScene = cugl::Scene2::alloc(dimen);
-    _bgScene->init(dimen);
-    _bgScene->setActive(true);
+    //_bgScene = cugl::Scene2::alloc(dimen);
+    //_bgScene->init(dimen);
+    //_bgScene->setActive(true);
     // _bgScene = cugl::Scene2::alloc(cugl::Size(210, 25));
     // _bgScene->init(cugl::Size(210, 25));
     // _bgScene->setActive(true);
@@ -319,7 +317,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
     // _bgScene->addChild(_background);
-    _bgScene->setColor(Color4::CLEAR);
+    //_bgScene->setColor(Color4::CLEAR);
 
     _target = std::make_shared<EnemyModel>();
 
@@ -371,6 +369,10 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _debugAnimName = js->getString("animation");
     _overrideAnim = false;
 
+    _currentInteractableID = -1;
+
+    _interactables = std::vector<std::shared_ptr<GestureInteractable>>();
+
     setName("night");
     Application::get()->setClearColor(Color4::CLEAR);
     return true;
@@ -388,7 +390,7 @@ void GameScene::dispose() {
         _debugnode = nullptr;
         _winnode = nullptr;
         _losenode = nullptr;
-        _bgScene = nullptr;
+        //_bgScene = nullptr;
         _uiScene = nullptr;
         _dollarnode = nullptr;
         _world = nullptr;
@@ -419,7 +421,7 @@ void GameScene::dispose() {
         _cookBarOutline = nullptr;
         _cookBarIcons.clear();
         _cookBarGlows.clear();
-        _buffLabel = nullptr;
+        //_buffLabel = nullptr;
         _popups.clear();
         _actionManager = nullptr;
         _BullactionManager = nullptr;
@@ -655,6 +657,13 @@ void GameScene::preUpdate(float dt) {
             _actionManager->activate("jump_ready", jumpAction, _avatar->getSceneNode());
         }
 
+        if (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() < _avatar->getFloatyFrames() && !_actionManager->isActive("air_roll")) {
+            _avatar->animate("air_roll");
+			auto dashAction = _avatar->getAction("air_roll");
+			_actionManager->clearAllActions(_avatar->getSceneNode());
+			_actionManager->activate("air_roll", dashAction, _avatar->getSceneNode());
+        }
+
 
         //animate jumps if not attacking or taking damage
         if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && !(_avatar->getActiveAction() == "air_attack")&&  !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y > 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
@@ -839,31 +848,16 @@ void GameScene::preUpdate(float dt) {
 
     _dollarnode->update(dt);
     if (!_slowed) {
-        //_dollarnode->setVisible(false);
-        //if (_dollarnode->isFocus()) {
-        //    _dollarnode->setFocus(false);
-        //    _dollarnode->setReadyToCook(false);
-        //}
 
-        ////_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
-        //_avatar->setAllMovement(_input->getHorizontal(), _input->getVertical());
-        //_avatar->setJumping(_input->didJump());
-        //_avatar->setDash(_input->didDash());
-        //_avatar->setInputWalk(_input->getHorizontal() != 0);
-        //_avatar->applyForce(_input->getHorizontal(), _input->getVertical());
-        //if (_avatar->isJumping() && _avatar->isGrounded()) {
-        //    std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
-        //    AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
-        //}
     }
     else {
+        //transition in dollar node
         _dollarnode->setVisible(true);
         if (!(_dollarnode->isFocus())) {
             _dollarnode->setFocus(true);
             _dollarnode->setReadyToCook(true);
         }
         //cooktime handling. Assume that _target not null, if it is null then continue
-        //if (!_dollarnode->isPending()) {
         if (_target != nullptr && !_dollarnode->isPending()) {
             _slowed = false;
             std::string message = "";
@@ -874,8 +868,8 @@ void GameScene::preUpdate(float dt) {
 
                 _avatar->applyBuff(EnemyModel::typeToBuff(_target->getType()), mod);
                 //set buff label
-                _buffLabel->setText(DudeModel::getStrForBuff(EnemyModel::typeToBuff(_target->getType())));
-                _buffLabel->setVisible(true);
+                //_buffLabel->setText(DudeModel::getStrForBuff(EnemyModel::typeToBuff(_target->getType())));
+                //_buffLabel->setVisible(true);
             }
             else {
                 CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
@@ -895,7 +889,7 @@ void GameScene::preUpdate(float dt) {
     }
 
     if (_avatar->getDuration() == 0 && !_avatar->hasSuper()) {
-        _buffLabel->setVisible(false);
+        //_buffLabel->setVisible(false);
     }
 
     //iterate over popups to update
@@ -1143,8 +1137,6 @@ void GameScene::preUpdate(float dt) {
         
     }
 
-
-
     if ((_afterimages.size() > 4 || (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() > _avatar->getFloatyFrames())) && !_afterimages.empty()) {
         std::shared_ptr<scene2::SceneNode> afterimage = _afterimages.front();
         _afterimages.erase(_afterimages.begin());
@@ -1254,22 +1246,6 @@ void GameScene::fixedUpdate(float step) {
         //}
 
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
-        ////cugl::Vec3 mapMin = Vec3(SCENE_WIDTH / 2, SCENE_HEIGHT / 2, 0);
-        ////cugl::Vec3 mapMax = Vec3(1400 - SCENE_WIDTH / 2, 900 - SCENE_HEIGHT / 2, 0); //replace magic numbers
-        // 
-        //CULog("%f",  _background->getBoundingRect().getMinX());
-        //CULog("%f", _background->getBoundingRect().getMaxX());
-        //CULog("%f", _background->getBoundingRect().getMinY());
-        //CULog("%f", _background->getBoundingRect().getMaxY());
-
-        //CULog("%f", _camera->getViewport().getMinX());
-        //CULog("%f", _camera->getViewport().getMaxX());
-        //CULog("%f", _camera->getViewport().getMinY());
-        //CULog("%f", _camera->getViewport().getMaxY());
-        //CULog("%f", _camera->getZoom() * (_camera->getViewport().getMaxX() - _camera->getViewport().getMinX()));
-        //cugl::Vec3 cameraLL = _camera->unproject(Vec2(_camera->getViewport().getMinX(), _camera->getViewport().getMinY()));
-        //cugl::Vec3 cameraUR = _camera->unproject(Vec2(_camera->getViewport().getMaxX(), _camera->getViewport().getMaxY()));
-
         float invZoom = 1 / _camera->getZoom();
         float cameraWidth = invZoom * (_camera->getViewport().getMaxX() - _camera->getViewport().getMinX()) / 2;
         float cameraHeight = invZoom * (_camera->getViewport().getMaxY() - _camera->getViewport().getMinY()) / 2;
@@ -1290,7 +1266,6 @@ void GameScene::fixedUpdate(float step) {
 
 
         //magic number 0.2 are for smoothness
-        //float smooth = std::min(0.2f, (target - pos).length());
         float smooth = 0.2;
         pos.smooth(target, step, smooth);
         //pos = _avatar->getPosition() * _scale;
@@ -1340,6 +1315,28 @@ void GameScene::fixedUpdate(float step) {
             removeEnemy(enemy.get());
         }
     }
+
+
+    for (auto it = _attacks.begin(); it != _attacks.end();) {
+        if ((*it) == nullptr || (*it)->isRemoved()) {
+            ++it;
+            continue;
+        }
+        else {
+            (*it)->fixedUpdate(step);
+        }
+
+        if ((*it)->killMe()) {
+            CULog("removing attack");
+            removeAttack((*it).get());
+            it = _attacks.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+
+
     _world->update(step);
 }
 
@@ -1382,21 +1379,6 @@ void GameScene::postUpdate(float remain) {
 
     //commented out avatar stuff, 03/27 4:30 AM
 
-
-
-    //iterate through physics objects and delete any timed-out attacks
-    //BAD CODE ALEART
-    for (auto it = _attacks.begin(); it != _attacks.end();) {
-        if ((*it)->killMe()) {
-            CULog("removing attack");
-            removeAttack((*it).get());
-            it = _attacks.erase(it);
-        }
-        else {
-            ++it;
-        }
-    }
-
     // Record failure if necessary.
 
     //COMMENTED OUT 4:30AM 03/27
@@ -1420,9 +1402,9 @@ void GameScene::postUpdate(float remain) {
     }
 }
 
-void GameScene::renderBG(std::shared_ptr<cugl::SpriteBatch> batch) {
-    _bgScene->render(batch);
-}
+//void GameScene::renderBG(std::shared_ptr<cugl::SpriteBatch> batch) {
+//    _bgScene->render(batch);
+//}
 
 void GameScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
     _uiScene->render(batch);
@@ -1490,7 +1472,7 @@ void GameScene::removeAttack(T* attack) {
     _worldnode->removeChild(attack->getSceneNode());
     attack->setDebugScene(nullptr);
     attack->markRemoved(true);
-    attack->dispose();
+    //attack->dispose();
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
@@ -1509,7 +1491,7 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
     _worldnode->removeChild(enemy->getSceneNode());
     enemy->setDebugScene(nullptr);
     enemy->markRemoved(true);
-    enemy->dispose();
+    //enemy->dispose();
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
@@ -1781,4 +1763,24 @@ void GameScene::spawnCarrot(Vec2 pos) {
     spritenode->setAnchor(0.5, 0.35);
     addObstacle(new_enemy, spritenode);
     _enemies.push_back(new_enemy);
+}
+
+void GameScene::spawnStation(Vec2 pos, StationType type) {
+    //obstacle has small size, not reflective of intended size
+    Size s = Size(1.0f, 1.0f);
+    std::shared_ptr<Texture> image = _assets->get<Texture>("pot");
+    std::shared_ptr<Station> station = Station::alloc(image, pos, s, type);
+
+    addObstacle(station, station->getSceneNode());
+    _interactables.push_back(station);
+}
+
+void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map) {
+    //obstacle has small size, not reflective of intended size
+    Size s = Size(1.0f, 1.0f);
+    std::shared_ptr<Texture> image = _assets->get<Texture>("pan");
+    std::shared_ptr<Plate> plate = Plate::alloc(image, pos, s, map);
+
+    addObstacle(plate, plate->getSceneNode());
+    _interactables.push_back(plate);
 }

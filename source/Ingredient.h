@@ -3,8 +3,18 @@
 
 #include <cugl/cugl.h>
 
-
-
+enum class IngredientType {
+	carrot,
+	beef,
+	shrimp,
+	egg,
+	rice
+};
+namespace std {
+	template <> struct hash<IngredientType> {
+		size_t operator() (const IngredientType& t) const { return size_t(t); }
+	};
+}
 class Ingredient {
 private: 
 	std::string _name;

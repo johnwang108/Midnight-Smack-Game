@@ -1,25 +1,3 @@
-//
-//  PFGameScene.cpp
-//  PlatformDemo
-//
-//  This is the most important class in this demo.  This class manages the gameplay
-//  for this demo.  It also handles collision detection. There is not much to do for
-//  collisions; our ObstacleWorld class takes care of all of that for us.  This
-//  controller mainly transforms input into gameplay.
-//
-//  WARNING: There are a lot of shortcuts in this design that will do not adapt
-//  well to data driven design. This demo has a lot of simplifications to make
-//  it a bit easier to see how everything fits together. However, the model
-//  classes and how they are initialized will need to be changed if you add
-//  dynamic level loading.
-//
-//  This file is based on the CS 3152 PhysicsDemo Lab by Don Holden (2007).
-//  This file has been refactored to support the physics changes in CUGL 2.5.
-//
-//  Author: Walker White and Anthony Perello
-//  Version:  2/9/24
-//
-
 #include "PFGameScene.h"
 #include "PFDollarScene.h"
 #include <box2d/b2_world.h>
@@ -70,7 +48,7 @@ void DollarScene::dispose() {
 	_assets = nullptr;
 }
 
-bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::string texture) {
+bool DollarScene::init(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::string texture) {
 	//FIX - JOHN
 	std::shared_ptr<cugl::Texture> t = assets->get<cugl::Texture>(texture);
 	cugl::Rect rect = cugl::Rect(Vec2::ZERO, t->getSize());
@@ -79,7 +57,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 }
 
 //main init
-bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector<std::string> gestures) {
+bool DollarScene::init(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector<std::string> gestures) {
 	_input = input;
 	_assets = assets;
 	_se = cugl::SimpleExtruder();
@@ -153,7 +131,7 @@ bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_
 	return true;
 }
 
-bool DollarScene::init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector<std::string> gestures, Size hitboxSize) {
+bool DollarScene::init(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector<std::string> gestures, Size hitboxSize) {
 	_stationHitbox = scene2::PolygonNode::allocWithPoly(Rect(Vec2(0, 0), hitboxSize));
 	//_stationHitbox = scene2::PolygonNode::allocWithBounds(hitboxSize);
 	//_stationHitbox->setAnchor(Vec2::ANCHOR_CENTER);
@@ -270,18 +248,18 @@ void DollarScene::update(float timestep) {
 		if (_isNighttime) {
 			//see which sequence's first gesture is more similar
 			float sim1 = _dollarRecog->similarity(_currentTargetGesturesNighttime[0][0], _inputtedGestures[0]);
-			float sim2 = _dollarRecog->similarity(_currentTargetGesturesNighttime[1][0], _inputtedGestures[0]);
+			//float sim2 = _dollarRecog->similarity(_currentTargetGesturesNighttime[1][0], _inputtedGestures[0]);
 			float totalSim;
-			if (sim1 > sim2) {
+			//if (sim1 > sim2) {
 				totalSim = (sim1 + _dollarRecog->similarity(_currentTargetGesturesNighttime[0][1], _inputtedGestures[1])
 					+ _dollarRecog->similarity(_currentTargetGesturesNighttime[0][2], _inputtedGestures[2]))/3.0f;
 				_isDurationSequence = true;
-			}
-			else {
-				totalSim = (sim2 + _dollarRecog->similarity(_currentTargetGesturesNighttime[1][1], _inputtedGestures[1])
-					+ _dollarRecog->similarity(_currentTargetGesturesNighttime[1][2], _inputtedGestures[2]))/3.0f;
-				_isDurationSequence = false;
-			}
+			//}
+			//else {
+			//	totalSim = (sim2 + _dollarRecog->similarity(_currentTargetGesturesNighttime[1][1], _inputtedGestures[1])
+			//		+ _dollarRecog->similarity(_currentTargetGesturesNighttime[1][2], _inputtedGestures[2]))/3.0f;
+			//	_isDurationSequence = false;
+			//}
 			CULog("Total sim: %f", totalSim);
 			_currentSimilarity = totalSim;
 			_lastResult = gestureResult();
@@ -303,12 +281,6 @@ void DollarScene::update(float timestep) {
 		}
 		handleCompletedIngredient(getIngredientInStation());
 	}
-
-
-	//_box->setPosition(cugl::Vec2(0, 0));
-
-
-	//_header->setVisible(!isPending() && isSuccess());
 	updateConveyor();
 
 	//if not holding anything, check if we are
@@ -400,7 +372,6 @@ void DollarScene::setFocus(bool focus) {
 		_input->popTouchPath();
 	}
 	if (_isNighttime) {
-		CULog("clearing");
 		_inputtedGestures.clear();
 	}
 }

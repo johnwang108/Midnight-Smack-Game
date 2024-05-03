@@ -50,8 +50,6 @@ void Egg::update(float dt) {
     else if (_state == "short_windup") {
         int prio = 50;
         if (getActiveAction() == "eggAttack") prio = getActivePriority() + 1;
-        CULog("short windup");
-        CULog(getActiveAction().c_str());
         setRequestedActionAndPrio("eggWindupQuick", prio);
     }
     else {

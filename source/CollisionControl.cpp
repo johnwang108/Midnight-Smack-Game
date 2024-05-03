@@ -198,13 +198,18 @@ void GameScene::beginContact(b2Contact* contact) {
         _avatar->takeDamage(34, direction);
         removeAttack((Attack*)bd1);
     }
-    else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
-        Vec2 enemyPos = ((Attack*)bd2)->getPosition();
-        Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-        _avatar->takeDamage(34, direction);
-        removeAttack((Attack*)bd2);
-    }
+    //else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
+    //    Vec2 enemyPos = ((Attack*)bd2)->getPosition();
+    //    Vec2 attackerPos = _avatar->getPosition();
+    //    int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+    //    _avatar->takeDamage(34, direction);
+    //    removeAttack((Attack*)bd2);
+    //}
+
+    //interactable 
+    if (bd1->getName() == "interactable" && bd2 == _avatar.get()) {
+        setInteractable(((GestureInteractable*)bd1)->getId());
+	}
 
     // Test bullet collision with enemy
     if (bd1->getName() == ATTACK_NAME && enemies.find(bd2->getName()) != enemies.end()) {
@@ -215,6 +220,14 @@ void GameScene::beginContact(b2Contact* contact) {
             int damage = ((EnemyModel*)bd2)->getHealth();
             ((EnemyModel*)bd2)->takeDamage(_avatar->getAttack(), direction);
             damage -= ((EnemyModel*)bd2)->getHealth();
+
+            float pi = 3.1415f;
+            float angle = _avatar->getAngle();
+            //pogo
+            if (_avatar->getActiveAction() == "air_attack" && std::abs(angle) > pi/2.0f && std::abs(angle) < 3*pi/2.0f) {
+                _avatar->setLinearVelocity(_avatar->getLinearVelocity().x, 0.0f);
+                _avatar->jump(Vec2(std::sinf(angle + pi/2.0f), std::cosf(angle + pi/2.0f)));
+            }
 
             _avatar->addMeter(5.0f);
             if (damage > 0) popup(std::to_string((int)damage), enemyPos * _scale);
@@ -378,6 +391,11 @@ void GameScene::endContact(b2Contact* contact) {
                 _enemy->setGrounded(false);
             }
         }
+    }
+
+    //interactable 
+    if (bd1->getName() == "interactable" && bd2 == _avatar.get()) {
+        setInteractable(-1);
     }
 
     //// Check if the player is no longer in contact with any walls

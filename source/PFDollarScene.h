@@ -83,7 +83,7 @@ protected:
 
     int _currentTargetIndex;
 
-    //todo:: integrate _currentTargetGestures into this. Right now, duration sequence is index 0, supereffect is index 1
+    //todo:: integrate _currentTargetGestures into this. Right now, duration sequence is index 0, supereffect is index 1. Don't use index 1
     std::vector<std::vector<std::string>> _currentTargetGesturesNighttime;
     bool _isDurationSequence;
 
@@ -132,17 +132,22 @@ public:
 
     void dispose();
 
-    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
+    bool init(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
         return init(assets, input, cugl::Rect(0, 0, 1000, 1000), "panfry_station");
     };
 
-    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::string texture);
-    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture) {
+    bool init(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::string texture);
+    bool init(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture) {
         return init(assets, input, rect, texture, std::vector<std::string>());
     }
 
-    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector <std::string> gestures);
-    bool init(std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector<std::string> gestures, cugl::Size hitboxSize);
+    bool init(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector <std::string> gestures);
+    bool init(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, cugl::Rect rect, std::string texture, std::vector<std::string> gestures, cugl::Size hitboxSize);
+    
+    std::shared_ptr<DollarScene> alloc(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
+        std::shared_ptr<DollarScene> result = std::make_shared<DollarScene>();
+		return (result->init(assets, input, "cooktime") ? result : nullptr);
+    }
 
     void update(float timestep);
 

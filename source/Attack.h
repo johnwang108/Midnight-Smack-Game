@@ -162,6 +162,8 @@ public:
 	*/
 	void update(float dt) override;
 
+    void fixedUpdate(float dt);
+
     bool killMe() { return _killme; };
 
     void setFaceRight(bool faceRight) { _faceright = faceRight; }

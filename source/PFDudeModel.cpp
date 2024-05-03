@@ -660,7 +660,6 @@ void DudeModel::takeDamage(float damage, const int attackDirection) {
 }
 
 bool DudeModel::useMeter(float f) {
-    CULog("Meter: %f", _meter);
     if (_meter > f) {
         _meter -= f;
 		return true;
@@ -775,6 +774,7 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeMo
     attack->setrand(false);
     attack->setShoot(false);
     attack->setnorotate(true);
+    attack->setLifetime(getActionDuration("attack") * 1.5f);
     //b2Filter filter = attack->getFilterData();
     //filter.groupIndex = -1;
     //0x0010 is the category bit for intangible enemies (beef)
@@ -813,6 +813,7 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeMo
     attack->setShoot(false);
     attack->setnorotate(true);
     attack->setAngle(angle - (3.14159265 / 2));
+    attack->setLifetime(getActionDuration("air_attack") * 1.5f);
     //b2Filter filter = attack->getFilterData();
     //filter.groupIndex = -1;
     ////0x0010 is the category bit for intangible enemies (beef)

@@ -21,7 +21,7 @@
             "rows": 4,
             "cols": 5,
             "frames": 18,
-            "duration": 0.6
+            "duration": 0.3
         },
         "recover": {
             "sheet": "su_attack_recover",
@@ -70,7 +70,7 @@
             "rows": 3,
             "cols": 3,
             "frames": 8,
-            "duration": 0.4
+            "duration": 0.2
         },
         "air_roll": {
             "sheet": "su_air_roll",

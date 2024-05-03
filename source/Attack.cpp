@@ -49,9 +49,18 @@ void Attack::update(float dt) {
         _direction = 1;
         _faceright = false;
     }
-    
+
+
+	if (_node != nullptr) {
+		_node->setPosition(getPosition()*_drawScale);
+        _node->setAngle(getAngle());
+	}
+}
+
+void Attack::fixedUpdate(float dt) {
+
 	if (_go) {
-        _body->SetLinearVelocity(b2Vec2(8*_direction, 0));
+		_body->SetLinearVelocity(b2Vec2(8 * _direction, 0));
 	}
 	else {
 		if (_lifetime == 0) {
@@ -62,17 +71,16 @@ void Attack::update(float dt) {
 		}
 	}
 
-
 	if (_shoot) {
 		_shoot = false;
 		if (_rand) {
-			_body->ApplyLinearImpulseToCenter(b2Vec2(20*static_cast<float>(rand()) / static_cast<float>(RAND_MAX)-5, 45), true);
+			_body->ApplyLinearImpulseToCenter(b2Vec2(20 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 5, 45), true);
 		}
 		else if (_straight != Vec2(-87, -87)) {
 			b2Vec2 targetDirection = b2Vec2(_straight.x - getPosition().x, _straight.y - getPosition().y);
 			targetDirection.Normalize();
 			_body->ApplyLinearImpulseToCenter(b2Vec2(targetDirection.x * _speed, targetDirection.y * _speed), true);
-            _body->SetTransform(_body->GetPosition(), atan2(_straight.y - getPosition().y, _straight.x - getPosition().x) + M_PI);
+			_body->SetTransform(_body->GetPosition(), atan2(_straight.y - getPosition().y, _straight.x - getPosition().x) + M_PI);
 		}
 		else {
 			_body->ApplyLinearImpulseToCenter(b2Vec2(3 * _direction, 10), true);
@@ -81,7 +89,7 @@ void Attack::update(float dt) {
 
 	float currentAngle = _body->GetAngle();
 	b2Vec2 velocity = _body->GetLinearVelocity();
-	if (_straight== Vec2(-87, -87)&& !_norotate) {
+	if (_straight == Vec2(-87, -87) && !_norotate) {
 		if (velocity.x < 0) {
 			_body->SetTransform(_body->GetPosition(), currentAngle + M_PI * dt);
 		}
@@ -89,14 +97,8 @@ void Attack::update(float dt) {
 			_body->SetTransform(_body->GetPosition(), currentAngle - M_PI * dt);
 		}
 	}
-	else if(!_norotate) {
+	else if (!_norotate) {
 		_body->SetTransform(_body->GetPosition(), currentAngle);
-	}
-
-
-	if (_node != nullptr) {
-		_node->setPosition(getPosition()*_drawScale);
-        _node->setAngle(getAngle());
 	}
 }
 

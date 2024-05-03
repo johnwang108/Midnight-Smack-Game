@@ -300,7 +300,7 @@ void PlatformApp::draw() {
         _menu.render(_batch);
     }
     else if (_gameplay.isActive()) {
-        _gameplay.renderBG(_batch);
+        //_gameplay.renderBG(_batch);
         _gameplay.render(_batch);
         _gameplay.renderUI(_batch);
     }

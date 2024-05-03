@@ -37,6 +37,9 @@
 #include "Attack.h"
 #include "PFDudeModel.h"
 #include "PFDollarScene.h"
+#include "NightLevelObjects/GestureInteractable.h"
+#include "NightLevelObjects/Plate.h"
+#include "NightLevelObjects/Station.h"
 #include "Levels/Level1.h"
 #include "Levels/Level2.h"
 #include "Levels/Level3.h"
@@ -126,6 +129,9 @@ protected:
     float _smoothTime = 0.25f;
     cugl::Vec3 _velocity = Vec3::ZERO;
 
+    std::vector<std::shared_ptr<GestureInteractable>> _interactables;
+    
+    int _currentInteractableID;
       
     /** Mark set to handle more sophisticated collision callbacks */
     std::unordered_set<b2Fixture*> _sensorFixtures;
@@ -160,7 +166,7 @@ protected:
     std::unordered_map<std::string, std::shared_ptr<cugl::scene2::PolygonNode>> _cookBarIcons;
     std::unordered_map<std::string, std::shared_ptr<cugl::scene2::PolygonNode>> _cookBarGlows;
 
-    std::shared_ptr<cugl::scene2::Label> _buffLabel;
+    //std::shared_ptr<cugl::scene2::Label> _buffLabel;
 
     std::vector<std::tuple<std::shared_ptr<cugl::scene2::Label>, cugl::Timestamp>> _popups;
 
@@ -526,7 +532,7 @@ public:
 
     void transition(bool t);
 
-    void renderBG(std::shared_ptr<cugl::SpriteBatch> batch);
+    //void renderBG(std::shared_ptr<cugl::SpriteBatch> batch);
 
     void renderUI(std::shared_ptr<cugl::SpriteBatch> batch);
 
@@ -563,6 +569,25 @@ public:
     void spawnEgg(Vec2 pos);
     void spawnRice(Vec2 pos, bool isSoldier = true);
     void spawnCarrot(Vec2 pos);
+    void spawnStation(Vec2 pos, StationType type);
+    void spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map);
+
+    void setInteractable(int interactableID) {
+		_currentInteractableID = interactableID;
+	}
+
+    int getCurrentInteractableId() {
+        return _currentInteractableID;
+    }
+
+    std::shared_ptr<GestureInteractable> getInteractable(int interactableID) {
+        for (auto i : _interactables) {
+            if (i->getId() == interactableID) {
+				return i;
+			}
+		}
+		return nullptr;
+	}
 };
 
 
