@@ -260,7 +260,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode->setPosition(0,0);
 
     _inventoryNode = std::make_shared<Inventory>();
-    _inventoryNode->init(_assets, _input, Size(1280.0f, 180.0f));
+    std::shared_ptr<Texture> invTex = _assets->get<Texture>("inventorySlot");
+    _inventoryNode->init(_assets, _input, Size(invTex->getWidth()*NUM_SLOTS, 180.0f));
     _inventoryNode->setName("inventoryNode");
     _inventoryNode->setAnchor(Vec2::ANCHOR_BOTTOM_CENTER);
     _inventoryNode->setPosition(Vec2(1280.0f / 2.0f, 0));
@@ -661,7 +662,6 @@ void GameScene::preUpdate(float dt) {
     
 
     //handle animations
-
     if (!_actionManager->isActive("air_attack")) {
         _avatar->getBody()->SetFixedRotation(false);
         _avatar->getBody()->SetTransform(_avatar->getBody()->GetPosition(), 0.0f);
@@ -874,7 +874,7 @@ void GameScene::preUpdate(float dt) {
 
     _dollarnode->update(dt);
     if (!_slowed) {
-        //_dollarnode->setVisible(false);
+        _dollarnode->setVisible(false);
         //if (_dollarnode->isFocus()) {
         //    _dollarnode->setFocus(false);
         //    _dollarnode->setReadyToCook(false);
