@@ -9,11 +9,12 @@ enum class IngredientType {
 	shrimp,
 	egg,
 	rice,
-	carrotCooked,
-	beefCooked,
-	shrimpCooked,
-	eggCooked,
-	riceCooked,
+	cutCarrot,
+	cookedBeef,
+	cookedShrimp,
+	boiledRice,
+	boiledEgg,
+	scrambledEgg,
 	null
 };
 namespace std {
@@ -91,11 +92,12 @@ public:
 		if (type == "shrimp") return IngredientType::shrimp;
 		if (type == "egg") return IngredientType::egg;
 		if (type == "rice") return IngredientType::rice;
-		if (type == "carrotCooked") return IngredientType::carrotCooked;
-		if (type == "beefCooked") return IngredientType::beefCooked;
-		if (type == "shrimpCooked") return IngredientType::shrimpCooked;
-		if (type == "eggCooked") return IngredientType::eggCooked;
-		if (type == "riceCooked") return IngredientType::riceCooked;
+		if (type == "cutCarrot") return IngredientType::cutCarrot;
+		if (type == "cookedBeef") return IngredientType::cookedBeef;
+		if (type == "cookedShrimp") return IngredientType::cookedShrimp;
+		if (type == "boiledEgg") return IngredientType::boiledEgg;
+		if (type == "boiledRice") return IngredientType::boiledRice;
+		if (type == "scrambledEgg") return IngredientType::scrambledEgg;
 		return IngredientType::null;
 	}
 };

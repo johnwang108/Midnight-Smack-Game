@@ -48,13 +48,12 @@ public:
 	int getTotalCountTarget() {
 		return (_targetIngredients[IngredientType::rice] + _targetIngredients[IngredientType::carrot] +
 			_targetIngredients[IngredientType::beef] + _targetIngredients[IngredientType::egg] +
-			_targetIngredients[IngredientType::shrimp] + _targetIngredients[IngredientType::riceCooked] + _targetIngredients[IngredientType::carrotCooked] +
-			_targetIngredients[IngredientType::beefCooked] + _targetIngredients[IngredientType::eggCooked] + _targetIngredients[IngredientType::shrimpCooked]);
+			_targetIngredients[IngredientType::shrimp] + _targetIngredients[IngredientType::boiledRice] + _targetIngredients[IngredientType::cutCarrot] +
+			_targetIngredients[IngredientType::cookedBeef] + _targetIngredients[IngredientType::boiledEgg] + _targetIngredients[IngredientType::cookedShrimp]
+			+ _targetIngredients[IngredientType::scrambledEgg]);
 	}
 
 	bool isSuccess();
-
-	bool isFull();
 	
 };
 

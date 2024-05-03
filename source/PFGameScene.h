@@ -110,9 +110,6 @@ protected:
     //Valid targets for cook-time
     std::vector<std::shared_ptr<EnemyModel>> _vulnerables;
 
-    //Current target for cook-time
-    std::shared_ptr<EnemyModel> _target;
-
     //temp bad code
     std::vector<std::shared_ptr<Attack>>  _attacks;
     time_t start;

@@ -14,11 +14,12 @@ bool GestureInteractable::init(const std::shared_ptr<Texture>& texture, const cu
 		_ingredients[IngredientType::beef] = 0;
 		_ingredients[IngredientType::egg] = 0;
 		_ingredients[IngredientType::shrimp] = 0;
-		_ingredients[IngredientType::riceCooked] = 0;
-		_ingredients[IngredientType::carrotCooked] = 0;
-		_ingredients[IngredientType::beefCooked] = 0;
-		_ingredients[IngredientType::eggCooked] = 0;
-		_ingredients[IngredientType::shrimpCooked] = 0;
+		_ingredients[IngredientType::boiledRice] = 0;
+		_ingredients[IngredientType::cutCarrot] = 0;
+		_ingredients[IngredientType::cookedBeef] = 0;
+		_ingredients[IngredientType::boiledEgg] = 0;
+		_ingredients[IngredientType::cookedShrimp] = 0;
+		_ingredients[IngredientType::scrambledEgg] = 0;
 		_capacity = -1;
 		_interactableId = ID++;
 		setName("interactable");
@@ -52,7 +53,7 @@ bool GestureInteractable::popIngredient(IngredientType i) {
 	return false;
 }
 void GestureInteractable::clearIngredients() {
-	//_ingredients.clear();
+	_ingredients.clear();
 }
 
 

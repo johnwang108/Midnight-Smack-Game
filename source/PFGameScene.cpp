@@ -70,6 +70,8 @@ struct IngredientProperties {
     std::string name;
     std::vector<std::string> gestures;
 };
+
+
 std::map<EnemyType, IngredientProperties> enemyToIngredientMap = {
     {EnemyType::beef, {"beef", EnemyModel::defaultSeq(EnemyType::beef)}},
     {EnemyType::carrot, {"carrot", EnemyModel::defaultSeq(EnemyType::carrot)}},
@@ -79,6 +81,37 @@ std::map<EnemyType, IngredientProperties> enemyToIngredientMap = {
     {EnemyType::shrimp, {"shrimp", EnemyModel::defaultSeq(EnemyType::shrimp)}}
 };
 
+//TODO FIX
+std::map<IngredientType, IngredientType> cookedTypeMap = {
+	{IngredientType::beef, IngredientType::cookedBeef},
+	{IngredientType::carrot, IngredientType::cutCarrot},
+	{IngredientType::egg, IngredientType::boiledEgg},
+	{IngredientType::rice, IngredientType::boiledRice},
+	{IngredientType::shrimp, IngredientType::cookedShrimp}
+};
+
+std::map<IngredientType, IngredientProperties> typeToPropertiesMap = {
+    {IngredientType::beef, {"beef", EnemyModel::defaultSeq(EnemyType::beef)}},
+    {IngredientType::carrot, {"carrot", EnemyModel::defaultSeq(EnemyType::carrot)}},
+    {IngredientType::egg,  {"egg", EnemyModel::defaultSeq(EnemyType::egg)}},
+    {IngredientType::rice, {"rice", EnemyModel::defaultSeq(EnemyType::rice)}},
+    {IngredientType::shrimp, {"shrimp", EnemyModel::defaultSeq(EnemyType::shrimp)}},
+    {IngredientType::boiledRice, {"boiledRice", EnemyModel::defaultSeq(EnemyType::rice)}},
+    {IngredientType::cutCarrot, {"cutCarrot", EnemyModel::defaultSeq(EnemyType::carrot)}},
+    {IngredientType::cookedBeef, {"cookedBeef", EnemyModel::defaultSeq(EnemyType::beef)}},
+    {IngredientType::boiledEgg, {"boiledEgg", EnemyModel::defaultSeq(EnemyType::egg)}},
+    {IngredientType::cookedShrimp, {"cookedShrimp", EnemyModel::defaultSeq(EnemyType::shrimp)}},
+    {IngredientType::scrambledEgg, {"scrambledEgg", EnemyModel::defaultSeq(EnemyType::egg)}},
+};
+
+
+std::map<std::string, buff> ingredientToBuff = {
+    {"beef", buff::speed},
+    {"carrot", buff::jump},
+    {"egg", buff::health},
+    {"rice", buff::defense},
+    {"carrot", buff::jump},
+};
 
 #pragma mark -
 #pragma mark Constructors
@@ -243,7 +276,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _dollarnode->setPosition(0,0);
 
     _inventoryNode = std::make_shared<Inventory>();
-    _inventoryNode->init(_assets, _input, Size(1280.0f, 180.0f));
+    std::shared_ptr<Texture> invTex = _assets->get<Texture>("inventorySlot");
+    _inventoryNode->init(_assets, _input, Size(invTex->getWidth()*NUM_SLOTS, 180.0f));
     _inventoryNode->setName("inventoryNode");
     _inventoryNode->setAnchor(Vec2::ANCHOR_BOTTOM_CENTER);
     _inventoryNode->setPosition(Vec2(1280.0f / 2.0f, 0));
@@ -304,10 +338,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
    // _uiScene->addChild(_SFRBarNode);
 
 
-    //_buffLabel = scene2::Label::allocWithText("NO BUFF", _assets->get<Font>(MESSAGE_FONT));
-    //_buffLabel->setAnchor(Vec2::ANCHOR_CENTER);
-    //_buffLabel->setPosition(dimen.width - _buffLabel->getWidth()/2, dimen.height - _buffLabel->getHeight());
-
     /*_pauseButton = std::dynamic_pointer_cast<scene2::Button>(_assets->get<scene2::SceneNode>("mymenubutton"));*/
 
     _paused = false;
@@ -342,7 +372,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     // _bgScene->addChild(_background);
     //_bgScene->setColor(Color4::CLEAR);
 
-    _target = std::make_shared<EnemyModel>();
 
 
 
@@ -425,7 +454,6 @@ void GameScene::dispose() {
         _enemies.clear();
         _afterimages.clear();
         _vulnerables.clear();
-        _target = nullptr;
         for (auto& attack : _attacks) {
             attack = nullptr;
         }
@@ -475,7 +503,7 @@ void GameScene::reset() {
     _goalDoor = nullptr;
     _background = nullptr;
     _sensorFixtures.clear();
-
+    _inventoryNode->reset();
     for (auto& enemy : _enemies) {
         enemy = nullptr;
     }
@@ -633,22 +661,41 @@ void GameScene::preUpdate(float dt) {
 
     if (_input->didInteract()) {
         if (_currentInteractableID != -1) {
-            for (auto& i : _interactables) {
+            for (auto& i : _plates) {
                 if (i->getId() == _currentInteractableID) {
                     IngredientType t = _inventoryNode->getIngredientTypeFromSlot(_inventoryNode->getSelectedSlot());
 					bool b = i->interact(t);
                     if (b) _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
+                    break;
 				}
 			}
+
+            for (auto& i : _stations) {
+                if (i->getId() == _currentInteractableID) {
+                    IngredientType t = _inventoryNode->getIngredientTypeFromSlot(_inventoryNode->getSelectedSlot());
+                    if (i->interact(t)) {
+                        i->setIngredientPtr(_inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot()));
+                    }
+                    else if (i->isFull()) {
+                        //let's cook baby
+                        std::shared_ptr<Ingredient> ing = i->getIngredientPtr();
+                        _dollarnode->addIngredient(ing);
+                        _slowed = true;
+                        _dollarnode->setTargetGesturesNighttime({ ing->getGestures(), ing->getGestures() });
+                        _dollarnode->setIngredientInStation(ing);
+                        _dollarnode->setIsStation(true);
+                        i->setIngredientPtr(nullptr);
+                        i->clearIngredients();
+                    }
+                }
+            }
 		}
     }
 
-    //TODO handle vulnerables smarter
     checkForCooktime();
     
 
     //handle animations
-
     if (!_actionManager->isActive("air_attack")) {
         _avatar->getBody()->SetFixedRotation(false);
         _avatar->getBody()->SetTransform(_avatar->getBody()->GetPosition(), 0.0f);
@@ -875,28 +922,43 @@ void GameScene::preUpdate(float dt) {
             _dollarnode->setReadyToCook(true);
         }
         //cooktime handling. Assume that _target not null, if it is null then continue
-        if (_target != nullptr && !_dollarnode->isPending()) {
+        //if (!_dollarnode->isPending()) {
+        if (!_dollarnode->isPending()) {
             _slowed = false;
             std::string message = "";
             if (_dollarnode->getLastResult() > 0) {
                 CULog("NICE!!!!!!!!!!!!!!");
-                modifier mod = _dollarnode->getIsDurationSequence() ? modifier::duration : modifier::effect;
-                _target->takeDamage(_avatar->getAttack(), 0);
 
-                _avatar->applyBuff(EnemyModel::typeToBuff(_target->getType()), mod);
-                //set buff label
-                //_buffLabel->setText(DudeModel::getStrForBuff(EnemyModel::typeToBuff(_target->getType())));
-                //_buffLabel->setVisible(true);
+                if (_dollarnode->isStation()) {
+                    CULog("correct");
+                    //add cooked version of ingredient to inventory
+                    IngredientProperties props = typeToPropertiesMap[cookedTypeMap[Ingredient::getIngredientTypeFromString(_dollarnode->getIngredientInStation()->getName())]];
+
+                    std::shared_ptr<Ingredient> ing = std::make_shared<Ingredient>("", props.gestures, 0.0f);
+                    ing->setName(props.name);
+                    std::shared_ptr<Texture> tex = _assets->get<Texture>(ing->getName());
+                    ing->init(tex);
+
+                    CULog(ing->getName().c_str());
+
+                    _inventoryNode->addIngredient(ing);
+                }
+                else {
+                    modifier mod = _dollarnode->getIsDurationSequence() ? modifier::duration : modifier::effect;
+                    //_target->takeDamage(_avatar->getAttack(), 0);
+
+                    buff reward = ingredientToBuff[_dollarnode->getIngredientInStation()->getName()];
+                    _avatar->applyBuff(reward, mod);
+                }
             }
             else {
                 CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
             }
             CULog("%i", _dollarnode->getLastResult());
             message = _feedbackMessages[_dollarnode->getLastResult()];
-            popup(message, cugl::Vec2(_target->getPosition().x * _scale, _target->getPosition().y * 1.1 * _scale));
+            popup(message, cugl::Vec2(_avatar->getPosition().x * _scale, _avatar->getPosition().y * 1.1 * _scale));
                 
-            _target = nullptr;
-
+            _dollarnode->setIngredientInStation(nullptr);
             _dollarnode->setPending(true);
             //}
             //else {
@@ -1450,6 +1512,8 @@ void GameScene::checkForCooktime() {
         if (ing != nullptr) {
             _slowed = true;
             _dollarnode->setTargetGesturesNighttime({ ing->getGestures(), ing->getGestures() });
+            _dollarnode->setIngredientInStation(ing);
+            _dollarnode->setIsStation(false);
             _avatar->useMeter();
         }
 

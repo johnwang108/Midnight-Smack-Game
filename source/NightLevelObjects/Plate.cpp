@@ -28,19 +28,16 @@ bool Plate::isSuccess() {
 	bool b3 = getCount(IngredientType::beef) == _targetIngredients[IngredientType::beef];
 	bool b4 = getCount(IngredientType::egg) == _targetIngredients[IngredientType::egg];
 	bool b5 = getCount(IngredientType::shrimp) == _targetIngredients[IngredientType::shrimp];
-	bool b6 = getCount(IngredientType::riceCooked) == _targetIngredients[IngredientType::riceCooked];
-	bool b7 = getCount(IngredientType::carrotCooked) == _targetIngredients[IngredientType::carrotCooked];
-	bool b8 = getCount(IngredientType::beefCooked) == _targetIngredients[IngredientType::beefCooked];
-	bool b9 = getCount(IngredientType::eggCooked) == _targetIngredients[IngredientType::eggCooked];
-	bool b0 = getCount(IngredientType::shrimpCooked) == _targetIngredients[IngredientType::shrimpCooked];
+	bool b6 = getCount(IngredientType::boiledEgg) == _targetIngredients[IngredientType::boiledEgg];
+	bool b7 = getCount(IngredientType::cutCarrot) == _targetIngredients[IngredientType::cutCarrot];
+	bool b8 = getCount(IngredientType::cookedBeef) == _targetIngredients[IngredientType::cookedBeef];
+	bool b9 = getCount(IngredientType::cookedShrimp) == _targetIngredients[IngredientType::cookedShrimp];
+	bool b10 = getCount(IngredientType::boiledRice) == _targetIngredients[IngredientType::boiledRice];
+	bool b11 = getCount(IngredientType::scrambledEgg) == _targetIngredients[IngredientType::scrambledEgg];
 
-	return b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b0;
+	return b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8 && b9 && b10 && b11;
 }
 
 bool Plate::isDone() {
 	return isFull();
-}
-
-bool Plate::isFull() {
-	return (getTotalCount()) >= getCapacity();
 }

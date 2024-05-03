@@ -724,8 +724,8 @@ void LevelModel::populate(GameScene& scene) {
 							if (pathWeWant.find("rice") != std::string::npos) {
 								scene.spawnRice(enemyPos, false);
 
-								//std::unordered_map<IngredientType, int> map = { {IngredientType::shrimp, 2}, {IngredientType::egg, 1} };
-								//scene.spawnPlate(enemyPos, map);
+								std::unordered_map<IngredientType, int> map = { {IngredientType::boiledEgg, 2}};
+								scene.spawnPlate(enemyPos, map);
 								numOfRice += 1;
 							}
 
@@ -765,7 +765,8 @@ void LevelModel::populate(GameScene& scene) {
 								scene.spawnEgg(enemyPos);
 							}
 							else if (pathWeWant.find("shrimp") != std::string::npos) {
-								scene.spawnShrimp(enemyPos);
+								//scene.spawnShrimp(enemyPos);
+								scene.spawnStation(enemyPos, StationType::BOIL);
 							}
 						}
 						else {

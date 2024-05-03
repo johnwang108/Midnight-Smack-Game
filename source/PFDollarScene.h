@@ -119,6 +119,8 @@ protected:
 
     bool _isNighttime;
 
+    bool _isStation;
+
     
     //Todo: need library of existing predetermined inputs to check against
 
@@ -152,6 +154,10 @@ public:
     void update(float timestep);
 
     bool isPending();
+
+    void setIsStation(bool b) { _isStation = b; }
+
+    bool isStation() { return _isStation; }
     
     int gestureResult();
 

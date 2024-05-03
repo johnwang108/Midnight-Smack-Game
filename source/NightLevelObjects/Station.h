@@ -19,6 +19,7 @@ namespace std {
 
 class Station : public GestureInteractable {
 private:
+	std::shared_ptr<Ingredient> _ingredient;
 
 	StationType _type;
 
@@ -39,6 +40,12 @@ public:
 
 	void setType(StationType type) {
 		_type = type;
+	}
+
+	void setIngredientPtr(std::shared_ptr<Ingredient>);
+
+	std::shared_ptr<Ingredient> getIngredientPtr() {
+		return _ingredient;
 	}
 
 	void hit() override;

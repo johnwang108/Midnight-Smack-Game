@@ -2,7 +2,6 @@
 #define __GESTURE_INTERACTABLE_H__
 
 #include <cugl/cugl.h>
-#include "../PFDollarScene.h"
 #include "../EntitySpriteNode.h"
 #include "../Ingredient.h"
 using namespace cugl;
@@ -52,6 +51,8 @@ public:
 
     virtual void hit() {};
 
+    bool isFull() { return getTotalCount() >= getCapacity(); }
+
     int getCount(IngredientType type) {
 		return _ingredients[type];
 	}
@@ -59,9 +60,9 @@ public:
     int getTotalCount() {
         return getCount(IngredientType::rice) + getCount(IngredientType::carrot) +
             getCount(IngredientType::beef) + getCount(IngredientType::egg) +
-            getCount(IngredientType::shrimp) + getCount(IngredientType::riceCooked) + getCount(IngredientType::carrotCooked) +
-            getCount(IngredientType::beefCooked) + getCount(IngredientType::eggCooked) +
-            getCount(IngredientType::shrimpCooked);
+            getCount(IngredientType::shrimp) + getCount(IngredientType::boiledRice) + getCount(IngredientType::cutCarrot) +
+            getCount(IngredientType::cookedBeef) + getCount(IngredientType::boiledEgg) +
+            getCount(IngredientType::cookedShrimp) + getCount(IngredientType::scrambledEgg);
     }
 
     int getCapacity();
