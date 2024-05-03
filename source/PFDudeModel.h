@@ -82,7 +82,7 @@
 #define MAX_METER 100.0f
 #define MAX_HEALTH 100.0f
 
-#define METER_COST 100.0f
+#define METER_COST 99.0f
 #define floatyFrames   10
 
 /** Cooldown (in animation frames) for dashing */

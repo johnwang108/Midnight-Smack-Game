@@ -376,7 +376,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
    _chapter = 1;
-   _level = 1;
+   _level = 3;
     loadLevel(_chapter, _level);
  //   currentLevel = level3;
 
@@ -1383,17 +1383,15 @@ void GameScene::fixedUpdate(float step) {
 
     //su
     _avatar->fixedUpdate(step);
-    for (auto it = _enemies.rbegin(); it != _enemies.rend(); ++it) {
-        auto& enemy = *it;
+    for (auto& enemy : _enemies) {
         if (enemy != nullptr && !enemy->isRemoved()) {
             enemy->fixedUpdate(step);
-            if (enemy->getHealth() <= 0) {
-                enemy->markForDeletion();
-            }
-            if (enemy->shouldDelete()) {
-                removeEnemy(enemy.get());
-                _enemies.erase(std::next(it).base());
-            }
+        }
+        if (enemy->getHealth() <= 0) {
+            enemy->markForDeletion();
+        }
+        if (enemy->shouldDelete()) {
+            removeEnemy(enemy.get());
         }
     }
 

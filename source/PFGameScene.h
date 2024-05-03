@@ -579,6 +579,9 @@ public:
     void spawnStation(Vec2 pos, StationType type);
     void spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map);
 
+    std::vector<std::shared_ptr<Attack>> getattacks() { return _attacks; }
+    void setattacks(std::vector<std::shared_ptr<Attack>> attacks) { _attacks = attacks; }
+
     void setInteractable(int interactableID) {
 		_currentInteractableID = interactableID;
 	}
