@@ -274,7 +274,7 @@ void PlatformInput::update(float dt) {
         _keyDebug = keys->keyPressed(DEBUG_KEY);
         _keyExit = keys->keyPressed(EXIT_KEY);
         _keyFire = keys->keyPressed(FIRE_KEY);
-        _keyJump = keys->keyPressed(JUMP_KEY);
+        _keyJump = keys->keyDown(JUMP_KEY);
         _keyInventoryLeft = keys->keyPressed(INV_LEFT_KEY);
         _keyInventoryRight = keys->keyPressed(INV_RIGHT_KEY);
         _keyInteract = keys->keyPressed(INTERACT_KEY);
