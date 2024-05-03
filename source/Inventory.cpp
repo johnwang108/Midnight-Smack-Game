@@ -174,3 +174,21 @@ shared_ptr<scene2::PolygonNode> Inventory::createInventoryNode(shared_ptr<Textur
 
     return slotNode;
 }
+
+void Inventory::selectNextSlot() {
+    if (_selectedSlot == NUM_SLOTS - 1) {
+        _selectedSlot = 0;
+    }
+    else {
+        _selectedSlot++;
+    }
+}
+
+void Inventory::selectPreviousSlot() {
+    if (_selectedSlot == 0) {
+        _selectedSlot = NUM_SLOTS - 1;
+    }
+    else {
+        _selectedSlot--;
+    }
+}

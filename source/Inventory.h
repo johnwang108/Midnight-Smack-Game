@@ -45,6 +45,10 @@ public:
 	std::shared_ptr<Ingredient> popIngredientFromSlot(int slotToClear);
 	void removeIngredientFromSlotNode(std::shared_ptr<Ingredient> ing, int slotNumber);
 
+
+	void selectNextSlot();
+	void selectPreviousSlot();
+
 	void reset();
 };
 #endif

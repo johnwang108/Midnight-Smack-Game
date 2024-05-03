@@ -52,22 +52,25 @@
             "file": "textures/day/backgrounds/mixingStation.png"
         },
         "shrimp": {
-            "file": "textures/day/food/shrimp.png"
+            "file": "textures/day/food/rawShrimp.png"
         },
         "cookedShrimp": {
             "file": "textures/day/food/cookedShrimp.png"
         },
         "rice": {
-            "file": "textures/day/food/rice.png"
+            "file": "textures/day/food/rawRice.png"
         },
         "boiledRice": {
             "file": "textures/day/food/cookedRice.png"
         },
         "egg": {
-            "file": "textures/day/food/egg.png"
+            "file": "textures/day/food/rawEgg.png"
         },
         "boiledEgg": {
             "file": "textures/day/food/boiledEgg.png"
+        },
+        "scrambledEgg": {
+            "file": "textures/day/food/scrambledEgg.png"
         },
         "carrotIdle": {
             "file": "textures/carrotLevelDesign.png"
@@ -76,16 +79,16 @@
             "file": "textures/carrotEnemy.png"
         },
         "carrot": {
-            "file": "textures/day/food/carrot.png"
+            "file": "textures/day/food/rawCarrot.png"
         },
         "cutCarrot": {
-            "file": "textures/day/food/cutCarrot.png"
+            "file": "textures/day/food/cookedCarrot.png"
         },
         "beef": {
-            "file": "textures/day/food/beef.png"
+            "file": "textures/day/food/rawBeef.png"
         },
         "cookedBeef": {
-            "file": "textures/day/food/beef.png"
+            "file": "textures/day/food/rawBeef.png"
         },
         "bar": {
             "file": "textures/day/bar.png"
