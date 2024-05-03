@@ -421,7 +421,7 @@ void LevelModel::populate(GameScene& scene) {
 								numOfRice += 1;
 							}
 
-							else if (pathWeWant.find("carrot") != std::string::npos) {
+							if (pathWeWant.find("carrot") != std::string::npos) {
 								CULog("we found a carrot!");
 
 								image = _assets->get<Texture>("carrotIdle");
