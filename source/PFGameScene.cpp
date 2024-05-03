@@ -342,7 +342,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
    _chapter = 1;
-   _level = 4;
+   _level = 1;
     loadLevel(_chapter, _level);
  //   currentLevel = level3;
 
@@ -1068,6 +1068,18 @@ void GameScene::preUpdate(float dt) {
                     enemy->setPosition(enemy->getPosition() + Vec2(direction*0.3, 0.0f));
 				}
             }
+            else if(_ShrimpRice->getHealth()<=35&&_enemies.size()>=4){
+                _ShrimpRice->setact("SFRStunState2", 5.0f);
+                _ShrimpRice->setangrytime(5);
+            }
+            if(_ShrimpRice->getparry()&&!_ShrimpRice->getparry2()){
+                _ShrimpRice->setparry(false);
+                _ShrimpRice->setparry2(false);
+                _ShrimpRice->setact("SFRStunState1", 0.6);
+                _ShrimpRice->parry(*this);
+                _ShrimpRice->setdelay(0.5);
+            }
+        
             _ShrimpRice->update(dt);
         }
 
@@ -1354,15 +1366,17 @@ void GameScene::fixedUpdate(float step) {
         _avatar->setDash(false);
     }
     _avatar->fixedUpdate(step);
-    for (auto& enemy : _enemies) {
+    for (auto it = _enemies.rbegin(); it != _enemies.rend(); ++it) {
+        auto& enemy = *it;
         if (enemy != nullptr && !enemy->isRemoved()) {
             enemy->fixedUpdate(step);
-		}
-        if (enemy->getHealth() <= 0) {
-            enemy->markForDeletion();
-        }
-        if (enemy->shouldDelete()) {
-            removeEnemy(enemy.get());
+            if (enemy->getHealth() <= 0) {
+                enemy->markForDeletion();
+            }
+            if (enemy->shouldDelete()) {
+                removeEnemy(enemy.get());
+                _enemies.erase(std::next(it).base());
+            }
         }
     }
     _world->update(step);
@@ -1515,7 +1529,7 @@ void GameScene::removeAttack(T* attack) {
     _worldnode->removeChild(attack->getSceneNode());
     attack->setDebugScene(nullptr);
     attack->markRemoved(true);
-    attack->dispose();
+    //attack->dispose();
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
@@ -1534,7 +1548,7 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
     _worldnode->removeChild(enemy->getSceneNode());
     enemy->setDebugScene(nullptr);
     enemy->markRemoved(true);
-    enemy->dispose();
+    //enemy->dispose();
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);

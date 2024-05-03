@@ -17,7 +17,7 @@ bool Attack::init(cugl::Vec2 pos, const cugl::Size& size) {
     if (BoxObstacle::init(pos, size)) {
 		setDensity(1);
 		_killme = false;
-		_lifetime = ATTACK_LIFETIME;
+        _lifetime = ATTACK_LIFETIME;
 		_faceright = false;
 		_direction = -1;
 		_shoot = true;

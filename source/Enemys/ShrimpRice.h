@@ -45,6 +45,10 @@ protected:
     float _angrytime;
     int _attackcount;
     int _W3att;
+    bool _parry;
+    bool _parry2;
+    float _delay;
+    std::vector<std::shared_ptr<Attack>> _attacks;
 
 
 public:
@@ -96,6 +100,14 @@ public:
     void setmovestate1(float state) { _movestate1 = state; }
     float getangrytime() { return _angrytime; }
     void setangrytime(float time) { _angrytime = time; }
+    void parry(GameScene& scene);
+    void setparry(bool p){_parry=p;}
+    bool getparry(){return _parry;}
+    void setparry2(bool p){_parry2=p;}
+    bool getparry2(){return _parry2;}
+    float getdelay(){return _delay;}
+    void setdelay(float time){_delay=time;}
+    bool getangry(){return _angry;}
 };
 
 #endif /* __SHRIMPRICE_H__ */

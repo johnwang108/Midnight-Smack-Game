@@ -413,6 +413,15 @@
         "bullRun": {
             "file": "textures/bullRun.png"
         },
+        "SFRStunState1": {
+            "file": "textures/SFRStunState1.png"
+        },
+        "SFRStunState2": {
+            "file": "textures/SFRStunState2.png"
+        },
+        "SFRGlint": {
+            "file": "textures/SFRGlint.png"
+        },
         "beefIdle": {
             "file": "textures/Sheets/Enemies/Beef/beefIdle.png"
         },

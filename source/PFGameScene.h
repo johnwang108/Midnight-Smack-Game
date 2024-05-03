@@ -568,6 +568,9 @@ public:
     void spawnEgg(Vec2 pos);
     void spawnRice(Vec2 pos, bool isSoldier = true);
     void spawnCarrot(Vec2 pos);
+    
+    std::vector<std::shared_ptr<Attack>>  getattacks(){return _attacks;}
+    void  setattacks(std::vector<std::shared_ptr<Attack>> attack){_attacks=attack;}
 };
 
 
