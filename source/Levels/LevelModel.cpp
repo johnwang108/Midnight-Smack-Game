@@ -765,7 +765,7 @@ void LevelModel::populate(GameScene& scene) {
 								scene.spawnEgg(enemyPos);
 							}
 							else if (pathWeWant.find("shrimp") != std::string::npos) {
-								//scene.spawnShrimp(enemyPos);
+								scene.spawnShrimp(enemyPos);
 								scene.spawnStation(enemyPos, StationType::BOIL);
 							}
 						}
