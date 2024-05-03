@@ -398,6 +398,12 @@
         "eggHurt": {
             "file": "textures/Sheets/Enemies/Egg/eggHurt.png"
         },
+        "eggAttackFirst": {
+            "file": "textures/Sheets/Enemies/Egg/eggAttackFirst.png"
+        },
+        "eggAttackSecond": {
+            "file": "textures/Sheets/Enemies/Egg/eggAttackSecond.png"
+        },
         "dreamBackground": {
             "file": "textures/dream-background.png"
         },

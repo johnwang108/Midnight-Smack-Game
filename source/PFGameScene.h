@@ -71,10 +71,6 @@ protected:
     std::shared_ptr<cugl::scene2::Label> _winnode;
     /** Reference to the lose message label */
     std::shared_ptr<cugl::scene2::Label> _losenode;
-    /** Reference to the left joystick image */
-    std::shared_ptr<cugl::scene2::PolygonNode> _leftnode;
-    /** Reference to the right joystick image */
-    std::shared_ptr<cugl::scene2::PolygonNode> _rightnode;
 
     std::shared_ptr<Scene2> _bgScene;
     std::shared_ptr<Scene2> _uiScene;
@@ -95,6 +91,11 @@ protected:
 
     /** Whether or not time is being slowed */
     bool _slowed;
+
+    // scene width
+    int _scene_width;
+    // scene height
+    int _scene_height;
 
     // Physics objects for the game
     /** Reference to the goalDoor (for collision detection) */
@@ -257,6 +258,26 @@ public:
         return _world;
     }
     
+    //gets _scene_width (in pixels)
+    int getSceneWidth() {
+        return _scene_width;
+    }
+
+    //gets _scene_height (in pixels)
+    int getSceneHeight() {
+        return _scene_width;
+    }
+
+    //sets _scene_width (in pixels)
+    void setSceneWidth(int width) {
+        _scene_width = width;
+    }
+
+    //sets _scene_height (in pixels)
+    void setSceneHeight(int height) {
+        _scene_height = height;
+    }
+
     /**
      * Initializes the controller contents, and starts the game
      *
@@ -505,7 +526,7 @@ public:
     std::vector<std::shared_ptr<EnemyModel>> getEnemies() const { return _enemies; }
 
     void loadLevel(std::shared_ptr<Levels> level) {
-        _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level2);
+        // _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level2);
         CULog(currentLevel == level2 ? "true" : "false");
         //_uiScene->getChildByName("bullbar")->setVisible(currentLevel == level3);
         level->populate(*this);
@@ -564,7 +585,14 @@ public:
 
     /*temp, not planning on using this for long*/
     void advanceLevel();
+
+    //Enemy spawn functions with default params.
+    void spawnShrimp(Vec2 pos);
+    void spawnBeef(Vec2 pos);
+    void spawnEgg(Vec2 pos);
+    void spawnRice(Vec2 pos, bool isSoldier = true);
+    void spawnCarrot(Vec2 pos);
 };
 
 
-#endif /* __PF_GAME_SCENE_H__ */
+#endif /*__PF_GAME_SCENE_H__ */

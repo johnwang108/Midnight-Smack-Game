@@ -29,8 +29,8 @@ public:
             result->loadAnimationsFromConstant("shrimp", _assets);
         }
 
-        result->addActionAnimation("shrimpRoll", _assets->get<Texture>("shrimpRollToIdle"), 2, 3, 6, 0.1f);
-        result->setAction("shrimpRoll", { 1 }, 0.1f);
+        //result->addActionAnimation("shrimpRoll", _assets->get<Texture>("shrimpRollToIdle"), 2, 3, 6, 0.1f);
+        //result->setAction("shrimpRoll", { 1 }, 0.1f);
         return res ? result : nullptr;
     }
 

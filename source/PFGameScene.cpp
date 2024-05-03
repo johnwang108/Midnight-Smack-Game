@@ -37,9 +37,6 @@ using namespace cugl;
 #pragma mark Level Geography
 
 /** This is adjusted by screen aspect ratio to get the height */
-// #define SCENE_WIDTH 6720
-// #define SCENE_HEIGHT 800
-
 #define SCENE_WIDTH 12800
 #define SCENE_HEIGHT 960
 
@@ -122,11 +119,27 @@ _debug(false)
  * @return true if the controller is initialized properly, false otherwise.
  */
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
-    return init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
+    _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/empanada-platform-level-01.json");
+    // _level_model->setFilePath("json/bull-boss-level.json");
+    setSceneWidth(_level_model->loadLevelWidth());
+    setSceneHeight(_level_model->loadLevelHeight());
+    return init(assets, Rect(0, 0, getSceneWidth(), getSceneHeight()), Vec2(0, DEFAULT_GRAVITY), input);
 }
 
 bool GameScene::initWithSave(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::shared_ptr<JsonValue> save) {
-    bool res = init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
+    /*setSceneWidth(400);
+    setSceneHeight(30);*/
+    _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/empanada-platform-level-01.json");
+    // _level_model->setFilePath("json/bull-boss-level.json");
+    setSceneWidth(_level_model->loadLevelWidth());
+    setSceneHeight(_level_model->loadLevelHeight());
+    bool res = init(assets, Rect(0, 0, getSceneWidth(), getSceneHeight()), Vec2(0, DEFAULT_GRAVITY), input);
+    if (save->size() == 0) return res;
+    float locationX = save->get("player")->getFloat("location_x");
+    float locationY = save->get("player")->getFloat("location_y");
+    // bool res = init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
     loadSave(save);
     return res;
 }
@@ -171,6 +184,16 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets, const Rect& re
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     const Rect& rect, const Vec2& gravity, std::shared_ptr<PlatformInput> input) {
     // Initialize the scene to a locked height (iPhone X is narrow, but wide)
+    /*_scene_width = 400;
+    _scene_height = 30;
+    setSceneWidth(400);
+    setSceneHeight(30);*/
+    _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/empanada-platform-level-01.json");
+    // _level_model->setFilePath("json/bull-boss-level.json");
+    setSceneWidth(_level_model->loadLevelWidth());
+    setSceneHeight(_level_model->loadLevelHeight());
+
     Size dimen = computeActiveSize();
     // SDL_ShowCursor(SDL_DISABLE);
 
@@ -211,8 +234,11 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     // IMPORTANT: SCALING MUST BE UNIFORM
     // This means that we cannot change the aspect ratio of the physics world
     // Shift to center if a bad fit
-    _scale = dimen.width == SCENE_WIDTH ? dimen.width / rect.size.width : dimen.height / rect.size.height;
-    Vec2 offset((dimen.width - SCENE_WIDTH) / 2.0f, (dimen.height - SCENE_HEIGHT) / 2.0f);
+
+     _scale = dimen.width == (getSceneWidth() * 32.0f) ? dimen.width / rect.size.width : dimen.height / rect.size.height;
+     Vec2 offset((dimen.width - (getSceneWidth() * 32.0f)) / 2.0f, (dimen.height - (getSceneHeight() * 32.0f)) / 2.0f);
+    /*_scale = dimen.width == (SCENE_WIDTH) ? dimen.width / rect.size.width : dimen.height / rect.size.height;
+    Vec2 offset((dimen.width - SCENE_WIDTH) / 2.0f, (dimen.height - SCENE_HEIGHT) / 2.0f);*/
 
     // Create the scene graph
     std::shared_ptr<Texture> image;
@@ -237,22 +263,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _losenode->setForeground(LOSE_COLOR);
     setFailure(false);
 
-
-    _leftnode = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>(LEFT_IMAGE));
-    _leftnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_MIDDLE_RIGHT);
-    _leftnode->setScale(0.35f);
-    _leftnode->setVisible(false);
-
-    _rightnode = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>(RIGHT_IMAGE));
-    _rightnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_MIDDLE_LEFT);
-    _rightnode->setScale(0.35f);
-    _rightnode->setVisible(false);
-
-    /*_gestureFeedback = scene2::Label::allocWithText("Perfect", _assets->get<Font>(MESSAGE_FONT));
-    _gestureFeedback->setAnchor(Vec2::ANCHOR_TOP_CENTER);
-    _gestureFeedback->setPosition(0, 0);
-    _gestureFeedback->setForeground(Color4::BLACK);
-    _gestureFeedback->setVisible(false);*/
 
 
 
@@ -374,28 +384,20 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
    _chapter = 1;
    _level = 1;
-    loadLevel(_chapter, _level);
- //   currentLevel = level3;
-
+   // loadLevel(_chapter, _level);
+   // 
+   // _level_model->setFilePath("json/empanada-platform-level-01.json");
+    currentLevel = _level_model;
+    loadLevel(_level_model);
     addChild(_worldnode);
     addChild(_debugnode);
-    addChild(_leftnode);
-    addChild(_rightnode);
 
     _actionManager = cugl::scene2::ActionManager::alloc();
     _BullactionManager = cugl::scene2::ActionManager::alloc();
     _SHRactionManager = cugl::scene2::ActionManager::alloc();
 
-    _afterimages = std::vector < std::shared_ptr < scene2::SpriteNode >> ();
+    _afterimages = std::vector < std::shared_ptr < scene2::SpriteNode>>();
 
-    //15 frame attack animation
-
-
-    // i just changed level2 to _level_model
-    // this will change for boss battle levels and so forth
-    // currentLevel = _level_model;
-    // currentLevel = level1;
-    // loadLevel(_level_model);
     //App class will set active true
     setActive(false);
     transition(false);
@@ -445,8 +447,6 @@ void GameScene::dispose() {
         _debugnode = nullptr;
         _winnode = nullptr;
         _losenode = nullptr;
-        _leftnode = nullptr;
-        _rightnode = nullptr;
         _bgScene = nullptr;
         _uiScene = nullptr;
         _dollarnode = nullptr;
@@ -531,8 +531,6 @@ void GameScene::reset() {
 
     removeChild(_worldnode);
     removeChild(_debugnode);
-    removeChild(_leftnode);
-    removeChild(_rightnode);
     // removeChild(_gestureFeedback);
 
     setFailure(false);
@@ -545,12 +543,10 @@ void GameScene::reset() {
         _debugAnimTarget = _ShrimpRice;
     }
     // loadLevel(_level_model);
-
-    loadLevel(_chapter, _level);
+    loadLevel(_level_model);
+    // loadLevel(_chapter, _level);
     addChild(_worldnode);
     addChild(_debugnode);
-    addChild(_leftnode);
-    addChild(_rightnode);
     // addChild(_gestureFeedback);
 }
 
@@ -904,11 +900,6 @@ void GameScene::preUpdate(float dt) {
             _dollarnode->setFocus(true);
             _dollarnode->setReadyToCook(true);
         }
-
-        _avatar->setJumping(false);
-        _avatar->setDash(false);
-        _avatar->applyForce(0, 0);
-
         //cooktime handling. Assume that _target not null, if it is null then continue
         //if (!_dollarnode->isPending()) {
         if (!_dollarnode->isPending()) {
@@ -1274,22 +1265,33 @@ void GameScene::fixedUpdate(float step) {
     // 
     if (CAMERA_FOLLOWS_PLAYER) {
 
-        if (_chapter == 1) {
-            if (_level == 1) {
-                // we will have to not hard code this in future: WIDTH_OF_LEVEL / 40.0
-                // _camera->setZoom(210.0/40.0);
-                _camera->setZoom(400.0 / 40.0);
-            }
-            else if (_level == 2) {
-                _camera->setZoom(400.0 / 40.0);
-            }
-            else if (_level == 3) {
-                _camera->setZoom(210.0 / 40.0);
-            }
-            else if (_level == 4) {
-                _camera->setZoom(400.0 / 40.0);
-            }
+        if (_level_model->getFilePath() == "json/intermediate.json") {
+            _camera->setZoom(155.0 / 40.0);
+            // _camera->setZoom(1.0);
         }
+
+        else if (_level_model->getFilePath() != "") {
+            _camera->setZoom(400.0 / 40.0);
+        }
+
+        // this might crash cuz 
+        //if (_chapter == 1) {
+        //    if (_level == 1) {
+        //        // we will have to not hard code this in future: WIDTH_OF_LEVEL / 40.0
+        //        // _camera->setZoom(210.0/40.0);
+        //        _camera->setZoom(400.0 / 40.0);
+        //    }
+        //    else if (_level == 2) {
+        //        _camera->setZoom(400.0 / 40.0);
+        //    }
+        //    else if (_level == 3) {
+        //        _camera->setZoom(210.0 / 40.0);
+        //    }
+        //    else if (_level == 4) {
+        //        _camera->setZoom(400.0 / 40.0);
+        //    }
+        //}
+
         //else if (currentLevel == level2) {
         //    _camera->setZoom(210.0 / 40.0);
         //}
@@ -1458,9 +1460,51 @@ void GameScene::postUpdate(float remain) {
     }
     else if (_countdown == 0) {
         if (_failed == false) {
-            advanceLevel();
-            reset();
+
+            //this is where we will change the scene width and heights for everything
+
+            if (_level_model->getFilePath() == "json/intermediate.json") {
+                _bgScene->setColor(Color4::BLACK);
+                _level_model->removeBackgroundImages(*this);
+                _level_model->setFilePath("json/empanada-platform-level-01.json");
+                currentLevel = _level_model;
+
+                CULog("We should switch to our first initial level");
+                // currentLevel
+                reset();
+            }
+            else if (_level_model->getFilePath() == "json/empanada-platform-level-01.json") {
+                _bgScene->setColor(Color4::BLACK);
+                _level_model->removeBackgroundImages(*this);
+                _level_model->setFilePath("json/test_level_v2_experiment.json");
+                currentLevel = _level_model;
+                
+                CULog("We should switch to our first initial level");
+                // currentLevel
+                reset();
+            }
+            else if (_level_model->getFilePath() == "json/test_level_v2_experiment.json") {
+                _bgScene->setColor(Color4::BLACK);
+                _level_model->removeBackgroundImages(*this);
+                _level_model->setFilePath("json/bull-boss-level.json");
+                currentLevel = _level_model;
+
+                CULog("We should switch to the bull boss level");
+                // currentLevel
+                reset();
+            }
+            else if (currentLevel == level3) {
+                currentLevel = _level_model;
+                reset();
+            }
+            else {
+                currentLevel = _level_model;
+                reset();
+            }
         }
+            // advanceLevel();
+            // reset();
+        // }
         else if (_failed) {
             reset();
         }
@@ -1589,6 +1633,7 @@ void GameScene::removeAttack(T* attack) {
     _worldnode->removeChild(attack->getSceneNode());
     attack->setDebugScene(nullptr);
     attack->markRemoved(true);
+    attack->dispose();
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
@@ -1610,6 +1655,7 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
     _worldnode->removeChild(enemy->getSceneNode());
     enemy->setDebugScene(nullptr);
     enemy->markRemoved(true);
+    enemy->dispose();
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
@@ -1636,12 +1682,12 @@ void GameScene::addEnemyToInventory(EnemyType enemyType) {
 Size GameScene::computeActiveSize() const {
     Size dimen = Application::get()->getDisplaySize();
     float ratio1 = dimen.width / dimen.height;
-    float ratio2 = ((float)SCENE_WIDTH) / ((float)SCENE_HEIGHT);
+    float ratio2 = ((float)_scene_width) / ((float)_scene_height);
     if (ratio1 < ratio2) {
-        dimen *= SCENE_WIDTH / dimen.width;
+        dimen *= (_scene_width * 32.0f) / dimen.width;
     }
     else {
-        dimen *= SCENE_HEIGHT / dimen.height;
+        dimen *= (_scene_height * 32.0f) / dimen.height;
     }
     return dimen;
 }
@@ -1837,3 +1883,59 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
     }
 }
 
+void GameScene::spawnShrimp(Vec2 pos) {
+    std::shared_ptr<Texture> image = _assets->get<Texture>("shrimpIdle");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 1, 1, 1);
+    Size s = Size(2.0f, 2.0f);
+    std::shared_ptr<EnemyModel> new_enemy = Shrimp::allocWithConstants(pos,s, getScale(), _assets);
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(new_enemy, spritenode);
+    _enemies.push_back(new_enemy);
+}
+void GameScene::spawnBeef(Vec2 pos) {
+    std::shared_ptr<Texture> image = _assets->get<Texture>("beefIdle");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
+    Size s = cugl::Size(8.0f, 8.0f);
+    std::shared_ptr<EnemyModel> new_enemy = Beef::allocWithConstants(pos, s, getScale(), _assets);
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(new_enemy, spritenode);
+    _enemies.push_back(new_enemy);
+}
+void GameScene::spawnEgg(Vec2 pos) {
+    std::shared_ptr<Texture> image = _assets->get<Texture>("eggIdle");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
+    Size s = Size(2.25f, 6.0f);
+    std::shared_ptr<EnemyModel> new_enemy = Egg::allocWithConstants(pos, s, getScale(), _assets);
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    spritenode->setAnchor(0.5, 0.35);
+    addObstacle(new_enemy, spritenode);
+    _enemies.push_back(new_enemy);
+}
+void GameScene::spawnRice(Vec2 pos, bool isSoldier) {
+    std::shared_ptr<Texture> image = _assets->get<Texture>("riceLeader");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
+    float imageWidth = image->getWidth() / 4;
+    float imageHeight = image->getHeight() / 4;
+    Size singularSpriteSize = Size(imageWidth, imageHeight);
+    std::shared_ptr<EnemyModel> new_enemy = Rice::allocWithConstants(pos, singularSpriteSize / (5 * getScale()), getScale(), _assets, isSoldier);
+    spritenode->setAnchor(Vec2(0.5, 0.35));
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(new_enemy, spritenode);
+    _enemies.push_back(new_enemy);
+}
+
+void GameScene::spawnCarrot(Vec2 pos) {
+    std::shared_ptr<Texture> image = _assets->get<Texture>("eggIdle");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
+    Size s = Size(2.25f, 6.0f);
+    std::shared_ptr<EnemyModel> new_enemy = Egg::allocWithConstants(pos, s, getScale(), _assets);
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    spritenode->setAnchor(0.5, 0.35);
+    addObstacle(new_enemy, spritenode);
+    _enemies.push_back(new_enemy);
+}

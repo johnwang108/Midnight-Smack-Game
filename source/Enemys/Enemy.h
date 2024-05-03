@@ -284,6 +284,8 @@ public:
 
     std::string getState() { return _state; }
 
+    void jump(Vec2 dir);
+
     //void syncStateTimes();
 
     bool isTangible() { return _isTangible; }

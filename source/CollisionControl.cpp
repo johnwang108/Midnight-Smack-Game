@@ -49,17 +49,22 @@ void GameScene::beginContact(b2Contact* contact) {
     }
 
     // Check if the player hits a wall NOT PLATFORM (not implemented for that atm)
-    if ((bd1 == _avatar.get() && bd2->getName() == WALL_NAME) ||
-        (bd2 == _avatar.get() && bd1->getName() == WALL_NAME)) {
-        _avatar->setContactingWall(true);
+    if (fd1 == _avatar->getLeftSensorName() && (bd2->getName() == WALL_NAME || bd2->getName() == PLATFORM_NAME) ||
+        (fd2 == _avatar->getLeftSensorName() && (bd1->getName() == WALL_NAME || bd1->getName() == PLATFORM_NAME))) {
+        _avatar->setContactingLeftWall(true);
+        _avatar->setVX(0);
+    } 
+        
+    if (fd1 == _avatar->getRightSensorName() && (bd2->getName() == WALL_NAME || bd2->getName() == PLATFORM_NAME) ||
+        (fd2 == _avatar->getRightSensorName() && (bd1->getName() == WALL_NAME || bd1->getName() == PLATFORM_NAME))) {
+        _avatar->setContactingRightWall(true);
         _avatar->setVX(0);
     }
 
 
-
     // See if we have landed on the ground.
-    if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1 && bd1->getName().find("attack") == std::string::npos) ||
-        (_avatar->getSensorName() == fd1 && _avatar.get() != bd2 && bd1->getName().find("attack") == std::string::npos)) {
+    if ((_avatar->getSensorName() == fd2 && bd1->getName() == PLATFORM_NAME) ||
+        (_avatar->getSensorName() == fd1 && bd2->getName() == PLATFORM_NAME)) {
         _avatar->setGrounded(true);
 
         // Could have more than one ground
@@ -356,8 +361,8 @@ void GameScene::endContact(b2Contact* contact) {
     physics2::Obstacle* bd1 = reinterpret_cast<physics2::Obstacle*>(body1->GetUserData().pointer);
     physics2::Obstacle* bd2 = reinterpret_cast<physics2::Obstacle*>(body2->GetUserData().pointer);
 
-    if ((_avatar->getSensorName() == fd2 && _avatar.get() != bd1) ||
-        (_avatar->getSensorName() == fd1 && _avatar.get() != bd2)) {
+    if ((_avatar->getSensorName() == fd2 && (bd1->getName() == WALL_NAME || bd1->getName() == PLATFORM_NAME)) ||
+        (_avatar->getSensorName() == fd1 && (bd2->getName() == WALL_NAME || bd2->getName() == PLATFORM_NAME))) {
         _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
         if (_sensorFixtures.empty()) {
             _avatar->setGrounded(false);
@@ -375,17 +380,26 @@ void GameScene::endContact(b2Contact* contact) {
         }
     }
 
-    // Check if the player is no longer in contact with any walls
-    bool p1 = (_avatar->getSensorName() == fd2);
-    bool p2 = (bd1->getName() != WALL_NAME);
-    bool p3 = (_avatar->getSensorName() == fd1);
-    bool p4 = (bd2->getName() != WALL_NAME);
-    bool p5 = _avatar->contactingWall();
-    if (!(p1 || p2 || p3) && p4 && p5) {
-        _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
-        _avatar->setContactingWall(false);
+    //// Check if the player is no longer in contact with any walls
+    //bool p1 = (_avatar->getLeftSensorName() == fd1);
+    //bool p2 = (_avatar->getRightSensorName() == fd1);
+    //bool p3 = (bd2->getName() != WALL_NAME);
+    //bool p4 = _avatar->contactingWall();
+    //if (!(p1 || p2) && p3 && p4) {
+    //    //_sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
+    //    _avatar->setContactingWall(false);
+    //}
+
+    if (fd1 == _avatar->getLeftSensorName() && (bd2->getName() == WALL_NAME || bd2->getName() == PLATFORM_NAME) || 
+        (fd2 == _avatar->getLeftSensorName() && (bd1->getName() == WALL_NAME || bd1->getName() == PLATFORM_NAME))) {
+        _avatar->setContactingLeftWall(false);
     }
-    
+
+    if (fd1 == _avatar->getRightSensorName() && (bd2->getName() == WALL_NAME || bd2->getName() == PLATFORM_NAME) || 
+        (fd2 == _avatar->getRightSensorName() && (bd1->getName() == WALL_NAME || bd1->getName() == PLATFORM_NAME))) {
+        _avatar->setContactingRightWall(false);
+    }
+
     if (_avatar->getBodySensorName() == fd1 && enemies.find(bd2->getName()) != enemies.end()) {
         if (((EnemyModel*)bd2)->isTangible()) {
             Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
@@ -396,7 +410,4 @@ void GameScene::endContact(b2Contact* contact) {
         else CULog("Intangible!");
         _avatar->removeTouching();
     }
-    
 }
-
-

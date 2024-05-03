@@ -31,7 +31,8 @@ void Egg::update(float dt) {
         setRequestedActionAndPrio("eggDeath", 1000);
     }
     else if (_state == "chasing") {
-        setRequestedActionAndPrio("eggIdle", 1);
+        if (velocity.x = 0) setRequestedActionAndPrio("eggIdle", 1);
+        else setRequestedActionAndPrio("eggWalk", 2);
     }
     else if (_state == "stunned") {
         setRequestedActionAndPrio("eggHurt", 100);
@@ -47,7 +48,11 @@ void Egg::update(float dt) {
 	    setRequestedActionAndPrio("eggWalk", 2);
     }
     else if (_state == "short_windup") {
-        setRequestedActionAndPrio("eggWindupQuick", 50);
+        int prio = 50;
+        if (getActiveAction() == "eggAttack") prio = getActivePriority() + 1;
+        CULog("short windup");
+        CULog(getActiveAction().c_str());
+        setRequestedActionAndPrio("eggWindupQuick", prio);
     }
     else {
         CULog("error: egg");
@@ -82,6 +87,9 @@ void Egg::fixedUpdate(float step) {
         CULog(_state.c_str());
     }
 
+    if (_state != "patrolling") {
+        setDirection(SIGNUM(_distanceToPlayer.x));
+    }
     _body->SetLinearVelocity(EnemyModel::handleMovement(velocity));
 }
 
@@ -89,12 +97,15 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Egg::c
     Vec2 pos = getPosition();
 
     std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE);
-    std::shared_ptr<Attack> attack = Attack::alloc(pos,
-        cugl::Size(image->getSize().width / scale,
-            ATTACK_H * image->getSize().height / scale));
 
+    Size s = Size(1.0f, 0.5f);
+    std::shared_ptr<Attack> attack = Attack::alloc(pos,
+        s);
+        //cugl::Size(image->getSize().width / scale, ATTACK_H * image->getSize().height / scale));
+
+    float attackOffsetY = getHeight() * 0.9;
     pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
-    pos.y += ATTACK_OFFSET_Y;
+    pos.y += attackOffsetY;
 
 
     if (getDirection() > 0) {
@@ -108,8 +119,8 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Egg::c
     attack->setstraight(_distanceToPlayer + getPosition());
     attack->setEnabled(true);
     attack->setrand(false);
-    attack->setLifetime(attack->getLifetime() * 5);
-    attack->setSpeed(attack->getSpeed() * 0.2);
+    attack->setLifetime(attack->getLifetime() * 10);
+    attack->setSpeed((attack->getSpeed()) * 0.5/ getMass());
 
 
 

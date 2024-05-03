@@ -1,0 +1,14 @@
+{ "columns":10,
+ "image":"..\/textures\/P2bull.png",
+ "imageheight":233,
+ "imagewidth":333,
+ "margin":0,
+ "name":"P2bull",
+ "spacing":0,
+ "tilecount":70,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}
