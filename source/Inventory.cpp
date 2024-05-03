@@ -161,6 +161,9 @@ std::shared_ptr<Ingredient> Inventory::findAndRemoveHeldIngredient() {
 }
 
 void Inventory::reset() {
+    for (int i = 0; i < _currentIngredients.size(); i++) {
+        removeIngredientFromSlotNode(_currentIngredients.at(i), i);
+    }
     _currentIngredients.clear();
     _ingredientToRemove = nullptr;
     _currentlyHeldIngredient = nullptr;
