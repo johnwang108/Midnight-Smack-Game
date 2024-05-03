@@ -63,7 +63,8 @@ using namespace cugl;
 #define FEEDBACK_DURATION 1.2f
 
 #define HEALTHBAR_X_OFFSET 15
-#define DISCARD_HOLD_TIME 3.0f
+#define DISCARD_HOLD_TIME 2.0f
+#define MIN_DISCARD_START_TIME 0.25f
 
 struct IngredientProperties {
     std::string name;
@@ -649,6 +650,12 @@ void GameScene::preUpdate(float dt) {
         return;
     }
 
+    if (_input->getInventoryLeftPressed()) {
+        _inventoryNode->selectPreviousSlot();
+    }
+    else if (_input->getInventoryRightPressed()) {
+        _inventoryNode->selectNextSlot();
+    }
     //TODO handle vulnerables smarter
     checkForCooktime();
     
@@ -1458,8 +1465,10 @@ void GameScene::postUpdate(float remain) {
 *  if cooktime, it initiates cooktime by setting _slowed = true, and the dollar node gestures
 */
 void GameScene::checkForCooktime() {
-
-    if (_input->didSlowHeldDuration() > 0.0f && _avatar->getMeter() > METER_COST) {
+    if (_input->getLastSlowHeldDuration() > 0.0f) {
+        CULog("Slow Duration %f, %d", _input->getLastSlowHeldDuration(), _input->justReleasedSlow());
+    }
+    if (_input->getLastSlowHeldDuration() < MIN_DISCARD_START_TIME && _input->justReleasedSlow() && _avatar->getMeter() > METER_COST) {
 
         std::shared_ptr<Ingredient> ing = _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
         //
@@ -1496,7 +1505,7 @@ void GameScene::checkForCooktime() {
         //}
 
     }
-    else if (_input->didSlowHeldDuration() > DISCARD_HOLD_TIME) {
+    else if (_input->getLastSlowHeldDuration() > DISCARD_HOLD_TIME && _input->justReleasedSlow()) {
         std::shared_ptr<Ingredient> ing = _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
         //i think thats all
     }

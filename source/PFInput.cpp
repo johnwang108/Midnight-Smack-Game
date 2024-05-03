@@ -30,12 +30,16 @@ using namespace cugl;
 #define JUMP_KEY KeyCode::SPACE
 #define DASH_KEY KeyCode::LEFT_SHIFT
 
+
 #define MUSIC_KEY KeyCode::M
 #define ANIMATE_KEY KeyCode::N
 #define BACKGROUND_KEY KeyCode::B
 
 /** Slow key */
 #define SLOW_KEY KeyCode::TAB
+
+#define INV_LEFT_KEY KeyCode::ARROW_LEFT
+#define INV_RIGHT_KEY KeyCode::ARROW_RIGHT
 
 /** How close we need to be for a multi touch */
 #define NEAR_TOUCH      100
@@ -96,6 +100,7 @@ PlatformInput::PlatformInput() :
     _firePressed(false),
     _jumpPressed(false),
     _slowPressed(false),
+    _slowReleased(false),
     _keyJump(false),
     _keyFire(false),
     _keyReset(false),
@@ -104,6 +109,7 @@ PlatformInput::PlatformInput() :
     _keyLeft(false),
     _keyRight(false),
     _keySlow(false),
+    _keySlowReleased(false),
     _slowHeldDuration(0.0f),
     _horizontal(0.0f),
     _vertical(0.0f),
@@ -263,12 +269,17 @@ void PlatformInput::update(float dt) {
         _keyExit = keys->keyPressed(EXIT_KEY);
         _keyFire = keys->keyPressed(FIRE_KEY);
         _keyJump = keys->keyPressed(JUMP_KEY);
+        _keyInventoryLeft = keys->keyPressed(INV_LEFT_KEY);
+        _keyInventoryRight = keys->keyPressed(INV_RIGHT_KEY);
+
         _keySlow = keys->keyPressed(SLOW_KEY);
+        _keySlowReleased = keys->keyReleased(SLOW_KEY);
 
         if (keys->keyDown(SLOW_KEY)) {
             _slowHeldDuration += dt;
         }
         else {
+            _lastSlowHeldDuration = _slowHeldDuration;
             _slowHeldDuration = 0.0f;
         }
 
@@ -289,17 +300,21 @@ void PlatformInput::update(float dt) {
     else {
         _keyJump = _gameCont->isButtonPressed(GameController::Button::A);
         _keyDebug = _gameCont->isButtonPressed(GameController::Button::B);
+        _keyInventoryLeft = _gameCont->isButtonPressed(GameController::Button::LEFT_SHOULDER);
+        _keyInventoryRight = _gameCont->isButtonPressed(GameController::Button::RIGHT_SHOULDER);
         _keySlow = _gameCont->isButtonPressed(GameController::Button::X);
+        _keySlowReleased = _gameCont->isButtonReleased(GameController::Button::X);
 
         if (_gameCont->isButtonDown(GameController::Button::X)) {
             _slowHeldDuration += dt;
         }
         else {
+            _lastSlowHeldDuration = _slowHeldDuration;
             _slowHeldDuration = 0.0f;
         }
 
-        _keyReset = _gameCont->isButtonPressed(GameController::Button::LEFT_SHOULDER);
-        _keyExit = _gameCont->isButtonPressed(GameController::Button::RIGHT_SHOULDER);
+        _keyReset = _gameCont->isButtonPressed(GameController::Button::START);
+        _keyExit = _gameCont->isButtonPressed(GameController::Button::GUIDE);
         _keyTransition = _gameCont->isButtonPressed(GameController::Button::B);
 
 
@@ -345,6 +360,7 @@ void PlatformInput::update(float dt) {
     _firePressed = _keyFire;
     _jumpPressed = _keyJump;
     _slowPressed = _keySlow;
+    _slowReleased = _keySlowReleased;
     _dashPressed = _dashKey;
     _transitionPressed = _keyTransition;
 
@@ -379,6 +395,7 @@ void PlatformInput::update(float dt) {
         }
     }
 
+ 
     // If it does not support keyboard, we must reset "virtual" keyboard
     //#ifdef CU_TOUCH_SCREEN
     //    _keyExit = false;

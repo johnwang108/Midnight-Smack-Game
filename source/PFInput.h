@@ -60,6 +60,12 @@ private:
     /** Whether the slow key is down */
     bool _keySlow;
 
+    /** Whether the slow key was just released */
+    bool _keySlowReleased;
+
+    bool _keyInventoryLeft;
+    bool _keyInventoryRight;
+
     bool _keyTransition;
 
     //for Leon
@@ -96,6 +102,11 @@ protected:
     /** Whether the slow action was chosen. */
     bool _slowPressed;
     float _slowHeldDuration;
+    float _lastSlowHeldDuration;
+    bool _slowReleased;
+
+    bool _inventoryLeftPressed;
+    bool _inventoryRightPressed;
     /** How much did we move horizontally? */
     float _horizontal;
     float _vertical;
@@ -319,6 +330,22 @@ public:
 
     float didSlowHeldDuration() const {
         return _slowHeldDuration;
+    }
+
+    bool justReleasedSlow() const {
+        return _slowReleased;
+    }
+
+    float getLastSlowHeldDuration() const {
+        return _lastSlowHeldDuration;
+    }
+
+    bool getInventoryLeftPressed() const {
+        return _inventoryLeftPressed;
+    }
+
+    bool getInventoryRightPressed() const {
+        return _inventoryRightPressed;
     }
 
 
