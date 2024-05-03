@@ -40,6 +40,8 @@ public:
 	void setType(StationType type) {
 		_type = type;
 	}
+
+	void hit() override;
 };
 
 #endif /* __STATION_H__ */

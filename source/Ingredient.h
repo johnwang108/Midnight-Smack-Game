@@ -13,7 +13,8 @@ enum class IngredientType {
 	beefCooked,
 	shrimpCooked,
 	eggCooked,
-	riceCooked
+	riceCooked,
+	null
 };
 namespace std {
 	template <> struct hash<IngredientType> {
@@ -83,6 +84,20 @@ public:
 
 	bool isLaunching() { return _launching; }
 	void setLaunching(bool val) { _launching = val; };
+
+	static IngredientType getIngredientTypeFromString(std::string type) {
+		if (type == "carrot") return IngredientType::carrot;
+		if (type == "beef") return IngredientType::beef;
+		if (type == "shrimp") return IngredientType::shrimp;
+		if (type == "egg") return IngredientType::egg;
+		if (type == "rice") return IngredientType::rice;
+		if (type == "carrotCooked") return IngredientType::carrotCooked;
+		if (type == "beefCooked") return IngredientType::beefCooked;
+		if (type == "shrimpCooked") return IngredientType::shrimpCooked;
+		if (type == "eggCooked") return IngredientType::eggCooked;
+		if (type == "riceCooked") return IngredientType::riceCooked;
+		return IngredientType::null;
+	}
 };
 
 #endif // __INGREDIENT_H__

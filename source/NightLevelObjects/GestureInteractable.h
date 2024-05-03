@@ -50,6 +50,8 @@ public:
 
     void clearIngredients();
 
+    virtual void hit() {};
+
     int getCount(IngredientType type) {
 		return _ingredients[type];
 	}
@@ -57,7 +59,9 @@ public:
     int getTotalCount() {
         return getCount(IngredientType::rice) + getCount(IngredientType::carrot) +
             getCount(IngredientType::beef) + getCount(IngredientType::egg) +
-            getCount(IngredientType::shrimp);
+            getCount(IngredientType::shrimp) + getCount(IngredientType::riceCooked) + getCount(IngredientType::carrotCooked) +
+            getCount(IngredientType::beefCooked) + getCount(IngredientType::eggCooked) +
+            getCount(IngredientType::shrimpCooked);
     }
 
     int getCapacity();

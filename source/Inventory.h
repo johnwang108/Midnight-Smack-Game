@@ -47,6 +47,8 @@ public:
 	std::shared_ptr<scene2::PolygonNode> createInventoryNode(std::shared_ptr<Texture>, int);
 	//remove ingredient from slot and return the ingredient
 	std::shared_ptr<Ingredient> popIngredientFromSlot(int slotToClear);
+
+	IngredientType getIngredientTypeFromSlot(int slotNumber);
 	void removeIngredientFromSlotNode(std::shared_ptr<Ingredient> ing, int slotNumber);
 
 

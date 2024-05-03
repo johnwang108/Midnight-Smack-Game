@@ -395,6 +395,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _currentInteractableID = -1;
 
     _interactables = std::vector<std::shared_ptr<GestureInteractable>>();
+    _plates = std::vector<std::shared_ptr<Plate>>();
+    _stations = std::vector<std::shared_ptr<Station>>();
 
     setName("night");
     Application::get()->setClearColor(Color4::CLEAR);
@@ -633,7 +635,9 @@ void GameScene::preUpdate(float dt) {
         if (_currentInteractableID != -1) {
             for (auto& i : _interactables) {
                 if (i->getId() == _currentInteractableID) {
-					i->interact();
+                    IngredientType t = _inventoryNode->getIngredientTypeFromSlot(_inventoryNode->getSelectedSlot());
+					bool b = i->interact(t);
+                    if (b) _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
 				}
 			}
 		}
@@ -1226,16 +1230,12 @@ void GameScene::fixedUpdate(float step) {
     if (_slowed) {
         step = step / 15;
     }
-    //camera logic
-    // 
-    // Commented out 03/27 4:30AM to check level editor
-    // 
+
     if (CAMERA_FOLLOWS_PLAYER) {
 
         if (_chapter == 1) {
             if (_level == 1) {
                 // we will have to not hard code this in future: WIDTH_OF_LEVEL / 40.0
-                // _camera->setZoom(210.0/40.0);
                 _camera->setZoom(400.0 / 40.0);
             }
             else if (_level == 2) {
@@ -1248,15 +1248,6 @@ void GameScene::fixedUpdate(float step) {
                 _camera->setZoom(400.0 / 40.0);
             }
         }
-        //else if (currentLevel == level2) {
-        //    _camera->setZoom(210.0 / 40.0);
-        //}
-        //else  if (currentLevel == level3) {
-        //    _camera->setZoom(210.0 / 40.0);
-        //}
-        //else {
-        //    _camera->setZoom(2.0);
-        //}
 
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
         float invZoom = 1 / _camera->getZoom();
@@ -1281,10 +1272,8 @@ void GameScene::fixedUpdate(float step) {
         //magic number 0.2 are for smoothness
         float smooth = 0.2;
         pos.smooth(target, step, smooth);
-        //pos = _avatar->getPosition() * _scale;
         _camera->setPosition(pos);
         _camera->update();
-        //_dollarnode->setPosition(pos);
     }
     if (_avatar->getHealth() <= 0) {
         setFailure(true);
@@ -1316,7 +1305,11 @@ void GameScene::fixedUpdate(float step) {
         _avatar->setJumping(false);
         _avatar->setDash(false);
     }
+
+    //su
     _avatar->fixedUpdate(step);
+
+    //enemies
     for (auto& enemy : _enemies) {
         if (enemy != nullptr && !enemy->isRemoved()) {
             enemy->fixedUpdate(step);
@@ -1329,7 +1322,7 @@ void GameScene::fixedUpdate(float step) {
         }
     }
 
-
+    //attacks
     for (auto it = _attacks.begin(); it != _attacks.end();) {
         if ((*it) == nullptr || (*it)->isRemoved()) {
             ++it;
@@ -1349,6 +1342,33 @@ void GameScene::fixedUpdate(float step) {
         }
     }
 
+    //interactables
+    /*for (auto it = _interactables.begin(); it != _interactables.end();) {
+        if ((*it) == nullptr || (*it)->isRemoved()) {
+			
+		}
+	}*/
+
+    //plates
+    bool allPlatesDone = !_plates.empty();
+    for (auto it = _plates.begin(); it != _plates.end();) {
+        if ((*it) == nullptr || (*it)->isRemoved()) {
+			++it;
+			continue;
+		}
+        else {
+            if (!(*it)->isSuccess()) {
+                allPlatesDone = false;
+            } else{
+                CULog("SUcceeded");
+                (*it)->getSceneNode()->setColor(Color4::GREEN);
+            }
+			++it;
+		}
+	}
+    if (allPlatesDone) {
+        setComplete(true);
+    }
 
     _world->update(step);
 }
@@ -1851,6 +1871,7 @@ void GameScene::spawnStation(Vec2 pos, StationType type) {
 
     addObstacle(station, station->getSceneNode());
     _interactables.push_back(station);
+    _stations.push_back(station);
 }
 
 void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map) {
@@ -1861,4 +1882,5 @@ void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map
 
     addObstacle(plate, plate->getSceneNode());
     _interactables.push_back(plate);
+    _plates.push_back(plate);
 }

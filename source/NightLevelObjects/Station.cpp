@@ -14,6 +14,13 @@ bool Station::init(const std::shared_ptr<Texture>& texture, const cugl::Vec2& po
 
 bool Station::interact(IngredientType t) {
 	GestureInteractable::interact(t);
-	//process interaction: add ingredient to dollar scene
+	//process interaction: add ingredient if empty, otherwise do nothing
+	if (getTotalCount() < getCapacity()) {
+		return addIngredient(t);
+	}
+	return true;
+}
 
+void Station::hit() {
+	clearIngredients();
 }

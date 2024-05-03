@@ -722,31 +722,10 @@ void LevelModel::populate(GameScene& scene) {
 							// because animations are not done yet for other enemies
 
 							if (pathWeWant.find("rice") != std::string::npos) {
-								//scene.spawnRice(enemyPos, false);'
+								scene.spawnRice(enemyPos, false);
 
-								std::unordered_map<IngredientType, int> map = { {IngredientType::rice, 1} };
-								scene.spawnPlate(enemyPos, map);
-								/*if (numOfRice == 0) {
-									image = _assets->get<Texture>("riceLeader");
-									spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
-									float imageWidth = image->getWidth() / 4;
-									float imageHeight = image->getHeight() / 4;
-									Size singularSpriteSize = Size(imageWidth, imageHeight);
-									new_enemy = Rice::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, false);
-								}
-								else {
-									image = _assets->get<Texture>("riceSoldier");
-									spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 15);
-									float imageWidth = image->getWidth() / 4;
-									float imageHeight = image->getHeight() / 4;
-									Size singularSpriteSize = Size(imageWidth, imageHeight);
-									new_enemy = Rice::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, true);
-								}
-								spritenode->setAnchor(Vec2(0.5, 0.35));
-								new_enemy->setSceneNode(spritenode);
-								new_enemy->setDebugColor(DEBUG_COLOR);
-								scene.addObstacle(new_enemy, spritenode);
-								_enemies.push_back(new_enemy);*/
+								//std::unordered_map<IngredientType, int> map = { {IngredientType::shrimp, 2}, {IngredientType::egg, 1} };
+								//scene.spawnPlate(enemyPos, map);
 								numOfRice += 1;
 							}
 

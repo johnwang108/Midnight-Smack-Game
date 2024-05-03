@@ -82,7 +82,7 @@
 #define MAX_METER 100.0f
 #define MAX_HEALTH 100.0f
 
-#define METER_COST 60.0f
+#define METER_COST 100.0f
 #define floatyFrames   10
 
 /** Cooldown (in animation frames) for dashing */
@@ -91,7 +91,7 @@
 #define WALL_JUMP_LERP 0.1f
 
 //lerp timer in seconds
-#define WALL_JUMP_LERP_TIMER 2.75f
+#define WALL_JUMP_LERP_TIMER 3.75f
 
 
 #pragma mark -

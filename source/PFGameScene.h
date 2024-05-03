@@ -132,6 +132,9 @@ protected:
     cugl::Vec3 _velocity = Vec3::ZERO;
 
     std::vector<std::shared_ptr<GestureInteractable>> _interactables;
+
+    std::vector<std::shared_ptr<Plate>> _plates;
+    std::vector<std::shared_ptr<Station>> _stations;
     
     int _currentInteractableID;
       

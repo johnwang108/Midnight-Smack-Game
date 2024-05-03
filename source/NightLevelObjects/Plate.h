@@ -29,7 +29,7 @@ public:
 
 	void setTargetIngredients(std::unordered_map<IngredientType, int> ingredients) {
 		_targetIngredients = ingredients;
-		setCapacity(getTotalCount());
+		setCapacity(getTotalCountTarget());
 	}
 
 	bool addIngredient(IngredientType i) override {
@@ -44,6 +44,13 @@ public:
 	}
 
 	bool isDone();
+
+	int getTotalCountTarget() {
+		return (_targetIngredients[IngredientType::rice] + _targetIngredients[IngredientType::carrot] +
+			_targetIngredients[IngredientType::beef] + _targetIngredients[IngredientType::egg] +
+			_targetIngredients[IngredientType::shrimp] + _targetIngredients[IngredientType::riceCooked] + _targetIngredients[IngredientType::carrotCooked] +
+			_targetIngredients[IngredientType::beefCooked] + _targetIngredients[IngredientType::eggCooked] + _targetIngredients[IngredientType::shrimpCooked]);
+	}
 
 	bool isSuccess();
 

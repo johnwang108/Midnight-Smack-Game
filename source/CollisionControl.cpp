@@ -211,6 +211,11 @@ void GameScene::beginContact(b2Contact* contact) {
         setInteractable(((GestureInteractable*)bd1)->getId());
 	}
 
+    //station hit it to remove 
+    if (bd1->getName() == "interactable" && bd2->getName() == ATTACK_NAME) {
+        ((GestureInteractable*)bd1)->hit();
+    }
+
     // Test bullet collision with enemy
     if (bd1->getName() == ATTACK_NAME && enemies.find(bd2->getName()) != enemies.end()) {
         if (((EnemyModel*)bd2)->isTangible()) {

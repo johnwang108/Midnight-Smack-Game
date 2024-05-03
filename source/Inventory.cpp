@@ -160,6 +160,13 @@ std::shared_ptr<Ingredient> Inventory::findAndRemoveHeldIngredient() {
     return nullptr;
 }
 
+IngredientType Inventory::getIngredientTypeFromSlot(int slotNumber) {
+    if (slotNumber >= _currentIngredients.size()) {
+		return IngredientType::null;
+	}
+	return Ingredient::getIngredientTypeFromString(_currentIngredients[slotNumber]->getName());
+}
+
 void Inventory::reset() {
     _currentIngredients.clear();
     _ingredientToRemove = nullptr;
