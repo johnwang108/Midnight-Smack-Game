@@ -25,7 +25,7 @@ public:
 		return result;
 	}
 
-	void interact();
+	bool interact(IngredientType t) override;
 
 	void setTargetIngredients(std::unordered_map<IngredientType, int> ingredients) {
 		_targetIngredients = ingredients;

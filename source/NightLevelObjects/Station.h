@@ -35,7 +35,7 @@ public:
 		return result;
 	}
 
-	void interact();
+	bool interact(IngredientType t) override;
 
 	void setType(StationType type) {
 		_type = type;

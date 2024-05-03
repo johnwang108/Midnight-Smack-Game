@@ -57,7 +57,7 @@ int GestureInteractable::getCapacity() {
 void GestureInteractable::setCapacity(int capacity) {
 	_capacity = capacity;
 }
-bool GestureInteractable::interact() {
+bool GestureInteractable::interact(IngredientType t) {
 	if (!_isActive) return false;
 
 	//transition in dollar node

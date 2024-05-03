@@ -12,8 +12,8 @@ bool Station::init(const std::shared_ptr<Texture>& texture, const cugl::Vec2& po
 	return false;
 }
 
-void Station::interact() {
-	GestureInteractable::interact();
+bool Station::interact(IngredientType t) {
+	GestureInteractable::interact(t);
 	//process interaction: add ingredient to dollar scene
 
 }

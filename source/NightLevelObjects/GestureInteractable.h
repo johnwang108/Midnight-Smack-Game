@@ -40,7 +40,7 @@ public:
     void setSpriteNode(const std::shared_ptr<EntitySpriteNode>& node);
     void setActive(bool active);
     bool isActive();
-    bool interact();
+    virtual bool interact(IngredientType t);
 
     virtual bool addIngredient(IngredientType i);
 

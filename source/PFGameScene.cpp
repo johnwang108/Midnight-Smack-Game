@@ -627,6 +627,18 @@ void GameScene::preUpdate(float dt) {
     else if (_input->getInventoryRightPressed()) {
         _inventoryNode->selectNextSlot();
     }
+
+
+    if (_input->didInteract()) {
+        if (_currentInteractableID != -1) {
+            for (auto& i : _interactables) {
+                if (i->getId() == _currentInteractableID) {
+					i->interact();
+				}
+			}
+		}
+    }
+
     //TODO handle vulnerables smarter
     checkForCooktime();
     

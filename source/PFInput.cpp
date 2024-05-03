@@ -41,6 +41,8 @@ using namespace cugl;
 #define INV_LEFT_KEY KeyCode::ARROW_LEFT
 #define INV_RIGHT_KEY KeyCode::ARROW_RIGHT
 
+#define INTERACT_KEY KeyCode::E
+
 /** How close we need to be for a multi touch */
 #define NEAR_TOUCH      100
 /** The key for the event handlers */
@@ -271,6 +273,7 @@ void PlatformInput::update(float dt) {
         _keyJump = keys->keyPressed(JUMP_KEY);
         _keyInventoryLeft = keys->keyPressed(INV_LEFT_KEY);
         _keyInventoryRight = keys->keyPressed(INV_RIGHT_KEY);
+        _keyInteract = keys->keyPressed(INTERACT_KEY);
 
         _keySlow = keys->keyPressed(SLOW_KEY);
         _keySlowReleased = keys->keyReleased(SLOW_KEY);
@@ -363,6 +366,7 @@ void PlatformInput::update(float dt) {
     _slowReleased = _keySlowReleased;
     _dashPressed = _dashKey;
     _transitionPressed = _keyTransition;
+    _interactPressed = _keyInteract;
 
     _animatePressed = _keyAnimate;
     _backgroundPressed = _keyBackground;

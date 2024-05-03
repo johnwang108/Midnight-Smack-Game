@@ -12,10 +12,10 @@ bool Plate::init(const std::shared_ptr<Texture>& texture, const cugl::Vec2& pos,
 	return false;
 }
 
-void Plate::interact() {
-	GestureInteractable::interact();
-	//process interaction: add ingredient to dollar scene
-
+bool Plate::interact(IngredientType t) {
+	GestureInteractable::interact(t);
+	//process interaction: add ingredient to the plate!
+	return addIngredient(t);
 }
 
 bool Plate::isSuccess() {

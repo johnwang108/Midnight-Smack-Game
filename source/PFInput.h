@@ -60,6 +60,8 @@ private:
     /** Whether the slow key is down */
     bool _keySlow;
 
+    bool _keyInteract;
+
     /** Whether the slow key was just released */
     bool _keySlowReleased;
 
@@ -99,6 +101,8 @@ protected:
     bool _firePressed;
     /** Whether the jump action was chosen. */
     bool _jumpPressed;
+
+    bool _interactPressed;
     /** Whether the slow action was chosen. */
     bool _slowPressed;
     float _slowHeldDuration;
@@ -324,6 +328,10 @@ public:
 	 * @return true if the exit button was pressed.
 	 */
 	bool didExit() const { return _exitPressed; }
+
+    bool didInteract() const {
+        return _interactPressed;
+    }
     bool didSlow() const { 
             return _slowPressed; 
     }
