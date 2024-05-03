@@ -13,7 +13,7 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         _direction = -1; 
         _lastDirection = _direction;
         _nextChangeTime = 0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 0.5;
-        _health = 49.0f;
+        _health = 100.0f;
         _healthCooldown = 0.1f;
         _angrytime = 0;
         _sprintPrepareTime = 0;

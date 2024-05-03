@@ -294,12 +294,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _BullhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
     _uiScene->addChild(_bullBarNode);
 
-    //std::shared_ptr<cugl::scene2::SceneNode> _SFRBarNode;
-    //_SFRBarNode = _assets->get<scene2::SceneNode>("shrimpbar");
-
-    //_SFRhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
-    //_SFRhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
-   // _uiScene->addChild(_SFRBarNode);
+    std::shared_ptr<cugl::scene2::SceneNode> _SFRBarNode;
+    _SFRBarNode = _assets->get<scene2::SceneNode>("SFR");
+    _SFRhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("shrimpbar"));
+    _SFRhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("bosshealth"));
+    _uiScene->addChild(_SFRBarNode);
+    
 
 
     _buffLabel = scene2::Label::allocWithText("NO BUFF", _assets->get<Font>(MESSAGE_FONT));
@@ -342,7 +342,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
    _chapter = 1;
-   _level = 3;
+   _level = 4;
     loadLevel(_chapter, _level);
  //   currentLevel = level3;
 

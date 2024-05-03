@@ -504,6 +504,7 @@ public:
 
     void loadLevel(std::shared_ptr<Levels> level) {
         _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level2);
+        _uiScene->getChildByName("SFR")->setVisible(currentLevel == level3);
         CULog(currentLevel == level2 ? "true" : "false");
         //_uiScene->getChildByName("bullbar")->setVisible(currentLevel == level3);
         level->populate(*this);
