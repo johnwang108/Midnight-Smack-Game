@@ -117,6 +117,7 @@ PlatformInput::PlatformInput() :
     _keyInventoryLeft(false),
     _keyInventoryRight(false),
     _slowHeldDuration(0.0f),
+    _lastSlowHeldDuration(0.0f),
     _horizontal(0.0f),
     _vertical(0.0f),
     _dashKey(false),
@@ -306,11 +307,14 @@ void PlatformInput::update(float dt) {
     }
     else {
         _keyJump = _gameCont->isButtonPressed(GameController::Button::A);
-        _keyDebug = _gameCont->isButtonPressed(GameController::Button::B);
+        //_keyDebug = _gameCont->isButtonPressed(GameController::Button::B);
         _keyInventoryLeft = _gameCont->isButtonPressed(GameController::Button::LEFT_SHOULDER);
         _keyInventoryRight = _gameCont->isButtonPressed(GameController::Button::RIGHT_SHOULDER);
-        _keySlow = _gameCont->isButtonPressed(GameController::Button::X);
-        _keySlowReleased = _gameCont->isButtonReleased(GameController::Button::X);
+        _keySlow = _gameCont->isButtonPressed(GameController::Button::Y);
+        _keySlowReleased = _gameCont->isButtonReleased(GameController::Button::Y);
+
+        _keyFire = _gameCont->isButtonReleased(GameController::Button::X);
+        
 
         if (_gameCont->isButtonDown(GameController::Button::X)) {
             _slowHeldDuration += dt;
@@ -322,14 +326,14 @@ void PlatformInput::update(float dt) {
 
         _keyReset = _gameCont->isButtonPressed(GameController::Button::START);
         _keyExit = _gameCont->isButtonPressed(GameController::Button::GUIDE);
-        _keyTransition = _gameCont->isButtonPressed(GameController::Button::B);
+        _keyInteract = _gameCont->isButtonPressed(GameController::Button::B);
 
 
         float lTriggerAmt = _gameCont->getAxisPosition(GameController::Axis::TRIGGER_LEFT);
         _dashKey = (lTriggerAmt > TRIGGER_DEADZONE) || _gameCont->isButtonPressed(GameController::Button::Y);
 
-        float rTriggerAmt = _gameCont->getAxisPosition(GameController::Axis::TRIGGER_RIGHT);
-        _keyFire = (rTriggerAmt > TRIGGER_DEADZONE);
+      /*  float rTriggerAmt = _gameCont->getAxisPosition(GameController::Axis::TRIGGER_RIGHT);
+        _keyFire = (rTriggerAmt > TRIGGER_DEADZONE);*/
 
 
         _xAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_X);
