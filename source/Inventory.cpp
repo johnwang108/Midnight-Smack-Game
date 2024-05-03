@@ -41,6 +41,9 @@ bool Inventory::init(shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformI
         addChild(invSlot);
         _slots[i] = invSlot;
     }
+    highlightSelectedSlot();
+
+
     return true;
 }
 
@@ -163,6 +166,8 @@ void Inventory::reset() {
     _currentlyHeldIngredient = nullptr;
     _selectedSlot = 0;
     _enlarged = false;
+    highlightSelectedSlot();
+
 }
 
 shared_ptr<scene2::PolygonNode> Inventory::createInventoryNode(shared_ptr<Texture> tex, int invIndex) {
@@ -176,19 +181,31 @@ shared_ptr<scene2::PolygonNode> Inventory::createInventoryNode(shared_ptr<Textur
 }
 
 void Inventory::selectNextSlot() {
+    unhighlightSelectedSlot();
     if (_selectedSlot == NUM_SLOTS - 1) {
         _selectedSlot = 0;
     }
     else {
         _selectedSlot++;
     }
+    highlightSelectedSlot();
 }
 
 void Inventory::selectPreviousSlot() {
+    unhighlightSelectedSlot();
     if (_selectedSlot == 0) {
         _selectedSlot = NUM_SLOTS - 1;
     }
     else {
         _selectedSlot--;
     }
+    highlightSelectedSlot();
+}
+
+void Inventory::unhighlightSelectedSlot() {
+    _slots[_selectedSlot]->setTexture(_assets->get<Texture>("inventorySlot"));
+}
+
+void Inventory::highlightSelectedSlot() {
+    _slots[_selectedSlot]->setTexture(_assets->get<Texture>("highlightedInventorySlot"));
 }

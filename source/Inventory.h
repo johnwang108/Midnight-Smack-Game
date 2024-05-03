@@ -35,6 +35,9 @@ public:
 	void update(float timestep);
 	void setFocus(bool focus) { _focus = focus; }
 	int getSelectedSlot() { return _selectedSlot; }
+	void unhighlightSelectedSlot();
+	void highlightSelectedSlot();
+
 
 	std::shared_ptr<Ingredient> getCurrentlyHeldIngredient() { return _currentlyHeldIngredient; }
 	void addIngredient(std::shared_ptr<Ingredient> ingredient);

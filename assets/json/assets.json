@@ -3,6 +3,9 @@
         "inventorySlot": {
             "file": "textures/inventorySlot.png"
         },
+        "highlightedInventorySlot": {
+            "file": "textures/highlightedInventorySlot.png"
+        },
         "rushObjective": {
             "file": "textures/day/rushObjective.png"
         },
