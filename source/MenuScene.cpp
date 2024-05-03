@@ -15,7 +15,7 @@ enum class MenuType {
 	OPTIONS,
 	PAUSE,
 };
-
+	
 MenuType strToMenuType(std::string str) {
 	if (str == "main") {
 		return MenuType::MAIN_MENU;
