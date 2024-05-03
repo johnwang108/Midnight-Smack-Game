@@ -1,0 +1,14 @@
+{ "columns":112,
+ "image":"..\/textures\/level_image.png",
+ "imageheight":1500,
+ "imagewidth":3600,
+ "margin":0,
+ "name":"movementAndCombatTutorial",
+ "spacing":0,
+ "tilecount":5152,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

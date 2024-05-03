@@ -40,6 +40,7 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
     if (Entity::init(pos, scaledSize)) {
         setDensity(ENEMY_DENSITY);
         setFriction(0.0f); // Prevent sticking to walls
+        setGravityScale(1.2f);
         setFixedRotation(false);
         setFriction(1.0f);
         _isChasing = false;

@@ -122,7 +122,7 @@ enum class modifier {
 #define DEFAULT_BUFF 1.0f
 
 #define BASE_ATTACK_BUFF 1.5f
-#define BASE_HEALTH_BUFF 5.0f
+#define BASE_HEALTH_BUFF 0.05f
 #define BASE_JUMP_BUFF 1.5f
 //defense <1 because damage multiplied by defense
 #define BASE_DEFENSE_BUFF 0.5f

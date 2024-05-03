@@ -4,9 +4,10 @@ bool Plate::init(const std::shared_ptr<Texture>& texture, const cugl::Vec2& pos,
 	if (GestureInteractable::init(texture, pos, size)) {
 		setCapacity(-1);
 		setBodyType(b2_staticBody);
-		b2Filter filter = getFilterData();
+		setSensor(true);
+		/*b2Filter filter = getFilterData();
 		filter.groupIndex = -1;
-		setFilterData(filter);
+		setFilterData(filter);*/
 		return true;
 	}
 	return false;

@@ -6,13 +6,22 @@ std::map<StationType, std::unordered_set<IngredientType>> acceptedIngredientsMap
 	{StationType::BOIL, std::unordered_set<IngredientType>({IngredientType::egg, IngredientType::rice})}
 };
 
+std::map<IngredientType, std::string> ingredientTypeMap = {
+	{IngredientType::carrot, "carrot"},
+	{IngredientType::beef, "beef"},
+	{IngredientType::shrimp, "shrimp"},
+	{IngredientType::egg, "egg"},
+	{IngredientType::rice, "rice"}
+};
+
 bool Station::init(const std::shared_ptr<Texture>& texture, const cugl::Vec2& pos, const cugl::Size& size) {
 	if (GestureInteractable::init(texture, pos, size)) {
 		setCapacity(1);
 		setBodyType(b2_staticBody);
-		b2Filter filter = getFilterData();
-		filter.groupIndex = -1;
-		setFilterData(filter);
+		setSensor(true);
+		//b2Filter filter = getFilterData();
+		//filter.groupIndex = -1;
+		//setFilterData(filter);
 		return true;
 	}
 	return false;

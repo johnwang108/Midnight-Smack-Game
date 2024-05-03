@@ -558,7 +558,7 @@ void DudeModel::fixedUpdate(float step) {
             jump(Vec2(_movement, _vertical));
         }
         else if (contactingLeftWall() || contactingRightWall()) {
-            wallJump();
+            // wallJump();
         }
     }
     else {

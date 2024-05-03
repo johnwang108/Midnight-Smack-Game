@@ -37,9 +37,6 @@ using namespace cugl;
 #pragma mark Level Geography
 
 /** This is adjusted by screen aspect ratio to get the height */
-// #define SCENE_WIDTH 6720
-// #define SCENE_HEIGHT 800
-
 #define SCENE_WIDTH 12800
 #define SCENE_HEIGHT 960
 
@@ -146,11 +143,27 @@ _debug(false)
  * @return true if the controller is initialized properly, false otherwise.
  */
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
-    return init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
+    _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/empanada-platform-level-01.json");
+    // _level_model->setFilePath("json/bull-boss-level.json");
+    setSceneWidth(_level_model->loadLevelWidth());
+    setSceneHeight(_level_model->loadLevelHeight());
+    return init(assets, Rect(0, 0, getSceneWidth(), getSceneHeight()), Vec2(0, DEFAULT_GRAVITY), input);
 }
 
 bool GameScene::initWithSave(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::shared_ptr<JsonValue> save) {
-    bool res = init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
+    /*setSceneWidth(400);
+    setSceneHeight(30);*/
+    _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/empanada-platform-level-01.json");
+    // _level_model->setFilePath("json/bull-boss-level.json");
+    setSceneWidth(_level_model->loadLevelWidth());
+    setSceneHeight(_level_model->loadLevelHeight());
+    bool res = init(assets, Rect(0, 0, getSceneWidth(), getSceneHeight()), Vec2(0, DEFAULT_GRAVITY), input);
+    if (save->size() == 0) return res;
+    float locationX = save->get("player")->getFloat("location_x");
+    float locationY = save->get("player")->getFloat("location_y");
+    // bool res = init(assets, Rect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT), Vec2(0, DEFAULT_GRAVITY), input);
     loadSave(save);
     return res;
 }
@@ -195,6 +208,16 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets, const Rect& re
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     const Rect& rect, const Vec2& gravity, std::shared_ptr<PlatformInput> input) {
     // Initialize the scene to a locked height (iPhone X is narrow, but wide)
+    /*_scene_width = 400;
+    _scene_height = 30;
+    setSceneWidth(400);
+    setSceneHeight(30);*/
+    _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/empanada-platform-level-01.json");
+    // _level_model->setFilePath("json/bull-boss-level.json");
+    setSceneWidth(_level_model->loadLevelWidth());
+    setSceneHeight(_level_model->loadLevelHeight());
+
     Size dimen = computeActiveSize();
     // SDL_ShowCursor(SDL_DISABLE);
 
@@ -235,8 +258,11 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     // IMPORTANT: SCALING MUST BE UNIFORM
     // This means that we cannot change the aspect ratio of the physics world
     // Shift to center if a bad fit
-    _scale = dimen.width == SCENE_WIDTH ? dimen.width / rect.size.width : dimen.height / rect.size.height;
-    Vec2 offset((dimen.width - SCENE_WIDTH) / 2.0f, (dimen.height - SCENE_HEIGHT) / 2.0f);
+
+     _scale = dimen.width == (getSceneWidth() * 32.0f) ? dimen.width / rect.size.width : dimen.height / rect.size.height;
+     Vec2 offset((dimen.width - (getSceneWidth() * 32.0f)) / 2.0f, (dimen.height - (getSceneHeight() * 32.0f)) / 2.0f);
+    /*_scale = dimen.width == (SCENE_WIDTH) ? dimen.width / rect.size.width : dimen.height / rect.size.height;
+    Vec2 offset((dimen.width - SCENE_WIDTH) / 2.0f, (dimen.height - SCENE_HEIGHT) / 2.0f);*/
 
     // Create the scene graph
     std::shared_ptr<Texture> image;
@@ -376,10 +402,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
    _chapter = 1;
-   _level = 3;
-    loadLevel(_chapter, _level);
- //   currentLevel = level3;
-
+   _level = 1;
+   // loadLevel(_chapter, _level);
+   // 
+   // _level_model->setFilePath("json/empanada-platform-level-01.json");
+    currentLevel = _level_model;
+    loadLevel(_level_model);
     addChild(_worldnode);
     addChild(_debugnode);
 
@@ -540,8 +568,8 @@ void GameScene::reset() {
         _debugAnimTarget = _ShrimpRice;
     }
     // loadLevel(_level_model);
-
-    loadLevel(_chapter, _level);
+    loadLevel(_level_model);
+    // loadLevel(_chapter, _level);
     addChild(_worldnode);
     addChild(_debugnode);
     // addChild(_gestureFeedback);
@@ -644,12 +672,12 @@ void GameScene::preUpdate(float dt) {
         setTarget("main_menu");
     }
 
-    if (_input->didTransition()) {
-        transition(true);
-        setTarget("day");
-        CULog("TTTTTTTTTTT");
-        return;
-    }
+    //if (_input->didTransition()) {
+    //    transition(true);
+    //    setTarget("day");
+    //    CULog("TTTTTTTTTTT");
+    //    return;
+    //}
 
     if (_input->getInventoryLeftPressed()) {
         _inventoryNode->selectPreviousSlot();
@@ -660,6 +688,7 @@ void GameScene::preUpdate(float dt) {
 
 
     if (_input->didInteract()) {
+        CULog("IIIII");
         if (_currentInteractableID != -1) {
             for (auto& i : _plates) {
                 if (i->getId() == _currentInteractableID) {
@@ -1308,21 +1337,42 @@ void GameScene::fixedUpdate(float step) {
 
     if (CAMERA_FOLLOWS_PLAYER) {
 
-        if (_chapter == 1) {
-            if (_level == 1) {
-                // we will have to not hard code this in future: WIDTH_OF_LEVEL / 40.0
-                _camera->setZoom(400.0 / 40.0);
-            }
-            else if (_level == 2) {
-                _camera->setZoom(400.0 / 40.0);
-            }
-            else if (_level == 3) {
-                _camera->setZoom(400.0 / 40.0);
-            }
-            else if (_level == 4) {
-                _camera->setZoom(400.0 / 40.0);
-            }
+        if (_level_model->getFilePath() == "json/intermediate.json") {
+            _camera->setZoom(155.0 / 40.0);
+            // _camera->setZoom(1.0);
         }
+
+        else if (_level_model->getFilePath() != "") {
+            _camera->setZoom(400.0 / 40.0);
+        }
+
+        // this might crash cuz 
+        //if (_chapter == 1) {
+        //    if (_level == 1) {
+        //        // we will have to not hard code this in future: WIDTH_OF_LEVEL / 40.0
+        //        // _camera->setZoom(210.0/40.0);
+        //        _camera->setZoom(400.0 / 40.0);
+        //    }
+        //    else if (_level == 2) {
+        //        _camera->setZoom(400.0 / 40.0);
+        //    }
+        //    else if (_level == 3) {
+        //        _camera->setZoom(210.0 / 40.0);
+        //    }
+        //    else if (_level == 4) {
+        //        _camera->setZoom(400.0 / 40.0);
+        //    }
+        //}
+
+        //else if (currentLevel == level2) {
+        //    _camera->setZoom(210.0 / 40.0);
+        //}
+        //else  if (currentLevel == level3) {
+        //    _camera->setZoom(210.0 / 40.0);
+        //}
+        //else {
+        //    _camera->setZoom(2.0);
+        //}
 
         cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
         float invZoom = 1 / _camera->getZoom();
@@ -1499,9 +1549,51 @@ void GameScene::postUpdate(float remain) {
     }
     else if (_countdown == 0) {
         if (_failed == false) {
-            advanceLevel();
-            reset();
+
+            //this is where we will change the scene width and heights for everything
+
+            if (_level_model->getFilePath() == "json/intermediate.json") {
+                //_bgScene->setColor(Color4::BLACK);
+                _level_model->removeBackgroundImages(*this);
+                _level_model->setFilePath("json/empanada-platform-level-01.json");
+                currentLevel = _level_model;
+
+                CULog("We should switch to our first initial level");
+                // currentLevel
+                reset();
+            }
+            else if (_level_model->getFilePath() == "json/empanada-platform-level-01.json") {
+                //_bgScene->setColor(Color4::BLACK);
+                _level_model->removeBackgroundImages(*this);
+                _level_model->setFilePath("json/test_level_v2_experiment.json");
+                currentLevel = _level_model;
+                
+                CULog("We should switch to our first initial level");
+                // currentLevel
+                reset();
+            }
+            else if (_level_model->getFilePath() == "json/test_level_v2_experiment.json") {
+                _bgScene->setColor(Color4::BLACK);
+                _level_model->removeBackgroundImages(*this);
+                _level_model->setFilePath("json/bull-boss-level.json");
+                currentLevel = _level_model;
+
+                CULog("We should switch to the bull boss level");
+                // currentLevel
+                reset();
+            }
+            else if (currentLevel == level3) {
+                currentLevel = _level_model;
+                reset();
+            }
+            else {
+                currentLevel = _level_model;
+                reset();
+            }
         }
+            // advanceLevel();
+            // reset();
+        // }
         else if (_failed) {
             reset();
         }
@@ -1680,12 +1772,12 @@ void GameScene::addEnemyToInventory(EnemyType enemyType) {
 Size GameScene::computeActiveSize() const {
     Size dimen = Application::get()->getDisplaySize();
     float ratio1 = dimen.width / dimen.height;
-    float ratio2 = ((float)SCENE_WIDTH) / ((float)SCENE_HEIGHT);
+    float ratio2 = ((float)_scene_width) / ((float)_scene_height);
     if (ratio1 < ratio2) {
-        dimen *= SCENE_WIDTH / dimen.width;
+        dimen *= (_scene_width * 32.0f) / dimen.width;
     }
     else {
-        dimen *= SCENE_HEIGHT / dimen.height;
+        dimen *= (_scene_height * 32.0f) / dimen.height;
     }
     return dimen;
 }
@@ -1940,8 +2032,26 @@ void GameScene::spawnCarrot(Vec2 pos) {
 
 void GameScene::spawnStation(Vec2 pos, StationType type) {
     //obstacle has small size, not reflective of intended size
-    Size s = Size(1.0f, 1.0f);
-    std::shared_ptr<Texture> image = _assets->get<Texture>("pot");
+    Size s = Size(5.0f, 5.0f);
+    std::shared_ptr<Texture> image;
+    switch (type) {
+    case StationType::CUT: {
+        image = _assets->get<Texture>("knife");
+        break;
+    }
+    case StationType::BOIL: {
+        image = _assets->get<Texture>("pot");
+        break;
+    }
+    case StationType::FRY: {
+		image = _assets->get<Texture>("pan");
+		break;
+    } default: {
+        image = _assets->get<Texture>("knife");
+		break;
+    }
+
+    }
     std::shared_ptr<Station> station = Station::alloc(image, pos, s, type);
 
     addObstacle(station, station->getSceneNode());
@@ -1951,8 +2061,8 @@ void GameScene::spawnStation(Vec2 pos, StationType type) {
 
 void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map) {
     //obstacle has small size, not reflective of intended size
-    Size s = Size(1.0f, 1.0f);
-    std::shared_ptr<Texture> image = _assets->get<Texture>("pan");
+    Size s = Size(5.0f, 5.0f);
+    std::shared_ptr<Texture> image = _assets->get<Texture>("sink");
     std::shared_ptr<Plate> plate = Plate::alloc(image, pos, s, map);
 
     addObstacle(plate, plate->getSceneNode());

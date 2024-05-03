@@ -50,6 +50,12 @@ public:
 	//The main platform image
 	std::shared_ptr<cugl::physics2::PolygonObstacle> _main_platform;
 
+	//The width of the entire level (in pixels)
+	int level_width;
+
+	//The height of the entire level (in pixels)
+	int level_height;
+
 	// The external platforms (that are not connected to main platform)
 	// Vector because there will be multiple platforms
 	std::vector<std::shared_ptr<cugl::physics2::PolygonObstacle>> _floating_platforms;
@@ -80,6 +86,15 @@ public:
 
 	/** loads the main platform, specifically its physical parts*/
 	std::shared_ptr<physics2::PolygonObstacle> loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height);
+
+	// this allows the gameScene to access the levelWidth AFTER we have set the json file path
+	int loadLevelWidth();
+
+	// this allows the gameScene to access the levelHeight AFTER we have set the json file path
+	int loadLevelHeight();
+
+	// removes background images from current levelScene
+	void removeBackgroundImages(GameScene& scene);
 
 	/** Clears the root scene graph node for the level*/
 	// void clearRootNode();
@@ -125,6 +140,11 @@ public:
 
 	/** returns the bounds of this level in physics coordinates */
 	const Rect& getBounds() const { return _bounds; };
+
+	// returns the width (in pixels) of our level
+	int getWidth() { return level_width; };
+	// returns the height (in pixels) of our level
+	int getHeight() { return level_height; };
 
 #pragma mark Drawing Methods
 

@@ -15,7 +15,7 @@ enum class MenuType {
 	OPTIONS,
 	PAUSE,
 };
-
+	
 MenuType strToMenuType(std::string str) {
 	if (str == "main") {
 		return MenuType::MAIN_MENU;
@@ -67,7 +67,7 @@ bool MenuScene::init(const std::shared_ptr<cugl::AssetManager>& assets, std::str
 	b->addListener([=](const std::string& name, bool down) {
 		this->_active = false;
 		this->setTransition(true);
-		this->setTarget("day");
+		this->setTarget("night");
 		});
 	b->activate();
 	_buttons.push_back(b);

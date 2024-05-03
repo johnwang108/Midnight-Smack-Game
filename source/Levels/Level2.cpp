@@ -165,6 +165,8 @@ void Level2::populate(GameScene& scene) {
 
 	Vec2 shrimp_pos = SHRIMP_POS;
 
+#pragma mark : Bull
+
 	image = _assets->get<Texture>("bullIdle");
 	std::shared_ptr<BullModel> _bull = BullModel::alloc(shrimp_pos, BULL_SIZE_DEFAULT, _scale);
 	spritenode = EntitySpriteNode::allocWithSheet(image,3,4,12);

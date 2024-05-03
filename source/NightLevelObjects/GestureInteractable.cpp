@@ -8,6 +8,8 @@ bool GestureInteractable::init(const std::shared_ptr<Texture>& texture, const cu
 		setFriction(1.0f);
 		_isActive = false;
 		_node = EntitySpriteNode::allocWithSheet(texture, 1, 1, 1);
+		_node->setAnchor(Vec2::ANCHOR_CENTER);
+		_node->setPosition(pos);
 		_ingredients = std::unordered_map<IngredientType, int>();
 		_ingredients[IngredientType::rice] = 0;
 		_ingredients[IngredientType::carrot] = 0;

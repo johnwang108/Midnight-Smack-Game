@@ -58,6 +58,9 @@ void Attack::update(float dt) {
 }
 
 void Attack::fixedUpdate(float dt) {
+	if (_body == nullptr) {
+		return;
+	}
 
 	if (_go) {
 		_body->SetLinearVelocity(b2Vec2(8 * _direction, 0));
