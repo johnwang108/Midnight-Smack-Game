@@ -67,7 +67,7 @@ bool MenuScene::init(const std::shared_ptr<cugl::AssetManager>& assets, std::str
 	b->addListener([=](const std::string& name, bool down) {
 		this->_active = false;
 		this->setTransition(true);
-		this->setTarget("day");
+		this->setTarget("night");
 		});
 	b->activate();
 	_buttons.push_back(b);

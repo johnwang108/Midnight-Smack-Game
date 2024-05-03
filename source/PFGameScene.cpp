@@ -651,12 +651,12 @@ void GameScene::preUpdate(float dt) {
         setTarget("main_menu");
     }
 
-    if (_input->didTransition()) {
-        transition(true);
-        setTarget("day");
-        CULog("TTTTTTTTTTT");
-        return;
-    }
+    //if (_input->didTransition()) {
+    //    transition(true);
+    //    setTarget("day");
+    //    CULog("TTTTTTTTTTT");
+    //    return;
+    //}
 
     if (_input->getInventoryLeftPressed()) {
         _inventoryNode->selectPreviousSlot();

@@ -167,9 +167,10 @@ void Inventory::reset() {
     _currentIngredients.clear();
     _ingredientToRemove = nullptr;
     _currentlyHeldIngredient = nullptr;
+    unhighlightSelectedSlot();
     _selectedSlot = 0;
-    _enlarged = false;
     highlightSelectedSlot();
+    _enlarged = false;
 
 }
 
