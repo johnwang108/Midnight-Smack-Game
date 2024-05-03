@@ -32,12 +32,12 @@ bool Inventory::init(shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformI
     _ingredientToRemove = nullptr;
     _bottomBar = nullptr;
     initWithBounds(size);
-    Rect slotRect = Rect(0.0f, 0.0f, INV_WIDTH / NUM_SLOTS, INV_HEIGHT);
+    shared_ptr<Texture> tex = _assets->get<Texture>("inventorySlot");
 
     for (int i = 0; i < NUM_SLOTS; i++) {
-        shared_ptr<scene2::PolygonNode> invSlot = createInventoryNode(slotRect, i);
+        shared_ptr<scene2::PolygonNode> invSlot = createInventoryNode(tex, i);
         invSlot->setAnchor(Vec2::ANCHOR_BOTTOM_CENTER);
-        invSlot->setPosition((i * INV_WIDTH / NUM_SLOTS) + (i * 50), 10);
+        invSlot->setPosition((i * tex->getWidth()), 10);
         addChild(invSlot);
         _slots[i] = invSlot;
     }
@@ -73,15 +73,18 @@ void Inventory::update(float timestep) {
 
 void Inventory::addIngredient(std::shared_ptr<Ingredient> ingredient) {
     if (_currentIngredients.size() == NUM_SLOTS) {
-        shared_ptr<Ingredient> oldestIng = _currentIngredients.back();
+ /*       shared_ptr<Ingredient> oldestIng = _currentIngredients.back();
         removeIngredientFromSlotNode(oldestIng, _currentIngredients.size() - 1);
         _currentIngredients.pop_back();
-        shiftAllIngredientsUp(0);
+        shiftAllIngredientsUp(0);*/
     }
-    _currentIngredients.push_front(ingredient);
-    ingredient->setCurrentInventorySlot(_currentIngredients.size() - 1);
-    ingredient->getButton()->setAnchor(Vec2::ANCHOR_CENTER);
-    _slots[_currentIngredients.size() - 1]->addChild(ingredient->getButton());
+    else {
+        _currentIngredients.push_front(ingredient);
+        ingredient->setCurrentInventorySlot(_currentIngredients.size() - 1);
+        ingredient->getButton()->setAnchor(Vec2::ANCHOR_CENTER);
+        _slots[_currentIngredients.size() - 1]->addChild(ingredient->getButton());
+        ingredient->getButton()->setPosition(_slots[_currentIngredients.size() - 1]->getSize() / 2);
+    }
 }
 
 
@@ -162,8 +165,8 @@ void Inventory::reset() {
     _enlarged = false;
 }
 
-shared_ptr<scene2::PolygonNode> Inventory::createInventoryNode(Rect invRect, int invIndex) {
-    shared_ptr<scene2::PolygonNode> slotNode = scene2::PolygonNode::allocWithPoly(invRect);
+shared_ptr<scene2::PolygonNode> Inventory::createInventoryNode(shared_ptr<Texture> tex, int invIndex) {
+    shared_ptr<scene2::PolygonNode> slotNode = scene2::PolygonNode::allocWithTexture(tex);
     string slotName = "slot" + to_string(invIndex);
 
     slotNode->setName(slotName);

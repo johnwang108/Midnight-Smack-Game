@@ -1,5 +1,8 @@
 {
     "textures": {
+        "inventorySlot": {
+            "file": "textures/inventorySlot.png"
+        },
         "rushObjective": {
             "file": "textures/day/rushObjective.png"
         },
