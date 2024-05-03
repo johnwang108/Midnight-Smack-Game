@@ -104,6 +104,7 @@ PlatformInput::PlatformInput() :
     _keyLeft(false),
     _keyRight(false),
     _keySlow(false),
+    _slowHeldDuration(0.0f),
     _horizontal(0.0f),
     _vertical(0.0f),
     _dashKey(false),
@@ -149,9 +150,9 @@ bool PlatformInput::init(const Rect bounds) {
         CULog("ALREADY INITED");
         return false;
     }
-    CULog("HI I INITEDDDD!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! :D");
+    //CULog("HI I INITEDDDD!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! :D");
     id = rand();
-    CULog("ID: %f", id);
+    //CULog("ID: %f", id);
     bool success = true;
     _sbounds = bounds;
     _tbounds = Application::get()->getDisplayBounds();
@@ -234,7 +235,7 @@ bool PlatformInput::init(const Rect bounds) {
         });
 
     _gestureCompleted = false;
-
+    _slowHeldDuration = 0.0f;
     _active = success;
     return success;
 }
@@ -264,6 +265,13 @@ void PlatformInput::update(float dt) {
         _keyJump = keys->keyPressed(JUMP_KEY);
         _keySlow = keys->keyPressed(SLOW_KEY);
 
+        if (keys->keyDown(SLOW_KEY)) {
+            _slowHeldDuration += dt;
+        }
+        else {
+            _slowHeldDuration = 0.0f;
+        }
+
         _dashKey = keys->keyPressed(DASH_KEY);
 
         _keyLeft = keys->keyDown(KeyCode::A);
@@ -282,6 +290,14 @@ void PlatformInput::update(float dt) {
         _keyJump = _gameCont->isButtonPressed(GameController::Button::A);
         _keyDebug = _gameCont->isButtonPressed(GameController::Button::B);
         _keySlow = _gameCont->isButtonPressed(GameController::Button::X);
+
+        if (_gameCont->isButtonDown(GameController::Button::X)) {
+            _slowHeldDuration += dt;
+        }
+        else {
+            _slowHeldDuration = 0.0f;
+        }
+
         _keyReset = _gameCont->isButtonPressed(GameController::Button::LEFT_SHOULDER);
         _keyExit = _gameCont->isButtonPressed(GameController::Button::RIGHT_SHOULDER);
         _keyTransition = _gameCont->isButtonPressed(GameController::Button::B);

@@ -34,6 +34,7 @@ public:
 	bool init( std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, Size size);
 	void update(float timestep);
 	void setFocus(bool focus) { _focus = focus; }
+	int getSelectedSlot() { return _selectedSlot; }
 
 	std::shared_ptr<Ingredient> getCurrentlyHeldIngredient() { return _currentlyHeldIngredient; }
 	void addIngredient(std::shared_ptr<Ingredient> ingredient);

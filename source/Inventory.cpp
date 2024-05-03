@@ -79,7 +79,7 @@ void Inventory::addIngredient(std::shared_ptr<Ingredient> ingredient) {
         shiftAllIngredientsUp(0);*/
     }
     else {
-        _currentIngredients.push_front(ingredient);
+        _currentIngredients.push_back(ingredient);
         ingredient->setCurrentInventorySlot(_currentIngredients.size() - 1);
         ingredient->getButton()->setAnchor(Vec2::ANCHOR_CENTER);
         _slots[_currentIngredients.size() - 1]->addChild(ingredient->getButton());
@@ -122,14 +122,14 @@ shared_ptr<Ingredient> Inventory::popIngredientFromSlot(int slotToClear) {
     
     shared_ptr<Ingredient> ingToRemove = _currentIngredients[slotToClear];
     removeIngredientFromSlotNode(ingToRemove, slotToClear);
-    _currentIngredients.erase(_currentIngredients.erase(_currentIngredients.begin() + slotToClear));
+    _currentIngredients.erase(_currentIngredients.begin() + slotToClear);
 
     shiftAllIngredientsUp(slotToClear);
     return ingToRemove;
 }   
 
 void Inventory::removeIngredientFromSlotNode(shared_ptr<Ingredient> ing, int slotNumber) {
-    string slotName = "slot" + slotNumber;
+    string slotName = "slot" + to_string(slotNumber);
     shared_ptr<scene2::SceneNode> slotNode = getChildByName(slotName);
     slotNode->removeChild(ing->getButton());
 }

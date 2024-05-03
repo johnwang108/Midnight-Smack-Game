@@ -557,6 +557,8 @@ public:
 
     void setTarget(std::string s) { _targetScene = s; };
 
+    void checkForCooktime();
+
     void save();
 
     bool loadSave(std::shared_ptr<JsonValue> save);

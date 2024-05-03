@@ -63,6 +63,7 @@ using namespace cugl;
 #define FEEDBACK_DURATION 1.2f
 
 #define HEALTHBAR_X_OFFSET 15
+#define DISCARD_HOLD_TIME 3.0f
 
 struct IngredientProperties {
     std::string name;
@@ -649,33 +650,8 @@ void GameScene::preUpdate(float dt) {
     }
 
     //TODO handle vulnerables smarter
-    if (_input->didSlow()) {
-        if (_slowed) {
-            //_slowed = !_slowed;
-            //_target = nullptr;
-        }
-        //activate cooktime
-        else {
-            CULog("Activate!");
-            float minDist = FLT_MAX;
-            for (auto& e : _enemies) {
-                if (e->isRemoved() || !(e->isVulnerable())) {
-                    continue;
-                }
-                if ((e->getPosition() - _avatar->getPosition()).length() < minDist) {
-                    _target = e;
-                    minDist = (e->getPosition() - _avatar->getPosition()).length();
-                }
-            }
-            if (minDist < COOKTIME_MAX_DIST) {
-                _slowed = true;
-                //_dollarnode->setTargetGestures(_target->getGestureSeq1());
-                _dollarnode->setTargetGesturesNighttime(std::vector({_target->getGestureSeq1(), _target->getGestureSeq2()}));
-            }
-
-        }
-
-    }
+    checkForCooktime();
+    
 
     //handle animations
 
@@ -1474,6 +1450,55 @@ void GameScene::postUpdate(float remain) {
         else if (_failed) {
             reset();
         }
+    }
+}
+
+/* Checks input for cooktime or discard 
+*  if discard, it removes ingredient from inventory
+*  if cooktime, it initiates cooktime by setting _slowed = true, and the dollar node gestures
+*/
+void GameScene::checkForCooktime() {
+
+    if (_input->didSlowHeldDuration() > 0.0f && _avatar->getMeter() > METER_COST) {
+
+        std::shared_ptr<Ingredient> ing = _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
+        //
+        if (ing != nullptr) {
+            _slowed = true;
+            _dollarnode->setTargetGesturesNighttime({ ing->getGestures(), ing->getGestures() });
+            _avatar->useMeter();
+        }
+
+        //Old CookTime Style commented out
+        //if (_slowed) {
+        //    //_slowed = !_slowed;
+        //    //_target = nullptr;
+        //}
+        ////activate cooktime
+        //else {
+        //    CULog("Activate!");
+        //    float minDist = FLT_MAX;
+        //    for (auto& e : _enemies) {
+        //        if (e->isRemoved() || !(e->isVulnerable())) {
+        //            continue;
+        //        }
+        //        if ((e->getPosition() - _avatar->getPosition()).length() < minDist) {
+        //            _target = e;
+        //            minDist = (e->getPosition() - _avatar->getPosition()).length();
+        //        }
+        //    }
+        //    if (minDist < COOKTIME_MAX_DIST) {
+        //        _slowed = true;
+        //        //_dollarnode->setTargetGestures(_target->getGestureSeq1());
+        //        _dollarnode->setTargetGesturesNighttime(std::vector({_target->getGestureSeq1(), _target->getGestureSeq2()}));
+        //    }
+
+        //}
+
+    }
+    else if (_input->didSlowHeldDuration() > DISCARD_HOLD_TIME) {
+        std::shared_ptr<Ingredient> ing = _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
+        //i think thats all
     }
 }
 

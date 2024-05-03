@@ -95,6 +95,7 @@ protected:
     bool _jumpPressed;
     /** Whether the slow action was chosen. */
     bool _slowPressed;
+    float _slowHeldDuration;
     /** How much did we move horizontally? */
     float _horizontal;
     float _vertical;
@@ -314,6 +315,10 @@ public:
 	bool didExit() const { return _exitPressed; }
     bool didSlow() const { 
             return _slowPressed; 
+    }
+
+    float didSlowHeldDuration() const {
+        return _slowHeldDuration;
     }
 
 
