@@ -598,14 +598,13 @@ void GameScene::preUpdate(float dt) {
         return;
     }
 
+    //Inventory!
+
+
+
     //TODO handle vulnerables smarter
     if (_input->didSlow()) {
-        if (_slowed) {
-            //_slowed = !_slowed;
-            //_target = nullptr;
-        }
-        //activate cooktime
-        else {
+        if (!_slowed) {
             CULog("Activate!");
             float minDist = FLT_MAX;
             for (auto& e : _enemies) {
@@ -847,10 +846,7 @@ void GameScene::preUpdate(float dt) {
    
 
     _dollarnode->update(dt);
-    if (!_slowed) {
-
-    }
-    else {
+    if (_slowed){ 
         //transition in dollar node
         _dollarnode->setVisible(true);
         if (!(_dollarnode->isFocus())) {

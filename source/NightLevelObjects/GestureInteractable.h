@@ -16,7 +16,8 @@ private:
     //sprite node
     std::shared_ptr<EntitySpriteNode> _node;
     
-    std::unordered_map<std::string, std::shared_ptr<Ingredient>> _ingredients;
+    //map from ingredient type to count currently in the interactable
+    std::unordered_map<IngredientType, int> _ingredients;
 
     int _capacity;
 
@@ -41,17 +42,33 @@ public:
     bool isActive();
     bool interact();
 
-    bool addIngredient(std::shared_ptr<Ingredient> i);
+    virtual bool addIngredient(IngredientType i);
 
-    bool popIngredient(std::shared_ptr<Ingredient> i);
+    bool popIngredient(IngredientType i);
+
+    void changeTexture(const std::shared_ptr<Texture>& texture){ _node->setTexture(texture); }
 
     void clearIngredients();
+
+    int getCount(IngredientType type) {
+		return _ingredients[type];
+	}
+
+    int getTotalCount() {
+        return getCount(IngredientType::rice) + getCount(IngredientType::carrot) +
+            getCount(IngredientType::beef) + getCount(IngredientType::egg) +
+            getCount(IngredientType::shrimp);
+    }
 
     int getCapacity();
 
     int getId() { return _interactableId; }
 
     void setCapacity(int capacity);
+
+    std::unordered_map<IngredientType, int> getIngredients() {
+		return _ingredients;
+	}
 };
 
 #endif /* __GESTURE_INTERACTABLE_H__ */

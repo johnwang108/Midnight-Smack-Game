@@ -8,7 +8,12 @@ enum class IngredientType {
 	beef,
 	shrimp,
 	egg,
-	rice
+	rice,
+	carrotCooked,
+	beefCooked,
+	shrimpCooked,
+	eggCooked,
+	riceCooked
 };
 namespace std {
 	template <> struct hash<IngredientType> {

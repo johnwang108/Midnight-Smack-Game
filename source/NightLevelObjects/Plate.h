@@ -8,7 +8,7 @@ using namespace cugl;
 class Plate : public GestureInteractable {
 private:
 
-	std::unordered_map<IngredientType, int> _ingredients;
+	std::unordered_map<IngredientType, int> _targetIngredients;
 
 protected:
 
@@ -21,15 +21,33 @@ public:
 		std::shared_ptr<Plate> result = std::make_shared<Plate>();
 		bool res = result->init(texture, pos, s);
 		if (!res) return nullptr;
-		result->setIngredients(ingredients);
+		result->setTargetIngredients(ingredients);
 		return result;
 	}
 
 	void interact() {};
 
-	void setIngredients(std::unordered_map<IngredientType, int> ingredients) {
-		_ingredients = ingredients;
+	void setTargetIngredients(std::unordered_map<IngredientType, int> ingredients) {
+		_targetIngredients = ingredients;
+		setCapacity(getTotalCount());
 	}
+
+	bool addIngredient(IngredientType i) override {
+		if (GestureInteractable::addIngredient(i)) {
+			if (getIngredients()[i] > _targetIngredients[i]) {
+				popIngredient(i);
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	bool isDone();
+
+	bool isSuccess();
+
+	bool isFull();
 	
 };
 

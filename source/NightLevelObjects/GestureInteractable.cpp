@@ -8,7 +8,12 @@ bool GestureInteractable::init(const std::shared_ptr<Texture>& texture, const cu
 		setFriction(1.0f);
 		_isActive = false;
 		_node = EntitySpriteNode::allocWithSheet(texture, 1, 1, 1);
-		_ingredients = std::unordered_map<std::string, std::shared_ptr<Ingredient>>();
+		_ingredients = std::unordered_map<IngredientType, int>();
+		_ingredients[IngredientType::rice] = 0;
+		_ingredients[IngredientType::carrot] = 0;
+		_ingredients[IngredientType::beef] = 0;
+		_ingredients[IngredientType::egg] = 0;
+		_ingredients[IngredientType::shrimp] = 0;
 		_capacity = -1;
 		_interactableId = ID++;
 		setName("interactable");
@@ -25,16 +30,18 @@ void GestureInteractable::setActive(bool active) {
 bool GestureInteractable::isActive() {
 	return _isActive;
 }
-bool GestureInteractable::addIngredient(std::shared_ptr<Ingredient> i) {
-	if (_capacity == -1 || _ingredients.size() < _capacity) {
-		//_ingredients.insert(i);
+bool GestureInteractable::addIngredient(IngredientType i) {
+	assert(_capacity != -1);
+	if (getTotalCount() < _capacity) {
+		_ingredients[i]++;
 		return true;
 	}
 	return false;
 }
-bool GestureInteractable::popIngredient(std::shared_ptr<Ingredient> i) {
-	if (_ingredients.size() > 0) {
-		//_ingredients.erase(i);
+bool GestureInteractable::popIngredient(IngredientType i) {
+	assert(_capacity != -1);
+	if (_ingredients[i] > 0) {
+		_ingredients[i]--;
 		return true;
 	}
 	return false;
@@ -42,6 +49,7 @@ bool GestureInteractable::popIngredient(std::shared_ptr<Ingredient> i) {
 void GestureInteractable::clearIngredients() {
 	//_ingredients.clear();
 }
+
 
 int GestureInteractable::getCapacity() {
 	return _capacity;
