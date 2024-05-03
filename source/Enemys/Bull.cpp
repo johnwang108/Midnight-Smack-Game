@@ -34,6 +34,10 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         setDensity(BULL_DENSITY);
         setFriction(0.0f);
         setFixedRotation(true);
+        _actionM=scene2::ActionManager::alloc();
+        n=0;
+        _act="none";
+        _acttime=0;
 
         return true;
     }
@@ -51,7 +55,6 @@ void BullModel::update(float dt) {
 
     if (_knockbackTime > 0) {
         _knockbackTime -= dt;
-
         return;
     }
 
@@ -75,10 +78,10 @@ void BullModel::update(float dt) {
 
         }
     }
-    else if (!_isChasing && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _bull_attack_chance) {
+    else if (!_isChasing && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _bull_attack_chance && _acttime<=0) {
         _sprintPrepareTime = 2;
         float pa = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-    //  pa = 0.3;
+      //  pa = 0.5;
         if (pa < 0.33) {
             _attacktype = "bullTelegraph";
         }
@@ -90,13 +93,32 @@ void BullModel::update(float dt) {
         }
 
     }
+    
+    if(_acttime>0){
+        _acttime-=dt;
+        if(_acttime<=0){
+            if(_act=="bullTurn"){
+                scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
+                if (image != nullptr) {
+                    image->flipHorizontal(!image->isFlipHorizontal());
+                }
+            }
+            if(_act=="bullStunned"){
+                setact("bullDazedtoIdle", 1.0f);
+            }
+            if(_act=="bullCrash"){
+                setact("bullStunned", 3.0f);
+            }
 
+        }
+    }
+    
     if (_angrytime > 0) {
         _angrytime -= dt;
         _body->SetLinearVelocity(b2Vec2(0, 0));
         return;
     }
-
+    
     if (_running) {
         _running = false;
         _node->setVisible(true);
@@ -105,13 +127,13 @@ void BullModel::update(float dt) {
     }
     if (_breaking > 0) {
         _breaking -= dt;
-        velocity.x *= 5 / 1.2 * _breaking / 10;
+        velocity.x *= BULL_CHASE_SPEED*_breaking / 2;
         if (_breaking < 0.1) {
             _isChasing = false;
         }
     }
 
-    if (_isChasing && !_breaking) {
+    if (_isChasing && _breaking<=0) {
         velocity.x *= BULL_CHASE_SPEED;
         if (_CAcount > 0) {
             velocity.x *= _CAcount / 1.2;
@@ -144,26 +166,19 @@ void BullModel::update(float dt) {
         }
     }
 
-    if (_turing > 0) {
-        _turing -= dt;
-        if (_turing <= 0) {
-            scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(_node.get());
-            if (image != nullptr) {
-                image->flipHorizontal(!image->isFlipHorizontal());
-            }
-        }
-    }
+
 
     if (_direction != _lastDirection) {
         // If direction changed, flip the image
         _turing = 0.75;
+        setact("bullTurn", 0.75f);
     }
 
     _lastDirection = _direction;
     _lastDamageTime += dt;
     _nextChangeTime -= dt;
     _body->SetLinearVelocity(velocity);
-
+    _actionM->update(dt);
     if (_node != nullptr) {
         _node->setPosition(getPosition() * _drawScale);
         _node->setAngle(getAngle());
@@ -181,7 +196,7 @@ void BullModel::takeDamage(float damage, int attackDirection,bool knockback) {
           //  b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE*10, BULL_KNOCKBACK_FORCE_UP * 25);
             _body->SetLinearVelocity(b2Vec2(0, 0));
           //  _body->ApplyLinearImpulseToCenter(impulse, true);
-            _knockbackTime = 3;
+            _knockbackTime = 2;
         }else {
             b2Vec2 impulse = b2Vec2(-attackDirection * BULL_KNOCKBACK_FORCE*5, 0);
             _body->ApplyLinearImpulseToCenter(impulse, true);
@@ -281,20 +296,25 @@ void BullModel::createAttack(GameScene& scene) {
 void BullModel::createAttack2(GameScene& scene) {
     float _scale = scene.getScale();
 
-    std::shared_ptr<Texture> image = _assets->get<Texture>(SHAKE_TEXTURE);
-
+    std::shared_ptr<Texture> image = _assets->get<Texture>("bullStompEffect");
+    std::vector<int> forward;
+    for (int ii = 0; ii < 14; ii++) {
+        forward.push_back(ii);
+    }
+    auto act = scene2::Animate::alloc(forward, 7.0f);
+    
     Vec2 pos = getPosition();
     pos.x += ATTACK_OFFSET_X*6;
     pos.y -= ATTACK_OFFSET_Y * 4.5;
     std::shared_ptr<Attack> attack = Attack::alloc(pos,
-        cugl::Size(0.9*image->getSize().width / _scale,
-            ATTACK_H * image->getSize().height / _scale));
+        cugl::Size(0.01*image->getSize().width / _scale,
+            0.01 * image->getSize().height / _scale));
 
     Vec2 pos2 = pos;
     pos2.x -= ATTACK_OFFSET_X *12;
     std::shared_ptr<Attack> attack2 = Attack::alloc(pos2,
-        cugl::Size(0.9*image->getSize().width / _scale,
-            ATTACK_H * image->getSize().height / _scale));
+        cugl::Size(0.01*image->getSize().width / _scale,
+            0.01 * image->getSize().height / _scale));
 
     attack->setFaceRight(true);
     attack->setName("shake");
@@ -319,16 +339,20 @@ void BullModel::createAttack2(GameScene& scene) {
 
 
 
-    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
-    attack->setSceneNode(sprite);
+    std::shared_ptr<scene2::SpriteNode> sprite = scene2::SpriteNode::allocWithSheet(image,4,4,14);
     sprite->setPosition(pos);
-
+    sprite->setScale(0.3/4);
+    attack->setSceneNode(sprite);
+    _actionM->activate("s"+std::to_string(n), act, sprite);
+    n+=1;
     scene.addObstacle(attack, sprite, true);
 
-    std::shared_ptr<scene2::PolygonNode> sprite2 = scene2::PolygonNode::allocWithTexture(image);
-    attack2->setSceneNode(sprite2);
+    std::shared_ptr<scene2::SpriteNode> sprite2 = scene2::SpriteNode::allocWithSheet(image,4,4,14);
     sprite2->setPosition(pos2);
-
+    sprite2->setScale(0.3/4);
+    attack2->setSceneNode(sprite2);
+    _actionM->activate("s"+std::to_string(n), act, sprite2);
+    n+=1;
     scene.addObstacle(attack2, sprite2, true);
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);

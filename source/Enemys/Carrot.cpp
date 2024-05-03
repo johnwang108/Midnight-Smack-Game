@@ -1,7 +1,7 @@
 #include "Carrot.h"
 
 bool Carrot::init(const cugl::Vec2& pos, const cugl::Size& size, float scale) {
-    return init(pos, size, scale, EnemyModel::defaultSeq(EnemyType::carrot), EnemyModel::defaultSeq(EnemyType::carrot));
+    return init(pos, size, scale, EnemyModel::defaultSeq(EnemyType::carrot), EnemyModel::defaultSeqAlt(EnemyType::carrot));
 }
 
 bool Carrot::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::vector<std::string> seq1, std::vector<std::string> seq2) {
@@ -31,8 +31,9 @@ void Carrot::fixedUpdate(float step) {
     }
     else if (_state == "jumping") {
         if (isGrounded()) {
-            velocity.y = 10;
-            velocity.x = ENEMY_FORCE * _direction * 10;
+            Vec2 vec = _distanceToPlayer.normalize() * 20;
+            velocity.y = std::max(10.0f, vec.y);
+            velocity.x = vec.x;
         }
     }
     else if (_state == "midair") {
@@ -66,7 +67,7 @@ void Carrot::setState(std::string state) {
         _behaviorCounter = -1;
     }
     else if (state == "windup") {
-        _behaviorCounter = 60;
+        _behaviorCounter = 1.0f;
     }
     else if (state == "jumping") {
         _behaviorCounter = -1;
@@ -97,4 +98,5 @@ std::string Carrot::getNextState(std::string state) {
     else if (state == "patrolling") {
         return "patrolling";
     }
+    return 0;
 }

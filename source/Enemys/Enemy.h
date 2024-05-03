@@ -68,6 +68,8 @@ protected:
     /** Whether the enemy is aggroed*/
     bool _isChasing;
 
+    bool _isTangible;
+
     /** Enemy state*/
     std::string _state;
 
@@ -156,7 +158,7 @@ public:
     /**Allocs with animations defined from json. Don't use.
     * 
     * */
-    virtual  std::shared_ptr<EnemyModel> allocWithConstants(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::shared_ptr<AssetManager> _assets) { return nullptr; };
+   // virtual  std::shared_ptr<EnemyModel> allocWithConstants(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::shared_ptr<AssetManager> _assets) { return nullptr; };
         //std::shared_ptr<EnemyModel> result = std::make_shared<EnemyModel>();
         //bool res = result->init(pos, size, scale);
 
@@ -254,7 +256,9 @@ public:
 
     bool didAttack();
 
-    std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale);
+    virtual std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale) { 
+        return std::tuple< std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>>(nullptr, nullptr);
+    };
 
 
     void setVulnerable(bool vulnerable) { _vulnerable = vulnerable; }
@@ -273,12 +277,18 @@ public:
 
     virtual void setState(std::string state);
 
-    virtual std::string getNextState(std::string state);
+    virtual std::string getNextState(std::string state) { return ""; };
 
     /**Sets the predefined path limits, still wip */
     void setLimit(cugl::Spline2 limit) { _limit = limit; }
 
     std::string getState() { return _state; }
+
+    void jump(Vec2 dir);
+
+    //void syncStateTimes();
+
+    bool isTangible() { return _isTangible; }
 
     void setActiveAction(std::string action) {
         Entity::setActiveAction(action);
@@ -286,6 +296,7 @@ public:
 
     virtual void markForDeletion() {
         _killMe = true;
+        _isTangible = false;
     }
 
     bool shouldDelete() {
@@ -321,15 +332,34 @@ public:
         case EnemyType::shrimp:
             return { "pigtail", "v", "circle" };
         case EnemyType::rice:
-            return { "circle", "circle", "pigtail" };
+            return { "circle", "v", "pigtail" };
         case EnemyType::rice_soldier:
-            return { "circle", "circle", "pigtail" };
+            return { "circle", "v", "pigtail" };
         case EnemyType::egg:
             return { "v", "v", "v", };
         case EnemyType::carrot:
-            return { "horizswipe", "vertswipe", "horizswipe" };
+            return { "v", "v", "v" };
         case EnemyType::beef:
+            return { "pigtail", "circle", "circle" };
+        default:
+            return {};
+        }
+    };
+
+    static std::vector<std::string> defaultSeqAlt(EnemyType type) {
+        switch (type) {
+        case EnemyType::shrimp:
+            return { "pigtail", "v", "circle" };
+        case EnemyType::rice:
+            return { "pigtail", "v", "pigtail" };
+        case EnemyType::rice_soldier:
+            return { "pigtail", "v", "pigtail" };
+        case EnemyType::egg:
+            return { "v", "v", "v", };
+        case EnemyType::carrot:
             return { "v", "circle", "pigtail" };
+        case EnemyType::beef:
+            return { "pigtail", "v", "pigtail" };
         default:
             return {};
         }
@@ -345,11 +375,11 @@ public:
         case EnemyType::rice_soldier:
             return buff::defense;
         case EnemyType::egg:
-            return buff::jump;
-        case EnemyType::carrot:
-            return buff::speed;
-        case EnemyType::beef:
             return buff::health;
+        case EnemyType::carrot:
+            return buff::jump;
+        case EnemyType::beef:
+            return buff::speed;
         }
         return buff::none;
     };

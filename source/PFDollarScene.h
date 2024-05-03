@@ -38,6 +38,7 @@
 //hardcode :3
 #define SCENE_WIDTH 1280
 #define SCENE_HEIGHT 800
+#define NIGHT_SEQUENCE_LENGTH 3
 
 /**
 * 
@@ -52,6 +53,8 @@ protected:
 
     std::shared_ptr<cugl::GestureRecognizer> _dollarRecog;
 
+    //nighttime enemy stuff
+    std::vector<cugl::Path2> _inputtedGestures;
 
     cugl::Path2 _path;
 
@@ -79,6 +82,10 @@ protected:
     std::vector<std::string> _currentTargetGestures;
 
     int _currentTargetIndex;
+
+    //todo:: integrate _currentTargetGestures into this. Right now, duration sequence is index 0, supereffect is index 1
+    std::vector<std::vector<std::string>> _currentTargetGesturesNighttime;
+    bool _isDurationSequence;
 
     // this is for cook time only
     bool _completed;
@@ -145,6 +152,10 @@ public:
 
     int getLastResult() { return _lastResult; }
 
+    float getCurrentSimilarity() { return _currentSimilarity; }
+
+ 
+
     void setFocus(bool focus);
 
     void setTargetGestures(std::vector<std::string> gestures) { 
@@ -152,6 +163,13 @@ public:
         _currentTargetIndex = 0;
         _completed = false;
     }
+
+    void setTargetGesturesNighttime(std::vector<std::vector<std::string>> v) {
+        _currentTargetGesturesNighttime = v;
+        _completed = false;
+    }
+
+    void setPending(bool pending) { _completed = !pending; }
 
     void setValidIngredients(std::vector<std::string> ingredients) { _validIngredients = ingredients; };
 
@@ -172,6 +190,8 @@ public:
     bool matchWithTouchPath();
 
     bool getJustCompletedGesture() { return _justCompletedGesture; }
+
+    bool getIsDurationSequence() { return _isDurationSequence; }
 
     std::shared_ptr<cugl::scene2::SceneNode> getBottomBar() { return _bottomBar; }
     void setBottomBar(std::shared_ptr<cugl::scene2::SceneNode> bar);

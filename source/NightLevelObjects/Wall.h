@@ -35,7 +35,7 @@ private:
     std::string name;
     std::shared_ptr<scene2::SceneNode> sprite;
 
-    void Wall::setActive(bool state);
+    void setActive(bool state);
 public:
     Wall();
     bool init(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION, float BASIC_RESTITUTION,

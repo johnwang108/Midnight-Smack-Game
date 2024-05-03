@@ -5,6 +5,7 @@
 #include "PFInput.h"
 #include "PFDollarScene.h"
 #include "Ingredient.h"
+#include "DayObjective.h"
 #include <box2d/b2_world_callbacks.h>
 #include <box2d/b2_fixture.h>
 #include <unordered_set>
@@ -19,9 +20,10 @@ private:
 	std::map<int, std::vector<std::string>> _stationIngredients;
 	bool _finishedIngredients;
 	
-	std::vector<int> _bonusObjectives;
-
-
+	std::vector<std::shared_ptr<DayObjective>> _bonusObjectives;
+	std::map<std::string, float> _ingredientAccuracy;
+	std::map<std::string, float> _ingredientCompletionTimes;
+	std::map<std::string, int> _ingredientCompletionCounts;
 
 protected:
 	std::shared_ptr<cugl::AssetManager> _assets;
@@ -83,7 +85,7 @@ protected:
 	int _quota;
 	int _currentScore; 
 	
-	// 0 = playing, 1 = win, -1 = lose
+	// 0 = pre-game, 1 = playing, 2 = win, -1 = lose
 	int _gameState;
 
 	
@@ -148,6 +150,15 @@ public:
 	void increaseQuotaProgress();
 
 	void save();
+
+	std::shared_ptr<cugl::scene2::PolygonNode> createObjectiveNode(std::shared_ptr<DayObjective> obj);
+	void showObjectiveNodes(bool val);
+
+	void checkObjectiveCompletion(std::shared_ptr<DayObjective> obj);
+
+	void changeCurrentLevel(int chapter, int level);
+
+	bool loadSave(std::shared_ptr<JsonValue> save);
 };
 
 #endif /* __MULTI_SCREEN_SCENE_H__ */

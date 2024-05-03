@@ -51,6 +51,10 @@ protected:
     float _breaking;
     std::string _attacktype;
     float _turing;
+    std::shared_ptr<cugl::scene2::ActionManager> _actionM;
+    int n;
+    std::string _act;
+    float _acttime;
 
 
 public:
@@ -120,6 +124,12 @@ public:
     void circleattack(GameScene& scene);
     std::string getattacktype() { return _attacktype; }
     float getturing() { return _turing; }
+    void setact(std::string act, float time){_acttime=time;
+        _act=act;}
+    float getacttime(){return _acttime;}
+    std::string getact(){return _act;}
+    void setbreaking(float breaking){_breaking=breaking;}
+    float getbreaking(){return _breaking;}
 };
 
 #endif /* __BULL_MODEL_H__ */

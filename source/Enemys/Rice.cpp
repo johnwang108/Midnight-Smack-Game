@@ -3,7 +3,7 @@
 
 bool Rice::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, bool isSoldier) {
     EnemyType t = isSoldier ? EnemyType::rice_soldier : EnemyType::rice;
-    return init(pos, size, scale, EnemyModel::defaultSeq(t), EnemyModel::defaultSeq(t), isSoldier);
+    return init(pos, size, scale, EnemyModel::defaultSeq(t), EnemyModel::defaultSeqAlt(t), isSoldier);
 }
 
 
@@ -26,7 +26,7 @@ bool Rice::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std:
 
 
 
-
+//Todo:: move animation requests into update
 void Rice::update(float dt) {
     //replace with enemy update
     EnemyModel::update(dt);
@@ -54,7 +54,7 @@ void Rice::fixedUpdate(float step) {
 	}
 	else if (_state == "pursuing") {
         if (getActiveAction() == "riceStartWalk" || getActiveAction() == "riceWalk") setRequestedActionAndPrio("riceWalk", 20);
-        else setRequestedActionAndPrio("riceStartWalk", 30);
+        else setRequestedActionAndPrio("riceStartWalk", 60);
 
         if (_distanceToPlayer.length() < 0.05) {
             setState("attacking");
@@ -62,10 +62,12 @@ void Rice::fixedUpdate(float step) {
         }
         if (_type == EnemyType::rice) {
             velocity.x = ENEMY_FORCE * _direction * 2;
+            //CULog("here :(");
         }
         else {
             float dir = SIGNUM(_targetPosition.x - getPosition().x);
-            velocity.x = ENEMY_FORCE * dir * 5;
+            //velocity.x = ENEMY_FORCE * dir * 5;
+            velocity.x = ENEMY_FORCE * _direction * 5;
         }
 	}
 	else if (_state == "attacking") {
@@ -116,30 +118,30 @@ void Rice::fixedUpdate(float step) {
 }
 
 void Rice::setState(std::string state) {
+    if (_state == "yelling" && state != "stunned" && !shouldDelete()) {
+        setattacktime(true);
+    }
     EnemyModel::setState(state);
     if (state == "chasing") {
         _behaviorCounter = 0;
-        return;
     }
     else if (state == "stunned") {
         _behaviorCounter = -1;
-        return;
     }
     else if (state == "patrollling") {
         _behaviorCounter = -1;
-        return;
     }
     else if (state == "yelling") {
-        _behaviorCounter = 60;
+        _behaviorCounter = getActionDuration("riceYell");
     }
     else if (state == "acknowledging") {
-        _behaviorCounter = 80;
+        _behaviorCounter = getActionDuration("riceAcknowledge");
     }
     else if (state == "pursuing") {
         _behaviorCounter = -1;
     }
     else if (state == "attacking") {
-        _behaviorCounter = -1;
+        _behaviorCounter = getActionDuration("riceAttack");
     }
 }
 
@@ -164,4 +166,5 @@ std::string Rice::getNextState(std::string state) {
     else if (state == "patrolling") {
         return "patrolling";
     }
+    return "0";
 }

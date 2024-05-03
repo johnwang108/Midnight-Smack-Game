@@ -60,23 +60,38 @@
 
 #define BODY_SENSOR_NAME "dudebodysensor"
 
+#define LEFT_SENSOR_NAME "dudeleftsensor"
+
+#define RIGHT_SENSOR_NAME "duderightsensor"
 
 #pragma mark -
 #pragma mark Physics Constants
+//:)
+#define LEVELS_H_GRAVITY -34.9f
 /** The factor to multiply by the input */
-#define DUDE_FORCE      sqrt(2 * (9.8) * getHeight() * 30 ) * getMass()
+/** The factor to multiply by the input */
+#define DUDE_FORCE      10.0f//sqrt(2 * (9.8) * getHeight() * 100 ) * getMass()
+#define FALL_MULTIPLIER 0.5f
+#define FALL_MULTIPLIER_LOW 0.4f
+#define DUDE_DAMPING_BASE 0.0f
 /** The amount to slow the character down */
 #define DUDE_DAMPING    10.0f
 /** The maximum character speed */
-#define DUDE_MANUEL_MAXSPEED   5.0f
+#define DUDE_MANUEL_MAXSPEED   7.0f
 
 #define MAX_METER 100.0f
+#define MAX_HEALTH 100.0f
 
 #define METER_COST 60.0f
 #define floatyFrames   10
 
-/** Cooldown (in animation frames) for shooting */
-#define DASH_COOLDOWN  20
+/** Cooldown (in animation frames) for dashing */
+#define DASH_COOLDOWN  floatyFrames + 5
+
+#define WALL_JUMP_LERP 0.1f
+
+//lerp timer in seconds
+#define WALL_JUMP_LERP_TIMER 2.75f
 
 
 #pragma mark -
@@ -115,7 +130,7 @@ enum class modifier {
 
 #define SUPER_ATTACK_BUFF 3.0f
 #define SUPER_HEALTH_BUFF 5.0f
-#define SUPER_JUMP_BUFF 3.0f
+#define SUPER_JUMP_BUFF 2.0f
 #define SUPER_DEFENSE_BUFF 0.0f
 #define SUPER_SPEED_BUFF 5.0f
 
@@ -137,6 +152,8 @@ private:
 protected:
 	/** The current horizontal movement of the character */
 	float _movement;
+
+    float _vertical;
 	/** Which direction is the character facing */
 	bool _faceRight;
 	/** How long until we can jump again */
@@ -154,6 +171,16 @@ protected:
 	/** Reference to the sensor name (since a constant cannot have a pointer) */
 	std::string _sensorName;
 
+    /** Left sensor to represent left */
+    b2Fixture* _leftSensorFixture;
+    /** Reference to the sensor name (since a constant cannot have a pointer) */
+    std::string _leftSensorName;
+
+    /** Left sensor to represent left */
+    b2Fixture* _rightSensorFixture;
+    /** Reference to the sensor name (since a constant cannot have a pointer) */
+    std::string _rightSensorName;
+
     b2Fixture* _bodySensorFixture;
 
     std::string _bodySensorName;
@@ -162,16 +189,23 @@ protected:
 
     std::shared_ptr<cugl::scene2::WireNode> _bodySensorNode;
 
+    std::shared_ptr<cugl::scene2::WireNode> _leftSensorNode;
+
+    std::shared_ptr<cugl::scene2::WireNode> _rightSensorNode;
+
 	///** The scene graph node for the Dude. */
 	//std::shared_ptr<EntitySpriteNode> _node;
 	///** The scale between the physics world and the screen (MUST BE UNIFORM) */
 	//float _drawScale;
 
+    float _wallJumpTimer;
     bool _dash;
     int _dashNum;
     float _dashCooldown;
-    bool _contactingWall;
+    bool _contactingLeftWall;
+    bool _contactingRightWall;
     bool _isOnDangerousGround;
+    bool _isInputWalk;
 
     //float _health;
 
@@ -222,8 +256,10 @@ protected:
     float _healthUpgrade;
     float _dashUpgrade;
     float _meterGainUpgrade;
-    float _hitStunUpgrade;
+    float _attackUpgrade;
+    float _speedUpgrade;
 
+    bool _rechargingDash;
 	/**
 	* Redraws the outline of the physics fixtures to the debug node
 	*
@@ -242,7 +278,7 @@ public:
      * This constructor does not initialize any of the dude values beyond
      * the defaults.  To use a DudeModel, you must call init().
      */
-    DudeModel() : Entity(), _sensorName(SENSOR_NAME), _bodySensorName(BODY_SENSOR_NAME) { }
+    DudeModel() : Entity(), _sensorName(SENSOR_NAME), _bodySensorName(BODY_SENSOR_NAME), _leftSensorName(LEFT_SENSOR_NAME), _rightSensorName(RIGHT_SENSOR_NAME) { }
     
     /**
      * Destroys this DudeModel, releasing all resources.
@@ -484,7 +520,7 @@ public:
      * @return left/right movement of this character.
      */
     float getMovement() const { return _movement; }
-    
+
     /**
      * Sets left/right movement of this character.
      *
@@ -492,7 +528,9 @@ public:
      *
      * @param value left/right movement of this character.
      */
-    void setMovement(float value);
+    void setMovement(float h);
+
+    void setAllMovement(float h, float v);
 
     /**
      * Returns true if the dude is actively firing.
@@ -517,8 +555,12 @@ public:
     void setDashNum(int val) { _dashNum = val; }
     void deltaDashNum(int val) { _dashNum += val; }
 
-    bool contactingWall() { return _contactingWall; }
-    void setContactingWall(bool val) { _contactingWall = val;  }
+    bool contactingLeftWall() { return _contactingLeftWall; }
+    void setContactingLeftWall(bool val) { 
+        _contactingLeftWall = val;  }
+    bool contactingRightWall() { return _contactingRightWall; }
+    void setContactingRightWall(bool val) { 
+        _contactingRightWall = val; }
 
     int getIsOnDangerousGround() { return _isOnDangerousGround; }
     void settIsOnDangerousGround(bool val) { _isOnDangerousGround = val; }
@@ -565,7 +607,7 @@ public:
      *
      * @return ow hard the brakes are applied to get a dude to stop moving
      */
-    float getDamping() const { return DUDE_DAMPING; }
+    float getDamping() const { return _body->GetLinearDamping(); }
     
     /**
      * Returns the upper limit on dude left-right movement.
@@ -586,6 +628,10 @@ public:
     std::string* getSensorName() { return &_sensorName; }
 
     std::string* getBodySensorName() { return &_bodySensorName; }
+
+    std::string* getLeftSensorName() { return &_leftSensorName; }
+
+    std::string* getRightSensorName() { return &_rightSensorName; }
     
     /**
      * Returns true if this character is facing right
@@ -623,6 +669,8 @@ public:
      * @param delta Number of seconds since last animation frame
      */
     void update(float dt) override;
+
+    void fixedUpdate(float step);
     
     /**
      * Applies the force to the body of this dude
@@ -630,6 +678,16 @@ public:
      * This method should be called after the force attribute is set.
      */
     void applyForce(float h, float v);
+
+    void walk(Vec2 dir, float dt);
+
+    void jump(Vec2 dir, bool wall = false);
+
+    void wallJump();
+    
+    void handleJump(float dt);
+
+    void dash(Vec2 dir);
 
     void takeDamage(float damage, const int attackDirection);
 	
@@ -663,15 +721,43 @@ public:
     bool useMeter(float f = METER_COST);
 
     std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale);
+    std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAirAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale, float angle);;
 
     float getLastDamageTime() { return _lastDamageTime; };
+
     float getHealthCooldown() { return _healthCooldown; };
+
+    void setHealthUpgrade(float f) { _healthUpgrade = f; };
+    void setDashUpgrade(float f) { _dashUpgrade = f; };
+    void setMeterGainUpgrade(float f) { _meterGainUpgrade = f; };
+    void setAttackUpgrade(float f) { _attackUpgrade = f; };
+    void setSpeedUpgrade(float f) { _speedUpgrade = f; };
+
+    void initUpgrades() {
+        _healthUpgrade = 0.0f;
+        _dashUpgrade = 0.0f;
+        _meterGainUpgrade = 0.0f;
+        _attackUpgrade = 0.0f;
+        _speedUpgrade = 0.0f;
+    }
+
+    void setUpgrades(float health, float dash, float meter, float attack, float speed) {
+		_healthUpgrade = health;
+		_dashUpgrade = dash;
+		_meterGainUpgrade = meter;
+		_attackUpgrade = attack;
+		_speedUpgrade = speed;
+	}
+
+    void gainHealth(float f);
 
     int getDashCooldown() {return _dashCooldown; };
 
     int getDashCooldownMax() { return DASH_COOLDOWN; }
 
     int getFloatyFrames() { return floatyFrames; };
+
+    void setInputWalk(bool b) { _isInputWalk = b; };
 
     float getAttackBuff() {
         if (_duration > 0) {

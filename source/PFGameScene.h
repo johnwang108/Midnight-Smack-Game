@@ -69,10 +69,6 @@ protected:
     std::shared_ptr<cugl::scene2::Label> _winnode;
     /** Reference to the lose message label */
     std::shared_ptr<cugl::scene2::Label> _losenode;
-    /** Reference to the left joystick image */
-    std::shared_ptr<cugl::scene2::PolygonNode> _leftnode;
-    /** Reference to the right joystick image */
-    std::shared_ptr<cugl::scene2::PolygonNode> _rightnode;
 
     std::shared_ptr<Scene2> _bgScene;
     std::shared_ptr<Scene2> _uiScene;
@@ -140,6 +136,8 @@ protected:
     std::unordered_set<b2Fixture*> _sensorFixtures;
 
     std::shared_ptr<Levels> currentLevel;
+    int _chapter;
+    int _level;
 
     std::shared_ptr<BullModel>			  _Bull;
 
@@ -191,6 +189,8 @@ protected:
     //end debug anims
 
     std::shared_ptr<LevelModel> _level_model = std::make_shared<LevelModel>();
+
+    std::vector<float> _persistentUpgrades;
 
 #pragma mark Internal Object Management
     /**
@@ -312,8 +312,8 @@ public:
      *
      * @return  true if the controller is initialized properly, false otherwise.
      */
-    bool init(const std::shared_ptr<cugl::AssetManager>& assets, 
-              const cugl::Rect& rect, std::shared_ptr<PlatformInput> input);
+    bool init(const std::shared_ptr<cugl::AssetManager>& assets,
+        const cugl::Rect& rect, std::shared_ptr<PlatformInput> input);
     
     /**
      * Initializes the controller contents, and starts the game
@@ -574,6 +574,20 @@ public:
     void setTarget(std::string s) { _targetScene = s; };
 
     void save();
+
+    bool loadSave(std::shared_ptr<JsonValue> save);
+
+    void changeCurrentLevel(int chapter, int level);
+
+    /*temp, not planning on using this for long*/
+    void advanceLevel();
+
+    //Enemy spawn functions with default params.
+    void spawnShrimp(Vec2 pos);
+    void spawnBeef(Vec2 pos);
+    void spawnEgg(Vec2 pos);
+    void spawnRice(Vec2 pos, bool isSoldier = true);
+    void spawnCarrot(Vec2 pos);
 };
 
 

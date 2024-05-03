@@ -2,6 +2,8 @@
 #define __SHRIMP_H__
 #include "Enemy.h"
 
+#define SHRIMP_SPEED 3.0f
+
 class Shrimp : public EnemyModel {
 protected:
 
@@ -26,8 +28,18 @@ public:
         if (res) {
             result->loadAnimationsFromConstant("shrimp", _assets);
         }
+
+        //result->addActionAnimation("shrimpRoll", _assets->get<Texture>("shrimpRollToIdle"), 2, 3, 6, 0.1f);
+        //result->setAction("shrimpRoll", { 1 }, 0.1f);
         return res ? result : nullptr;
     }
+
+    void markForDeletion() override {
+        if (_killMeCountdown != 0.0f) return;
+        EnemyModel::markForDeletion();
+        _killMeCountdown = 0.1;
+    }
+
     void update(float dt) override;
 
     void fixedUpdate(float step) override;

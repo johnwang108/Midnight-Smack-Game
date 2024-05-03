@@ -51,7 +51,7 @@
 
 
 /**Modif for the max height jump in ~(Sues +1)*/
-float jmpHeight = 1;
+float jmpHeight = 1.5;
 /**Modif dash, as a multiple of DASH_JUMP*/
 float dashModif = 1.3;
 /**The aount of frames following a dash that SUe floats for*/
@@ -59,7 +59,7 @@ float dashModif = 1.3;
 #pragma mark -
 #pragma mark Physics Constants
 /** Cooldown (in animation frames) for jumping */
-#define JUMP_COOLDOWN   5
+#define JUMP_COOLDOWN   0
 
 /** Cooldown (in animation frames) for shooting */
 #define SHOOT_COOLDOWN  20
@@ -72,11 +72,11 @@ float dashModif = 1.3;
 /** Height of the sensor attached to the player's feet */
 #define SENSOR_HEIGHT   0.1f
 /** The density of the character */
-#define DUDE_DENSITY    1.0f
+#define DUDE_DENSITY    .80f
 /** The impulse for the character jump */
-#define DUDE_JUMP       (sqrt( 3 * 2 * (9.8) * getHeight() * jmpHeight ) * getMass() * getJumpBuff())
+#define DUDE_JUMP       17.5f * getJumpBuff()//(sqrt( 3 * 2 * (9.8) * getHeight() * jmpHeight ) * getMass() * getJumpBuff())
 /** The impulse for the character dash */
-#define DUDE_DASH       (DUDE_JUMP * dashModif)
+#define DUDE_DASH       40.0f
 /** Debug color for the sensor */
 #define DEBUG_COLOR     Color4::RED
 
@@ -124,7 +124,9 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         _isJumping = false;
         _faceRight = true;
         _dash = true;
-        _contactingWall = false;
+        _contactingLeftWall = false;
+        _contactingRightWall = false;
+        _wallJumpTimer = 0.0f;
 
         _dashCooldown = 0;
         _shootCooldown = 0;
@@ -155,53 +157,18 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
 
         b2Filter filter = getFilterData();
         filter.groupIndex = -1;
+        //0x0010 is the category bit for intangible enemies (todo)
+        //filter.maskBits = 0xFFFF ^ 0x0010;
         setFilterData(filter);
         setName("avatar");
         setEnabled(true);
         _useID = false;
+        resetBuff();
+        initUpgrades();
         return true;
     }
     return false;
 }
-
-///** Register a new animation in the dict*/
-//void DudeModel::addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool isPassive) {
-//    std::vector<int> forward;
-//    for (int ii = 0; ii < size; ii++) {
-//        forward.push_back(ii);
-//    }
-//    _actions[action_name] = cugl::scene2::Animate::alloc(forward, duration);
-//    _sheets[action_name] = sheet;
-//    _info[action_name] = std::make_tuple(rows, cols, size, duration, isPassive);
-//}
-
-///**Unsure if override needed. Begins an animation, switching the sheet if needed.*/
-//void DudeModel::animate(std::string action_name) {
-//    //first, switch the sheet
-//    changeSheet(action_name);
-//    if (action_name == "idle") {
-//        _node->setScale(0.35/4);
-//    }
-//    else {
-//        _node->setScale(0.35/4);
-//    }
-//    _activeAction = action_name;
-//
-//    //info = {int rows, int cols, int size, float duration, bool isPassive}
-//    auto info = _info[action_name];
-//}
-
-//void DudeModel::changeSheet(std::string action_name) {
-//    //info = {int rows, int cols, int size, float duration, bool isPassive}
-//    try {
-//        auto info = _info[action_name];
-//        _node->changeSheet(_sheets[action_name], std::get<0>(info), std::get<1>(info), std::get<2>(info));
-//    }
-//    catch (int e) {
-//        CULog("Error changing sheets. Is the action registered?");
-//    }
-//
-//}
 
 void DudeModel::sethealthbar(std::shared_ptr<cugl::AssetManager> asset) {
     auto healthBarBackground = scene2::PolygonNode::allocWithTexture(asset->get<Texture>("heartsbroken"));
@@ -237,6 +204,11 @@ void DudeModel::setMovement(float h) {
     _faceRight = face;
 }
 
+void DudeModel::setAllMovement(float h, float v) {
+    setMovement(h);
+    _vertical = v;
+}
+
 #pragma mark -
 #pragma mark Physics Methods
 /**
@@ -267,14 +239,65 @@ void DudeModel::createFixtures() {
 
     b2PolygonShape sensorShape;
     sensorShape.Set(corners, 4);
-
     sensorDef.shape = &sensorShape;
     sensorDef.userData.pointer = reinterpret_cast<uintptr_t>(getSensorName());
+    sensorDef.isSensor = true;
     _sensorFixture = _body->CreateFixture(&sensorDef);
     b2Filter filter = getFilterData();
     filter.groupIndex = -1;
     _sensorFixture->SetFilterData(filter);
 
+    CULog("Printing sensorFixture corners");
+    for (auto& v : corners) {
+        CULog("Corner: %f, %f", v.x, v.y);
+    }
+
+    corners[0].x = (-getWidth() - SENSOR_HEIGHT*3) / 2.0f;
+    corners[0].y = DUDE_SSHRINK * getHeight() / 2.0f;
+    corners[1].x = (-getWidth() - SENSOR_HEIGHT * 3) / 2.0f;
+    corners[1].y = -DUDE_SSHRINK * getHeight() / 2.0f;
+    corners[2].x = (-getWidth() + SENSOR_HEIGHT * 3) / 2.0f;
+    corners[2].y = -DUDE_SSHRINK * getHeight() / 2.0f;
+    corners[3].x = (-getWidth() + SENSOR_HEIGHT *3) / 2.0f;
+    corners[3].y = DUDE_SSHRINK * getHeight() / 2.0f;
+
+    sensorShape.Set(corners, 4);
+    sensorDef.shape = &sensorShape;
+    sensorDef.userData.pointer = reinterpret_cast<uintptr_t>(&_leftSensorName);
+    sensorDef.isSensor = true;
+    filter = getFilterData();
+    filter.groupIndex = -1;
+    _sensorFixture->SetFilterData(filter);
+    _leftSensorFixture = _body->CreateFixture(&sensorDef);
+
+    CULog("Printing leftSensorFixture corners");
+    for (auto& v : corners) {
+        CULog("Corner: %f, %f", v.x, v.y);
+    }
+
+
+    corners[0].x = (getWidth() - SENSOR_HEIGHT * 3) / 2.0f;
+    corners[0].y = DUDE_SSHRINK * getHeight() / 2.0f;
+    corners[1].x = (getWidth() - SENSOR_HEIGHT * 3) / 2.0f;
+    corners[1].y = -DUDE_SSHRINK * getHeight() / 2.0f;
+    corners[2].x = (getWidth() + SENSOR_HEIGHT * 3) / 2.0f;
+    corners[2].y = -DUDE_SSHRINK * getHeight() / 2.0f;
+    corners[3].x = (getWidth() + SENSOR_HEIGHT * 3) / 2.0f;
+    corners[3].y = DUDE_SSHRINK * getHeight() / 2.0f;
+
+    sensorShape.Set(corners, 4);
+    sensorDef.shape = &sensorShape;
+    sensorDef.userData.pointer = reinterpret_cast<uintptr_t>(&_rightSensorName);
+    sensorDef.isSensor = true;
+    filter = getFilterData();
+    filter.groupIndex = -1;
+    _sensorFixture->SetFilterData(filter);
+    _rightSensorFixture = _body->CreateFixture(&sensorDef);
+
+    CULog("Printing rightSensorFixture corners");
+    for (auto& v : corners) {
+        CULog("Corner: %f, %f", v.x, v.y);
+    }
 
 
     corners[0].x = -getWidth()*0.85 / 2.0f;
@@ -291,7 +314,14 @@ void DudeModel::createFixtures() {
     sensorDef.userData.pointer = reinterpret_cast<uintptr_t>(getBodySensorName());
     sensorDef.isSensor = true;
     _bodySensorFixture = _body->CreateFixture(&sensorDef);
+    filter = getFilterData();
+    filter.groupIndex = -1;
+    _sensorFixture->SetFilterData(filter);
 
+    CULog("Printing bodySensorFixtureq corners");
+    for (auto& v : corners) {
+        CULog("Corner: %f, %f", v.x, v.y);
+    }
 
 }
 
@@ -312,6 +342,12 @@ void DudeModel::releaseFixtures() {
 
         _body->DestroyFixture(_bodySensorFixture);
         _bodySensorFixture = nullptr;
+
+        _body->DestroyFixture(_rightSensorFixture);
+        _rightSensorFixture = nullptr;
+
+        _body->DestroyFixture(_leftSensorFixture);
+        _leftSensorFixture = nullptr;
     }
 }
 
@@ -324,8 +360,9 @@ void DudeModel::releaseFixtures() {
 void DudeModel::dispose() {
     _core = nullptr;
     _node = nullptr;
-    _sensorNode = nullptr;
-    _bodySensorNode = nullptr;
+    _healthBarForeground = nullptr;
+    //_sensorNode = nullptr;
+    //_bodySensorNode = nullptr;
 }
 
 /**
@@ -334,56 +371,105 @@ void DudeModel::dispose() {
  * This method should be called after the force attribute is set.
  */
 void DudeModel::applyForce(float h, float v) {
-    if (!isEnabled()) {
-        return;
-    }
+ //   if (!isEnabled()) {
+ //       return;
+ //   }
 
-    // Don't want to be moving. Damp out player motion
-    if (getMovement() == 0.0f || h * getVX() <= 0 || fabs(getVX()) >= getMaxSpeed()) {
-        if (isGrounded() && (_dashCooldown <= DASH_COOLDOWN * .1)) {
-            // Instant friction on the ground
-            b2Vec2 vel = _body->GetLinearVelocity();
-            float LogVal = std::log(abs(vel.x) + 1);
-            float whyDoesntSTDMinWorkpls = LogVal < .8 ? LogVal : .8;
-            if (abs(getVX()) > 0) {
-                int negativeAccounter = SIGNUM(vel.x);
-                vel.x = negativeAccounter * vel.x  * whyDoesntSTDMinWorkpls < negativeAccounter * .01 ? 0 : whyDoesntSTDMinWorkpls * vel.x; // If you set y, you will stop a jump in place
-            }
-            _body->SetLinearVelocity(vel );
-        }
-        else {
-            // Damping factor in the air
-            b2Vec2 force(-getDamping() * getVX() * 2, 0);
-            _body->ApplyForce(force, _body->GetPosition(), true);
-        }
-    }
+ //   // Don't want to be moving. Damp out player motion
+ //   if (getMovement() == 0.0f || h * getVX() <= 0 || fabs(getVX()) >= getMaxSpeed()) {
+ //       if (isGrounded() && (_dashCooldown <= DASH_COOLDOWN * .1)) {
+ //           // Instant friction on the ground
+ //           b2Vec2 vel = _body->GetLinearVelocity();
+ //           float LogVal = std::log(abs(vel.x) + 1);
+ //           float whyDoesntSTDMinWorkpls = LogVal < .8 ? LogVal : .8;
+ //           if (abs(getVX()) > 0) {
+ //               int negativeAccounter = SIGNUM(vel.x);
+ //               vel.x = negativeAccounter * vel.x  * whyDoesntSTDMinWorkpls < negativeAccounter * .01 ? 0 : whyDoesntSTDMinWorkpls * vel.x; // If you set y, you will stop a jump in place
+ //           }
+ //           _body->SetLinearVelocity(vel);
+ //       }
+ //       else {
+ //           // Damping factor in the air
+ //           b2Vec2 force(-getDamping() * getVX() * 2, 0);
+ //           _body->ApplyForce(force, _body->GetPosition(), true);
+ //       }
+ //   }
 
-    // Velocity too high, clamp it
-    b2Vec2 force(getMovement(), 0);
-    force.x *= isGrounded() ? 2 : 1;
-    _body->ApplyForce(force, _body->GetPosition(), true);
+ //   // Velocity too high, clamp it
+ //   b2Vec2 force(getMovement(), 0);
+ //   force.x *= isGrounded() ? 1 : 0.5;
+ //   _body->ApplyForce(force, _body->GetPosition(), true);
 
+ //   // Jump!
 
-    // Jump!
+ //   if (isJumping() && isGrounded()) {
+ //       setVY(0);
+ //       b2Vec2 force(0, DUDE_JUMP);
+ //       _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
+ //   }
+ //   else if (isJumping() && contactingWall() && !isGrounded()) {
+ //       setVY(0);
+ //       b2Vec2 force(4 * DUDE_JUMP * 5 * (isFacingRight() ? 1 : -1), DUDE_JUMP * 1.2);
+ //       _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
+ //   }
+ //   if (canDash() && getDashNum() > 0) {
+ //       b2Vec2 force(SIGNUM(h), SIGNUM(v) * .8);
+ //       setVY(0);
+ //       setVX(0);
+ //       _body->ApplyLinearImpulse(DUDE_DASH * force, _body->GetPosition(), true);
+ //       _body->SetLinearDamping(getLinearDamping() * 2);
+ //       //deltaDashNum(-1);
+ //   } else {
+	//	_body->SetLinearDamping(1.0f);
+	//}
+}
 
-    if (isJumping() && isGrounded()) {
-        setVY(0);
-        b2Vec2 force(0, DUDE_JUMP);
-        _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
+void DudeModel::walk(Vec2 dir, float dt) {
+    if (_dashCooldown > DASH_COOLDOWN - floatyFrames) return;
+    if (_wallJumpTimer == 0.0f)
+    {
+        _body->SetLinearVelocity(b2Vec2(dir.x * DUDE_FORCE, getLinearVelocity().y));
     }
-    else if (isJumping() && contactingWall() && !isGrounded()) {
-        setVY(0);
-        b2Vec2 force(4 * DUDE_JUMP * 5 * (isFacingRight() ? 1 : -1), DUDE_JUMP * 1.2);
-        _body->ApplyLinearImpulse(force, _body->GetPosition(), true);
+    else
+    {
+        setLinearVelocity(getLinearVelocity().lerp(Vec2(dir.x * DUDE_FORCE, getLinearVelocity().y), WALL_JUMP_LERP));
     }
-    if (canDash() && getDashNum() > 0) {
-        //b2Vec2 force(DUDE_DASH*SIGNUM(h), DUDE_DASH * SIGNUM(v) * .8);
-        b2Vec2 force(SIGNUM(h), SIGNUM(v) * .8);
-        setVY(0);
-        setVX(0);
-        _body->ApplyLinearImpulse(DUDE_DASH * force, _body->GetPosition(), true);
-        //deltaDashNum(-1);
+}
+
+void DudeModel::jump(Vec2 dir, bool wall) {
+    b2Vec2 vel = _body->GetLinearVelocity();
+    vel.y = 0;
+    vel += b2Vec2(dir.x * DUDE_JUMP, DUDE_JUMP);
+    _body->SetLinearVelocity(vel);
+}
+
+void DudeModel::handleJump(float dt) {
+    Vec2 vel = getLinearVelocity();
+    //falling
+    if (vel.y < 0) {
+        vel += Vec2(0, LEVELS_H_GRAVITY * FALL_MULTIPLIER * dt);
     }
+    else if (vel.y > 0 && !isJumping()) {
+		vel += Vec2(0, LEVELS_H_GRAVITY * FALL_MULTIPLIER_LOW * dt);
+	}
+    _body->SetLinearVelocity(b2Vec2(vel.x, vel.y));
+}
+
+void DudeModel::dash(Vec2 dir) {
+    setVY(0);
+    setVX(0);
+    if (dir.x == 0 && dir.y == 0) {
+        dir.x = _faceRight ? 1.0f : -1.0f;
+    }
+    dir = dir.normalize();
+    _body->SetLinearVelocity(b2Vec2(dir.x * DUDE_DASH, dir.y * DUDE_DASH));
+    setLinearDamping(DUDE_DAMPING);
+}
+
+void DudeModel::wallJump() {
+    Vec2 wallDir = contactingLeftWall() ? Vec2(1,1) : Vec2(-1,1);
+    jump(wallDir, true);
+    _wallJumpTimer = WALL_JUMP_LERP_TIMER;
 }
 
 /**
@@ -397,29 +483,7 @@ void DudeModel::update(float dt) {
 
     Entity::update(dt);
 
-    if (_duration > 0) {
-        _duration -= dt;
-        _duration = std::max(0.0f, _duration);
-        //reset buff state if duration is over
-        if (_duration == 0) {
-            resetBuff();
-        }
-        else {
-            _node->setColor(Color4::BLACK);
-        }
-    }
-    else if (_hasSuper) {
-        _node->setColor(Color4::RED);
-    }
-    else {
-        _node->setColor(Color4::WHITE);
-    }
-
-
-    if (_numberOfTouchingEnemies > 0) {
-        takeDamage(34, 0);
-    }
-
+    //take damage anim
     if (_knockbackTime > 0) {
         if (int(_knockbackTime * 10) % 2 < 1) {
             _node->setVisible(true);
@@ -438,16 +502,64 @@ void DudeModel::update(float dt) {
         _lastDamageTime += dt;
     }
 
-    if (_dashCooldown > DASH_COOLDOWN - floatyFrames) {
-        setGravityScale(0);
+    if (_node != nullptr) {
+        _node->setPosition(getPosition() * _drawScale);
+        _node->setAngle(getAngle());
+    }
+}
+
+void DudeModel::fixedUpdate(float step) {
+    if (_duration > 0) {
+        _duration -= step;
+        _duration = std::max(0.0f, _duration);
+        //reset buff state if duration is over
+        if (_duration == 0) {
+            resetBuff();
+        }
+        else {
+            _node->setColor(Color4::BLACK);
+        }
+    }
+    else if (_hasSuper) {
+        _node->setColor(Color4::RED);
     }
     else {
-        setGravityScale(1);
+        _node->setColor(Color4::WHITE);
+    }
+
+    if (_numberOfTouchingEnemies > 0) {
+        takeDamage(34, 0);
+    }
+    if (_wallJumpTimer > 0.0f) {
+		_wallJumpTimer -= std::min(step, _wallJumpTimer);
+	}
+
+    gainHealth(_healthBuff);
+
+    if (_dashCooldown > DASH_COOLDOWN - floatyFrames) {
+        setGravityScale(0);
+        //slow down dash
+        setLinearDamping(std::max(DUDE_DAMPING_BASE, getLinearDamping() * 0.9f));
+    }
+    else {
+        handleJump(step);
+        setLinearDamping(DUDE_DAMPING_BASE);
+        setGravityScale(1.25f);
     }
 
     // Apply cooldowns
+    if (isGrounded()) {
+        _wallJumpTimer = 0.0f;
+    }
+
     if (isJumping()) {
-        _jumpCooldown = JUMP_COOLDOWN;
+        if (isGrounded()) {
+            _jumpCooldown = JUMP_COOLDOWN;
+            jump(Vec2(_movement, _vertical));
+        }
+        else if (contactingLeftWall() || contactingRightWall()) {
+            wallJump();
+        }
     }
     else {
         // Only cooldown while grounded
@@ -461,24 +573,21 @@ void DudeModel::update(float dt) {
         _shootCooldown = (_shootCooldown > 0 ? _shootCooldown - 1 : 0);
     }
     if (canDash() && _dashCooldown == 0) {
+        dash(Vec2(_movement, _vertical));
         _dashCooldown = DASH_COOLDOWN;
+        _rechargingDash = false;
         deltaDashNum(-1);
     }
     else {
-        _dashCooldown = (_dashCooldown > 0 ? _dashCooldown - 1 : 0);
+        _dashCooldown = _dashCooldown > 0 ? _dashCooldown - 1 : 0.0;
         if (getDashNum() == 0 && _dashCooldown <= 0 && isGrounded()) {
             
             setDashNum(1);
             //TODO: remove hardcode limit on one dash
         }
     }
-
-
-
-    if (_node != nullptr) {
-        _node->setPosition(getPosition() * _drawScale);
-        _node->setAngle(getAngle());
-    }
+    //movement
+    walk(Vec2(_movement, _vertical), step);
 }
 
 
@@ -489,7 +598,7 @@ void DudeModel::update(float dt) {
  *
  * The debug node is use to outline the fixtures attached to this object.
  * This is very useful when the fixtures have a very different shape than
- * the texture (e.g. a circular shape attached to a square texture).
+ * the texture (e.g. a circular shape attqached to a square texture).
  */
 void DudeModel::resetDebug() {
     Entity::resetDebug();
@@ -500,8 +609,37 @@ void DudeModel::resetDebug() {
     _sensorNode = scene2::WireNode::allocWithTraversal(poly, poly2::Traversal::INTERIOR);
     _sensorNode->setColor(DEBUG_COLOR);
     _sensorNode->setPosition(Vec2(_debug->getContentSize().width/2.0f, 0.0f));
+    _debug->addChild(_sensorNode);
 
 
+    w = getWidth() * 0.85f;
+    h = getHeight() * 0.85f;
+    poly = Poly2(Rect(-w / 2.0f, -h / 2.0f, w, h));
+
+    _bodySensorNode = scene2::WireNode::allocWithTraversal(poly, poly2::Traversal::INTERIOR);
+    _bodySensorNode->setColor(DEBUG_COLOR);
+    _bodySensorNode->setPosition(Vec2(_debug->getContentSize().width / 2.0f, _debug->getContentSize().height / 2.0f));
+    _debug->addChild(_bodySensorNode);
+
+
+    w = SENSOR_HEIGHT;
+    h = getHeight() * DUDE_SSHRINK ;
+    poly = Poly2(Rect(-w / 2.0f, -h / 2.0f, w, h));
+
+    _leftSensorNode = scene2::WireNode::allocWithTraversal(poly, poly2::Traversal::INTERIOR);
+    _leftSensorNode->setColor(DEBUG_COLOR);
+    _leftSensorNode->setPosition(Vec2(0.0f, _debug->getContentSize().height / 2.0f));
+    _debug->addChild(_leftSensorNode);
+
+
+    w = SENSOR_HEIGHT;
+    h = getHeight() * DUDE_SSHRINK;
+    poly = Poly2(Rect(w / 2.0f, -h / 2.0f, w, h));
+
+    _rightSensorNode = scene2::WireNode::allocWithTraversal(poly, poly2::Traversal::INTERIOR);
+    _rightSensorNode->setColor(DEBUG_COLOR);
+    _rightSensorNode->setPosition(Vec2(_debug->getContentSize().width, _debug->getContentSize().height / 2.0f));
+    _debug->addChild(_rightSensorNode);
 }
 
 
@@ -555,9 +693,7 @@ void DudeModel::applyBuff(const buff b, modifier m) {
             _hasSuper = false;
         }
         else {
-            _healthBuff = SUPER_HEALTH_BUFF;
-            _duration = 0;
-            _hasSuper = true;
+            gainHealth(1000);
         }
         break;
     case buff::jump:
@@ -607,13 +743,13 @@ void DudeModel::applyBuff(const buff b, modifier m) {
  */
 void DudeModel::resetBuff() {
     _attackBuff = DEFAULT_BUFF;
-    _healthBuff = DEFAULT_BUFF;
+    _healthBuff = 0.0f;
     _jumpBuff = DEFAULT_BUFF;
     _defenseBuff = DEFAULT_BUFF;
     _speedBuff = DEFAULT_BUFF;
     _duration = 0;
     _hasSuper = false;
-    _node->setColor(Color4::WHITE);
+    if (_node != nullptr) _node->setColor(Color4::WHITE);
 }
 
 std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeModel::createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale) {
@@ -639,6 +775,11 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeMo
     attack->setrand(false);
     attack->setShoot(false);
     attack->setnorotate(true);
+    //b2Filter filter = attack->getFilterData();
+    //filter.groupIndex = -1;
+    //0x0010 is the category bit for intangible enemies (beef)
+    //filter.maskBits = 0xFFFF ^ 0x0010;
+    //attack->setFilterData(filter);
 
     std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
     attack->setSceneNode(sprite);
@@ -647,3 +788,46 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeMo
 
     return std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>>(attack, sprite);
 }
+
+std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeModel::createAirAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale, float angle) {
+    Vec2 pos = getPosition();
+    Vec2 angleVec = Vec2(cos(angle), sin(angle));
+    pos = pos + angleVec * 1.5;
+
+    std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE);
+    Size size = Size(6.0f, 4.75f);
+    std::shared_ptr<Attack> attack = Attack::alloc(pos,
+        size);
+
+    if (_faceRight) {
+        attack->setFaceRight(true);
+    }
+
+    attack->setName("attack");
+    attack->setGravityScale(0);
+    attack->setDebugColor(DEBUG_COLOR);
+    attack->setDrawScale(scale);
+    attack->setDensity(10.0f);
+    attack->setBullet(true);
+    attack->setrand(false);
+    attack->setShoot(false);
+    attack->setnorotate(true);
+    attack->setAngle(angle - (3.14159265 / 2));
+    //b2Filter filter = attack->getFilterData();
+    //filter.groupIndex = -1;
+    ////0x0010 is the category bit for intangible enemies (beef)
+    ////filter.maskBits = 0xFFFF ^ 0x0010;
+    //attack->setFilterData(filter);
+
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    attack->setSceneNode(sprite);
+    sprite->setVisible(false);
+    sprite->setPosition(pos);
+
+    return std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>>(attack, sprite);
+}
+
+void DudeModel::gainHealth(float f) {
+    _health += f;
+    if (_health > MAX_HEALTH + _healthUpgrade) _health = MAX_HEALTH + _healthUpgrade;
+};
