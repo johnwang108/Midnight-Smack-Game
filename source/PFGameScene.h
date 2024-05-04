@@ -534,9 +534,9 @@ public:
     std::vector<std::shared_ptr<EnemyModel>> getEnemies() const { return _enemies; }
 
     void loadLevel(std::shared_ptr<Levels> level) {
-        // _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level2);
+        _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level2);
         CULog(currentLevel == level2 ? "true" : "false");
-        //_uiScene->getChildByName("bullbar")->setVisible(currentLevel == level3);
+        _uiScene->getChildByName("SFR")->setVisible(currentLevel == level3);
         level->populate(*this);
         currentLevel = level;
     }

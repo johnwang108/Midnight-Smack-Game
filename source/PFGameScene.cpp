@@ -402,12 +402,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
    _chapter = 1;
-   _level = 1;
-   // loadLevel(_chapter, _level);
+   _level = 4;
+    loadLevel(_chapter, _level);
    // 
    // _level_model->setFilePath("json/empanada-platform-level-01.json");
-    currentLevel = _level_model;
-    loadLevel(_level_model);
+   // currentLevel = _level_model;
+    //loadLevel(_level_model);
     addChild(_worldnode);
     addChild(_debugnode);
 
@@ -567,9 +567,9 @@ void GameScene::reset() {
     else if (_debugAnimTargetName == "shrimp" && _ShrimpRice != nullptr) {
         _debugAnimTarget = _ShrimpRice;
     }
-    // loadLevel(_level_model);
-    loadLevel(_level_model);
-    // loadLevel(_chapter, _level);
+
+   // loadLevel(_level_model);
+    loadLevel(_chapter, _level);
     addChild(_worldnode);
     addChild(_debugnode);
     // addChild(_gestureFeedback);

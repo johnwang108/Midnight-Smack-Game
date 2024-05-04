@@ -27,6 +27,7 @@ bool GestureInteractable::init(const std::shared_ptr<Texture>& texture, const cu
 		setName("interactable");
 		return true;
 	}
+    return false;
 }
 
 void GestureInteractable::setSpriteNode(const std::shared_ptr<EntitySpriteNode>& node) {
