@@ -434,6 +434,12 @@ void PlatformInput::clear() {
     _dashPressed = false;
     _slowPressed = false;
     _transitionPressed = false;
+    _animatePressed = false;
+    _backgroundPressed = false;
+    _musicPressed = false;
+    _inventoryLeftPressed = false;
+    _inventoryRightPressed = false;
+    _interactPressed = false;
 }
 
 #pragma mark -

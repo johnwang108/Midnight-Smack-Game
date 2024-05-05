@@ -483,17 +483,18 @@ void LevelModel::populate(GameScene& scene) {
 
 
 	//hardcode :3
+	if (getFilePath() == "json/intermediate.json") {
+		Vec2 boilStation = p + Vec2(10.0f, 40.0f);
+		Vec2 cutStation = p + Vec2(40.0f, 40.0f);
+		Vec2 fryStation = p + Vec2(80.0f, 30.0f);
+		Vec2 plate = p;
 
-	Vec2 boilStation = p + Vec2(10.0f, 40.0f);
-	Vec2 cutStation = p + Vec2(40.0f, 40.0f);
-	Vec2 fryStation = p + Vec2(80.0f, 30.0f);
-	Vec2 plate = p ;
-
-	scene.spawnStation(boilStation, StationType::BOIL);
-	scene.spawnStation(cutStation, StationType::CUT);
-	scene.spawnStation(fryStation, StationType::FRY);
-	std::unordered_map<IngredientType, int> map = { {IngredientType::boiledEgg, 2}, {IngredientType::boiledRice, 2}, {IngredientType::cookedBeef, 1} };
-	scene.spawnPlate(plate, map);
+		scene.spawnStation(boilStation, StationType::BOIL);
+		scene.spawnStation(cutStation, StationType::CUT);
+		scene.spawnStation(fryStation, StationType::FRY);
+		std::unordered_map<IngredientType, int> map = { {IngredientType::boiledEgg, 2}, {IngredientType::boiledRice, 2}, {IngredientType::cookedBeef, 1} };
+		scene.spawnPlate(plate, map);
+	}
 
 
 	scene.setAssets(_assets);

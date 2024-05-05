@@ -606,6 +606,8 @@ public:
     std::vector<std::shared_ptr<Attack>> getattacks() { return _attacks; }
     void setattacks(std::vector<std::shared_ptr<Attack>> attacks) { _attacks = attacks; }
 
+    void pogo();
+
     void setInteractable(int interactableID) {
 		_currentInteractableID = interactableID;
 	}

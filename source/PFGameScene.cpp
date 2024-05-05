@@ -404,12 +404,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
    _chapter = 1;
-   _level = 3;
-    loadLevel(_chapter, _level);
+   _level = 1;
+   loadLevel(_chapter, _level);
    // 
    // _level_model->setFilePath("json/empanada-platform-level-01.json");
    // currentLevel = _level_model;
-    //loadLevel(_level_model);
+    loadLevel(_level_model);
     addChild(_worldnode);
     addChild(_debugnode);
 
@@ -550,6 +550,21 @@ void GameScene::reset() {
 		std::get<0>(p) = nullptr;
 	}
     _popups.clear();
+
+    for (auto& s : _stations) {
+        s = nullptr;
+    }
+    _stations.clear();
+
+    for (auto& p : _plates) {
+        p = nullptr;
+    }
+    _plates.clear();
+
+    for (auto& i : _interactables) {
+        i = nullptr;
+    }
+    _interactables.clear();
     _Bull = nullptr;
 
     removeChild(_worldnode);
@@ -887,7 +902,7 @@ void GameScene::preUpdate(float dt) {
     }
 
     if (_input->didAnimate()) {
-        auto reader = JsonReader::alloc("./json/constants.json");
+        /*auto reader = JsonReader::alloc("./json/constants.json");
 
         std::shared_ptr<JsonValue> js = reader->readJson();
 
@@ -913,7 +928,8 @@ void GameScene::preUpdate(float dt) {
             auto action = _debugAnimTarget->getAction(_debugAnimName);
             _actionManager->clearAllActions(_debugAnimTarget->getSceneNode());
             _actionManager->activate(_debugAnimName, action, _debugAnimTarget->getSceneNode());
-        }
+        }*/
+        setComplete(true);
     }
     if (_overrideAnim && !_actionManager->isActive(_debugAnimName)) {
         _overrideAnim = false;
@@ -1026,7 +1042,7 @@ void GameScene::preUpdate(float dt) {
     Vec2 avatarPos = _avatar->getPosition();
     std::vector<std::shared_ptr<Rice>> spawns = std::vector<std::shared_ptr<Rice>>();
     for (auto& enemy : _enemies) {
-        if (enemy != nullptr && !enemy->isRemoved()) {
+        if (enemy != nullptr && enemy->getBody() != nullptr && !enemy->isRemoved()) {
             enemy->update(dt);
             Vec2 enemyPos = enemy->getPosition();
             float distance = avatarPos.distance(enemyPos);
@@ -1348,6 +1364,9 @@ void GameScene::fixedUpdate(float step) {
         }
 
         else if (_level_model->getFilePath() != "") {
+            _camera->setZoom(155.0 / 40.0);
+        }
+        else {
             _camera->setZoom(400.0 / 40.0);
         }
 
@@ -1439,7 +1458,7 @@ void GameScene::fixedUpdate(float step) {
     //su
     _avatar->fixedUpdate(step);
     for (auto& enemy : _enemies) {
-        if (enemy != nullptr && !enemy->isRemoved()) {
+        if (enemy != nullptr && enemy->getBody() != nullptr && !enemy->isRemoved()) {
             enemy->fixedUpdate(step);
         }
         if (enemy->getHealth() <= 0) {
@@ -1556,45 +1575,47 @@ void GameScene::postUpdate(float remain) {
         if (_failed == false) {
 
             //this is where we will change the scene width and heights for everything
+            advanceLevel();
+            reset();
 
-            if (_level_model->getFilePath() == "json/intermediate.json") {
-                //_bgScene->setColor(Color4::BLACK);
-                _level_model->removeBackgroundImages(*this);
-                _level_model->setFilePath("json/empanada-platform-level-01.json");
-                currentLevel = _level_model;
+            //if (_level_model->getFilePath() == "json/intermediate.json") {
+            //    //_bgScene->setColor(Color4::BLACK);
+            //    _level_model->removeBackgroundImages(*this);
+            //    _level_model->setFilePath("json/empanada-platform-level-01.json");
+            //    currentLevel = _level_model;
 
-                CULog("We should switch to our first initial level");
-                // currentLevel
-                reset();
-            }
-            else if (_level_model->getFilePath() == "json/empanada-platform-level-01.json") {
-                //_bgScene->setColor(Color4::BLACK);
-                _level_model->removeBackgroundImages(*this);
-                _level_model->setFilePath("json/test_level_v2_experiment.json");
-                currentLevel = _level_model;
-                
-                CULog("We should switch to our first initial level");
-                // currentLevel
-                reset();
-            }
-            else if (_level_model->getFilePath() == "json/test_level_v2_experiment.json") {
-                _bgScene->setColor(Color4::BLACK);
-                _level_model->removeBackgroundImages(*this);
-                _level_model->setFilePath("json/bull-boss-level.json");
-                currentLevel = _level_model;
+            //    CULog("We should switch to our first initial level");
+            //    // currentLevel
+            //    reset();
+            //}
+            //else if (_level_model->getFilePath() == "json/empanada-platform-level-01.json") {
+            //    //_bgScene->setColor(Color4::BLACK);
+            //    _level_model->removeBackgroundImages(*this);
+            //    _level_model->setFilePath("json/test_level_v2_experiment.json");
+            //    currentLevel = _level_model;
+            //    
+            //    CULog("We should switch to our first initial level");
+            //    // currentLevel
+            //    reset();
+            //}
+            //else if (_level_model->getFilePath() == "json/test_level_v2_experiment.json") {
+            //    _bgScene->setColor(Color4::BLACK);
+            //    _level_model->removeBackgroundImages(*this);
+            //    _level_model->setFilePath("json/bull-boss-level.json");
+            //    currentLevel = _level_model;
 
-                CULog("We should switch to the bull boss level");
-                // currentLevel
-                reset();
-            }
-            else if (currentLevel == level3) {
-                currentLevel = _level_model;
-                reset();
-            }
-            else {
-                currentLevel = _level_model;
-                reset();
-            }
+            //    CULog("We should switch to the bull boss level");
+            //    // currentLevel
+            //    reset();
+            //}
+            //else if (currentLevel == level3) {
+            //    currentLevel = _level_model;
+            //    reset();
+            //}
+            //else {
+            //    currentLevel = _level_model;
+            //    reset();
+            //}
         }
             // advanceLevel();
             // reset();
@@ -1701,10 +1722,12 @@ void GameScene::setComplete(bool value) {
 void GameScene::setFailure(bool value) {
     _failed = value;
     if (value) {
-        std::shared_ptr<Sound> source = _assets->get<Sound>(LOSE_MUSIC);
-        AudioEngine::get()->getMusicQueue()->play(source, false, MUSIC_VOLUME);
-        _losenode->setVisible(true);
-        _countdown = EXIT_COUNT;
+        if (!_failed && !_complete) {
+            std::shared_ptr<Sound> source = _assets->get<Sound>(LOSE_MUSIC);
+            AudioEngine::get()->getMusicQueue()->play(source, false, MUSIC_VOLUME);
+            _losenode->setVisible(true);
+            _countdown = EXIT_COUNT;
+        }
     }
     else {
         _losenode->setVisible(false);
@@ -1955,7 +1978,7 @@ void GameScene::loadLevel(int chapter, int level) {
 
 void GameScene::advanceLevel() {
     _level += 1;
-    _level = _level % 5;
+    _level = _level % 6;
     if (_level == 0) _level = 1;
     changeCurrentLevel(_chapter, _level);
 }
@@ -1964,15 +1987,19 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
     currentLevel = _level_model;
     if (chapter == 1) {
         if (level == 1) {
-            _level_model->setFilePath("json/test_level_v2_experiment.json");
+            _level_model->setFilePath("json/intermediate.json");
         }
         else if (level == 2) {
-            _level_model->setFilePath("json/empanada-platform-level-01.json");
+            _level_model->setFilePath("json/test_level_v2_experiment.json");
         }
         else if (level == 3) {
-            currentLevel = level2;
+            _level_model->setFilePath("json/empanada-platform-level-01.json");
         }
         else if (level == 4) {
+            //currentLevel = level2;
+            _level_model->setFilePath("json/bull-boss-level.json"); 
+        }
+        else if (level == 5) {
             currentLevel = level3;
         }
     }
@@ -2073,4 +2100,14 @@ void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map
     addObstacle(plate, plate->getSceneNode());
     _interactables.push_back(plate);
     _plates.push_back(plate);
+}
+
+void GameScene::pogo() {
+    float pi = 3.1415f;
+    float angle = _avatar->getAngle();
+    //pogo
+    if (_avatar->getActiveAction() == "air_attack" && std::abs(angle) > pi / 2.0f && std::abs(angle) < 3 * pi / 2.0f) {
+        _avatar->setLinearVelocity(_avatar->getLinearVelocity().x, 0.0f);
+        _avatar->jump(Vec2(std::sinf(angle + pi / 2.0f), std::cosf(angle + pi / 2.0f)));
+    }
 }
