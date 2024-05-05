@@ -43,7 +43,7 @@ public:
 	void addIngredient(std::shared_ptr<Ingredient> ingredient);
 	/* Internal use, searches through all ingredients to see which is held */
 	std::shared_ptr<Ingredient> findAndRemoveHeldIngredient();
-	void Inventory::shiftAllIngredientsUp(int startInd);
+	void shiftAllIngredientsUp(int startInd);
 	std::shared_ptr<scene2::PolygonNode> createInventoryNode(std::shared_ptr<Texture>, int);
 	//remove ingredient from slot and return the ingredient
 	std::shared_ptr<Ingredient> popIngredientFromSlot(int slotToClear);

@@ -52,6 +52,8 @@ protected:
     
     bool _norotate;
 
+    bool _die;
+
     std::string _sensorName;
 
     b2Fixture* _sensorFixture;
@@ -182,6 +184,7 @@ public:
     void setLifetime(float lifetime) { _lifetime = lifetime; }
 
     float getLifetime() { return _lifetime; }
+    void setDie(bool die) { _die = die; }
 };
 
 #endif /* __ATTACK_H__ */

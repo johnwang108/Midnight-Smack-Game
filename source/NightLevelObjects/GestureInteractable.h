@@ -28,11 +28,11 @@ public:
     static int ID;
 
     bool init(const std::shared_ptr<Texture>& texture,  const cugl::Vec2& pos, const cugl::Size& size);
-
+/*
     std::shared_ptr<GestureInteractable> alloc(Vec2 pos, Size s, std::string type) {
 
     }
-
+*/
     std::shared_ptr<scene2::SceneNode> getSceneNode() { return _node; }
     std::shared_ptr<EntitySpriteNode> getSpriteNode() { return _node; }
 
