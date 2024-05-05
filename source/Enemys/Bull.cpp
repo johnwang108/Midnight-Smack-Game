@@ -274,6 +274,7 @@ void BullModel::createFixtures() {
 void BullModel::createAttack(GameScene& scene) {
 
     float _scale = scene.getScale();
+    std::vector<std::shared_ptr<Attack>> _attacks = scene.getattacks();
 
     std::shared_ptr<Texture> image = _assets->get<Texture>("unball");
     Vec2 pos = getPosition();
@@ -297,15 +298,16 @@ void BullModel::createAttack(GameScene& scene) {
     attack->setDrawScale(_scale);
     attack->setEnabled(true);
     attack->setrand(true);
+    attack->setDie(false);
 
 
 
     std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
     attack->setSceneNode(sprite);
     sprite->setPosition(pos);
-
+    _attacks.push_back(attack);
     scene.addObstacle(attack, sprite, true);
-
+    scene.setattacks(_attacks);
     std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
     AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);
 
@@ -313,7 +315,7 @@ void BullModel::createAttack(GameScene& scene) {
 
 void BullModel::createAttack2(GameScene& scene) {
     float _scale = scene.getScale();
-
+    std::vector<std::shared_ptr<Attack>> _attacks = scene.getattacks();
     std::shared_ptr<Texture> image = _assets->get<Texture>("bullStompEffect");
     std::vector<int> forward;
     for (int ii = 0; ii < 14; ii++) {
@@ -343,6 +345,7 @@ void BullModel::createAttack2(GameScene& scene) {
     attack->setEnabled(false);
     attack->setGo(true);
     attack->setnorotate(true);
+    attack->setDie(false);
 
     attack2->setFaceRight(false);
     attack2->setName("shake");
@@ -353,6 +356,7 @@ void BullModel::createAttack2(GameScene& scene) {
     attack2->setEnabled(false);
     attack2->setGo(true);
     attack2->setnorotate(true);
+    attack2->setDie(false);
     
 
 
@@ -372,7 +376,9 @@ void BullModel::createAttack2(GameScene& scene) {
     _actionM->activate("s"+std::to_string(n), act, sprite2);
     n+=1;
     scene.addObstacle(attack2, sprite2, true);
-
+    _attacks.push_back(attack);
+    _attacks.push_back(attack2);
+    scene.setattacks(_attacks);
     std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
     AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);
 
@@ -382,7 +388,7 @@ void BullModel::createAttack3(GameScene& scene) {
 
     std::shared_ptr<DudeModel> _Su = scene.getAvatar();
     float _scale = scene.getScale();
-
+    std::vector<std::shared_ptr<Attack>> _attacks = scene.getattacks();
     std::shared_ptr<Texture> image = _assets->get<Texture>("dball");
     Vec2 pos = getPosition();
 
@@ -399,6 +405,7 @@ void BullModel::createAttack3(GameScene& scene) {
     attack->setEnabled(true);
     attack->setstraight(_Su->getPosition());
     attack->setrand(false);
+    attack->setDie(false);
 
 
     std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
@@ -406,7 +413,8 @@ void BullModel::createAttack3(GameScene& scene) {
     sprite->setPosition(pos);
 
     scene.addObstacle(attack, sprite, true);
-
+    _attacks.push_back(attack);
+    scene.setattacks(_attacks);
     std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
     AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);
 

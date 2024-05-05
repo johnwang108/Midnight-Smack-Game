@@ -402,7 +402,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
    _chapter = 1;
-   _level = 4;
+   _level = 3;
     loadLevel(_chapter, _level);
    // 
    // _level_model->setFilePath("json/empanada-platform-level-01.json");

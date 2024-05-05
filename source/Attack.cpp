@@ -25,6 +25,7 @@ bool Attack::init(cugl::Vec2 pos, const cugl::Size& size) {
 		_go = false;
         _norotate= false;
 		_speed = DEFAULT_SPEED;
+		_die = true;
 
         return true;
     }
@@ -65,7 +66,7 @@ void Attack::fixedUpdate(float dt) {
 	if (_go) {
 		_body->SetLinearVelocity(b2Vec2(8 * _direction, 0));
 	}
-	else {
+	if(_die) {
 		if (_lifetime == 0) {
 			_killme = true;
 		}
