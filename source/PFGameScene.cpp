@@ -398,7 +398,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     // _bgScene->addChild(_background);
     //_bgScene->setColor(Color4::CLEAR);
 
-
+    _interactables = std::vector<std::shared_ptr<GestureInteractable>>();
+    _plates = std::vector<std::shared_ptr<Plate>>();
+    _stations = std::vector<std::shared_ptr<Station>>();
 
 
    _chapter = 1;
@@ -450,10 +452,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _overrideAnim = false;
 
     _currentInteractableID = -1;
-
-    _interactables = std::vector<std::shared_ptr<GestureInteractable>>();
-    _plates = std::vector<std::shared_ptr<Plate>>();
-    _stations = std::vector<std::shared_ptr<Station>>();
 
     setName("night");
     Application::get()->setClearColor(Color4::CLEAR);
@@ -690,14 +688,17 @@ void GameScene::preUpdate(float dt) {
     if (_input->didInteract()) {
         CULog("IIIII");
         if (_currentInteractableID != -1) {
+
+            CULog("%i", _currentInteractableID);
             for (auto& i : _plates) {
                 if (i->getId() == _currentInteractableID) {
                     IngredientType t = _inventoryNode->getIngredientTypeFromSlot(_inventoryNode->getSelectedSlot());
-					bool b = i->interact(t);
+                    bool b = i->interact(t);
                     if (b) _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
                     break;
-				}
-			}
+                }
+                CULog("plate");
+            }
 
             for (auto& i : _stations) {
                 if (i->getId() == _currentInteractableID) {
@@ -717,8 +718,12 @@ void GameScene::preUpdate(float dt) {
                         i->clearIngredients();
                     }
                 }
+                else CULog("Station id: %i", i->getId());
+                CULog("station");
             }
-		}
+        }
+
+        else CULog("failure");
     }
 
     checkForCooktime();

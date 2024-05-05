@@ -89,7 +89,7 @@ void PlatformApp::onShutdown() {
         _multiScreen.save();
     }*/
     _menu.dispose();
-    _multiScreen.dispose();
+    //_multiScreen.dispose();
     _loading.dispose();
     _gameplay.dispose();
     _assets = nullptr;

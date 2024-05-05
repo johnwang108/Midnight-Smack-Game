@@ -607,7 +607,6 @@ public:
     void setattacks(std::vector<std::shared_ptr<Attack>> attacks) { _attacks = attacks; }
 
     void setInteractable(int interactableID) {
-        CULog("SETTING");
 		_currentInteractableID = interactableID;
 	}
 

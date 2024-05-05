@@ -19,9 +19,6 @@ bool Station::init(const std::shared_ptr<Texture>& texture, const cugl::Vec2& po
 		setCapacity(1);
 		setBodyType(b2_staticBody);
 		setSensor(true);
-		//b2Filter filter = getFilterData();
-		//filter.groupIndex = -1;
-		//setFilterData(filter);
 		return true;
 	}
 	return false;
