@@ -2,7 +2,7 @@
 
 std::map<StationType, std::unordered_set<IngredientType>> acceptedIngredientsMap = {
 	{StationType::CUT, std::unordered_set<IngredientType>({IngredientType::carrot})},
-	{StationType::FRY, std::unordered_set<IngredientType>({IngredientType::beef, IngredientType::shrimp})},
+	{StationType::FRY, std::unordered_set<IngredientType>({IngredientType::beef, IngredientType::shrimp, IngredientType::egg})},
 	{StationType::BOIL, std::unordered_set<IngredientType>({IngredientType::egg, IngredientType::rice})}
 };
 
@@ -35,6 +35,41 @@ bool Station::interact(IngredientType t) {
 
 void Station::setIngredientPtr(std::shared_ptr<Ingredient> i) {
 	_ingredient = i;
+}
+
+IngredientType Station::getCookedType(IngredientType t) {
+	switch (_type) {
+	case StationType::CUT: {
+		return IngredientType::cutCarrot;
+	}
+
+	case StationType::FRY:
+	{
+		if (t == IngredientType::beef) {
+			return IngredientType::cookedBeef;
+		}
+		else if (t == IngredientType::shrimp) {
+			return IngredientType::cookedShrimp;
+		}
+		else if (t == IngredientType::egg) {
+			return IngredientType::scrambledEgg;
+		}
+		break;
+	}
+	case StationType::BOIL:
+	{
+		if (t == IngredientType::egg) {
+			return IngredientType::boiledEgg;
+		}
+		else if (t == IngredientType::rice) {
+			return IngredientType::boiledRice;
+		}
+		break;
+	}
+	default:
+		return IngredientType::null;
+		break;
+	}
 }
 
 void Station::hit() {

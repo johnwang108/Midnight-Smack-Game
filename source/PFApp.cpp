@@ -158,13 +158,6 @@ void PlatformApp::update(float dt) {
 
         _input = std::make_shared<PlatformInput>();
 
-        /*_multiScreen.init(_assets, _input);
-        _multiScreen.setActive(false);*/
-
-        /*_dayUIScene = std::make_shared<cugl::scene2::SceneNode>();
-        _dayUIScene->init();
-        _dayUIScene->setActive(MULTI_SCREEN);*/
-
         _gameplay.init(_assets, _input);
         _gameplay.setActive(false);
 
@@ -207,9 +200,6 @@ void PlatformApp::preUpdate(float dt) {
     else if (_gameplay.isActive()) {
         _gameplay.preUpdate(dt);
     }
-  /*  else if (_multiScreen.isActive()) {
-        _multiScreen.preUpdate(dt);
-    }*/
     else {
 
     }
@@ -304,27 +294,9 @@ void PlatformApp::draw() {
         _gameplay.render(_batch);
         _gameplay.renderUI(_batch);
     }
- /*   else if (_multiScreen.isActive()) {
-        _multiScreen.render(_batch);
-        _multiScreen.renderUI(_batch);
-    }*/
     else {
 
     }
-    //if (_menu.isActive()) {
-    //    //_loading.render(_batch);
-    //    _menu.render(_batch);
-    //} else {
-    //    if (_gameplay.isActive()) {
-    //        _gameplay.renderBG(_batch);
-    //        _gameplay.render(_batch);
-    //        _gameplay.renderUI(_batch);
-    //    }
-    //    else {
-    //        _multiScreen.render(_batch);
-    //        _multiScreen.renderUI(_batch);
-    //    }
-    //}
 }
 
 
@@ -332,39 +304,14 @@ void PlatformApp::transitionScenes() {
     if (_gameplay.didTransition()) {
 		_gameplay.setActive(false);
 		_gameplay.transition(false);
-
 		_currentScene = _gameplay.getTarget();
         _gameplay.setTarget("");
-   /*     if(_currentScene == "day") {
-			_multiScreen.setActive(true);
-			_multiScreen.focusCurr();
-            _multiScreen.reset();
-        }
-        else */
         if (_currentScene == "main_menu"){
 			_menu.setActive(true);
         }
         CULog("Transed");
         CULog("From gameplay");
 	}
-	/*else if (_multiScreen.didTransition()) {
-		_multiScreen.transition(false);
-		_multiScreen.setActive(false);
-		_multiScreen.unfocusAll();
-
-		_currentScene = _multiScreen.getTarget();
-        _multiScreen.setTarget("");
-        if (_currentScene == "night") {
-            _gameplay.setActive(true);
-            _gameplay.reset();
-        }
-        else if (_currentScene == "main_menu") {
-            _menu.setActive(true);
-        }
-
-        CULog("Transed");
-        CULog("From Multi");
-    }*/
     else if (_menu.didTransition()) {
         _menu.setActive(false);
         _menu.setTransition(false);
@@ -375,10 +322,6 @@ void PlatformApp::transitionScenes() {
 			_gameplay.setActive(true);
             
 		}
-	/*	else if (_currentScene == "day") {
-			_multiScreen.setActive(true);
-			_multiScreen.focusCurr();
-		}*/
 
         CULog("Transed");
         CULog("From menu");

@@ -68,12 +68,18 @@ private:
     bool _keyInventoryLeft;
     bool _keyInventoryRight;
 
-    bool _keyTransition;
+    bool _keyMinimap;
+
+    bool _keyPause;
+
+    bool _keyLevel1;
+    bool _keyLevel2;
+    bool _keyLevel3;
 
     //for Leon
     bool  _keyAnimate;
     bool  _keyBackground;
-    bool  _keyMusic;
+    //bool  _keyMusic;
 
 
     //is the current path ready for recog and rendering
@@ -116,11 +122,16 @@ protected:
     float _vertical;
     bool _dashPressed;
 
-    bool _transitionPressed;
+    bool _minimapPressed;
+    bool _pausePressed;
+
+    bool _level1Pressed;
+    bool _level2Pressed;
+    bool _level3Pressed;
 
     bool _animatePressed;
     bool _backgroundPressed;
-    bool _musicPressed;
+    //bool _musicPressed;
 
     bool _zoomIn;
     bool _zoomOut;
@@ -359,14 +370,20 @@ public:
 
     bool didDash() const { return _dashPressed; }
 
-    bool didTransition() const { return _transitionPressed; }
+    bool didMinimap() const { return _minimapPressed; }
+
+    bool didPause() const { return _pausePressed; }
 
     bool didAnimate() const { return _animatePressed; }
 
-    bool didMusic() const { return _musicPressed; }
+    //bool didMusic() const { return _musicPressed; }
     bool didBackground() const { return _backgroundPressed; }
 
     cugl::Vec2 getTouchPos() { return _touchPos; }
+
+    bool didLevel1() const { return _level1Pressed; }
+    bool didLevel2() const { return _level2Pressed; }
+    bool didLevel3() const { return _level3Pressed; }
 
 #pragma mark -
 #pragma mark Touch and Mouse Callbacks

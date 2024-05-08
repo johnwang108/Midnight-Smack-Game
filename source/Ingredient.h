@@ -100,6 +100,21 @@ public:
 		if (type == "scrambledEgg") return IngredientType::scrambledEgg;
 		return IngredientType::null;
 	}
+
+	static std::string getIngredientStringFromType(IngredientType type) {
+		if (type == IngredientType::carrot) return "carrot";
+		if (type == IngredientType::beef) return "beef";
+		if (type == IngredientType::shrimp) return "shrimp";
+		if (type == IngredientType::egg) return "egg";
+		if (type == IngredientType::rice) return "rice";
+		if (type == IngredientType::cutCarrot) return "cutCarrot";
+		if (type == IngredientType::cookedBeef) return "cookedBeef";
+		if (type == IngredientType::cookedShrimp) return "cookedShrimp";
+		if (type == IngredientType::boiledEgg) return "boiledEgg";
+		if (type == IngredientType::boiledRice) return "boiledRice";
+		if (type == IngredientType::scrambledEgg) return "scrambledEgg";
+		return "null";
+	}
 };
 
 #endif // __INGREDIENT_H__

@@ -214,6 +214,10 @@ b2Vec2 EnemyModel::handleMovement(b2Vec2 velocity) {
         velocity.x = -ENEMY_MAXSPEED;
     }
 
+    if (std::abs(_distanceToPlayer.x) < 0.1) {
+        velocity.x = _distanceToPlayer.x;
+    }
+
     if (std::abs(velocity.x) < 0.03) velocity.x = 0;
     if (velocity.x != 0) {
         if (_state != "patrolling") {

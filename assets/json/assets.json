@@ -436,6 +436,42 @@
         }, 
         "knife": {
             "file": "textures/day/knife.png"
+        },
+        "orderBackground": {
+            "file": "textures/UI/Orders/orderBackground.png"
+        },
+        "boilEggOrder": {
+            "file": "textures/UI/Orders/boilEgg.png"
+        },
+        "boilRiceOrder": {
+            "file": "textures/UI/Orders/boilRice.png"
+        },
+        "cutCarrotOrder": {
+            "file": "textures/UI/Orders/cutCarrot.png"
+        },
+        "fryBeefOrder": {
+            "file": "textures/UI/Orders/fryBeef.png"
+        },
+        "fryShrimpOrder": {
+            "file": "textures/UI/Orders/fryShrimp.png"
+        },
+        "plateBeefOrder": {
+            "file": "textures/UI/Orders/plateBeef.png"
+        },
+        "plateBoiledEggOrder": {
+            "file": "textures/UI/Orders/plateBoiledEgg.png"
+        },
+        "plateCarrotOrder": {
+            "file": "textures/UI/Orders/plateCarrot.png"
+        },
+        "plateRiceOrder": {
+            "file": "textures/UI/Orders/plateRice.png"
+        },
+        "plateScrambledEggOrder": {
+            "file": "textures/UI/Orders/plateScrambledEgg.png"
+        },
+        "plateShrimpOrder": {
+            "file": "textures/UI/Orders/plateShrimp.png"
         }
     },
     "sounds": {

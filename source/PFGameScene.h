@@ -40,12 +40,10 @@
 #include "NightLevelObjects/GestureInteractable.h"
 #include "NightLevelObjects/Plate.h"
 #include "NightLevelObjects/Station.h"
-#include "Levels/Level1.h"
-#include "Levels/Level2.h"
-#include "Levels/Level3.h"
 
 #include "Inventory.h"
 #include "Levels/LevelModel.h"
+#include "Levels/Level3.h"
 
 
 /**
@@ -128,6 +126,15 @@ protected:
     /** Countdown active for winning or losing */
     int _countdown;
 
+    std::shared_ptr<OrthographicCamera> _minimapCamera;
+    std::shared_ptr<cugl::scene2::PolygonNode> _minimapNode;
+    std::shared_ptr<RenderTarget> _r;
+
+    /** map from interactable id to orders*/
+    std::unordered_map<int, std::vector<std::shared_ptr<scene2::SceneNode>>> _orders;
+    std::shared_ptr<scene2::SceneNode> _orderNode;
+    int _numOrders;
+
     //camera
     cugl::Vec3 _cameraOffset = Vec3::ZERO;
     float _smoothTime = 0.25f;
@@ -151,9 +158,9 @@ protected:
 
     std::shared_ptr<ShrimpRice>			  _ShrimpRice;
 
-    std::shared_ptr<Level2> level2 = std::make_shared<Level2>();
+    //std::shared_ptr<Level2> level2 = std::make_shared<Level2>();
 
-    std::shared_ptr<Level1> level1 = std::make_shared<Level1>();
+    //std::shared_ptr<Level1> level1 = std::make_shared<Level1>();
 
     std::shared_ptr<Level3> level3 = std::make_shared<Level3>();
 
@@ -534,9 +541,8 @@ public:
     std::vector<std::shared_ptr<EnemyModel>> getEnemies() const { return _enemies; }
 
     void loadLevel(std::shared_ptr<Levels> level) {
-        _uiScene->getChildByName("bullbar")->setVisible(currentLevel == level2);
-        CULog(currentLevel == level2 ? "true" : "false");
-        _uiScene->getChildByName("SFR")->setVisible(currentLevel == level3);
+        //_uiScene->getChildByName("bullbar")->setVisible(currentLevel == level2);
+        //_uiScene->getChildByName("SFR")->setVisible(currentLevel == level3);
         level->populate(*this);
         currentLevel = level;
     }
@@ -589,10 +595,14 @@ public:
 
     bool loadSave(std::shared_ptr<JsonValue> save);
 
+    /**changes the JSON path of the level editor according to what the passed in parameters are. Does not actually call the level editor in this function*/
     void changeCurrentLevel(int chapter, int level);
 
     /*temp, not planning on using this for long*/
     void advanceLevel();
+
+    /** called by level select menu to reset the game state and change levels.*/
+    void setLevel(int chapter, int level);
 
     //Enemy spawn functions with default params.
     void spawnShrimp(Vec2 pos);
@@ -607,6 +617,17 @@ public:
     void setattacks(std::vector<std::shared_ptr<Attack>> attacks) { _attacks = attacks; }
 
     void pogo();
+
+    void createOrder(int id, IngredientType ing, bool isPlate = false);
+
+    /** toggles visibility of orders*/
+    void toggleOrders(bool v);
+
+    void positionOrders();
+
+    void generateOrders();
+
+    void removeOrder(int id, IngredientType t, bool isPlate = false);
 
     void setInteractable(int interactableID) {
 		_currentInteractableID = interactableID;

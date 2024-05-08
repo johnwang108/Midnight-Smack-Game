@@ -48,6 +48,8 @@ public:
 		return _ingredient;
 	}
 
+	IngredientType getCookedType(IngredientType t);
+
 	void hit() override;
 };
 
