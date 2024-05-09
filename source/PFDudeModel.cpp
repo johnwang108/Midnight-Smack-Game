@@ -496,7 +496,6 @@ void DudeModel::update(float dt) {
             _node->setPosition(getPosition() * _drawScale);
             _node->setAngle(getAngle());
         }
-        //return;
     }
     else {
         _lastDamageTime += dt;

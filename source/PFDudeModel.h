@@ -206,6 +206,7 @@ protected:
     bool _contactingRightWall;
     bool _isOnDangerousGround;
     bool _isInputWalk;
+    bool _isAttacking;
 
     //float _health;
 
@@ -520,6 +521,8 @@ public:
      * @return left/right movement of this character.
      */
     float getMovement() const { return _movement; }
+
+    float getVertical() const { return _vertical; }
 
     /**
      * Sets left/right movement of this character.

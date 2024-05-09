@@ -69,6 +69,7 @@ void LevelModel::populate(GameScene& scene) {
 	//_enemies = scene.getEnemies();
 	_goalDoor = scene.getGoalDoor();
 
+	removeBackgroundImages(scene);
 
 	std::shared_ptr<cugl::JsonReader> levelReader;
 	//have to set the filepath before this

@@ -411,8 +411,13 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _minimapCamera->setZoom(MINIMAP_ZOOM);
     _minimapNode = cugl::scene2::PolygonNode::alloc();
     _minimapNode->setContentSize(MINIMAP_WIDTH, MINIMAP_HEIGHT);
+    _minimapNode->setVisible(false);
     _minimapNode->setAnchor(Vec2::ANCHOR_CENTER);
     _minimapNode->setPosition(1280/ 2, 800 / 2);
+
+    _minimapIconNode = scene2::PolygonNode::alloc();
+    _minimapIconNode->setVisible(false);
+    _uiScene->addChild(_minimapIconNode);
     _uiScene->addChild(_minimapNode);
 
    _chapter = 1;
@@ -499,7 +504,6 @@ void GameScene::dispose() {
         _avatar = nullptr;
         _enemies.clear();
         _afterimages.clear();
-        _vulnerables.clear();
         for (auto& attack : _attacks) {
             attack = nullptr;
         }
@@ -557,10 +561,6 @@ void GameScene::reset() {
         attack = nullptr;
     }
     _attacks.clear();
-    for (auto& v : _vulnerables) {
-        v = nullptr;
-    }
-    _vulnerables.clear();
     for (auto& a : _afterimages) {
         a = nullptr;
     }
@@ -607,6 +607,8 @@ void GameScene::reset() {
         _debugAnimTarget = _ShrimpRice;
     }
 
+
+    _level_model->removeBackgroundImages(*this);
    // loadLevel(_level_model);
     loadLevel(_chapter, _level);
     addChild(_worldnode);
@@ -809,93 +811,48 @@ void GameScene::preUpdate(float dt) {
     
     //start running if idle or recovering and moving
     if (!_paused) {
-        if ((_actionManager->isActive("idle") || _actionManager->isActive("recover")) && (_input->getHorizontal() != 0)) {
-            _avatar->animate("run");
-            auto runAction = _avatar->getAction("run");
-            _actionManager->clearAllActions(_avatar->getSceneNode());
-            _actionManager->activate("run", runAction, _avatar->getSceneNode());
-        }
         //cancel run animation if stopped running
-        if (_actionManager->isActive("run") && _input->getHorizontal() == 0) {
-            _avatar->animate("idle");
-            auto idleAction = _avatar->getAction("idle");
-            _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
+        if (_avatar->getMovement() != 0 && _input->getHorizontal() == 0) {
+            animate(_avatar, "skid", true);
+        }
+        if ((_actionManager->isActive("idle") || (_actionManager->isActive("recover")) && (_input->getHorizontal() != 0))) {
+            animate(_avatar, "run", true);
         }
 
         if (_avatar->isJumping() && _avatar->isGrounded()) {
-            _avatar->animate("jump_ready");
-            auto jumpAction = _avatar->getAction("jump_ready");
-            _actionManager->clearAllActions(_avatar->getSceneNode());
-            _actionManager->activate("jump_ready", jumpAction, _avatar->getSceneNode());
+            animate(_avatar, "jump_ready", true);
         }
 
         if (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() < _avatar->getFloatyFrames() && !_actionManager->isActive("air_roll")) {
-            _avatar->animate("air_roll");
-			auto dashAction = _avatar->getAction("air_roll");
-			_actionManager->clearAllActions(_avatar->getSceneNode());
-			_actionManager->activate("air_roll", dashAction, _avatar->getSceneNode());
+            animate(_avatar, "air_roll", true);
         }
 
 
         //animate jumps if not attacking or taking damage
         if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && !(_avatar->getActiveAction() == "air_attack")&&  !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y > 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
-            //CULog("animating jump_up 1");
-            _avatar->animate("jump_up");
-            auto jumpAction = _avatar->getAction("jump_up");
-            _actionManager->clearAllActions(_avatar->getSceneNode());
-            _actionManager->activate("jump_up", jumpAction, _avatar->getSceneNode());
+            animate(_avatar, "jump_up");
         }
         if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && !(_avatar->getActiveAction() == "air_attack") && !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y < 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
            // CULog("animating jump_down");
-            _avatar->animate("jump_down");
-            auto jumpAction = _avatar->getAction("jump_down");
-            _actionManager->clearAllActions(_avatar->getSceneNode());
-            _actionManager->activate("jump_down", jumpAction, _avatar->getSceneNode());
+            animate(_avatar, "jump_down");
         }
         if (_avatar->isGrounded() && (_actionManager->isActive("jump_down") || _actionManager->isActive("jump_up"))) {
             //CULog("animating jump_land");
-            _avatar->animate("jump_land");
-            auto jumpAction = _avatar->getAction("jump_land");
-            _actionManager->clearAllActions(_avatar->getSceneNode());
-            _actionManager->activate("jump_land", jumpAction, _avatar->getSceneNode());
+            animate(_avatar, "jump_land", true);
         }
 
 
         //handle expired actions
         if (!_actionManager->isActive(_avatar->getActiveAction())) {
             if (_avatar->getActiveAction() == "attack") {
-                //CULog("animating attack");
-                _avatar->animate("recover");
-                auto recoverAction = _avatar->getAction("recover");
-                _actionManager->activate("recover", recoverAction, _avatar->getSceneNode());
+                animate(_avatar, "recover");
             }
-            else if (_avatar->getActiveAction() == "run" && _input->getHorizontal() != 0) {
-                //CULog("animating run");
-                _avatar->animate("run");
-                auto runAction = _avatar->getAction("run");
-                _actionManager->clearAllActions(_avatar->getSceneNode());
-                _actionManager->activate("run", runAction, _avatar->getSceneNode());
+            if (_avatar->getActiveAction() == "run" && _input->getHorizontal() != 0) {
+                animate(_avatar, "run", true);
             }
-            else  if (_avatar->getActiveAction() == "air_attack") {
-                //CULog("animating air roll");
-                _avatar->animate("air_roll");
-                auto recoverAction = _avatar->getAction("air_roll");
-                _actionManager->activate("air_roll", recoverAction, _avatar->getSceneNode());
+            if (_avatar->getActiveAction() == "air_attack") {
+                animate(_avatar, "air_roll", true);
             } 
-            else {
-                //Todo:: blink idle
-                //CULog("animating idle");
-                if (((float)rand() / RAND_MAX) < 0.0f) {
-                    _avatar->animate("idle_blink");
-                    auto idleAction = _avatar->getAction("idle_blink");
-                    _actionManager->activate("idle_blink", idleAction, _avatar->getSceneNode());
-                }
-                else {
-                    _avatar->animate("idle");
-                    auto idleAction = _avatar->getAction("idle");
-                    _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
-                }
-            }
         }
 
             if (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() < _avatar->getFloatyFrames() && _avatar->getDashCooldownMax() - _avatar->getDashCooldown() != 0 && _avatar->getDashCooldown() % 3  == 1) {
@@ -923,10 +880,7 @@ void GameScene::preUpdate(float dt) {
                     obs->setAngle(_avatar->getBody()->GetAngle());
 					});
 
-                auto attackAction = _avatar->getAction("attack");
-                _avatar->animate("attack");
-                _actionManager->clearAllActions(_avatar->getSceneNode());
-                _actionManager->activate("attack", attackAction, _avatar->getSceneNode());
+                animate(_avatar, "attack", true);
             }
             else {
                 float horiz = _input->getHorizontal();
@@ -949,11 +903,13 @@ void GameScene::preUpdate(float dt) {
                 _avatar->getBody()->SetTransform(_avatar->getBody()->GetPosition(), angle- (3.14159265 / 2));
                 _avatar->getBody()->SetFixedRotation(true);
 
-                auto attackAction = _avatar->getAction("air_attack");
-                _avatar->animate("air_attack");
-                _actionManager->clearAllActions(_avatar->getSceneNode());
-                _actionManager->activate("air_attack", attackAction, _avatar->getSceneNode());
+                animate(_avatar, "air_attack", true);
             }
+        }
+
+        //if nothing has been animated, play idle 
+        if (_avatar->getActiveAction() == "" || !_actionManager->isActive(_avatar->getActiveAction())) {
+            animate(_avatar, "idle");
         }
     }
 
@@ -1429,6 +1385,9 @@ void GameScene::fixedUpdate(float step) {
         float cameraWidth = invZoom * (_camera->getViewport().getMaxX() - _camera->getViewport().getMinX()) / 2;
         float cameraHeight = invZoom * (_camera->getViewport().getMaxY() - _camera->getViewport().getMinY()) / 2;
 
+        float backgroundWidth = _background->getBoundingRect().getMaxX() - _background->getBoundingRect().getMinX();
+        float backgroundHeight = _background->getBoundingRect().getMaxY() - _background->getBoundingRect().getMinY();
+
         if (_level == 1 || _level == 2 || _level == 3 || _level == 4) {
             cugl::Vec3 mapMin = Vec3(_background->getBoundingRect().getMinX() + cameraWidth, _background->getBoundingRect().getMinY() + cameraHeight, 0);
             cugl::Vec3 mapMax = Vec3(_background->getBoundingRect().getMaxX() - cameraWidth, _background->getBoundingRect().getMaxY() - cameraHeight, 0);
@@ -1448,9 +1407,33 @@ void GameScene::fixedUpdate(float step) {
         float smooth = 0.2;
         pos.smooth(target, step, smooth);
         _camera->setPosition(pos);
-        _minimapCamera->setPosition(pos);
         _camera->update();
-        _minimapCamera->update();
+
+        if (_level == 1 || _level == 2 || _level == 3 || _level == 4) {
+
+            invZoom = 1 / _minimapCamera->getZoom();
+            cameraWidth = invZoom * (_minimapCamera->getViewport().getMaxX() - _minimapCamera->getViewport().getMinX()) / 2;
+            cameraHeight = invZoom * (_minimapCamera->getViewport().getMaxY() - _minimapCamera->getViewport().getMinY()) / 2;
+
+            if (backgroundWidth < cameraWidth * 2) {
+                _minimapCamera->setZoom(std::min(_minimapCamera->getZoom(), cameraWidth * 2 / backgroundWidth));
+                invZoom = 1 / _minimapCamera->getZoom();
+                cameraWidth = invZoom * (_minimapCamera->getViewport().getMaxX() - _minimapCamera->getViewport().getMinX()) / 2;
+                cameraHeight = invZoom * (_minimapCamera->getViewport().getMaxY() - _minimapCamera->getViewport().getMinY()) / 2;
+            }
+            if (backgroundHeight < cameraHeight * 2) {
+				_minimapCamera->setZoom(std::min(_minimapCamera->getZoom(), cameraHeight * 2 / backgroundHeight));
+                invZoom = 1 / _minimapCamera->getZoom();
+                cameraWidth = invZoom * (_minimapCamera->getViewport().getMaxX() - _minimapCamera->getViewport().getMinX()) / 2;
+                cameraHeight = invZoom * (_minimapCamera->getViewport().getMaxY() - _minimapCamera->getViewport().getMinY()) / 2;
+			}
+
+            cugl::Vec3 mapMin = Vec3(_background->getBoundingRect().getMinX() + cameraWidth, _background->getBoundingRect().getMinY() + cameraHeight, 0);
+            cugl::Vec3 mapMax = Vec3(_background->getBoundingRect().getMaxX() - cameraWidth, _background->getBoundingRect().getMaxY() - cameraHeight, 0);
+            pos.clamp(mapMin, mapMax);
+            _minimapCamera->setPosition(pos);
+            _minimapCamera->update();
+        }
     }
     if (_avatar->getHealth() <= 0) {
         setFailure(true);
@@ -1701,7 +1684,7 @@ void GameScene::checkForCooktime() {
 
     }
     else if (_input->getLastSlowHeldDuration() > DISCARD_HOLD_TIME && _input->justReleasedSlow()) {
-        std::shared_ptr<Ingredient> ing = _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
+        /*std::shared_ptr<Ingredient> ing =*/ _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
         //i think thats all
     }
 }
@@ -1721,6 +1704,12 @@ void GameScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
         batch->setBlendEquation(_blendEquation);
 
         for (auto it = _children.begin(); it != _children.end(); ++it) {
+            if ((*it)->getName() == "background") {
+				(*it)->render(batch, Affine2::IDENTITY, _color);
+			}
+            else if ((*it)->getName() == "dude") {
+                _minimapIconNode->setPosition((*it)->getPosition());
+            }
             (*it)->render(batch, Affine2::IDENTITY, _color);
         }
 
@@ -2291,6 +2280,7 @@ void GameScene::positionOrders() {
 
 void GameScene::generateOrders() {
     _numOrders = 0;
+    _orderNode->removeAllChildren();
     for (auto& p : _plates) {
         std::vector<IngredientType> x = p->getTargetIngredients();
         int id = p->getId();
@@ -2300,3 +2290,11 @@ void GameScene::generateOrders() {
         }
     }
 }
+
+//void GameScene::addToInventory(std::shared_ptr<Ingredient> ing) {
+//    _inventoryNode->addIngredient(ing);
+//}
+//
+//std::shared_ptr<Ingredient> GameScene::popFromInventory(std::shared_ptr<Ingredient> ing) {
+//    return _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
+//}

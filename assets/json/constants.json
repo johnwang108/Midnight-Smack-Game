@@ -78,6 +78,20 @@
             "cols": 2,
             "frames": 3,
             "duration": 0.15
+        },
+        "skid": {
+            "sheet": "suSkid",
+            "rows": 4,
+            "cols": 5,
+            "frames": 17,
+            "duration": 1.0
+        },
+        "hurt": {
+            "sheet": "suDamage",
+            "rows": 3,
+            "cols": 3,
+            "frames": 7,
+            "duration": 0.15
         }
     },
     "rice" : {
@@ -379,6 +393,27 @@
             "rows": 1,
             "cols": 1,
             "frames": 1,
+            "duration": 1
+        },
+        "shrimpRollDeath": {
+            "sheet": "shrimpRollDeath",
+            "rows": 3,
+            "cols": 3,
+            "frames": 9,
+            "duration": 1
+        },
+        "shrimpIdleDeath": {
+            "sheet": "shrimpIdleDeath",
+            "rows": 2,
+            "cols": 3,
+            "frames": 6,
+            "duration": 1
+        },
+        "shrimpStandDeath": {
+            "sheet": "shrimpRollDeath",
+            "rows": 4,
+            "cols": 5,
+            "frames": 17,
             "duration": 1
         }
     },

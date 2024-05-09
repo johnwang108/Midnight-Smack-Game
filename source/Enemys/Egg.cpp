@@ -93,6 +93,9 @@ void Egg::fixedUpdate(float step) {
 
 std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Egg::createAttack(std::shared_ptr<AssetManager> _assets, float scale) {
     Vec2 pos = getPosition();
+    float attackOffsetY = getHeight() * 0.4;
+    pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
+    pos.y += attackOffsetY;
 
     std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE);
 
@@ -100,11 +103,6 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Egg::c
     std::shared_ptr<Attack> attack = Attack::alloc(pos,
         s);
         //cugl::Size(image->getSize().width / scale, ATTACK_H * image->getSize().height / scale));
-
-    float attackOffsetY = getHeight() * 0.9;
-    pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
-    pos.y += attackOffsetY;
-
 
     if (getDirection() > 0) {
         attack->setFaceRight(true);

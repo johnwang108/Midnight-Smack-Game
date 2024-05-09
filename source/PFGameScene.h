@@ -109,10 +109,6 @@ protected:
 
     std::vector<std::shared_ptr<scene2::SpriteNode>> _afterimages;
 
-
-    //Valid targets for cook-time
-    std::vector<std::shared_ptr<EnemyModel>> _vulnerables;
-
     //temp bad code
     std::vector<std::shared_ptr<Attack>>  _attacks;
     time_t start;
@@ -128,6 +124,7 @@ protected:
 
     std::shared_ptr<OrthographicCamera> _minimapCamera;
     std::shared_ptr<cugl::scene2::PolygonNode> _minimapNode;
+    std::shared_ptr<scene2::PolygonNode> _minimapIconNode;
     std::shared_ptr<RenderTarget> _r;
 
     /** map from interactable id to orders*/
@@ -626,6 +623,19 @@ public:
     void positionOrders();
 
     void generateOrders();
+
+    void animate(std::shared_ptr<Entity> entity, std::string animName, bool clear = false) {
+        entity->animate(animName);
+        auto action = entity->getAction(animName);
+        if (clear) _actionManager->clearAllActions(entity->getSceneNode());
+        _actionManager->activate(animName, action, entity->getSceneNode());
+    }
+
+    ///**Adds ingredient to slot. Wrapper for orders handling*/
+    //void addToInventory(std::shared_ptr<Ingredient>);
+
+    ///**Removes ingredient from currently selected slot. Wrapper for orders handling*/
+    //std::shared_ptr<Ingredient> popFromInventory(std::shared_ptr<Ingredient>);
 
     void removeOrder(int id, IngredientType t, bool isPlate = false);
 

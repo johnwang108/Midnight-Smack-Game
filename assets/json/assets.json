@@ -86,6 +86,12 @@
         "su_air_roll": {
             "file": "textures/Sheets/Su/suAirRoll.png"
         },
+        "suSkid": {
+            "file": "textures/Sheets/Su/suSkid.png"
+        },
+        "suHurt": {
+            "file": "textures/Sheets/Su/suDamage.png"
+        },
         "MYbackgroundbig": {
             "file": "textures/UI/MYbackgroundbig.png"
         },
@@ -397,6 +403,15 @@
         },
         "shrimpRoll": {
             "file": "textures/Sheets/Enemies/Shrimp/shrimpRoll.png"
+        },
+        "shrimpRollDeath": {
+            "file": "textures/Sheets/Enemies/Shrimp/shrimpRollDeath.png"
+        },
+        "shrimpIdleDeath": {
+            "file": "textures/Sheets/Enemies/Shrimp/shrimpIdleDeath.png"
+        },
+        "shrimpStandDeath": {
+            "file": "textures/Sheets/Enemies/Shrimp/shrimpStandDeath.png"
         },
         "eggIdle": {
             "file": "textures/Sheets/Enemies/Egg/eggIdle.png"
