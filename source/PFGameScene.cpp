@@ -403,11 +403,11 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
    _chapter = 1;
    _level = 3;
-    loadLevel(_chapter, _level);
+  //  loadLevel(_chapter, _level);
    // 
    // _level_model->setFilePath("json/empanada-platform-level-01.json");
-   // currentLevel = _level_model;
-    //loadLevel(_level_model);
+    currentLevel = _level_model;
+    loadLevel(currentLevel);
     addChild(_worldnode);
     addChild(_debugnode);
 
@@ -1433,18 +1433,19 @@ void GameScene::fixedUpdate(float step) {
 
     //su
     _avatar->fixedUpdate(step);
-    for (auto& enemy : _enemies) {
+    for (auto it = _enemies.rbegin(); it != _enemies.rend(); ++it) {
+        auto& enemy = *it;
         if (enemy != nullptr && !enemy->isRemoved()) {
             enemy->fixedUpdate(step);
-        }
-        if (enemy->getHealth() <= 0) {
-            enemy->markForDeletion();
-        }
-        if (enemy->shouldDelete()) {
-            removeEnemy(enemy.get());
+            if (enemy->getHealth() <= 0) {
+                enemy->markForDeletion();
+            }
+            if (enemy->shouldDelete()) {
+                removeEnemy(enemy.get());
+                _enemies.erase(std::next(it).base());
+            }
         }
     }
-
     //attacks
     for (auto it = _attacks.begin(); it != _attacks.end();) {
         if ((*it) == nullptr || (*it)->isRemoved()) {
