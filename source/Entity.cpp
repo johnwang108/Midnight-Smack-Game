@@ -48,7 +48,6 @@ void Entity::animate(std::string action_name) {
     auto info = _info[name];
 
     //first, switch the sheet
-    changeSheet(name);
     if (name.find("bull") != std::string::npos) {
 		_node->setScale(0.5/4);
     }
@@ -58,9 +57,10 @@ void Entity::animate(std::string action_name) {
     else if (name == "idle") {
         _node->setScale(0.35 / 1.75);
     }
-    else {
+    else if (name == "skid") {
         _node->setScale(0.35 / 1.75);
     }
+    changeSheet(name);
 
     setActiveAction(action_name);
     _activePriority = _priority;

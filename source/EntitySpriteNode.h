@@ -20,6 +20,7 @@ public:
         Vec2 pos = getPosition();
         _cols = cols;
         _size = size;
+        Rect oldBounds = _bounds;
         _bounds.size = texture->getSize();
         _bounds.size.width /= cols;
         _bounds.size.height /= rows;
