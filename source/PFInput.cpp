@@ -49,45 +49,10 @@ using namespace cugl;
 /** How close we need to be for a multi touch */
 #define NEAR_TOUCH      100
 /** The key for the event handlers */
-#define GESTURE_LISTENER_KEY      1
-
-/** The key for the controller event handlers */
-#define CONTROLLER_LISTENER_KEY 2
-
+#define GESTURE_LISTENER_KEY  1
 #define MOUSE_LISTENER_KEY 3
 
-/** The key for the swipe evevnt handlers */
-#define SWIPE_LISTENER_KEY 4
-
-/** This defines the joystick "deadzone" (how far we must move) */
-#define JSTICK_DEADZONE  15
-/** This defines the joystick radial size (for reseting the anchor) */
-#define JSTICK_RADIUS    25
-/** How far to display the virtual joystick above the finger */
-#define JSTICK_OFFSET    80
-/** How far we must swipe up for a jump gesture */
-#define SWIPE_LENGTH    50
-/** How fast a double click must be in milliseconds */
-#define DOUBLE_CLICK    400
-
-
 #define TRIGGER_DEADZONE 0
-
-// The screen is divided into four zones: Left, Bottom, Right and Main/
-// These are all shown in the diagram below.
-//
-//   |---------------|
-//   |   |       |   |
-//   | L |   M   | R |
-//   |   |       |   |
-//   |---------------|
-//
-// The meaning of any touch depends on the zone it begins in.
-
-/** The portion of the screen used for the left zone */
-#define LEFT_ZONE       0.35f
-/** The portion of the screen used for the right zone */
-#define RIGHT_ZONE      0.35f
 
 #pragma mark -
 #pragma mark Input Controller
@@ -99,15 +64,6 @@ using namespace cugl;
  */
 PlatformInput::PlatformInput() :
     _active(false),
-    _resetPressed(false),
-    _debugPressed(false),
-    _exitPressed(false),
-    _firePressed(false),
-    _jumpPressed(false),
-    _slowPressed(false),
-    _slowReleased(false),
-    _inventoryLeftPressed(false),
-    _inventoryRightPressed(false),
     _keyJump(false),
     _keyFire(false),
     _keyReset(false),
@@ -117,13 +73,47 @@ PlatformInput::PlatformInput() :
     _keyRight(false),
     _keySlow(false),
     _keySlowReleased(false),
+    _keyInteract(false),
     _keyInventoryLeft(false),
     _keyInventoryRight(false),
+    _keyMinimap(false),
+    _keyPause(false),
+    _keyLevel1(false),
+    _keyLevel2(false),
+    _keyLevel3(false),
+    _keyAnimate(false),
+    _keyBackground(false),
+    _gestureCompleted(false),
+    _keyDown(false),
+    _keyUp(false),
+    _keyDash(false),
+    _resetPressed(false),
+    _debugPressed(false),
+    _exitPressed(false),
+    _firePressed(false),
+    _jumpPressed(false),
+    _interactPressed(false),
+    _slowPressed(false),
     _slowHeldDuration(0.0f),
     _lastSlowHeldDuration(0.0f),
+    _slowReleased(false),
+    _inventoryLeftPressed(false),
+    _inventoryRightPressed(false),
     _horizontal(0.0f),
     _vertical(0.0f),
-    _dashKey(false),
+    _dashPressed(false),
+    _minimapPressed(false),
+    _pausePressed(false),
+    _level1Pressed(false),
+    _level2Pressed(false),
+    _level3Pressed(false),
+    _animatePressed(false),
+    _backgroundPressed(false),
+    _zoomIn(false),
+    _zoomOut(false),
+    _xAxis(0.0f),
+    _yAxis(0.0f),
+    _touchPos(Vec2(0, 0)),
     _hasJumped(false) {
 }
 
@@ -137,14 +127,21 @@ void PlatformInput::dispose() {
     if (_active) {
 #ifndef CU_TOUCH_SCREEN
         Input::deactivate<Keyboard>();
+        Mouse* mouse = Input::get<Mouse>();
+        mouse->removePressListener(MOUSE_LISTENER_KEY);
+        mouse->removeDragListener(MOUSE_LISTENER_KEY);
+        mouse->removeReleaseListener(MOUSE_LISTENER_KEY);
         Input::deactivate<Mouse>();
 #else
         Touchscreen* touch = Input::get<Touchscreen>();
         touch->removeBeginListener(GESTURE_LISTENER_KEY);
         touch->removeEndListener(GESTURE_LISTENER_KEY);
         touch->removeMotionListener(GESTURE_LISTENER_KEY);
-
-        //_gameCont->removeAxisListener(CONTROLLER_LISTENER_KEY);
+        GameControllerInput* controller = Input::get<GameControllerInput>();
+        if (_gameCont != nullptr) {
+            controller->close(_gameCont->getUID());
+    }
+        Input::deactivate<GameControllerInput>();
 #endif
         _active = false;
     }
@@ -166,42 +163,24 @@ bool PlatformInput::init(const Rect bounds) {
         CULog("ALREADY INITED");
         return false;
     }
-    //CULog("HI I INITEDDDD!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! :D");
-    id = rand();
     //CULog("ID: %f", id);
     bool success = true;
+
     _sbounds = bounds;
     _tbounds = Application::get()->getDisplayBounds();
     _touchPath = cugl::Path2();
     _touchPos = Vec2(0,0);
-
-    bool contSuccess = Input::activate<GameControllerInput>();
-    if (contSuccess) {
-        GameControllerInput* controller = Input::get<GameControllerInput>();
-        std::vector<std::string> deviceUUIDs = controller->devices();
-
-        if (!deviceUUIDs.empty()) {
-            _gameCont = controller->open(deviceUUIDs.front());
-            CULog("Controller Obtained, Name: %s", _gameCont->getName().c_str());
-
-            _xAxis = 0;
-            _yAxis = 0;
-
-        }
-        else {
-            CULog("no uuids");
-        }
-    }
-    else {
-        CULog("cont failed");
-    }
+    _gestureCompleted = false;
+    _slowHeldDuration = 0.0f;
+    _lastSlowHeldDuration = _slowHeldDuration;
+   
 
 #ifndef CU_TOUCH_SCREEN
+    CULog("Not a touch screen compatible OS");
     success = Input::activate<Keyboard>();
-    CULog("no touch screen sad");
+    success = success && Input::activate<Mouse>();
+    CULog("%s", success ? "Mouse and Keyboard Activated" : "Mouse and/or Keyboard Failed");
 
-    success = Input::activate<Mouse>();
-    CULog("%s", success ? "Mouse Activated" : "Mouse Failed");
     Mouse* mouse = Input::get<Mouse>();
     mouse->setPointerAwareness(Mouse::PointerAwareness::DRAG);
     mouse->addPressListener(MOUSE_LISTENER_KEY, [=](const MouseEvent& event, Uint8 clicks, bool focus) {
@@ -218,7 +197,6 @@ bool PlatformInput::init(const Rect bounds) {
         this->mouseReleaseCB(event, focus);
         });
 #else
-    CULog("%d", CU_TOUCH_SCREEN);
     Touchscreen* touch = Input::get<Touchscreen>();
     touch->addBeginListener(GESTURE_LISTENER_KEY, [=](const TouchEvent& event, bool focus) {
         this->touchBeganCB(event, focus);
@@ -230,28 +208,32 @@ bool PlatformInput::init(const Rect bounds) {
         this->touchesMovedCB(event, previous, focus);
         });
 
+    bool contSuccess = Input::activate<GameControllerInput>();
+    if (contSuccess) {
+        GameControllerInput* controller = Input::get<GameControllerInput>();
+        std::vector<std::string> deviceUUIDs = controller->devices();
+
+        if (!deviceUUIDs.empty()) {
+            _gameCont = controller->open(deviceUUIDs.front());
+            CULog("Controller Obtained, Name: %s", _gameCont->getName().c_str());
+
+            _xAxis = 0;
+            _yAxis = 0;
+
+        }
+        else {
+            contSuccess = false;
+        }
+    }
+    
+    if (!contSuccess) {
+        CULogError("Failed to initialize game controller");
+    }
+    
+
 #endif
 
 
-    bool swipeSuccess = Input::activate<PanGesture>();
-    PanGesture* swiper = Input::get<PanGesture>();
-    if (CU_PLATFORM == CU_PLATFORM_LINUX) {
-        swiper->setTouchScreen(true);
-    }
-    else {
-        swiper->setTouchScreen(false);
-    }
-
-    swiper->addBeginListener(SWIPE_LISTENER_KEY, [=](const PanEvent& event, bool focus) {
-        this->swipeBeganCB(event, focus);
-        });
-
-    swiper->addEndListener(SWIPE_LISTENER_KEY, [=](const PanEvent& event, bool focus) {
-        this->swipeEndedCB(event, focus);
-        });
-
-    _gestureCompleted = false;
-    _slowHeldDuration = 0.0f;
     _active = success;
     return success;
 }
@@ -271,105 +253,83 @@ void PlatformInput::update(float dt) {
 #ifndef CU_TOUCH_SCREEN
     // DESKTOP CONTROLS
     Keyboard* keys = Input::get<Keyboard>();
+    // Map "keyboard" events to the current frame boundary
+    _keyReset = keys->keyPressed(RESET_KEY);
+    _keyDebug = keys->keyPressed(DEBUG_KEY);
+    _keyExit = keys->keyPressed(EXIT_KEY);
+    _keyFire = keys->keyPressed(FIRE_KEY);
+    _keyJump = keys->keyDown(JUMP_KEY);
+    _keyInventoryLeft = keys->keyPressed(INV_LEFT_KEY);
+    _keyInventoryRight = keys->keyPressed(INV_RIGHT_KEY);
+    _keyInteract = keys->keyPressed(INTERACT_KEY);
 
-    if (!_gameCont) {
-        // Map "keyboard" events to the current frame boundary
-        _keyReset = keys->keyPressed(RESET_KEY);
-        _keyDebug = keys->keyPressed(DEBUG_KEY);
-        _keyExit = keys->keyPressed(EXIT_KEY);
-        _keyFire = keys->keyPressed(FIRE_KEY);
-        _keyJump = keys->keyDown(JUMP_KEY);
-        _keyInventoryLeft = keys->keyPressed(INV_LEFT_KEY);
-        _keyInventoryRight = keys->keyPressed(INV_RIGHT_KEY);
-        _keyInteract = keys->keyPressed(INTERACT_KEY);
+    _keySlow = keys->keyPressed(SLOW_KEY);
+    _keySlowReleased = keys->keyReleased(SLOW_KEY);
 
-        _keySlow = keys->keyPressed(SLOW_KEY);
-        _keySlowReleased = keys->keyReleased(SLOW_KEY);
-
-        if (keys->keyDown(SLOW_KEY)) {
-            _slowHeldDuration += dt;
-        }
-        else {
-            _lastSlowHeldDuration = _slowHeldDuration;
-            _slowHeldDuration = 0.0f;
-        }
-
-        _dashKey = keys->keyPressed(DASH_KEY);
-
-        _keyLeft = keys->keyDown(KeyCode::A);
-        _keyRight = keys->keyDown(KeyCode::D);
-
-        _keyUp = keys->keyDown(KeyCode::W);
-        _keyDown = keys->keyDown(KeyCode::S);
-
-        _keyPause = keys->keyPressed(KeyCode::T);
-
-        _keyMinimap = keys->keyPressed(KeyCode::M);
-
-        _keyAnimate = keys->keyPressed(ANIMATE_KEY);
-        _keyBackground = keys->keyPressed(BACKGROUND_KEY);
-
-        _keyLevel1 = keys->keyPressed(LEVEL1_KEY);
-        _keyLevel2 = keys->keyPressed(LEVEL2_KEY);
-        _keyLevel3 = keys->keyPressed(LEVEL3_KEY);
-        //_keyMusic = keys->keyPressed(MUSIC_KEY);
+    if (keys->keyDown(SLOW_KEY)) {
+        _slowHeldDuration += dt;
     }
     else {
-        _keyJump = _gameCont->isButtonPressed(GameController::Button::A);
-        //_keyDebug = _gameCont->isButtonPressed(GameController::Button::B);
-        _keyInventoryLeft = _gameCont->isButtonPressed(GameController::Button::LEFT_SHOULDER);
-        _keyInventoryRight = _gameCont->isButtonPressed(GameController::Button::RIGHT_SHOULDER);
-        _keySlow = _gameCont->isButtonPressed(GameController::Button::Y);
-        _keySlowReleased = _gameCont->isButtonReleased(GameController::Button::Y);
-
-        _keyFire = _gameCont->isButtonReleased(GameController::Button::X);
-        
-
-        if (_gameCont->isButtonDown(GameController::Button::X)) {
-            _slowHeldDuration += dt;
-        }
-        else {
-            _lastSlowHeldDuration = _slowHeldDuration;
-            _slowHeldDuration = 0.0f;
-        }
-
-        _keyReset = _gameCont->isButtonPressed(GameController::Button::START);
-        _keyExit = _gameCont->isButtonPressed(GameController::Button::GUIDE);
-        _keyInteract = _gameCont->isButtonPressed(GameController::Button::B);
-
-
-        float lTriggerAmt = _gameCont->getAxisPosition(GameController::Axis::TRIGGER_LEFT);
-        _dashKey = (lTriggerAmt > TRIGGER_DEADZONE) || _gameCont->isButtonPressed(GameController::Button::Y);
-
-      /*  float rTriggerAmt = _gameCont->getAxisPosition(GameController::Axis::TRIGGER_RIGHT);
-        _keyFire = (rTriggerAmt > TRIGGER_DEADZONE);*/
-
-
-        _xAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_X);
-        _yAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_Y);
-
+        _lastSlowHeldDuration = _slowHeldDuration;
+        _slowHeldDuration = 0.0f;
     }
 
+    _keyDash = keys->keyPressed(DASH_KEY);
 
+    _keyLeft = keys->keyDown(KeyCode::A);
+    _keyRight = keys->keyDown(KeyCode::D);
+
+    _keyUp = keys->keyDown(KeyCode::W);
+    _keyDown = keys->keyDown(KeyCode::S);
+
+    _keyPause = keys->keyPressed(KeyCode::T);
+
+    _keyMinimap = keys->keyPressed(KeyCode::M);
+
+    _keyAnimate = keys->keyPressed(ANIMATE_KEY);
+    _keyBackground = keys->keyPressed(BACKGROUND_KEY);
+
+    _keyLevel1 = keys->keyPressed(LEVEL1_KEY);
+    _keyLevel2 = keys->keyPressed(LEVEL2_KEY);
+    _keyLevel3 = keys->keyPressed(LEVEL3_KEY);
+        //_keyMusic = keys->keyPressed(MUSIC_KEY);
+    
 #else 
-    _keyJump = _gameCont->isButtonPressed(GameController::Button::A);
-    _keyDebug = _gameCont->isButtonPressed(GameController::Button::B);
-    _keySlow = _gameCont->isButtonPressed(GameController::Button::X);
-    _keyReset = _gameCont->isButtonPressed(GameController::Button::LEFT_SHOULDER);
-    _keyExit = _gameCont->isButtonPressed(GameController::Button::RIGHT_SHOULDER);
-    _keyPause = _gameCont->isButtonPressed(GameController::Button::B);
 
+    _keyJump = _gameCont->isButtonPressed(GameController::Button::A);
+    //_keyDebug = _gameCont->isButtonPressed(GameController::Button::B);
+    _keyInventoryLeft = _gameCont->isButtonPressed(GameController::Button::LEFT_SHOULDER);
+    _keyInventoryRight = _gameCont->isButtonPressed(GameController::Button::RIGHT_SHOULDER);
+    _keySlow = _gameCont->isButtonPressed(GameController::Button::Y);
+    _keySlowReleased = _gameCont->isButtonReleased(GameController::Button::Y);
+
+    _keyFire = _gameCont->isButtonReleased(GameController::Button::X);
+
+
+    if (_gameCont->isButtonDown(GameController::Button::X)) {
+        _slowHeldDuration += dt;
+    }
+    else {
+        _lastSlowHeldDuration = _slowHeldDuration;
+        _slowHeldDuration = 0.0f;
+    }
+
+    _keyReset = _gameCont->isButtonPressed(GameController::Button::START);
+    _keyExit = _gameCont->isButtonPressed(GameController::Button::MISC);
+    _keyInteract = _gameCont->isButtonPressed(GameController::Button::B);
 
 
     float lTriggerAmt = _gameCont->getAxisPosition(GameController::Axis::TRIGGER_LEFT);
-    _dashKey = (lTriggerAmt > TRIGGER_DEADZONE) || _gameCont->isButtonPressed(GameController::Button::Y);
+    _keyDash = (lTriggerAmt > TRIGGER_DEADZONE) || _gameCont->isButtonPressed(GameController::Button::Y);
 
-    float rTriggerAmt = _gameCont->getAxisPosition(GameController::Axis::TRIGGER_RIGHT);
-    _keyFire = (rTriggerAmt > TRIGGER_DEADZONE);
+    /*  float rTriggerAmt = _gameCont->getAxisPosition(GameController::Axis::TRIGGER_RIGHT);
+    _keyFire = (rTriggerAmt > TRIGGER_DEADZONE);*/
 
 
     _xAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_X);
     _yAxis = _gameCont->getAxisPosition(GameController::Axis::LEFT_Y);
+
+
 
 #endif
 
@@ -381,7 +341,7 @@ void PlatformInput::update(float dt) {
     _jumpPressed = _keyJump;
     _slowPressed = _keySlow;
     _slowReleased = _keySlowReleased;
-    _dashPressed = _dashKey;
+    _dashPressed = _keyDash;
     _pausePressed = _keyPause;
     _minimapPressed = _keyMinimap;
     _interactPressed = _keyInteract;
@@ -492,44 +452,9 @@ Vec2 PlatformInput::touch2Screen(const Vec2 pos) const {
 }
 
 
-/**
- * Returns a nonzero value if this is a quick left or right swipe
- *
- * The function returns -1 if it is left swipe and 1 if it is a right swipe.
- *
- * @param  start    the start position of the candidate swipe
- * @param  stop     the end position of the candidate swipe
- * @param  current  the current timestamp of the gesture
- *
- * @return a nonzero value if this is a quick left or right swipe
- */
-int PlatformInput::processSwipe(const Vec2 start, const Vec2 stop, Timestamp current) {
-    // Look for swipes up that are "long enough"
-    float xdiff = (stop.x - start.x);
-    float thresh = SWIPE_LENGTH;
-    if (xdiff > thresh) {
-        return 1;
-    }
-    else if (xdiff < thresh * -1) {
-        return -1;
-    }
-    return 0;
-}
-
-
 
 #pragma mark -
 #pragma mark Touch and Mouse Callbacks
-
-
-void PlatformInput::swipeBeganCB(const PanEvent& event, bool focus) {
-    CULog("swipe began");
-}
-
-void PlatformInput::swipeEndedCB(const PanEvent& event, bool focus) {
-    _swipeDelta = event.currPosition - event.origPosition;
-    CULog("%f, %f", _swipeDelta.x, _swipeDelta.y);
-}
 
 
 

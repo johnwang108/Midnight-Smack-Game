@@ -434,11 +434,13 @@ void MultiScreenScene::preUpdate(float timestep) {
 		reset();
 	}
 
-	if (_input->didTransition()) {
+
+	//commented out 5/9
+	/*if (_input->didTransition()) {
 		transition(true);
 		setTarget("night");
 		return;
-	}
+	}*/
 
 	if (_ended && !_animating) return;
 
