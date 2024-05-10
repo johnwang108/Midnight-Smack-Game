@@ -360,12 +360,16 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _bullBarNode = _assets->get<scene2::SceneNode>("bullbar");
     _BullhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
     _BullhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
+    _BullhealthBarBackground->setVisible(false);
+    _BullhealthBarForeground->setVisible(false);
     _uiScene->addChild(_bullBarNode);
 
     std::shared_ptr<cugl::scene2::SceneNode> _SFRBarNode;
     _SFRBarNode = _assets->get<scene2::SceneNode>("SFR");
     _SFRhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("shrimpbar"));
     _SFRhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("bosshealth"));
+    _SFRhealthBarBackground->setVisible(false);
+    _SFRhealthBarForeground->setVisible(false);
     _uiScene->addChild(_SFRBarNode);
    
     _paused = false;
@@ -811,12 +815,12 @@ void GameScene::preUpdate(float dt) {
     
     //start running if idle or recovering and moving
     if (!_paused) {
-        //cancel run animation if stopped running
-        if (_avatar->getMovement() != 0 && _input->getHorizontal() == 0) {
-            animate(_avatar, "skid", true);
-        }
-        if ((_actionManager->isActive("idle") || (_actionManager->isActive("recover")) && (_input->getHorizontal() != 0))) {
+        if ((_actionManager->isActive("idle") || _actionManager->isActive("recover") || _actionManager->isActive("skid")) && (_input->getHorizontal() != 0)) {
             animate(_avatar, "run", true);
+        }
+        //cancel run animation if stopped running
+        if (_actionManager->isActive("run") && _input->getHorizontal() == 0) {
+            animate(_avatar, "skid");
         }
 
         if (_avatar->isJumping() && _avatar->isGrounded()) {
@@ -829,45 +833,61 @@ void GameScene::preUpdate(float dt) {
 
 
         //animate jumps if not attacking or taking damage
-        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && !(_avatar->getActiveAction() == "air_attack")&&  !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y > 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
-            animate(_avatar, "jump_up");
+        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("jump_up") && !_actionManager->isActive("air_attack") && !(_avatar->getActiveAction() == "air_attack") && !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y > 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+            animate(_avatar, "jump_up", true);
         }
-        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && !(_avatar->getActiveAction() == "air_attack") && !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y < 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
-           // CULog("animating jump_down");
-            animate(_avatar, "jump_down");
+        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("jump_down") && !_actionManager->isActive("air_attack") && !(_avatar->getActiveAction() == "air_attack") && !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y < 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+            // CULog("animating jump_down");
+            animate(_avatar, "jump_down", true);
         }
         if (_avatar->isGrounded() && (_actionManager->isActive("jump_down") || _actionManager->isActive("jump_up"))) {
             //CULog("animating jump_land");
             animate(_avatar, "jump_land", true);
         }
-
+        if (_avatar->getLastDamageTime() < _avatar->getHealthCooldown() && !_actionManager->isActive("hurt") && !_avatar->didAnimateHurt()) {
+            animate(_avatar, "hurt", true);
+            _avatar->setDidAnimateHurt(true);
+        }
 
         //handle expired actions
         if (!_actionManager->isActive(_avatar->getActiveAction())) {
             if (_avatar->getActiveAction() == "attack") {
-                animate(_avatar, "recover");
+                //CULog("animating attack");
+                animate(_avatar, "recover", false);
             }
-            if (_avatar->getActiveAction() == "run" && _input->getHorizontal() != 0) {
+            else if (_avatar->getActiveAction() == "run" && _input->getHorizontal() != 0) {
+                //CULog("animating run");
                 animate(_avatar, "run", true);
             }
-            if (_avatar->getActiveAction() == "air_attack") {
+            else  if (_avatar->getActiveAction() == "air_attack") {
+                //CULog("animating air roll");
                 animate(_avatar, "air_roll", true);
-            } 
+            }
+            else {
+                //Todo:: blink idle
+                //CULog("animating idle");
+                //if (((float)rand() / RAND_MAX) < 0.0f) {
+                //    animate(_avatar, "idle_blink", true);
+                //}
+                //else {
+                animate(_avatar, "idle");
+                //}
+            }
         }
 
-            if (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() < _avatar->getFloatyFrames() && _avatar->getDashCooldownMax() - _avatar->getDashCooldown() != 0 && _avatar->getDashCooldown() % 3  == 1) {
-				std::shared_ptr<scene2::SpriteNode> afterimage = scene2::SpriteNode::allocWithSprite(_avatar->getSpriteNode());
-                afterimage->setAnchor(Vec2(0.5, 0.35));
-                afterimage->setPosition(_avatar->getSceneNode()->getPosition());
-                afterimage->setPositionY(afterimage->getPositionY() + 0.0f);
-                afterimage->flipHorizontal(_avatar->getSpriteNode()->isFlipHorizontal());
-                Color4 b = Color4::CYAN;
-                b.a = 255;
-                afterimage->setColor(b);
-                afterimage->setScale(_avatar->getSpriteNode()->getScale());
-                _afterimages.push_back(afterimage);
-                addChild(afterimage);
-			}
+        if (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() < _avatar->getFloatyFrames() && _avatar->getDashCooldownMax() - _avatar->getDashCooldown() != 0 && _avatar->getDashCooldown() % 3 == 1) {
+            std::shared_ptr<scene2::SpriteNode> afterimage = scene2::SpriteNode::allocWithSprite(_avatar->getSpriteNode());
+            afterimage->setAnchor(Vec2(0.5, 0.35));
+            afterimage->setPosition(_avatar->getSceneNode()->getPosition());
+            afterimage->setPositionY(afterimage->getPositionY() + 0.0f);
+            afterimage->flipHorizontal(_avatar->getSpriteNode()->isFlipHorizontal());
+            Color4 b = Color4::CYAN;
+            b.a = 255;
+            afterimage->setColor(b);
+            afterimage->setScale(_avatar->getSpriteNode()->getScale());
+            _afterimages.push_back(afterimage);
+            addChild(afterimage);
+        }
 
         _avatar->setShooting(_input->didFire());
         if (_avatar->isShooting() && (!_actionManager->isActive("attack") && !_actionManager->isActive("air_attack"))) {
@@ -878,8 +898,7 @@ void GameScene::preUpdate(float dt) {
                 std::get<0>(att)->setListener([=](physics2::Obstacle* obs) {
                     obs->setPosition(_avatar->getPosition());
                     obs->setAngle(_avatar->getBody()->GetAngle());
-					});
-
+                    });
                 animate(_avatar, "attack", true);
             }
             else {
@@ -897,21 +916,18 @@ void GameScene::preUpdate(float dt) {
                     Vec2 angleVec = Vec2(cos(avAngle), sin(avAngle));
                     obs->setAngle(_avatar->getBody()->GetAngle());
                     obs->setPosition(_avatar->getPosition() + angleVec * 1.5);
-                });
-               
+                    });
+
                 _avatar->getBody()->SetFixedRotation(false);
-                _avatar->getBody()->SetTransform(_avatar->getBody()->GetPosition(), angle- (3.14159265 / 2));
+                _avatar->getBody()->SetTransform(_avatar->getBody()->GetPosition(), angle - (3.14159265 / 2));
                 _avatar->getBody()->SetFixedRotation(true);
 
                 animate(_avatar, "air_attack", true);
             }
         }
-
-        //if nothing has been animated, play idle 
-        if (_avatar->getActiveAction() == "" || !_actionManager->isActive(_avatar->getActiveAction())) {
-            animate(_avatar, "idle");
-        }
     }
+
+    CULog(_avatar->getActiveAction().c_str());
 
     if (_input->didLevel1()) {
         setLevel(1, 1);
@@ -1018,9 +1034,41 @@ void GameScene::preUpdate(float dt) {
         }
     }
 
-    if (_avatar->getDuration() == 0 && !_avatar->hasSuper()) {
-        //_buffLabel->setVisible(false);
+    CULog("sprite width/height: %f %f", _avatar->getSceneNode()->getSize().width, _avatar->getSceneNode()->getSize().height);
+    CULog("obstacle width/height: %f %f", _avatar->getHeight() * _scale, _avatar->getWidth() * _scale);
+
+    CULog("camera sprite width/height: %f %f", _avatar->getSceneNode()->getSize().width * _camera->getZoom(), _avatar->getSceneNode()->getSize().height * _camera->getZoom());
+
+
+
+
+    if (!_slowed) {
+        _dollarnode->setVisible(false);
+        if (_dollarnode->isFocus()) {
+            _dollarnode->setFocus(false);
+            _dollarnode->setReadyToCook(false);
+        }
+
+        //_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
+        _avatar->setAllMovement(_input->getHorizontal(), _input->getVertical());
+        _avatar->setJumping(_input->didJump());
+        _avatar->setDash(_input->didDash());
+        _avatar->setInputWalk(_input->getHorizontal() != 0);
+        _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
+        if (_avatar->isJumping() && _avatar->isGrounded()) {
+            std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
+            AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
+        }
     }
+    else {
+        _avatar->setAllMovement(0, 0);
+        _avatar->setJumping(false);
+        _avatar->setDash(false);
+    }
+
+    //if (_avatar->getDuration() == 0 && !_avatar->hasSuper()) {
+    //    //_buffLabel->setVisible(false);
+    //}
 
     //iterate over popups to update
     for (auto& tpl : _popups) {
@@ -1385,10 +1433,11 @@ void GameScene::fixedUpdate(float step) {
         float cameraWidth = invZoom * (_camera->getViewport().getMaxX() - _camera->getViewport().getMinX()) / 2;
         float cameraHeight = invZoom * (_camera->getViewport().getMaxY() - _camera->getViewport().getMinY()) / 2;
 
-        float backgroundWidth = _background->getBoundingRect().getMaxX() - _background->getBoundingRect().getMinX();
-        float backgroundHeight = _background->getBoundingRect().getMaxY() - _background->getBoundingRect().getMinY();
-
         if (_level == 1 || _level == 2 || _level == 3 || _level == 4) {
+
+            float backgroundWidth = _background->getBoundingRect().getMaxX() - _background->getBoundingRect().getMinX();
+            float backgroundHeight = _background->getBoundingRect().getMaxY() - _background->getBoundingRect().getMinY();
+
             cugl::Vec3 mapMin = Vec3(_background->getBoundingRect().getMinX() + cameraWidth, _background->getBoundingRect().getMinY() + cameraHeight, 0);
             cugl::Vec3 mapMax = Vec3(_background->getBoundingRect().getMaxX() - cameraWidth, _background->getBoundingRect().getMaxY() - cameraHeight, 0);
             target.clamp(mapMin, mapMax);
@@ -1415,6 +1464,9 @@ void GameScene::fixedUpdate(float step) {
             cameraWidth = invZoom * (_minimapCamera->getViewport().getMaxX() - _minimapCamera->getViewport().getMinX()) / 2;
             cameraHeight = invZoom * (_minimapCamera->getViewport().getMaxY() - _minimapCamera->getViewport().getMinY()) / 2;
 
+            float backgroundWidth = _background->getBoundingRect().getMaxX() - _background->getBoundingRect().getMinX();
+            float backgroundHeight = _background->getBoundingRect().getMaxY() - _background->getBoundingRect().getMinY();
+
             if (backgroundWidth < cameraWidth * 2) {
                 _minimapCamera->setZoom(std::min(_minimapCamera->getZoom(), cameraWidth * 2 / backgroundWidth));
                 invZoom = 1 / _minimapCamera->getZoom();
@@ -1440,30 +1492,6 @@ void GameScene::fixedUpdate(float step) {
     }
     if (_Bull != nullptr && _Bull->getHealth() <= 0) {
         setComplete(true);
-    }
-
-    if (!_slowed) {
-        _dollarnode->setVisible(false);
-        if (_dollarnode->isFocus()) {
-            _dollarnode->setFocus(false);
-            _dollarnode->setReadyToCook(false);
-        }
-
-        //_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
-        _avatar->setAllMovement(_input->getHorizontal(), _input->getVertical());
-        _avatar->setJumping(_input->didJump());
-        _avatar->setDash(_input->didDash());
-        _avatar->setInputWalk(_input->getHorizontal() != 0);
-        _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
-        if (_avatar->isJumping() && _avatar->isGrounded()) {
-            std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
-            AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
-        }
-    }
-    else {
-        _avatar->setAllMovement(0, 0);
-        _avatar->setJumping(false);
-        _avatar->setDash(false);
     }
 
     //su

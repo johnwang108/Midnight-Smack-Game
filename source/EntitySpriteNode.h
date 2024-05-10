@@ -2,6 +2,7 @@
 #define __ENTITY_SPRITE_NODE_H__
 
 #include <cugl/cugl.h>
+using namespace cugl;
 
 //This class is almost exactly the same as cugl::scene2::SpriteNode, but it has a changeSheet method that allows you to change the texture of the sprite
 class EntitySpriteNode : public cugl::scene2::SpriteNode {
@@ -16,6 +17,7 @@ public:
     }
 
 	void changeSheet(std::shared_ptr<cugl::Texture> texture, int rows, int cols, int size) {
+        Vec2 pos = getPosition();
         _cols = cols;
         _size = size;
         _bounds.size = texture->getSize();
@@ -24,6 +26,7 @@ public:
         setPolygon(_bounds);
         setTexture(texture);
         setFrame(0);
+        setPosition(pos);
 	}
 
     void setTransform(cugl::Affine2 transform) {

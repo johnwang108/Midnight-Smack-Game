@@ -74,9 +74,6 @@ float dashModif = 1.3;
 /** The density of the character */
 #define DUDE_DENSITY    .80f
 /** The impulse for the character jump */
-#define DUDE_JUMP       17.5f * getJumpBuff()//(sqrt( 3 * 2 * (9.8) * getHeight() * jmpHeight ) * getMass() * getJumpBuff())
-/** The impulse for the character dash */
-#define DUDE_DASH       40.0f
 /** Debug color for the sensor */
 #define DEBUG_COLOR     Color4::RED
 
@@ -132,6 +129,9 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         _shootCooldown = 0;
         _jumpCooldown = 0;
         _dashNum = 1;
+
+        _dashForce = DUDE_DASH;
+        _jumpForce = DUDE_JUMP;
 
         _health = 100;
 
@@ -428,11 +428,11 @@ void DudeModel::walk(Vec2 dir, float dt) {
     if (_dashCooldown > DASH_COOLDOWN - floatyFrames) return;
     if (_wallJumpTimer == 0.0f)
     {
-        _body->SetLinearVelocity(b2Vec2(dir.x * DUDE_FORCE, getLinearVelocity().y));
+        _body->SetLinearVelocity(b2Vec2(dir.x * getForce(), getLinearVelocity().y));
     }
     else
     {
-        setLinearVelocity(getLinearVelocity().lerp(Vec2(dir.x * DUDE_FORCE, getLinearVelocity().y), WALL_JUMP_LERP));
+        setLinearVelocity(getLinearVelocity().lerp(Vec2(dir.x * getForce(), getLinearVelocity().y), WALL_JUMP_LERP));
     }
 }
 
@@ -447,10 +447,10 @@ void DudeModel::handleJump(float dt) {
     Vec2 vel = getLinearVelocity();
     //falling
     if (vel.y < 0) {
-        vel += Vec2(0, LEVELS_H_GRAVITY * FALL_MULTIPLIER * dt);
+        vel += Vec2(0, LEVELS_H_GRAVITY * (FALL_MULTIPLIER - 1) * dt);
     }
     else if (vel.y > 0 && !isJumping()) {
-		vel += Vec2(0, LEVELS_H_GRAVITY * FALL_MULTIPLIER_LOW * dt);
+        vel += Vec2(0, LEVELS_H_GRAVITY * (FALL_MULTIPLIER - 1) * dt);
 	}
     _body->SetLinearVelocity(b2Vec2(vel.x, vel.y));
 }
@@ -462,7 +462,10 @@ void DudeModel::dash(Vec2 dir) {
         dir.x = _faceRight ? 1.0f : -1.0f;
     }
     dir = dir.normalize();
-    _body->SetLinearVelocity(b2Vec2(dir.x * DUDE_DASH, dir.y * DUDE_DASH));
+    if (dir.y == 1) {
+		dir.y = 0.8;
+	}
+    _body->SetLinearVelocity(b2Vec2(dir.x * getDashForce(), dir.y * getDashForce()));
     setLinearDamping(DUDE_DAMPING);
 }
 
@@ -500,6 +503,9 @@ void DudeModel::update(float dt) {
     else {
         _lastDamageTime += dt;
     }
+    if (_lastDamageTime > _healthCooldown) {
+        setDidAnimateHurt(false);
+	}
 
     if (_node != nullptr) {
         _node->setPosition(getPosition() * _drawScale);
@@ -538,7 +544,7 @@ void DudeModel::fixedUpdate(float step) {
     if (_dashCooldown > DASH_COOLDOWN - floatyFrames) {
         setGravityScale(0);
         //slow down dash
-        setLinearDamping(std::max(DUDE_DAMPING_BASE, getLinearDamping() * 0.9f));
+        setLinearDamping(std::max(DUDE_DAMPING_BASE, getLinearDamping() * 0.95f));
     }
     else {
         handleJump(step);
@@ -556,8 +562,8 @@ void DudeModel::fixedUpdate(float step) {
             _jumpCooldown = JUMP_COOLDOWN;
             jump(Vec2(_movement, _vertical));
         }
-        else if (contactingLeftWall() || contactingRightWall()) {
-            // wallJump();
+        else if ((contactingLeftWall() || contactingRightWall()) && ((!isGrounded() && _jumpPressed) || _wallJumpTimer != 0.0f)) {
+            wallJump();
         }
     }
     else {

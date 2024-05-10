@@ -1,6 +1,10 @@
 {
     "entity" : "su",
     "animation" : "air_attack",
+    "tap_jump_height": 80.0,
+    "full_jump_height": 100.0,
+    "jump_boost": 1.0,
+    "dash_distance": 80.0,
     "su": {
         "idle": {
             "sheet": "su_idle",
@@ -87,7 +91,7 @@
             "duration": 1.0
         },
         "hurt": {
-            "sheet": "suDamage",
+            "sheet": "suHurt",
             "rows": 3,
             "cols": 3,
             "frames": 7,
