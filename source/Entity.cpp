@@ -58,6 +58,9 @@ void Entity::animate(std::string action_name) {
         _node->setScale(0.35 / 1.75);
     }
     else if (name == "skid") {
+        _node->setScale(0.35);
+    }
+    else {
         _node->setScale(0.35 / 1.75);
     }
     changeSheet(name);
