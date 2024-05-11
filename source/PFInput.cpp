@@ -315,12 +315,12 @@ void PlatformInput::update(float dt) {
     }
 
     _keyReset = _gameCont->isButtonPressed(GameController::Button::START);
-    _keyExit = _gameCont->isButtonPressed(GameController::Button::MISC);
+    _keyExit = _gameCont->isButtonPressed(GameController::Button::BACK);
     _keyInteract = _gameCont->isButtonPressed(GameController::Button::B);
 
 
     float lTriggerAmt = _gameCont->getAxisPosition(GameController::Axis::TRIGGER_LEFT);
-    _keyDash = (lTriggerAmt > TRIGGER_DEADZONE) || _gameCont->isButtonPressed(GameController::Button::Y);
+    _keyDash = (lTriggerAmt > TRIGGER_DEADZONE);
 
     /*  float rTriggerAmt = _gameCont->getAxisPosition(GameController::Axis::TRIGGER_RIGHT);
     _keyFire = (rTriggerAmt > TRIGGER_DEADZONE);*/
