@@ -91,6 +91,8 @@
 #define METER_COST 99.0f
 #define floatyFrames   10
 
+#define DEATH_COOLDOWN 5.0f
+
 /** Cooldown (in animation frames) for dashing */
 #define DASH_COOLDOWN  floatyFrames + 5
 
@@ -231,6 +233,10 @@ protected:
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
 
     //float _attack;
+
+    float _deathTimer;
+
+    buff _buffType;
 
     //attack damage buff
     float _attackBuff;
@@ -761,7 +767,7 @@ public:
 
     void removeTouching() { _numberOfTouchingEnemies -= 1; };
 
-    void addMeter(float f) {_meter += f; if (_meter > _maxMeter) _meter = _maxMeter; };
+    void addMeter(float f);
 
     float getMeter() { return _meter; };
 
@@ -776,6 +782,14 @@ public:
     float getLastDamageTime() { return _lastDamageTime; };
 
     float getHealthCooldown() { return _healthCooldown; };
+
+    void startDeath();
+
+    float getDeathTimer() { return _deathTimer; };
+
+    bool animate(std::string action_name) override;
+
+    void reset();
 
     void setDidAnimateHurt(bool b) { _didAnimateHurt = b; };
     bool didAnimateHurt() { return _didAnimateHurt; };
@@ -809,6 +823,10 @@ public:
     int getDashCooldownMax() { return DASH_COOLDOWN; }
 
     int getFloatyFrames() { return floatyFrames; };
+
+    bool isBuffed() { return _duration > 0.0f; }
+    buff getBuffType() { return _buffType; }
+    bool isDead() { return _deathTimer != 0.0f; }
 
     void setInputWalk(bool b) { _isInputWalk = b; };
 
@@ -873,6 +891,8 @@ public:
             return "defense";
         case buff::health:
             return "health";
+        case buff::none:
+            return "none";
         default:
             return "Not recognized..";
         }

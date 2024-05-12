@@ -331,21 +331,20 @@ void LevelModel::populate(GameScene& scene) {
 							CULog(std::to_string(rowPos).c_str());
 							Size size = Size(1.7, 3.3);
 							CULog(std::to_string(scene.getScale()).c_str());
-							_avatar = DudeModel::allocWithConstants(dudePos, size, scene.getScale(), _assets);
-							// _avatar = DudeModel::alloc(dudePos, image->getSize(), scene.getScale());
-							CULog(std::to_string(_avatar->getWidth()).c_str());
-							CULog(std::to_string(_avatar->getHeight()).c_str());
-							//we manually set this to combat an error in gameScene, does it work tho?
-							// _avatar->setHeight(170.0f);
-							// _avatar->setWidth(100.0f);
-							//----------------
-							// sprite = scene2::PolygonNode::allocWithTexture(image);
-							std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
-							spritenode->setAnchor(Vec2(0.5, 0.35));
-							_avatar->setSceneNode(spritenode);
-							_avatar->setDebugColor(DEBUG_COLOR);
-							// scene.addChild(sprite);
-							scene.addObstacle(_avatar, spritenode);
+							if (_avatar == nullptr) {
+								_avatar = DudeModel::allocWithConstants(dudePos, size, scene.getScale(), _assets);
+								std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
+								spritenode->setAnchor(Vec2(0.5, 0.35));
+								_avatar->setSceneNode(spritenode);
+								_avatar->setDebugColor(DEBUG_COLOR);
+								scene.addObstacle(_avatar, spritenode);
+							}
+							else {
+								_avatar->reset();
+								_avatar->setPosition(dudePos);
+								scene.addObstacle(_avatar, _avatar->getSceneNode());
+							}
+							scene.setSpawn(dudePos);
 						}
 						else if (type == "boss") {
 							int rowPos = ((window_height - rowNum) % window_height + window_height) % window_height;

@@ -50,6 +50,11 @@
             "wrapS": "repeat",
             "wrapT": "repeat"
         },
+        "popupBackground": {
+            "file": "textures/testPopupBack.png",
+            "wrapS": "repeat",
+            "wrapT": "repeat"
+        },
         "dude": {
             "file": "textures/dude.png"
         },
@@ -67,6 +72,9 @@
         },
         "su_run": {
             "file": "textures/Sheets/Su/su_run.png"
+        },
+        "suDeath": {
+            "file": "textures/Sheets/Su/suDeath.png"
         },
         "su_jump_airborne_up": {
             "file": "textures/Sheets/Su/su_jump_airborne_up.png"
@@ -88,6 +96,12 @@
         },
         "suSkid": {
             "file": "textures/Sheets/Su/suSkid.png"
+        },
+        "suSkidAlt": {
+            "file": "textures/Sheets/Su/suSkidAlt.png"
+        },
+        "suSlide": {
+            "file": "textures/Sheets/Su/suSlide.png"
         },
         "suHurt": {
             "file": "textures/Sheets/Su/suDamage.png"
@@ -543,6 +557,10 @@
         },
         "winter drinkRegular20": {
             "file": "fonts/WinterDrink.ttf",
+            "size": 20
+        },
+        "popupFont": {
+            "file": "fonts/RetroGame.ttf",
             "size": 20
         }
     },

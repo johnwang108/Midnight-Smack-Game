@@ -135,8 +135,11 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
 
         _health = 100;
 
-        _healthCooldown = 0.2;
-        _lastDamageTime = 0;
+        _deathTimer = 0.0f;
+        _buffType = buff::none;
+
+        _healthCooldown = 1.5;
+        _lastDamageTime = getHealthCooldown();
         _knockbackTime = 0;
         _isOnDangerousGround = false;
 
@@ -426,7 +429,7 @@ void DudeModel::applyForce(float h, float v) {
 
 void DudeModel::walk(Vec2 dir, float dt) {
     if (_dashCooldown > DASH_COOLDOWN - floatyFrames) return;
-    if (_wallJumpTimer == 0.0f)
+    if (_wallJumpTimer == 0.0f && _knockbackTime == 0.0f)
     {
         _body->SetLinearVelocity(b2Vec2(dir.x * getForce(), getLinearVelocity().y));
     }
@@ -485,35 +488,40 @@ void DudeModel::wallJump() {
 void DudeModel::update(float dt) {
 
     Entity::update(dt);
+	if (_deathTimer != 0.0f) {
+        _node->setVisible(true);
+		return;
+	}
 
     //take damage anim
-    if (_knockbackTime > 0) {
-        if (int(_knockbackTime * 10) % 2 < 1) {
+    if (_lastDamageTime > _healthCooldown) {
+        setDidAnimateHurt(false);
+    }
+    else {
+        if (int(_lastDamageTime * 10) % 2 < 1) {
             _node->setVisible(true);
         }
         else {
             _node->setVisible(false);
         }
-        _knockbackTime -= dt;
-        if (_node != nullptr) {
-            _node->setPosition(getPosition() * _drawScale);
-            _node->setAngle(getAngle());
-        }
-    }
-    else {
-        _lastDamageTime += dt;
-    }
-    if (_lastDamageTime > _healthCooldown) {
-        setDidAnimateHurt(false);
-	}
-
-    if (_node != nullptr) {
-        _node->setPosition(getPosition() * _drawScale);
-        _node->setAngle(getAngle());
     }
 }
 
 void DudeModel::fixedUpdate(float step) {
+    if (_deathTimer != 0.0f) {
+        _deathTimer -= step;
+    }
+
+    if (isBuffed()) {
+        useMeter(METER_COST * step / _duration);
+    }
+
+    _lastDamageTime += step;
+
+    if (_knockbackTime > 0) {
+        _knockbackTime -= step;
+        _knockbackTime = std::max(0.0f, _knockbackTime);
+    }
     if (_duration > 0) {
         _duration -= step;
         _duration = std::max(0.0f, _duration);
@@ -652,15 +660,24 @@ void DudeModel::takeDamage(float damage, const int attackDirection) {
     if (_lastDamageTime >= _healthCooldown) {
         _lastDamageTime = 0;
         _health -= damage * getDefenseBuff();
-        if (_health < 0) {
+        if (_health <= 0) {
             _health = 0;
+            startDeath();
         }
         else {
-            b2Vec2 impulse = b2Vec2(attackDirection * 15, 10);
+            b2Vec2 impulse = b2Vec2(attackDirection * 25, 20);
             /*_body->ApplyLinearImpulseToCenter(impulse, true);*/
             _body->SetLinearVelocity(impulse);
-            _knockbackTime = 2;
+            _knockbackTime = 0.5f;
         }
+    }
+}
+
+void DudeModel::startDeath() {
+    _duration = 0;
+    _meter = 0;
+    if (_deathTimer == 0) {
+        _deathTimer = DEATH_COOLDOWN;
     }
 }
 
@@ -674,9 +691,16 @@ bool DudeModel::useMeter(float f) {
     }
 }
 
+void DudeModel::addMeter(float f) {
+    if (isBuffed()) return;
+	_meter += f;
+	if (_meter > _maxMeter) _meter = _maxMeter;
+};
 
 void DudeModel::applyBuff(const buff b, modifier m) {
     resetBuff();
+    addMeter(METER_COST);
+    _buffType = b;
     switch (b) {
     case buff::attack:
         if (m == modifier::duration) {
@@ -746,6 +770,7 @@ void DudeModel::applyBuff(const buff b, modifier m) {
  * Resets the buff to default values
  */
 void DudeModel::resetBuff() {
+    _buffType = buff::none;
     _attackBuff = DEFAULT_BUFF;
     _healthBuff = 0.0f;
     _jumpBuff = DEFAULT_BUFF;
@@ -837,3 +862,40 @@ void DudeModel::gainHealth(float f) {
     _health += f;
     if (_health > MAX_HEALTH + _healthUpgrade) _health = MAX_HEALTH + _healthUpgrade;
 };
+
+bool DudeModel::animate(std::string action_name) {
+    if (_deathTimer != 0 && action_name == getActiveAction()) {
+        return false;
+    }
+    return Entity::animate(action_name);
+}
+
+void DudeModel::reset() {
+	_health = 100;
+	_lastDamageTime = 0;
+	_knockbackTime = 0;
+	_deathTimer = 0;
+	_meter = 0;
+	_duration = 0;
+	_hasSuper = false;
+	_numberOfTouchingEnemies = 0;
+	_activeAction = "";
+	_dashCooldown = 0;
+	_shootCooldown = 0;
+	_jumpCooldown = 0;
+	_dashNum = 1;
+	_dashForce = DUDE_DASH;
+	_jumpForce = DUDE_JUMP;
+	_attack = 34;
+	_isOnDangerousGround = false;
+	_isGrounded = false;
+	_isShooting = false;
+	_isJumping = false;
+	_dash = true;
+	_contactingLeftWall = false;
+	_contactingRightWall = false;
+	_wallJumpTimer = 0.0f;
+	_movement = 0;
+	_vertical = 0;
+    _buffType = buff::none;
+}

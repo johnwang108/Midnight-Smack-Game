@@ -40,6 +40,7 @@
 #include "NightLevelObjects/GestureInteractable.h"
 #include "NightLevelObjects/Plate.h"
 #include "NightLevelObjects/Station.h"
+#include "Popup.h"
 
 #include "Inventory.h"
 #include "Levels/LevelModel.h"
@@ -72,7 +73,7 @@ protected:
     /** Reference to the lose message label */
     std::shared_ptr<cugl::scene2::Label> _losenode;
 
-    std::shared_ptr<Scene2> _bgScene;
+    //std::shared_ptr<Scene2> _bgScene;
     std::shared_ptr<Scene2> _uiScene;
     std::shared_ptr<Inventory> _inventoryNode;
 
@@ -109,9 +110,9 @@ protected:
 
     std::vector<std::shared_ptr<scene2::SpriteNode>> _afterimages;
 
-    //temp bad code
+
     std::vector<std::shared_ptr<Attack>>  _attacks;
-    time_t start;
+    //time_t start;
 
     /** Whether we have completed this "game" */
     bool _complete;
@@ -128,6 +129,7 @@ protected:
     std::shared_ptr<RenderTarget> _r;
 
     /** map from interactable id to orders*/
+    std::unordered_map<IngredientType, int> _pendingAcrossAllPlates;
     std::unordered_map<int, std::vector<std::shared_ptr<scene2::SceneNode>>> _orders;
     std::shared_ptr<scene2::SceneNode> _orderNode;
     int _numOrders;
@@ -151,13 +153,11 @@ protected:
     int _chapter;
     int _level;
 
+    Vec2 _spawnPoint;
+
     std::shared_ptr<BullModel>			  _Bull;
 
     std::shared_ptr<ShrimpRice>			  _ShrimpRice;
-
-    //std::shared_ptr<Level2> level2 = std::make_shared<Level2>();
-
-    //std::shared_ptr<Level1> level1 = std::make_shared<Level1>();
 
     std::shared_ptr<Level3> level3 = std::make_shared<Level3>();
 
@@ -181,6 +181,8 @@ protected:
 
     std::vector<std::tuple<std::shared_ptr<cugl::scene2::Label>, cugl::Timestamp>> _popups;
 
+    std::vector<std::shared_ptr<Popup>> _interactivePopups;
+
     std::shared_ptr<cugl::scene2::ActionManager> _actionManager;
 
     std::shared_ptr<cugl::scene2::ActionManager> _BullactionManager;
@@ -191,8 +193,6 @@ protected:
 
     bool _paused;
 
-    float _flag;
-
     //debug anims for Leon
     std::string _debugAnimTargetName;
     std::shared_ptr<Entity> _debugAnimTarget;
@@ -201,8 +201,6 @@ protected:
     //end debug anims
 
     std::shared_ptr<LevelModel> _level_model = std::make_shared<LevelModel>();
-
-    std::vector<float> _persistentUpgrades;
 
 #pragma mark Internal Object Management
     /**
@@ -610,6 +608,10 @@ public:
     void spawnStation(Vec2 pos, StationType type);
     void spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map);
 
+    void setSpawn(Vec2 spawn) { _spawnPoint = spawn; };
+
+    void respawnAvatar();
+
     std::vector<std::shared_ptr<Attack>> getattacks() { return _attacks; }
     void setattacks(std::vector<std::shared_ptr<Attack>> attacks) { _attacks = attacks; }
 
@@ -625,7 +627,7 @@ public:
     void generateOrders();
 
     void animate(std::shared_ptr<Entity> entity, std::string animName, bool clear = false) {
-        entity->animate(animName);
+        if (!entity->animate(animName)) return;
         auto action = entity->getAction(animName);
         if (clear) _actionManager->clearAllActions(entity->getSceneNode());
         _actionManager->activate(animName, action, entity->getSceneNode());

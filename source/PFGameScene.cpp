@@ -343,12 +343,10 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _cookBarOutline = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifeoutline"));
     _cookBarFill = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifefill"));
 
-    _cookBarOutline = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifeoutline"));
-    _cookBarFill = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifefill"));
     //_cookBarGlow = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifeglow"));
     for (std::string s : {"attackfill", "shieldfill", "speedfill", "healthfill", "jumpfill"}) {
-		_cookBarIcons[s] = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("boost")->getChildByName(s));
-        _cookBarIcons[s]->setVisible(false);
+        auto x = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("boost")->getChildByName(s));
+        x->setVisible(false);
 	}
     for (std::string s : {"attackready", "shieldready", "speedready", "healthready", "jumpready"}) {
         _cookBarIcons[s] = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("boost")->getChildByName(s));
@@ -424,6 +422,14 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _uiScene->addChild(_minimapIconNode);
     _uiScene->addChild(_minimapNode);
 
+    _actionManager = cugl::scene2::ActionManager::alloc();
+    _BullactionManager = cugl::scene2::ActionManager::alloc();
+    _SHRactionManager = cugl::scene2::ActionManager::alloc();
+
+    _pendingAcrossAllPlates = std::unordered_map<IngredientType, int>();
+
+    _interactivePopups = std::vector<std::shared_ptr<Popup>>();
+
    _chapter = 1;
    _level = 1;
    loadLevel(_chapter, _level);
@@ -441,10 +447,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _orderNode->setPosition(1280 / 2, 800 - 50);
     _orderNode->setVisible(true);
     _uiScene->addChild(_orderNode);
-
-    _actionManager = cugl::scene2::ActionManager::alloc();
-    _BullactionManager = cugl::scene2::ActionManager::alloc();
-    _SHRactionManager = cugl::scene2::ActionManager::alloc();
 
     _afterimages = std::vector < std::shared_ptr < scene2::SpriteNode>>();
 
@@ -552,7 +554,7 @@ void GameScene::reset() {
     _worldnode->removeAllChildren();
     _world->clear();
     _debugnode->removeAllChildren();
-    _avatar = nullptr;
+    _avatar->reset();
     _goalDoor = nullptr;
     _background = nullptr;
     _sensorFixtures.clear();
@@ -595,6 +597,12 @@ void GameScene::reset() {
 		}
     }
     _orders.clear();
+
+    for (auto& i : _interactivePopups) {
+        i->dispose();
+        i = nullptr;
+    }
+    _interactivePopups.clear();
     _Bull = nullptr;
 
     removeChild(_worldnode);
@@ -613,7 +621,6 @@ void GameScene::reset() {
 
 
     _level_model->removeBackgroundImages(*this);
-   // loadLevel(_level_model);
     loadLevel(_chapter, _level);
     addChild(_worldnode);
     addChild(_debugnode);
@@ -804,64 +811,69 @@ void GameScene::preUpdate(float dt) {
     }
 
     checkForCooktime();
-    
 
+    for (auto& i : _interactivePopups) {
+        if (i->isActive()) i->update(dt);
+    }
+    
     //handle animations
     if (!_actionManager->isActive("air_attack")) {
         _avatar->getBody()->SetFixedRotation(false);
         _avatar->getBody()->SetTransform(_avatar->getBody()->GetPosition(), 0.0f);
         _avatar->getBody()->SetFixedRotation(true);
     }
-    
-    //start running if idle or recovering and moving
-    if (!_paused) {
+    //if (isFailure() && _avatar->getActiveAction() != "death") {
+    if (_avatar->isDead()){
+        animate(_avatar, "death", true);
+    }
+    else if (!_paused) {
         if ((_actionManager->isActive("idle") || _actionManager->isActive("recover") || _actionManager->isActive("skid")) && (_input->getHorizontal() != 0)) {
             animate(_avatar, "run", true);
         }
         //cancel run animation if stopped running
-        if (_actionManager->isActive("run") && _input->getHorizontal() == 0) {
-            animate(_avatar, "skid");
+        else if (_actionManager->isActive("run") && _input->getHorizontal() == 0) {
+            animate(_avatar, "skid", true);
         }
 
-        if (_avatar->isJumping() && _avatar->isGrounded()) {
+        else if (_avatar->isJumping() && _avatar->isGrounded()) {
             animate(_avatar, "jump_ready", true);
         }
 
-        if (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() < _avatar->getFloatyFrames() && !_actionManager->isActive("air_roll")) {
+        else if (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() < _avatar->getFloatyFrames() && !_actionManager->isActive("air_roll")) {
             animate(_avatar, "air_roll", true);
         }
 
 
         //animate jumps if not attacking or taking damage
-        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("jump_up") && !_actionManager->isActive("air_attack") && !(_avatar->getActiveAction() == "air_attack") && !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y > 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
-            animate(_avatar, "jump_up", true);
+        else if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("jump_up") && !_actionManager->isActive("air_attack") && 
+            !(_avatar->getActiveAction() == "air_attack") && !_actionManager->isActive("air_recover") && !_actionManager->isActive("air_roll")
+            && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+            if (_avatar->getLinearVelocity().y > 0) animate(_avatar, "jump_up", true);
+            else animate(_avatar, "jump_down", true);
         }
-        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("jump_down") && !_actionManager->isActive("air_attack") && !(_avatar->getActiveAction() == "air_attack") && !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y < 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
-            // CULog("animating jump_down");
-            animate(_avatar, "jump_down", true);
-        }
-        if (_avatar->isGrounded() && (_actionManager->isActive("jump_down") || _actionManager->isActive("jump_up"))) {
+        else if (_avatar->isGrounded() && (_actionManager->isActive("jump_down") || _actionManager->isActive("jump_up"))) {
             //CULog("animating jump_land");
             animate(_avatar, "jump_land", true);
         }
-        if (_avatar->getLastDamageTime() < _avatar->getHealthCooldown() && !_actionManager->isActive("hurt") && !_avatar->didAnimateHurt()) {
+        else if (_avatar->getLastDamageTime() < _avatar->getHealthCooldown() && !_actionManager->isActive("hurt") && !_avatar->didAnimateHurt()) {
             animate(_avatar, "hurt", true);
             _avatar->setDidAnimateHurt(true);
         }
 
         //handle expired actions
-        if (!_actionManager->isActive(_avatar->getActiveAction())) {
+        else if (!_actionManager->isActive(_avatar->getActiveAction())) {
             if (_avatar->getActiveAction() == "attack") {
                 //CULog("animating attack");
                 animate(_avatar, "recover", false);
             }
             else if (_avatar->getActiveAction() == "run" && _input->getHorizontal() != 0) {
-                //CULog("animating run");
                 animate(_avatar, "run", true);
             }
             else  if (_avatar->getActiveAction() == "air_attack") {
-                //CULog("animating air roll");
-                animate(_avatar, "air_roll", true);
+                animate(_avatar, "air_recover", true);
+            }
+            else if (_avatar->getActiveAction() == "death") {
+                //do nothing
             }
             else {
                 //Todo:: blink idle
@@ -873,6 +885,11 @@ void GameScene::preUpdate(float dt) {
                 animate(_avatar, "idle");
                 //}
             }
+        }
+        else {
+            //CULog("ANIMATION ERROR!!!!");
+            //CULog(_avatar->getActiveAction().c_str());
+            //CULog(_actionManager->isActive(_avatar->getActiveAction()) ? "true" : "false");
         }
 
         if (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() < _avatar->getFloatyFrames() && _avatar->getDashCooldownMax() - _avatar->getDashCooldown() != 0 && _avatar->getDashCooldown() % 3 == 1) {
@@ -927,10 +944,10 @@ void GameScene::preUpdate(float dt) {
         }
     }
 
-    CULog(_avatar->getActiveAction().c_str());
 
     if (_input->didLevel1()) {
-        setLevel(1, 1);
+        //setLevel(1, 1);
+        _interactivePopups.back()->toggle();
     }
     else if (_input->didLevel2()) {
         setLevel(1, 2);
@@ -993,22 +1010,6 @@ void GameScene::preUpdate(float dt) {
 
                 if (_dollarnode->isStation()) {
                     
-                    ////add cooked version of ingredient to inventory
-                    //IngredientType t = Ingredient::getIngredientTypeFromString(_dollarnode->getIngredientInStation()->getName());
-                    //IngredientProperties props = typeToPropertiesMap[cookedTypeMap[t]];
-
-                    //std::shared_ptr<Ingredient> ing = std::make_shared<Ingredient>("", props.gestures, 0.0f);
-                    //ing->setName(props.name);
-                    //std::shared_ptr<Texture> tex = _assets->get<Texture>(ing->getName());
-                    //ing->init(tex);
-
-                    ////hack
-                    //int id = _plates.back()->getId();
-
-                    //removeOrder(id, t, false);
-                    //createOrder(id, t, true);
-
-                    //_inventoryNode->addIngredient(ing);
                 }
                 else {
                     modifier mod = _dollarnode->getIsDurationSequence() ? modifier::duration : modifier::effect;
@@ -1034,13 +1035,6 @@ void GameScene::preUpdate(float dt) {
         }
     }
 
-    CULog("sprite width/height: %f %f", _avatar->getSceneNode()->getSize().width, _avatar->getSceneNode()->getSize().height);
-    CULog("obstacle width/height: %f %f", _avatar->getHeight() * _scale, _avatar->getWidth() * _scale);
-
-    CULog("camera sprite width/height: %f %f", _avatar->getSceneNode()->getSize().width * _camera->getZoom(), _avatar->getSceneNode()->getSize().height * _camera->getZoom());
-
-
-
 
     if (!_slowed) {
         _dollarnode->setVisible(false);
@@ -1050,11 +1044,18 @@ void GameScene::preUpdate(float dt) {
         }
 
         //_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
-        _avatar->setAllMovement(_input->getHorizontal(), _input->getVertical());
-        _avatar->setJumping(_input->didJump());
-        _avatar->setDash(_input->didDash());
-        _avatar->setInputWalk(_input->getHorizontal() != 0);
-        _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
+        if (!_avatar->isDead()) {
+            _avatar->setAllMovement(_input->getHorizontal(), _input->getVertical());
+            _avatar->setJumping(_input->didJump());
+            _avatar->setDash(_input->didDash());
+            _avatar->setInputWalk(_input->getHorizontal() != 0);
+        }
+        else {
+            _avatar->setAllMovement(0.0f, 0.0f);
+            _avatar->setJumping(false);
+            _avatar->setDash(false);
+            _avatar->setInputWalk(false);
+        }
         if (_avatar->isJumping() && _avatar->isGrounded()) {
             std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
             AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
@@ -1064,6 +1065,7 @@ void GameScene::preUpdate(float dt) {
         _avatar->setAllMovement(0, 0);
         _avatar->setJumping(false);
         _avatar->setDash(false);
+        _avatar->setInputWalk(false);
     }
 
     //if (_avatar->getDuration() == 0 && !_avatar->hasSuper()) {
@@ -1084,7 +1086,6 @@ void GameScene::preUpdate(float dt) {
         else {
             popup->setPositionY(popup->getPositionY() - 1.0f);
         }
-
     }
 
 
@@ -1381,13 +1382,57 @@ void GameScene::fixedUpdate(float step) {
         std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
         _healthBarForeground->setScissor(scissor);
     }
-    if (_cookBarFill != nullptr) {
+    if (_avatar != nullptr) {
         float meterPercentage = _avatar->getMeter() / 100.0f;
         float totalWidth = _cookBarFill->getWidth();
         float height = _cookBarFill->getHeight();
         float clipWidth = totalWidth * meterPercentage;
         std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
-        _cookBarFill->setScissor(scissor);
+
+        _cookBarIcons["attackready"]->setVisible(false);
+        _cookBarIcons["speedready"]->setVisible(false);
+        _cookBarIcons["jumpready"]->setVisible(false);
+        _cookBarIcons["shieldready"]->setVisible(false);
+        _cookBarIcons["healthready"]->setVisible(false);
+        _cookBarFill->setVisible(false);
+        
+        switch (_avatar->getBuffType()) {
+            case (buff::attack): {
+                _cookBarIcons["attackready"]->setScissor(scissor);
+                _cookBarIcons["attackready"]->setVisible(true);
+                break;
+            }
+            case (buff::defense): {
+                _cookBarIcons["shieldready"]->setScissor(scissor);
+                _cookBarIcons["shieldready"]->setVisible(true);
+                break;
+			}
+            case (buff::speed): {
+                _cookBarIcons["speedready"]->setScissor(scissor);
+                _cookBarIcons["speedready"]->setVisible(true);
+                break;
+            }
+            case (buff::health): {
+                _cookBarIcons["healthready"]->setScissor(scissor);
+                _cookBarIcons["healthready"]->setVisible(true);
+                break;
+            }
+            case (buff::jump): {
+                _cookBarIcons["jumpready"]->setScissor(scissor);
+                _cookBarIcons["jumpready"]->setVisible(true);
+                break;
+            }
+            case (buff::none): {
+                _cookBarFill->setScissor(scissor);
+                _cookBarFill->setVisible(true);
+                break;
+            }
+            default: {
+                _cookBarFill->setScissor(scissor);
+                _cookBarFill->setVisible(true);
+                break;
+            }
+        }
     }
     if (_BullhealthBarForeground != nullptr && _Bull != nullptr) {
         _healthPercentage = _Bull->getHealth() / 100;
@@ -1488,14 +1533,17 @@ void GameScene::fixedUpdate(float step) {
         }
     }
     if (_avatar->getHealth() <= 0) {
-        setFailure(true);
+        //setFailure(true);
     }
-    if (_Bull != nullptr && _Bull->getHealth() <= 0) {
+    else if (_Bull != nullptr && _Bull->getHealth() <= 0) {
         setComplete(true);
     }
 
     //su
     _avatar->fixedUpdate(step);
+    if (_avatar->getDeathTimer() < 0) {
+        respawnAvatar();
+    }
     for (auto& enemy : _enemies) {
         if (enemy != nullptr && enemy->getBody() != nullptr && !enemy->isRemoved()) {
             enemy->fixedUpdate(step);
@@ -1784,7 +1832,6 @@ void GameScene::setComplete(bool value) {
  * @param value whether the level is failed.
  */
 void GameScene::setFailure(bool value) {
-    _failed = value;
     if (value) {
         if (!_failed && !_complete) {
             std::shared_ptr<Sound> source = _assets->get<Sound>(LOSE_MUSIC);
@@ -1797,6 +1844,7 @@ void GameScene::setFailure(bool value) {
         _losenode->setVisible(false);
         _countdown = -1;
     }
+    _failed = value;
 }
 
 
@@ -1821,7 +1869,10 @@ void GameScene::removeAttack(T* attack) {
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
 }
 
-
+void GameScene::respawnAvatar() {
+    _avatar->reset();
+    _avatar->setPosition(_spawnPoint);
+}
 
 
 
@@ -2167,9 +2218,22 @@ void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map
     std::shared_ptr<Texture> image = _assets->get<Texture>("sink");
     std::shared_ptr<Plate> plate = Plate::alloc(image, pos, s, map);
 
-    addObstacle(plate, plate->getSceneNode());
-    _interactables.push_back(plate);
-    _plates.push_back(plate);
+    for (const auto& [key, value] : map) {
+        _pendingAcrossAllPlates[key] += value;
+    }
+
+    //addObstacle(plate, plate->getSceneNode());
+    //_interactables.push_back(plate);
+    //_plates.push_back(plate);
+    //popup temp
+    auto reader = JsonReader::alloc("./json/examplePopup.json");
+    std::shared_ptr<JsonValue> popupData = reader->readJson()->get("test");
+    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
+    std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
+
+    p->setActive(false);
+    _interactivePopups.push_back(p);
+    _uiScene->addChild(p);
 }
 
 void GameScene::pogo() {
@@ -2318,11 +2382,3 @@ void GameScene::generateOrders() {
         }
     }
 }
-
-//void GameScene::addToInventory(std::shared_ptr<Ingredient> ing) {
-//    _inventoryNode->addIngredient(ing);
-//}
-//
-//std::shared_ptr<Ingredient> GameScene::popFromInventory(std::shared_ptr<Ingredient> ing) {
-//    return _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
-//}
