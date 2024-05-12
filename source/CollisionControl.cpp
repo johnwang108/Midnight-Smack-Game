@@ -90,6 +90,8 @@ void GameScene::beginContact(b2Contact* contact) {
         }
         else {
             _Bull->setIsChasing(false);
+
+            pogo();
             _Bull->takeDamage(0, direction, true);
             _Bull->setact("bullCrash", 3.0f);
 
@@ -106,6 +108,7 @@ void GameScene::beginContact(b2Contact* contact) {
         }
         else {
             _Bull->setIsChasing(false);
+            pogo();
             _Bull->takeDamage(0, direction, true);
             _Bull->setact("bullCrash", 2.0f);
         }
@@ -133,6 +136,7 @@ void GameScene::beginContact(b2Contact* contact) {
         _avatar->addMeter(5.0f);
 
         float damage = _Bull->getHealth();
+        pogo();
 
         if (_Bull->getHealth() == 74.5f) {
             _Bull->takeDamage(_avatar->getAttack() / 4, direction, true);
@@ -157,6 +161,7 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 enemyPos = _Bull->getPosition();
         Vec2 attackerPos = ((Attack*)bd2)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        pogo();
         if (_Bull->getHealth() == 74.5f) {
             _Bull->takeDamage(_avatar->getAttack() / 4, direction, true);
             _Bull->setsummoned(true);
@@ -228,13 +233,7 @@ void GameScene::beginContact(b2Contact* contact) {
             ((EnemyModel*)bd2)->takeDamage(_avatar->getAttack(), direction);
             damage -= ((EnemyModel*)bd2)->getHealth();
 
-            float pi = 3.1415f;
-            float angle = _avatar->getAngle();
-            //pogo
-            if (_avatar->getActiveAction() == "air_attack" && std::abs(angle) > pi/2.0f && std::abs(angle) < 3*pi/2.0f) {
-                _avatar->setLinearVelocity(_avatar->getLinearVelocity().x, 0.0f);
-                _avatar->jump(Vec2(std::sinf(angle + pi/2.0f), std::cosf(angle + pi/2.0f)));
-            }
+            pogo();
 
             _avatar->addMeter(5.0f);
             if (damage > 0) popup(std::to_string((int)damage), enemyPos * _scale);
@@ -302,7 +301,7 @@ void GameScene::beginContact(b2Contact* contact) {
             Vec2 attackerPos = ((Attack*)bd1)->getPosition();
             int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
             _avatar->addMeter(5.0f);
-
+            pogo();
             _ShrimpRice->takeDamage(_avatar->getAttack() / 4, direction, false);
 
             popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos* _scale);
@@ -320,7 +319,7 @@ void GameScene::beginContact(b2Contact* contact) {
             Vec2 attackerPos = ((Attack*)bd2)->getPosition();
             int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
             _avatar->addMeter(5.0f);
-
+            pogo();
             _ShrimpRice->takeDamage(_avatar->getAttack() / 4, direction, false);
 
             popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos* _scale);
@@ -357,6 +356,7 @@ void GameScene::beginContact(b2Contact* contact) {
                 if (( _enemy.get() == bd1 && _ShrimpRice.get() == bd2) ||
                     (_enemy.get() == bd2 && _ShrimpRice.get() == bd1)) {
                     _enemy->markForDeletion();
+                    pogo();
                     _ShrimpRice->takeDamage(-10, 0, false);
                 }
             }

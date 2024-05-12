@@ -53,21 +53,25 @@ void Rice::fixedUpdate(float step) {
         setRequestedActionAndPrio("riceAcknowledge", 50);
 	}
 	else if (_state == "pursuing") {
-        if (getActiveAction() == "riceStartWalk" || getActiveAction() == "riceWalk") setRequestedActionAndPrio("riceWalk", 20);
-        else setRequestedActionAndPrio("riceStartWalk", 60);
+        if ((getActiveAction() == "riceStartWalk" || getActiveAction() == "riceWalk") && velocity.x != 0) setRequestedActionAndPrio("riceWalk", 20);
+        else if ((getActiveAction() == "riceStartWalk" || getActiveAction() == "riceWalk") && velocity.x == 0) setRequestedActionAndPrio("riceEndWalk", 30);
+        else if (velocity.x != 0) setRequestedActionAndPrio("riceStartWalk", 60);
+        else setRequestedActionAndPrio("riceIdle", 1);
 
-        if (_distanceToPlayer.length() < 0.05) {
-            setState("attacking");
-            velocity.x = 0;
-        }
         if (_type == EnemyType::rice) {
             velocity.x = ENEMY_FORCE * _direction * 2;
-            //CULog("here :(");
         }
         else {
             float dir = SIGNUM(_targetPosition.x - getPosition().x);
             //velocity.x = ENEMY_FORCE * dir * 5;
             velocity.x = ENEMY_FORCE * _direction * 5;
+        }
+        if (_distanceToPlayer.length() < 0.05) {
+            setState("attacking");
+            velocity.x = 0;
+        }
+        else if (abs(_distanceToPlayer.x) < 0.001) {
+            velocity.x = 0;
         }
 	}
 	else if (_state == "attacking") {

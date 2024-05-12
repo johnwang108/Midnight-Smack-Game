@@ -30,8 +30,11 @@ using namespace cugl;
 #define JUMP_KEY KeyCode::SPACE
 #define DASH_KEY KeyCode::LEFT_SHIFT
 
+#define LEVEL1_KEY KeyCode::NUM_1
+#define LEVEL2_KEY KeyCode::NUM_2
+#define LEVEL3_KEY KeyCode::NUM_3
 
-#define MUSIC_KEY KeyCode::M
+//#define MUSIC_KEY KeyCode::M
 #define ANIMATE_KEY KeyCode::N
 #define BACKGROUND_KEY KeyCode::B
 
@@ -299,11 +302,17 @@ void PlatformInput::update(float dt) {
         _keyUp = keys->keyDown(KeyCode::W);
         _keyDown = keys->keyDown(KeyCode::S);
 
-        _keyTransition = keys->keyPressed(KeyCode::T);
+        _keyPause = keys->keyPressed(KeyCode::T);
+
+        _keyMinimap = keys->keyPressed(KeyCode::M);
 
         _keyAnimate = keys->keyPressed(ANIMATE_KEY);
         _keyBackground = keys->keyPressed(BACKGROUND_KEY);
-        _keyMusic = keys->keyPressed(MUSIC_KEY);
+
+        _keyLevel1 = keys->keyPressed(LEVEL1_KEY);
+        _keyLevel2 = keys->keyPressed(LEVEL2_KEY);
+        _keyLevel3 = keys->keyPressed(LEVEL3_KEY);
+        //_keyMusic = keys->keyPressed(MUSIC_KEY);
     }
     else {
         _keyJump = _gameCont->isButtonPressed(GameController::Button::A);
@@ -348,7 +357,7 @@ void PlatformInput::update(float dt) {
     _keySlow = _gameCont->isButtonPressed(GameController::Button::X);
     _keyReset = _gameCont->isButtonPressed(GameController::Button::LEFT_SHOULDER);
     _keyExit = _gameCont->isButtonPressed(GameController::Button::RIGHT_SHOULDER);
-    _keyTransition = _gameCont->isButtonPressed(GameController::Button::B);
+    _keyPause = _gameCont->isButtonPressed(GameController::Button::B);
 
 
 
@@ -373,15 +382,20 @@ void PlatformInput::update(float dt) {
     _slowPressed = _keySlow;
     _slowReleased = _keySlowReleased;
     _dashPressed = _dashKey;
-    _transitionPressed = _keyTransition;
+    _pausePressed = _keyPause;
+    _minimapPressed = _keyMinimap;
     _interactPressed = _keyInteract;
+
+    _level1Pressed = _keyLevel1;
+    _level2Pressed = _keyLevel2;
+    _level3Pressed = _keyLevel3;
 
     _inventoryLeftPressed = _keyInventoryLeft;
     _inventoryRightPressed = _keyInventoryRight;
 
     _animatePressed = _keyAnimate;
     _backgroundPressed = _keyBackground;
-    _musicPressed = _keyMusic;
+    //_musicPressed = _keyMusic;
 
     // Directional controls
     _horizontal = 0.0f;
@@ -433,7 +447,14 @@ void PlatformInput::clear() {
     _firePressed = false;
     _dashPressed = false;
     _slowPressed = false;
-    _transitionPressed = false;
+    _pausePressed = false;
+    _minimapPressed = false;
+    _animatePressed = false;
+    _backgroundPressed = false;
+    //_musicPressed = false;
+    _inventoryLeftPressed = false;
+    _inventoryRightPressed = false;
+    _interactPressed = false;
 }
 
 #pragma mark -

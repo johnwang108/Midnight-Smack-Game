@@ -54,6 +54,16 @@ public:
 	}
 
 	bool isSuccess();
+
+	std::vector<IngredientType> getTargetIngredients() {
+		std::vector<IngredientType> result;
+		for (auto const& x : _targetIngredients) {
+			for (int i = 0; i < x.second; i++) {
+				result.push_back(x.first);
+			}
+		}
+		return result;
+	}
 	
 };
 
