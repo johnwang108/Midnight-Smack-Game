@@ -32,6 +32,7 @@ bool ShrimpRice::init(const Vec2& pos, const Size& size, float scale) {
         _attackcount = 0;
         _W3att = 0;
         _parry=false;
+        _parry2 = false;
         return true;
     }
     return false;
@@ -232,7 +233,7 @@ void ShrimpRice::takeDamage(float damage, int attackDirection, bool knockback) {
 void ShrimpRice::Summon(GameScene& scene) {
 
     Vec2 enemyPos = getPosition()-Vec2(-_direction*2,2);
-    scene.spawnRice(enemyPos);
+    scene.spawnRice(enemyPos,false);
     
 
 }
