@@ -41,14 +41,13 @@ void Entity::setAction(std::string action_name, std::vector<int> vec, float dura
 }
 
 /**Unsure if override needed. Begins an animation, switching the sheet if needed.*/
-void Entity::animate(std::string action_name) {
+bool Entity::animate(std::string action_name) {
     std::string name = action_name;
 
     //info = {int rows, int cols, int size, float duration}
     auto info = _info[name];
 
     //first, switch the sheet
-    changeSheet(name);
     if (name.find("bull") != std::string::npos) {
 		_node->setScale(0.5/4);
     }
@@ -58,13 +57,29 @@ void Entity::animate(std::string action_name) {
     else if (name == "idle") {
         _node->setScale(0.35 / 1.75);
     }
+    else if (name == "skid" || name == "hurt" || name == "death") {
+        _node->setScale(0.35 / 1.25);
+    }
     else {
         _node->setScale(0.35 / 1.75);
     }
 
+    if (getName() == "avatar") {
+        if (name == "run" || name == "skid") {
+            getSceneNode()->setAnchor(Vec2(0.5, 0.4));
+        }
+        else getSceneNode()->setAnchor(Vec2(0.5, 0.35));
+    }
+    
+    changeSheet(name);
+
+    _node->setFrame(0);
+
     setActiveAction(action_name);
     _activePriority = _priority;
     _activeAction = name;
+
+    return true;
 }
 
 void Entity::changeSheet(std::string action_name) {

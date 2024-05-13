@@ -282,6 +282,7 @@ void GameScene::beginContact(b2Contact* contact) {
 
             _avatar->addTouching();
             _avatar->takeDamage(34, direction);
+            
         }
         else CULog("Intangible!");
     }

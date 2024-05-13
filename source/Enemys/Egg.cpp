@@ -63,7 +63,7 @@ void Egg::fixedUpdate(float step) {
 	b2Vec2 velocity = _body->GetLinearVelocity();
 
     if (_state == "chasing") {
-        velocity.x = ENEMY_FORCE * _direction * 0.5;
+        velocity.x = ENEMY_FORCE * _direction * 1.2;
     }
     else if (_state == "stunned") {
         velocity.x = 0;
@@ -75,7 +75,7 @@ void Egg::fixedUpdate(float step) {
         velocity.x = 0;
     }
     else if (_state == "patrolling") {
-        velocity.x = ENEMY_FORCE * _direction * 0.25;
+        velocity.x = ENEMY_FORCE * _direction * 0.75;
     }
     else if (_state == "short_windup") {
         velocity.x = 0;
@@ -88,11 +88,24 @@ void Egg::fixedUpdate(float step) {
     if (_state != "patrolling") {
         setDirection(SIGNUM(_distanceToPlayer.x));
     }
-    _body->SetLinearVelocity(EnemyModel::handleMovement(velocity));
+    CULog("velocty: %f", velocity.y);
+    CULog("isGrounded: %s", isGrounded() ? "true" : "false");
+    _body->SetLinearVelocity(handleMovement(velocity));
+}
+
+b2Vec2 Egg::handleMovement(b2Vec2 vel) {
+    b2Vec2 v = EnemyModel::handleMovement(vel);
+    
+    int frame = getSpriteNode()->getFrame();
+    if (getActiveAction() == "eggWalk" && !(frame > 9 && frame < 16)) v.x = 0;
+    return v;
 }
 
 std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Egg::createAttack(std::shared_ptr<AssetManager> _assets, float scale) {
     Vec2 pos = getPosition();
+    float attackOffsetY = getHeight() * 0.4;
+    pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
+    pos.y += attackOffsetY;
 
     std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE);
 
@@ -100,11 +113,6 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Egg::c
     std::shared_ptr<Attack> attack = Attack::alloc(pos,
         s);
         //cugl::Size(image->getSize().width / scale, ATTACK_H * image->getSize().height / scale));
-
-    float attackOffsetY = getHeight() * 0.9;
-    pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
-    pos.y += attackOffsetY;
-
 
     if (getDirection() > 0) {
         attack->setFaceRight(true);

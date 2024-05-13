@@ -19,7 +19,12 @@ bool Shrimp::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, st
 void Shrimp::update(float dt) {
     EnemyModel::update(dt);
     b2Vec2 velocity = _body->GetLinearVelocity();
-    if (_state == "chasing") {
+    if (_killMeCountdown != 0.0f) {
+        if (_state == "standing" || _state == "standingRunning") setRequestedActionAndPrio("shrimpStandDeath", 1000);
+		else if (_state == "curling" || _state == "rolling" || _state == "uncurling" || _state == "stunned") setRequestedActionAndPrio("shrimpRollDeath", 1000);
+        else setRequestedActionAndPrio("shrimpIdleDeath", 1000);
+    }
+    else if (_state == "chasing") {
         setRequestedActionAndPrio("shrimpIdle", 1);
     }
     else if (_state == "standing") {
@@ -40,7 +45,7 @@ void Shrimp::update(float dt) {
         setRequestedActionAndPrio("shrimpUncurl", 30);
     }
     else if (_state == "stunned") {
-        setRequestedActionAndPrio("shrimpRoll", getPriority());
+        setRequestedActionAndPrio("shrimpRoll", getPriority() + 1);
     }
     else if (_state == "patrolling") {
         if (getActiveAction() == "shrimpIdle" && velocity.x != 0) setRequestedActionAndPrio("shrimpWalkStart", getPriority() + 1);
@@ -56,7 +61,7 @@ void Shrimp::update(float dt) {
 void Shrimp::fixedUpdate(float step) {
     EnemyModel::fixedUpdate(step);
     b2Vec2 velocity = _body->GetLinearVelocity();
-    if (_state != "rolling" && _state != "stunned") {
+    if (_state != "rolling" && _state != "stunned" || (_killMeCountdown !=0)) {
         setAngle(0.0f);
         setFixedRotation(true);
     }

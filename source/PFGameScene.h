@@ -73,7 +73,7 @@ protected:
     /** Reference to the lose message label */
     std::shared_ptr<cugl::scene2::Label> _losenode;
 
-    std::shared_ptr<Scene2> _bgScene;
+    //std::shared_ptr<Scene2> _bgScene;
     std::shared_ptr<Scene2> _uiScene;
     std::shared_ptr<Inventory> _inventoryNode;
 
@@ -111,12 +111,11 @@ protected:
     std::vector<std::shared_ptr<scene2::SpriteNode>> _afterimages;
 
 
-    //Valid targets for cook-time
-    std::vector<std::shared_ptr<EnemyModel>> _vulnerables;
-
-    //temp bad code
     std::vector<std::shared_ptr<Attack>>  _attacks;
-    time_t start;
+    
+    float _timer;
+    float _timeLimit;
+    std::deque<float> _respawnTimes;
 
     /** Whether we have completed this "game" */
     bool _complete;
@@ -129,9 +128,11 @@ protected:
 
     std::shared_ptr<OrthographicCamera> _minimapCamera;
     std::shared_ptr<cugl::scene2::PolygonNode> _minimapNode;
+    std::shared_ptr<scene2::PolygonNode> _minimapIconNode;
     std::shared_ptr<RenderTarget> _r;
 
     /** map from interactable id to orders*/
+    std::unordered_map<IngredientType, int> _pendingAcrossAllPlates;
     std::unordered_map<int, std::vector<std::shared_ptr<scene2::SceneNode>>> _orders;
     std::shared_ptr<scene2::SceneNode> _orderNode;
     int _numOrders;
@@ -155,13 +156,11 @@ protected:
     int _chapter;
     int _level;
 
+    Vec2 _spawnPoint;
+
     std::shared_ptr<BullModel>			  _Bull;
 
     std::shared_ptr<ShrimpRice>			  _ShrimpRice;
-
-    //std::shared_ptr<Level2> level2 = std::make_shared<Level2>();
-
-    //std::shared_ptr<Level1> level1 = std::make_shared<Level1>();
 
     std::shared_ptr<Level3> level3 = std::make_shared<Level3>();
 
@@ -178,12 +177,16 @@ protected:
 
     std::shared_ptr<cugl::scene2::PolygonNode> _cookBarFill;
     std::shared_ptr<cugl::scene2::PolygonNode> _cookBarOutline;
+    std::shared_ptr<scene2::PolygonNode> _timerIcon;
+    std::shared_ptr<scene2::PolygonNode> _timerFillIcon;
     std::unordered_map<std::string, std::shared_ptr<cugl::scene2::PolygonNode>> _cookBarIcons;
     std::unordered_map<std::string, std::shared_ptr<cugl::scene2::PolygonNode>> _cookBarGlows;
 
     //std::shared_ptr<cugl::scene2::Label> _buffLabel;
 
     std::vector<std::tuple<std::shared_ptr<cugl::scene2::Label>, cugl::Timestamp>> _popups;
+
+    std::vector<std::shared_ptr<Popup>> _interactivePopups;
 
     std::shared_ptr<cugl::scene2::ActionManager> _actionManager;
 
@@ -195,8 +198,6 @@ protected:
 
     bool _paused;
 
-    float _flag;
-
     //debug anims for Leon
     std::string _debugAnimTargetName;
     std::shared_ptr<Entity> _debugAnimTarget;
@@ -205,8 +206,6 @@ protected:
     //end debug anims
 
     std::shared_ptr<LevelModel> _level_model = std::make_shared<LevelModel>();
-
-    std::vector<float> _persistentUpgrades;
 
 #pragma mark Internal Object Management
     /**
@@ -542,8 +541,8 @@ public:
     std::vector<std::shared_ptr<EnemyModel>> getEnemies() const { return _enemies; }
 
     void loadLevel(std::shared_ptr<Levels> level) {
-        //_uiScene->getChildByName("bullbar")->setVisible(currentLevel == level2);
-        //_uiScene->getChildByName("SFR")->setVisible(currentLevel == level3);
+        _uiScene->getChildByName("bullbar")->setVisible(_level == 4);
+        _uiScene->getChildByName("SFR")->setVisible(_level == 5);
         level->populate(*this);
         currentLevel = level;
     }
@@ -610,9 +609,14 @@ public:
     void spawnBeef(Vec2 pos);
     void spawnEgg(Vec2 pos);
     void spawnRice(Vec2 pos, bool isSoldier = true);
+    std::shared_ptr<EnemyModel> spawnRiceSoldier(Vec2 pos, std::shared_ptr<Rice> leader);
     void spawnCarrot(Vec2 pos);
     void spawnStation(Vec2 pos, StationType type);
     void spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map);
+
+    void setSpawn(Vec2 spawn) { _spawnPoint = spawn; };
+
+    void respawnAvatar();
 
     std::vector<std::shared_ptr<Attack>> getattacks() { return _attacks; }
     void setattacks(std::vector<std::shared_ptr<Attack>> attacks) { _attacks = attacks; }
@@ -628,7 +632,25 @@ public:
 
     void generateOrders();
 
+    void animate(std::shared_ptr<Entity> entity, std::string animName, bool clear = false) {
+        if (!entity->animate(animName)) return;
+        auto action = entity->getAction(animName);
+        if (clear) _actionManager->clearAllActions(entity->getSceneNode());
+        _actionManager->activate(animName, action, entity->getSceneNode());
+    }
+
+    ///**Adds ingredient to slot. Wrapper for orders handling*/
+    //void addToInventory(std::shared_ptr<Ingredient>);
+
+    ///**Removes ingredient from currently selected slot. Wrapper for orders handling*/
+    //std::shared_ptr<Ingredient> popFromInventory(std::shared_ptr<Ingredient>);
+
     void removeOrder(int id, IngredientType t, bool isPlate = false);
+
+    /**This respawns a fraction (p) of the enemies that have died, not including spawned rice soldiers. */
+    void respawnEnemies(float p = 1.0);
+
+    void respawnEnemy(std::shared_ptr<EnemyModel> enemy);
 
     void setInteractable(int interactableID) {
 		_currentInteractableID = interactableID;

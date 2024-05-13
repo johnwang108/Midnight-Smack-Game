@@ -31,25 +31,6 @@ public:
         if (res) {
             result->loadAnimationsFromConstant("egg", _assets);
         }
-
-        //slice windup and attack sprite sheet
-        //auto info = result->getInfo("eggAttack");
-        //result->addActionAnimation("eggWindup", _assets->get<Texture>("eggAttack"),
-        //    std::get<0>(info), std::get<1>(info),
-        //    std::get<2>(info), std::get<3>(info) * 7.0f / 16.0f); //7 windup frames out of 16 total frames
-        //std::vector<int> frames = { 0, 1, 2, 3, 4, 5, 6 };
-        //result->setAction("eggWindup", frames, result->getActionDuration("eggWindup"));
-
-        //frames = { 7,8,9,10,11,12,13,14,15 };
-        //result->setAction("eggAttack", frames, result->getActionDuration("eggAttack") * 9.0f / 16.0f); //9 attack frames out of 16 total frames
-
-
-        //info = result->getInfo("eggWindup");
-        //result->addActionAnimation("eggWindupQuick", _assets->get<Texture>("eggAttack"),
-        //    std::get<0>(info), std::get<1>(info),
-        //    std::get<2>(info), std::get<3>(info) * EGG_ATTACK_SPEEDUP_MULTIPLIER);
-        //frames = { 0, 1, 2, 3, 4, 5, 6 };
-        //result->setAction("eggWindupQuick", frames, result->getActionDuration("eggWindupQuick")); //9 attack frames out of 16 total frames
         return res ? result : nullptr;
     }
 
@@ -80,6 +61,8 @@ public:
     void fixedUpdate(float step) override;
 
     void setState(std::string state) override;
+
+    b2Vec2 handleMovement(b2Vec2 vel) override;
 
     std::string getNextState(std::string state) override;
 

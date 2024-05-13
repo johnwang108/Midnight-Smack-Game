@@ -37,7 +37,7 @@ public:
     void markForDeletion() override {
         if (_killMeCountdown != 0.0f) return;
         EnemyModel::markForDeletion();
-        _killMeCountdown = 0.1;
+        _killMeCountdown = getActionDuration("shrimpStandDeath");
     }
 
     void update(float dt) override;

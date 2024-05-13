@@ -123,6 +123,8 @@ protected:
     
     bool _nocoll;
 
+    Vec2 _spawnPoint;
+
 
 public:
     EnemyModel() : Entity(), _sensorName(ENEMY_SENSOR_NAME) { }
@@ -279,6 +281,8 @@ public:
 
     virtual void setState(std::string state);
 
+    void resetDebug() override;
+
     virtual std::string getNextState(std::string state) { return ""; };
 
     /**Sets the predefined path limits, still wip */
@@ -394,20 +398,23 @@ public:
     static float typeToAggroRange(EnemyType type) {
 		switch (type) {
 		case EnemyType::shrimp:
-			return 20.0f;
+			return 15.0f;
 		case EnemyType::rice:
-			return 20.0f;
+			return 15.0f;
 		case EnemyType::rice_soldier:
-			return 20.0f;
+			return 15.0f;
 		case EnemyType::egg:
 			return 20.0f;
 		case EnemyType::carrot:
-			return 20.0f;
+			return 15.0f;
 		case EnemyType::beef:
-			return 20.0f;
+			return 15.0f;
 		}
 		return 0.0f;
 	};
 
+    virtual void respawn();
+
+    //void activatePhysics(std::shared_ptr<physics2::ObstacleWorld> world) override;
 };
 #endif /* __ENEMY_MODEL_H__ */

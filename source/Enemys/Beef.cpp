@@ -103,7 +103,6 @@ void Beef::fixedUpdate(float step) {
         velocity.x = 0;
         _attacked = false;
     }
-    resetDebug();
     _body->SetLinearVelocity(handleMovement(velocity));
 }
 
