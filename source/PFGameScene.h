@@ -41,6 +41,7 @@
 #include "NightLevelObjects/Plate.h"
 #include "NightLevelObjects/Station.h"
 #include "NightLevelObjects/platform.h"
+#include "Popup.h"
 
 #include "Inventory.h"
 #include "Levels/LevelModel.h"
