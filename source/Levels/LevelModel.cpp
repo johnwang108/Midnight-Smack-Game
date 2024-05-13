@@ -512,7 +512,7 @@ std::string LevelModel::getLevelScenery(std::string levelNumber) {
 }
 
 void LevelModel::removeBackgroundImages(GameScene& scene) {
-	for (std::shared_ptr<scene2::SceneNode > node: scene.getChildren()) {
+	for (std::shared_ptr<scene2::SceneNode > node : scene.getChildren()) {
 		if (node->getName() == "background") {
 			scene.removeChild(node);
 		}
@@ -536,7 +536,7 @@ std::shared_ptr<physics2::PolygonObstacle> LevelModel::loadMainPlatform(const st
 
 
 	std::shared_ptr<cugl::JsonValue> platform_vertices = json->get("polygon");
-	std::shared_ptr<physics2::PolygonObstacle> platobj;
+	std::shared_ptr<Platform> platobj;
 	std::vector<Vec2> polygon_points = {};
 
 	if (platform_vertices != nullptr && platform_vertices->isArray()) {
@@ -571,7 +571,7 @@ std::shared_ptr<physics2::PolygonObstacle> LevelModel::loadMainPlatform(const st
 	triangulator.clear();
 
 	// platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_BOTTOM_LEFT);
-	platobj = physics2::PolygonObstacle::alloc(platform);
+	platobj = Platform::alloc(platform);
 	platobj->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 	// platobj->setPosition(5.0, 0.0);
 	platobj->setName(std::string(PLATFORM_NAME));
@@ -591,6 +591,8 @@ std::shared_ptr<physics2::PolygonObstacle> LevelModel::loadMainPlatform(const st
 	sprite->setColor(Color4::CLEAR);
 	sprite->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 	scene.addObstacle(platobj, sprite, 1);
+
+	scene.getPlatform().push_back(platobj);
 
 	return platobj;
 	CULog("we reached the end of loadMainPlatform!!");

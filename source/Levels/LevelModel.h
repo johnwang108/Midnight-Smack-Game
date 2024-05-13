@@ -67,6 +67,9 @@ public:
 
 	std::string level_file_path;
 
+
+
+
 	// virtual ~LevelModel() = default;
 
 	// virtual void populate(GameScene& scene) = 0;

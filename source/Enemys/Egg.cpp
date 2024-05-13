@@ -88,8 +88,6 @@ void Egg::fixedUpdate(float step) {
     if (_state != "patrolling") {
         setDirection(SIGNUM(_distanceToPlayer.x));
     }
-    CULog("velocty: %f", velocity.y);
-    CULog("isGrounded: %s", isGrounded() ? "true" : "false");
     _body->SetLinearVelocity(handleMovement(velocity));
 }
 

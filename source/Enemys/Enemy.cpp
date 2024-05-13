@@ -109,7 +109,6 @@ void EnemyModel::createFixtures() {
 
     sensorDef.userData.pointer = reinterpret_cast<uintptr_t>(getSensorName());
 
-
     _sensorFixture = _body->CreateFixture(&sensorDef);
     b2Filter filter = getFilterData();
     filter.groupIndex = -1;
@@ -223,12 +222,12 @@ b2Vec2 EnemyModel::handleMovement(b2Vec2 velocity) {
 
     if (std::abs(velocity.x) < 0.03) velocity.x = 0;
     if (velocity.x != 0) {
-        if (_state != "patrolling") {
-            setDirection(SIGNUM(_distanceToPlayer.x));
-        }
-        else {
-            setDirection(SIGNUM(velocity.x));
-        }
+        //if (_state != "patrolling") {
+        //    setDirection(SIGNUM(_distanceToPlayer.x));
+        //}
+        //else {
+        //    setDirection(SIGNUM(velocity.x));
+        //}
     }
     
     if (_lastDirection != _direction && _node != nullptr) {

@@ -40,6 +40,7 @@
 #include "NightLevelObjects/GestureInteractable.h"
 #include "NightLevelObjects/Plate.h"
 #include "NightLevelObjects/Station.h"
+#include "NightLevelObjects/platform.h"
 #include "Popup.h"
 
 #include "Inventory.h"
@@ -146,7 +147,7 @@ protected:
 
     std::vector<std::shared_ptr<Plate>> _plates;
     std::vector<std::shared_ptr<Station>> _stations;
-    
+    std::vector<std::shared_ptr<Platform>> _platforms;
     int _currentInteractableID;
       
     /** Mark set to handle more sophisticated collision callbacks */
@@ -659,6 +660,10 @@ public:
     int getCurrentInteractableId() {
         return _currentInteractableID;
     }
+    std::vector<std::shared_ptr<Platform>>& getPlatform() {
+		return _platforms;
+	}
+
 
     std::shared_ptr<GestureInteractable> getInteractable(int interactableID) {
         for (auto i : _interactables) {

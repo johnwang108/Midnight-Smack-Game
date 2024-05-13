@@ -446,9 +446,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
    _chapter = 1;
    _level = 1;
    loadLevel(_chapter, _level);
-   // 
-   // _level_model->setFilePath("json/empanada-platform-level-01.json");
    // currentLevel = _level_model;
+   // loadLevel(currentLevel);
     addChild(_worldnode);
     addChild(_debugnode);
     _numOrders = 0;
@@ -1185,24 +1184,25 @@ void GameScene::preUpdate(float dt) {
 			}
             _Bull->update(dt);
         }
-    if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
+
+        if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
             Vec2 BullPos = _ShrimpRice->getPosition();
             if (_ShrimpRice->getHealth() <= 0) {
                 _worldnode->removeChild(_ShrimpRice->getSceneNode());
                 _ShrimpRice->setDebugScene(nullptr);
                 _ShrimpRice->markRemoved(true);
             }
-            if (_ShrimpRice->getact()=="SFRWave2") {
+            if (_ShrimpRice->getact() == "SFRWave2") {
                 float distance = avatarPos.distance(BullPos);
                 if (distance < 4) {
-                    _ShrimpRice->setact("SFRWave3",1.125);
+                    _ShrimpRice->setact("SFRWave3", 1.125);
                 }
             }
             if (_ShrimpRice->gettimetosummon()) {
                 _ShrimpRice->Summon(*this);
                 _ShrimpRice->settimetosummon(false);
             }
-            if (_ShrimpRice->getcanturn() && _ShrimpRice->getacttime()<=0) {
+            if (_ShrimpRice->getcanturn() && _ShrimpRice->getacttime() <= 0) {
                 if (_ShrimpRice->getnextchangetime() < 0) {
                     int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
                     _ShrimpRice->setDirection(direction);
@@ -1214,21 +1214,22 @@ void GameScene::preUpdate(float dt) {
                     enemy->setnocoll(true);
                     Vec2 EnyPos = enemy->getPosition();
                     int direction = (BullPos.x > EnyPos.x) ? 1 : -1;
-                    enemy->setPosition(enemy->getPosition() + Vec2(direction*0.3, 0.0f));
-				}
+                    enemy->setPosition(enemy->getPosition() + Vec2(direction * 0.3, 0.0f));
+                }
             }
-            else if(_ShrimpRice->getHealth()<=35&&_enemies.size()>=4){
+            else if (_ShrimpRice->getHealth() <= 35 && _enemies.size() >= 4) {
                 _ShrimpRice->setact("SFRStunState2", 5.0f);
                 _ShrimpRice->setangrytime(5);
             }
-            if(_ShrimpRice->getparry()&&!_ShrimpRice->getparry2()){
+            if (_ShrimpRice->getparry() && !_ShrimpRice->getparry2()) {
+                CULog("parry");
                 _ShrimpRice->setparry(false);
                 _ShrimpRice->setparry2(false);
                 _ShrimpRice->setact("SFRStunState1", 0.6);
                 _ShrimpRice->parry(*this);
                 _ShrimpRice->setdelay(0.5);
             }
-        
+
             _ShrimpRice->update(dt);
         }
 
@@ -1568,7 +1569,6 @@ void GameScene::fixedUpdate(float step) {
             removeEnemy(enemy.get());
         }
     }
-
     //attacks
     for (auto it = _attacks.begin(); it != _attacks.end();) {
         if ((*it) == nullptr || (*it)->isRemoved()) {
@@ -1616,6 +1616,7 @@ void GameScene::fixedUpdate(float step) {
         setComplete(true);
     }
 
+
     _world->update(step);
 }
 
@@ -1644,6 +1645,7 @@ void GameScene::fixedUpdate(float step) {
 void GameScene::postUpdate(float remain) {
     // Since items may be deleted, garbage collect
     _world->garbageCollect();
+
 
     // TODO: Update this demo to support interpolation
     // We can interpolate the rope bridge and spinner as we have the data structures
@@ -1723,6 +1725,7 @@ void GameScene::postUpdate(float remain) {
             reset();
         }
     }
+
 }
 
 /* Checks input for cooktime or discard 
