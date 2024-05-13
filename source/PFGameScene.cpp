@@ -383,6 +383,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _uiScene->addChild(_inventoryNode);
 
 
+    _pauseMenu = std::make_shared<MenuScene>();
+    _pauseMenu->init(_assets, "pause");
+    
+    
+
+
 # pragma mark: Background
 
     //_bgScene = cugl::Scene2::alloc(dimen);
@@ -549,6 +555,8 @@ void GameScene::dispose() {
  */
 void GameScene::reset() {
     _paused = false;
+    _pauseMenu->setActive(false);
+    _pauseMenu->reset();
     _worldnode->removeAllChildren();
     _world->clear();
     _debugnode->removeAllChildren();
@@ -728,6 +736,22 @@ void GameScene::preUpdate(float dt) {
     if (_input->didPause()) {
         _paused = !_paused;
     }
+
+    _pauseMenu->setActive(_paused);
+
+    if (_paused) {
+        if (_pauseMenu->getReset()) {
+            reset();
+        }
+        else if (_pauseMenu->didTransition()){
+            transition(true);
+            setTarget(_pauseMenu->getTarget());
+            _pauseMenu->setTarget("");
+            _pauseMenu->setTransition(false);
+            _paused = false;
+        }   
+    }
+ 
 
     if (_input->getInventoryLeftPressed()) {
         _inventoryNode->selectPreviousSlot();
@@ -1034,10 +1058,10 @@ void GameScene::preUpdate(float dt) {
         }
     }
 
-    CULog("sprite width/height: %f %f", _avatar->getSceneNode()->getSize().width, _avatar->getSceneNode()->getSize().height);
-    CULog("obstacle width/height: %f %f", _avatar->getHeight() * _scale, _avatar->getWidth() * _scale);
+    //CULog("sprite width/height: %f %f", _avatar->getSceneNode()->getSize().width, _avatar->getSceneNode()->getSize().height);
+    //CULog("obstacle width/height: %f %f", _avatar->getHeight() * _scale, _avatar->getWidth() * _scale);
 
-    CULog("camera sprite width/height: %f %f", _avatar->getSceneNode()->getSize().width * _camera->getZoom(), _avatar->getSceneNode()->getSize().height * _camera->getZoom());
+    //CULog("camera sprite width/height: %f %f", _avatar->getSceneNode()->getSize().width * _camera->getZoom(), _avatar->getSceneNode()->getSize().height * _camera->getZoom());
 
 
 
@@ -1749,6 +1773,7 @@ void GameScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
     }
 
     _uiScene->render(batch);
+    _pauseMenu->render(batch);
 }
 
 

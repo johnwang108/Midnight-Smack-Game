@@ -40,7 +40,7 @@
 #include "NightLevelObjects/GestureInteractable.h"
 #include "NightLevelObjects/Plate.h"
 #include "NightLevelObjects/Station.h"
-
+#include "MenuScene.h"
 #include "Inventory.h"
 #include "Levels/LevelModel.h"
 #include "Levels/Level3.h"
@@ -75,7 +75,7 @@ protected:
     std::shared_ptr<Scene2> _bgScene;
     std::shared_ptr<Scene2> _uiScene;
     std::shared_ptr<Inventory> _inventoryNode;
-
+    std::shared_ptr<MenuScene> _pauseMenu;
     std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
 
 
