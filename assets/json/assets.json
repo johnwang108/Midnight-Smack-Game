@@ -196,6 +196,12 @@
         "bosshealth": {
             "file": "textures/bosshealth.png"
         },
+        "timer": {
+            "file": "textures/timer.png"
+        },
+        "timerFill": {
+            "file": "textures/timerFill.png"
+        },
         "cooktime": {
             "file": "textures/cutting_board.png",
             "wrapS": "repeat",

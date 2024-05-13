@@ -57,6 +57,8 @@ using namespace cugl;
 
 #define MINIMAP_HEIGHT 400
 
+#define TIMER_DIAMETER_SIZE 40.0f
+
 #define CAMERA_FOLLOWS_PLAYER true
 
 #define COOKTIME_MAX_DIST 3.5f
@@ -219,8 +221,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     setSceneWidth(400);
     setSceneHeight(30);*/
     _level_model->setFilePath("json/intermediate.json");
-    // _level_model->setFilePath("json/empanada-platform-level-01.json");
-    // _level_model->setFilePath("json/bull-boss-level.json");
+    _timer = 0.0f;
+    _timeLimit = 200.0f;
+    _respawnTimes = std::deque<float>({50.0f, 100.0f, 150.0f, 200.0f});
     setSceneWidth(_level_model->loadLevelWidth());
     setSceneHeight(_level_model->loadLevelHeight());
 
@@ -421,6 +424,16 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _minimapIconNode->setVisible(false);
     _uiScene->addChild(_minimapIconNode);
     _uiScene->addChild(_minimapNode);
+
+    _timerIcon = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("timer"));
+    _timerIcon->setScale(TIMER_DIAMETER_SIZE / _timerIcon->getContentWidth());
+    _timerIcon->setPosition(1280 - TIMER_DIAMETER_SIZE - 10, 800 - TIMER_DIAMETER_SIZE - 10);
+    _uiScene->addChild(_timerIcon);
+    
+    _timerFillIcon = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("timerFill"));
+    _timerFillIcon->setScale(TIMER_DIAMETER_SIZE / _timerFillIcon->getContentWidth());
+    _timerFillIcon->setPosition(1280 - TIMER_DIAMETER_SIZE - 10, 800 - TIMER_DIAMETER_SIZE - 10);
+    _uiScene->addChild(_timerFillIcon);
 
     _actionManager = cugl::scene2::ActionManager::alloc();
     _BullactionManager = cugl::scene2::ActionManager::alloc();
@@ -626,6 +639,9 @@ void GameScene::reset() {
     addChild(_debugnode);
 
     generateOrders();
+    _timer = 0.0f;
+    _timeLimit = 200.0f;
+    _respawnTimes = std::deque<float>({ 50.0f, 100.0f, 150.0f, 200.0f });
     // addChild(_gestureFeedback);
 }
 
@@ -1090,7 +1106,7 @@ void GameScene::preUpdate(float dt) {
 
 
     Vec2 avatarPos = _avatar->getPosition();
-    std::vector<std::shared_ptr<Rice>> spawns = std::vector<std::shared_ptr<Rice>>();
+    std::vector<std::shared_ptr<EnemyModel>> spawns = std::vector<std::shared_ptr<EnemyModel>>();
     for (auto& enemy : _enemies) {
         if (enemy != nullptr && enemy->getBody() != nullptr && !enemy->isRemoved()) {
             enemy->update(dt);
@@ -1101,23 +1117,7 @@ void GameScene::preUpdate(float dt) {
 			if (enemy->getattacktime()) {
                 //spawn rice if rice
                 if (enemy->getType() == EnemyType::rice) {
-                    std::shared_ptr<Texture> image = _assets->get<Texture>("riceSoldier");
-                    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
-                    float imageWidth = image->getWidth() / 4;
-                    float imageHeight = image->getHeight() / 4;
-                    Size singularSpriteSize = Size(imageWidth, imageHeight);
-                    std::shared_ptr<Rice> riceSpawn = Rice::allocWithConstants(enemyPos + Vec2((rand() % 2) * enemy->getDirection(), rand() % 2), singularSpriteSize / (5 * getScale()), getScale(), _assets, true);
-
-                    riceSpawn->setState("acknowledging");
-                    riceSpawn->setListener([=](physics2::Obstacle* obs) {
-                        riceSpawn->setTargetPosition(_avatar->getPosition());
-                        riceSpawn->setPosition(obs->getPosition()* _scale);
-                        riceSpawn->setAngle(obs->getAngle());
-                        });
-                    riceSpawn->setSceneNode(spritenode);
-                    spritenode->setScale(0.375 / 1.75);
-                    addObstacle(riceSpawn, spritenode);
-                    spawns.push_back(riceSpawn);
+                    spawns.push_back(spawnRiceSoldier(enemyPos + Vec2((rand() % 2) * enemy->getDirection(), rand() % 2), std::static_pointer_cast<Rice>(enemy)));
                 }
                 else {
                     auto res = enemy->createAttack(_assets, _scale);
@@ -1382,6 +1382,13 @@ void GameScene::fixedUpdate(float step) {
         std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
         _healthBarForeground->setScissor(scissor);
     }
+    if (_timerFillIcon != nullptr) {
+        float timePercentage = 1.0f - (_timer / _timeLimit);
+        float width = _timerFillIcon->getWidth() * 2;
+        float height = _timerFillIcon->getHeight()* 2;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, width, height * timePercentage));
+        _timerFillIcon->setScissor(scissor);
+    }
     if (_avatar != nullptr) {
         float meterPercentage = _avatar->getMeter() / 100.0f;
         float totalWidth = _cookBarFill->getWidth();
@@ -1458,91 +1465,97 @@ void GameScene::fixedUpdate(float step) {
     if (_slowed) {
         step = step / 15;
     }
-
-    if (CAMERA_FOLLOWS_PLAYER) {
-
-        if (_level_model->getFilePath() == "json/intermediate.json") {
-            _camera->setZoom(155.0 / 40.0);
-            // _camera->setZoom(1.0);
-        }
-
-        else if (_level_model->getFilePath() != "") {
-            _camera->setZoom(155.0 / 40.0);
-        }
-        else {
-            _camera->setZoom(400.0 / 40.0);
-        }
-
-        cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
-        float invZoom = 1 / _camera->getZoom();
-        float cameraWidth = invZoom * (_camera->getViewport().getMaxX() - _camera->getViewport().getMinX()) / 2;
-        float cameraHeight = invZoom * (_camera->getViewport().getMaxY() - _camera->getViewport().getMinY()) / 2;
-
-        if (_level == 1 || _level == 2 || _level == 3 || _level == 4) {
-
-            float backgroundWidth = _background->getBoundingRect().getMaxX() - _background->getBoundingRect().getMinX();
-            float backgroundHeight = _background->getBoundingRect().getMaxY() - _background->getBoundingRect().getMinY();
-
-            cugl::Vec3 mapMin = Vec3(_background->getBoundingRect().getMinX() + cameraWidth, _background->getBoundingRect().getMinY() + cameraHeight, 0);
-            cugl::Vec3 mapMax = Vec3(_background->getBoundingRect().getMaxX() - cameraWidth, _background->getBoundingRect().getMaxY() - cameraHeight, 0);
-            target.clamp(mapMin, mapMax);
-        }
-       
-
-        cugl::Vec3 pos = _camera->getPosition();
-
-        Rect viewport = _camera->getViewport();
-
-        Vec2 worldPosition = Vec2(pos.x - viewport.size.width / 2 + 140,
-            pos.y + viewport.size.height / 2 - 50);
-
-
-        //magic number 0.2 are for smoothness
-        float smooth = 0.2;
-        pos.smooth(target, step, smooth);
-        _camera->setPosition(pos);
-        _camera->update();
-
-        if (_level == 1 || _level == 2 || _level == 3 || _level == 4) {
-
-            invZoom = 1 / _minimapCamera->getZoom();
-            cameraWidth = invZoom * (_minimapCamera->getViewport().getMaxX() - _minimapCamera->getViewport().getMinX()) / 2;
-            cameraHeight = invZoom * (_minimapCamera->getViewport().getMaxY() - _minimapCamera->getViewport().getMinY()) / 2;
-
-            float backgroundWidth = _background->getBoundingRect().getMaxX() - _background->getBoundingRect().getMinX();
-            float backgroundHeight = _background->getBoundingRect().getMaxY() - _background->getBoundingRect().getMinY();
-
-            if (backgroundWidth < cameraWidth * 2) {
-                _minimapCamera->setZoom(std::min(_minimapCamera->getZoom(), cameraWidth * 2 / backgroundWidth));
-                invZoom = 1 / _minimapCamera->getZoom();
-                cameraWidth = invZoom * (_minimapCamera->getViewport().getMaxX() - _minimapCamera->getViewport().getMinX()) / 2;
-                cameraHeight = invZoom * (_minimapCamera->getViewport().getMaxY() - _minimapCamera->getViewport().getMinY()) / 2;
-            }
-            if (backgroundHeight < cameraHeight * 2) {
-				_minimapCamera->setZoom(std::min(_minimapCamera->getZoom(), cameraHeight * 2 / backgroundHeight));
-                invZoom = 1 / _minimapCamera->getZoom();
-                cameraWidth = invZoom * (_minimapCamera->getViewport().getMaxX() - _minimapCamera->getViewport().getMinX()) / 2;
-                cameraHeight = invZoom * (_minimapCamera->getViewport().getMaxY() - _minimapCamera->getViewport().getMinY()) / 2;
-			}
-
-            cugl::Vec3 mapMin = Vec3(_background->getBoundingRect().getMinX() + cameraWidth, _background->getBoundingRect().getMinY() + cameraHeight, 0);
-            cugl::Vec3 mapMax = Vec3(_background->getBoundingRect().getMaxX() - cameraWidth, _background->getBoundingRect().getMaxY() - cameraHeight, 0);
-            pos.clamp(mapMin, mapMax);
-            _minimapCamera->setPosition(pos);
-            _minimapCamera->update();
-        }
+    else {
+        _timer += step;
     }
-    if (_avatar->getHealth() <= 0) {
-        //setFailure(true);
+
+    if (!_respawnTimes.empty() &&_timer >= _respawnTimes.front()) {
+		//setFailure(true);
+        respawnEnemies();
+        _respawnTimes.pop_front();
+	}
+
+	if (_level_model->getFilePath() == "json/intermediate.json") {
+		_camera->setZoom(155.0 / 40.0);
+	}
+	else if (_level_model->getFilePath() != "") {
+		_camera->setZoom(155.0 / 40.0);
+	}
+	else {
+		_camera->setZoom(400.0 / 40.0);
+	}
+
+	cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
+	float invZoom = 1 / _camera->getZoom();
+	float cameraWidth = invZoom * (_camera->getViewport().getMaxX() - _camera->getViewport().getMinX()) / 2;
+	float cameraHeight = invZoom * (_camera->getViewport().getMaxY() - _camera->getViewport().getMinY()) / 2;
+
+	if (_level == 1 || _level == 2 || _level == 3 || _level == 4) {
+
+		float backgroundWidth = _background->getBoundingRect().getMaxX() - _background->getBoundingRect().getMinX();
+		float backgroundHeight = _background->getBoundingRect().getMaxY() - _background->getBoundingRect().getMinY();
+
+		cugl::Vec3 mapMin = Vec3(_background->getBoundingRect().getMinX() + cameraWidth, _background->getBoundingRect().getMinY() + cameraHeight, 0);
+		cugl::Vec3 mapMax = Vec3(_background->getBoundingRect().getMaxX() - cameraWidth, _background->getBoundingRect().getMaxY() - cameraHeight, 0);
+		target.clamp(mapMin, mapMax);
+	}
+
+
+	cugl::Vec3 pos = _camera->getPosition();
+
+	Rect viewport = _camera->getViewport();
+
+	Vec2 worldPosition = Vec2(pos.x - viewport.size.width / 2 + 140,
+		pos.y + viewport.size.height / 2 - 50);
+
+
+	//magic number 0.2 are for smoothness
+	float smooth = 0.2;
+	pos.smooth(target, step, smooth);
+	_camera->setPosition(pos);
+	_camera->update();
+
+	if (_level == 1 || _level == 2 || _level == 3 || _level == 4) {
+
+		invZoom = 1 / _minimapCamera->getZoom();
+		cameraWidth = invZoom * (_minimapCamera->getViewport().getMaxX() - _minimapCamera->getViewport().getMinX()) / 2;
+		cameraHeight = invZoom * (_minimapCamera->getViewport().getMaxY() - _minimapCamera->getViewport().getMinY()) / 2;
+
+		float backgroundWidth = _background->getBoundingRect().getMaxX() - _background->getBoundingRect().getMinX();
+		float backgroundHeight = _background->getBoundingRect().getMaxY() - _background->getBoundingRect().getMinY();
+
+		if (backgroundWidth < cameraWidth * 2) {
+			_minimapCamera->setZoom(std::min(_minimapCamera->getZoom(), cameraWidth * 2 / backgroundWidth));
+			invZoom = 1 / _minimapCamera->getZoom();
+			cameraWidth = invZoom * (_minimapCamera->getViewport().getMaxX() - _minimapCamera->getViewport().getMinX()) / 2;
+			cameraHeight = invZoom * (_minimapCamera->getViewport().getMaxY() - _minimapCamera->getViewport().getMinY()) / 2;
+		}
+		if (backgroundHeight < cameraHeight * 2) {
+			_minimapCamera->setZoom(std::min(_minimapCamera->getZoom(), cameraHeight * 2 / backgroundHeight));
+			invZoom = 1 / _minimapCamera->getZoom();
+			cameraWidth = invZoom * (_minimapCamera->getViewport().getMaxX() - _minimapCamera->getViewport().getMinX()) / 2;
+			cameraHeight = invZoom * (_minimapCamera->getViewport().getMaxY() - _minimapCamera->getViewport().getMinY()) / 2;
+		}
+
+		cugl::Vec3 mapMin = Vec3(_background->getBoundingRect().getMinX() + cameraWidth, _background->getBoundingRect().getMinY() + cameraHeight, 0);
+		cugl::Vec3 mapMax = Vec3(_background->getBoundingRect().getMaxX() - cameraWidth, _background->getBoundingRect().getMaxY() - cameraHeight, 0);
+		pos.clamp(mapMin, mapMax);
+		_minimapCamera->setPosition(pos);
+		_minimapCamera->update();
     }
-    else if (_Bull != nullptr && _Bull->getHealth() <= 0) {
+    if (_Bull != nullptr && _Bull->getHealth() <= 0) {
         setComplete(true);
     }
 
+    if (_timer > _timeLimit) {
+        setFailure(true);
+    }
+ 
     //su
     _avatar->fixedUpdate(step);
     if (_avatar->getDeathTimer() < 0) {
         respawnAvatar();
+        _timer += _timeLimit / 10.0f;
     }
     for (auto& enemy : _enemies) {
         if (enemy != nullptr && enemy->getBody() != nullptr && !enemy->isRemoved()) {
@@ -1881,17 +1894,26 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
     if (enemy->isRemoved()) {
         return;
     }
-    CULog("removing");
 
     addEnemyToInventory(enemy->getType());
 
     _worldnode->removeChild(enemy->getSceneNode());
     enemy->setDebugScene(nullptr);
     enemy->markRemoved(true);
-    //enemy->dispose();
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
+}
+
+void GameScene::respawnEnemy(std::shared_ptr<EnemyModel> enemy) {
+    if (enemy->getType() == EnemyType::rice_soldier) {
+        return;
+    }
+    else {
+        CULog(("Respawned " + enemy->getName()).c_str());
+        addObstacle(enemy, enemy->getSceneNode());
+        enemy->respawn();
+    }
 }
 
 void GameScene::addEnemyToInventory(EnemyType enemyType) {
@@ -2149,7 +2171,7 @@ void GameScene::spawnBeef(Vec2 pos) {
 void GameScene::spawnEgg(Vec2 pos) {
     std::shared_ptr<Texture> image = _assets->get<Texture>("eggIdle");
     std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
-    Size s = Size(2.25f, 6.0f);
+    Size s = Size(1.75f, 6.0f);
     std::shared_ptr<EnemyModel> new_enemy = Egg::allocWithConstants(pos, s, getScale(), _assets);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
@@ -2160,15 +2182,37 @@ void GameScene::spawnEgg(Vec2 pos) {
 void GameScene::spawnRice(Vec2 pos, bool isSoldier) {
     std::shared_ptr<Texture> image = _assets->get<Texture>("riceLeader");
     std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
-    float imageWidth = image->getWidth() / 4;
-    float imageHeight = image->getHeight() / 4;
-    Size singularSpriteSize = Size(imageWidth, imageHeight);
-    std::shared_ptr<EnemyModel> new_enemy = Rice::allocWithConstants(pos, singularSpriteSize / (5 * getScale()), getScale(), _assets, isSoldier);
+    //float imageWidth = image->getWidth() / 4;
+    //float imageHeight = image->getHeight() / 4;
+    //Size singularSpriteSize = Size(imageWidth, imageHeight);
+    Size s = Size(2.25f, 3.0f);
+    std::shared_ptr<EnemyModel> new_enemy = Rice::allocWithConstants(pos, s, getScale(), _assets, isSoldier);
     spritenode->setAnchor(Vec2(0.5, 0.35));
+    spritenode->setScale(0.35 / 1.75);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
     addObstacle(new_enemy, spritenode);
     _enemies.push_back(new_enemy);
+}
+std::shared_ptr<EnemyModel> GameScene::spawnRiceSoldier(Vec2 pos, std::shared_ptr<Rice> leader) {
+    CULog("SPAWNING SOLDIER");
+    std::shared_ptr<Texture> image = _assets->get<Texture>("riceLeader");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
+    //float imageWidth = image->getWidth() / 4;
+    //float imageHeight = image->getHeight() / 4;
+    //Size singularSpriteSize = Size(imageWidth, imageHeight);
+    Size s = Size(2.25f, 3.0f);
+    std::shared_ptr<EnemyModel> new_enemy = Rice::allocWithConstants(pos, s, getScale(), _assets, true);
+    spritenode->setAnchor(Vec2(0.5, 0.35));
+    spritenode->setScale(0.35 / 1.75);
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(new_enemy, spritenode);
+    //DONT PUSH BACK INTO _enemies, just add to leader
+    //_enemies.push_back(new_enemy);
+
+    leader->addSoldier(std::static_pointer_cast<Rice>(new_enemy));
+    return new_enemy;
 }
 
 void GameScene::spawnCarrot(Vec2 pos) {
@@ -2222,16 +2266,13 @@ void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map
         _pendingAcrossAllPlates[key] += value;
     }
 
-    //addObstacle(plate, plate->getSceneNode());
-    //_interactables.push_back(plate);
-    //_plates.push_back(plate);
-    //popup temp
     auto reader = JsonReader::alloc("./json/examplePopup.json");
     std::shared_ptr<JsonValue> popupData = reader->readJson()->get("test");
     std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
     std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
 
     p->setActive(false);
+    p->setVisible(false);
     _interactivePopups.push_back(p);
     _uiScene->addChild(p);
 }
@@ -2379,6 +2420,15 @@ void GameScene::generateOrders() {
         _orders[id] = std::vector<std::shared_ptr<scene2::SceneNode>>();
         for (IngredientType t : x) {
             createOrder(id, t, false);
+        }
+    }
+}
+
+void GameScene::respawnEnemies(float p) {
+    CULog("RESPAWNING!");
+    for (auto& e : _enemies) {
+        if (e->isRemoved()) {
+            respawnEnemy(e);
         }
     }
 }

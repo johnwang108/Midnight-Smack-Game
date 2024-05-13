@@ -112,7 +112,10 @@ protected:
 
 
     std::vector<std::shared_ptr<Attack>>  _attacks;
-    //time_t start;
+    
+    float _timer;
+    float _timeLimit;
+    std::deque<float> _respawnTimes;
 
     /** Whether we have completed this "game" */
     bool _complete;
@@ -174,6 +177,8 @@ protected:
 
     std::shared_ptr<cugl::scene2::PolygonNode> _cookBarFill;
     std::shared_ptr<cugl::scene2::PolygonNode> _cookBarOutline;
+    std::shared_ptr<scene2::PolygonNode> _timerIcon;
+    std::shared_ptr<scene2::PolygonNode> _timerFillIcon;
     std::unordered_map<std::string, std::shared_ptr<cugl::scene2::PolygonNode>> _cookBarIcons;
     std::unordered_map<std::string, std::shared_ptr<cugl::scene2::PolygonNode>> _cookBarGlows;
 
@@ -604,6 +609,7 @@ public:
     void spawnBeef(Vec2 pos);
     void spawnEgg(Vec2 pos);
     void spawnRice(Vec2 pos, bool isSoldier = true);
+    std::shared_ptr<EnemyModel> spawnRiceSoldier(Vec2 pos, std::shared_ptr<Rice> leader);
     void spawnCarrot(Vec2 pos);
     void spawnStation(Vec2 pos, StationType type);
     void spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map);
@@ -640,6 +646,11 @@ public:
     //std::shared_ptr<Ingredient> popFromInventory(std::shared_ptr<Ingredient>);
 
     void removeOrder(int id, IngredientType t, bool isPlate = false);
+
+    /**This respawns a fraction (p) of the enemies that have died, not including spawned rice soldiers. */
+    void respawnEnemies(float p = 1.0);
+
+    void respawnEnemy(std::shared_ptr<EnemyModel> enemy);
 
     void setInteractable(int interactableID) {
 		_currentInteractableID = interactableID;

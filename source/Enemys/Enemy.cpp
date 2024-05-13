@@ -66,6 +66,7 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
         _killMeCountdown = 0.0f;
         _useID = true;
         _isTangible = true;
+        _spawnPoint = pos;
 
         return true;
     }
@@ -113,8 +114,10 @@ void EnemyModel::createFixtures() {
     b2Filter filter = getFilterData();
     filter.groupIndex = -1;
     _sensorFixture->SetFilterData(filter);
+}
 
-
+void EnemyModel::resetDebug() {
+    Entity::resetDebug();
 }
 
 void EnemyModel::takeDamage(float damage, const int attackDirection) {
@@ -284,4 +287,18 @@ void EnemyModel::jump(Vec2 dir) {
     //vel.y = 0;
     //vel += b2Vec2(dir.x * DUDE_JUMP, DUDE_JUMP);
     _body->SetLinearVelocity(vel);
+}
+
+void EnemyModel::respawn() {
+    if (!isRemoved()) {
+		return;
+	}
+    _killMe = false;
+    _killMeCountdown = 0.0f;
+    _isTangible = true;
+    setattacktime(false);
+    setHealth(100.0f);
+    markRemoved(false);
+    setPosition(_spawnPoint);
+    _state = "patrolling";
 }
