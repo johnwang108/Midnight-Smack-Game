@@ -168,9 +168,11 @@ void MenuScene::setActive(bool b) {
 	for (auto it = _buttons.begin(); it != _buttons.end(); ++it) {
 		auto button = *it;
 		if (b) {
+			button->setDown(false);
 			button->activate();
 		}
 		else {
+			button->setDown(false);
 			button->deactivate();
 		}
 	}
