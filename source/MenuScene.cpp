@@ -143,6 +143,7 @@ void MenuScene::initPauseMenu(Size dimen) {
 			_buttons.push_back(butt);
 			butt->addListener([=](const std::string& name, bool down) {
 				CULog("main menu button pressed");
+				
 				this->_active = false;
 				this->setTransition(true);
 				this->setTarget("main_menu");
@@ -172,8 +173,9 @@ void MenuScene::setActive(bool b) {
 			button->activate();
 		}
 		else {
-			button->setDown(false);
 			button->deactivate();
+			button->setDown(false);
+
 		}
 	}
 
@@ -190,5 +192,10 @@ void MenuScene::reset() {
 	_transitionScenes = false;
 	_targetScene = "";
 	_started = false;
+	//for (auto it = _buttons.begin(); it != _buttons.end(); ++it) {
+	//	auto button = *it;
+	//	button->setDown(false);	
+	//}
+
 }
 
