@@ -653,6 +653,8 @@ public:
 
     void respawnEnemy(std::shared_ptr<EnemyModel> enemy);
 
+    void removeingredient(Vec2 pos);
+
     void setInteractable(int interactableID) {
 		_currentInteractableID = interactableID;
 	}

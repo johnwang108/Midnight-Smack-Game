@@ -65,6 +65,8 @@ protected:
 
     float _speed;
 
+    float _uppp;
+
 public:
 #pragma mark Constructors
     /**
@@ -185,6 +187,8 @@ public:
 
     float getLifetime() { return _lifetime; }
     void setDie(bool die) { _die = die; }
+    void setUp(float up) { _uppp = up; }
+    float getUp() { return _uppp; }
 };
 
 #endif /* __ATTACK_H__ */

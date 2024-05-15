@@ -167,6 +167,13 @@ IngredientType Inventory::getIngredientTypeFromSlot(int slotNumber) {
 	return Ingredient::getIngredientTypeFromString(_currentIngredients[slotNumber]->getName());
 }
 
+std::string Inventory::getIngredientnameFromSlot(int slotNumber) {
+    if (slotNumber >= _currentIngredients.size()) {
+        return "";
+    }
+    return _currentIngredients[slotNumber]->getName();
+}
+
 void Inventory::reset() {
     for (int i = 0; i < _currentIngredients.size(); i++) {
         removeIngredientFromSlotNode(_currentIngredients.at(i), i);

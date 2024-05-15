@@ -782,6 +782,7 @@ void GameScene::preUpdate(float dt) {
                     IngredientType t = _inventoryNode->getIngredientTypeFromSlot(_inventoryNode->getSelectedSlot());
                     if (i->interact(t)) {
                         i->setIngredientPtr(_inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot()));
+                        removeingredient(i->getPosition());
                     }
                     else if (i->isFull()) {
                         ////let's cook baby
@@ -2275,9 +2276,12 @@ void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map
     std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
 
     p->setActive(false);
-    p->setVisible(false);
-    _interactivePopups.push_back(p);
-    _uiScene->addChild(p);
+    addObstacle(plate, plate->getSceneNode());
+    _interactables.push_back(plate);
+    _plates.push_back(plate);
+  //  p->setVisible(false);
+  //  _interactivePopups.push_back(p);
+  //  _uiScene->addChild(p);
 }
 
 void GameScene::pogo() {
@@ -2434,4 +2438,36 @@ void GameScene::respawnEnemies(float p) {
             respawnEnemy(e);
         }
     }
+}
+
+void GameScene::removeingredient(Vec2 pos) {
+
+    std::string t = _inventoryNode->getIngredientnameFromSlot(_inventoryNode->getSelectedSlot());
+    std::shared_ptr<Texture> image = _assets->get<Texture>(t);
+
+    std::shared_ptr<Attack> attack = Attack::alloc(_avatar->getPosition(),
+        cugl::Size(image->getSize().width*0.2/ _scale, image->getSize().height*0.2/ _scale));
+
+
+    attack->setName("ingredient");
+    attack->setBullet(true);
+    attack->setGravityScale(0.5);
+    attack->setDebugColor(DEBUG_COLOR);
+    attack->setDrawScale(_scale);
+    attack->setEnabled(true);
+    attack->setstraight(pos);
+    attack->setrand(false);
+    attack->setDie(false);
+    attack->setUp(1.5);
+
+
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    attack->setSceneNode(sprite);
+    sprite->setPosition(_avatar->getPosition());
+    sprite->setScale(0.2);
+
+    addObstacle(attack, sprite, true);
+    _attacks.push_back(attack);
+
+
 }
