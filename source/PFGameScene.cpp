@@ -2269,7 +2269,23 @@ void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map
         _pendingAcrossAllPlates[key] += value;
     }
 
-    auto reader = JsonReader::alloc("./json/examplePopup.json");
+    addObstacle(plate, plate->getSceneNode());
+    _interactables.push_back(plate);
+    _plates.push_back(plate);
+
+    auto reader = JsonReader::alloc("./json/Tutorials/tutorialPopupStations.json");
+    std::shared_ptr<JsonValue> popupData = reader->readJson()->get("test");
+    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
+    std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
+
+    p->setActive(false);
+    p->setVisible(false);
+    _interactivePopups.push_back(p);
+    _uiScene->addChild(p);
+}
+
+std::shared_ptr<Popup> GameScene::createPopup(std::string path) {
+    auto reader = JsonReader::alloc(path);
     std::shared_ptr<JsonValue> popupData = reader->readJson()->get("test");
     std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
     std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);

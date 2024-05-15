@@ -58,7 +58,7 @@
         "dude": {
             "file": "textures/dude.png"
         },
-        "su_attack_sheet": {
+        "su_attack": {
             "file": "textures/Sheets/Su/su_attack.png"
         },
         "su_attack_recover": {
@@ -203,9 +203,12 @@
             "file": "textures/timerFill.png"
         },
         "cooktime": {
-            "file": "textures/cutting_board.png",
+            "file": "textures/UI/cuttingBoard.png",
             "wrapS": "repeat",
             "wrapT": "repeat"
+        },
+        "exampleGesture": {
+            "file": "textures/UI/exampleGesture.png"
         },
         "dpad": {
             "file": "textures/dpad.png",

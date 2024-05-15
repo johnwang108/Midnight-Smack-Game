@@ -1,0 +1,210 @@
+{
+    "test": 
+    {
+        "position": [640,400],
+        "size": [800, 400],
+        "anchor": [0.5, 0.5],
+        "visible": true,
+        "text": "When your meter is full, \n press [TAB] to initiate cooking! Draw a gesture to \n get a temporary buff. Consult the recipe book \nto learn which gestures correspond to which buffs!",
+        "textMaxWidth%age": 0.5,
+        "font": "popupFont",
+        "background": "popupBackground",
+        "children": {
+            "inventorySlot2": {
+                "texture": "inventorySlot",
+                "rows": 1,
+                "cols": 1,
+                "frames": 1,
+                "position": [-75.0, 250.0],
+                "scale": 0.2
+            }, 
+            "inventorySlot3": {
+                "texture": "inventorySlot",
+                "rows": 1,
+                "cols": 1,
+                "frames": 1,
+                "position": [0.0, 250.0],
+                "scale": 0.2
+            }, 
+            "inventorySlot4": {
+                "texture": "inventorySlot",
+                "rows": 1,
+                "cols": 1,
+                "frames": 1,
+                "position": [75.0, 250.0],
+                "scale": 0.2
+            }, 
+            "inventorySlot5": {
+                "texture": "inventorySlot",
+                "rows": 1,
+                "cols": 1,
+                "frames": 1,
+                "position": [150.0, 250.0],
+                "scale": 0.2
+            }, 
+            "highlightedInventorySlot": {
+                "texture": "highlightedInventorySlot",
+                "rows": 1,
+                "cols": 1,
+                "frames": 1,
+                "position": [-150.0, 250.0],
+                "scale": 0.2
+            },
+            "riceIngredient": {
+                "texture": "rice",
+                "rows": 1,
+                "cols": 1,
+                "frames": 1,
+                "position": [-150.0, 250.0],
+                "scale": 0.2
+            },
+            "exampleGesture": {
+                "texture": "exampleGesture",
+                "rows": 1,
+                "cols": 1,
+                "frames": 1,
+                "position": [250, 100],
+                "scale": 0.5
+            }, 
+            "suIdle": {
+                "texture": "su_idle",
+                "rows": 4,
+                "cols": 4,
+                "frames": 16,
+                "position": [0, 0],
+                "scale": 0.35
+            }
+        },
+
+        "states": {
+            "startState": {
+                "duration": 1.5,
+                "children": {
+                    "highlightedInventorySlot": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot2": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot3": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot4": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot5": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "riceIngredient": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "suIdle": {
+                        "animateAction": {
+                            "type": "animate",
+                            "start": 0,
+                            "end": 15,
+                            "time": 1.5,
+                            "repeat": 2
+                        }
+                    }
+                }
+            },
+            "cookingState": {
+                "duration": 2.0,
+                "children": {
+                    "highlightedInventorySlot": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot2": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot3": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot4": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot5": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "exampleGesture": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "suIdle": {
+                        "animateAction": {
+                            "type": "animate",
+                            "start": 0,
+                            "end": 15,
+                            "time": 20,
+                            "repeat": 2
+                        }
+                    }
+                }
+            },
+            
+            "buffedState": {
+                "duration": 1.5,
+                "children": {
+                    "highlightedInventorySlot": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot2": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot3": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot4": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot5": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "suIdle": {
+                        "animateAction": {
+                            "type": "animate",
+                            "start": 0,
+                            "end": 15,
+                            "time": 1.5,
+                            "repeat": 2
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

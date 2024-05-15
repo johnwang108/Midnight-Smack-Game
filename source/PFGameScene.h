@@ -629,6 +629,10 @@ public:
     /** toggles visibility of orders*/
     void toggleOrders(bool v);
 
+    std::shared_ptr<Popup> createPopup(std::string name) {
+
+    }
+
     void positionOrders();
 
     void generateOrders();

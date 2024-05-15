@@ -21,7 +21,7 @@
             "duration": 2.0
         },
         "attack": {
-            "sheet": "su_attack_sheet",
+            "sheet": "su_attack",
             "rows": 4,
             "cols": 5,
             "frames": 18,
