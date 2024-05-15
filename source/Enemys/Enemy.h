@@ -116,8 +116,6 @@ protected:
     //cugl::Vec2 _targetPosition;
     //float _closeEnough;
 
-    /**Limits on movement for egg and beef*/
-    cugl::Spline2 _limit;
 
     bool _killMe;
     
@@ -284,9 +282,6 @@ public:
     void resetDebug() override;
 
     virtual std::string getNextState(std::string state) { return ""; };
-
-    /**Sets the predefined path limits, still wip */
-    void setLimit(cugl::Spline2 limit) { _limit = limit; }
 
     std::string getState() { return _state; }
 

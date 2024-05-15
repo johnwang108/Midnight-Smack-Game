@@ -397,50 +397,22 @@ void LevelModel::populate(GameScene& scene) {
 
 							if (pathWeWant.find("rice") != std::string::npos) {
 								scene.spawnRice(enemyPos, false);
-
-								/*std::unordered_map<IngredientType, int> map = { {IngredientType::boiledEgg, 2}};
-								scene.spawnPlate(enemyPos, map);*/
 								numOfRice += 1;
 							}
 
 							else if (pathWeWant.find("carrot") != std::string::npos) {
-								scene.spawnCarrot(enemyPos);
-
-								/*image = _assets->get<Texture>("carrotIdle");
-								spritenode = EntitySpriteNode::allocWithSheet(image, 1, 1, 1);
-								Size singularSpriteSize = Size(image->getWidth(), image->getHeight());
-								Size s = Size(2.25f, 6.0f);
-								new_enemy = Egg::allocWithConstants(enemyPos, s, scene.getScale(), _assets);
-								new_enemy->setSceneNode(spritenode);
-								new_enemy->setDebugColor(DEBUG_COLOR);
-								spritenode->setAnchor(0.5, 0.35);
-								scene.addObstacle(new_enemy, spritenode);
-								_enemies.push_back(new_enemy);*/
+								scene.spawnRice(enemyPos);
 							}
 
 							else if (pathWeWant.find("beef") != std::string::npos) {
 
 								scene.spawnBeef(enemyPos);
-								//image = _assets->get<Texture>("beefIdle");
-								//spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
-								//float imageWidth = image->getWidth() / 3;
-								//float imageHeight = image->getHeight() / 3;
-								//Size singularSpriteSize = Size(imageWidth, imageHeight);
-								//// enemyPos.y -= 100.0f;
-								//Size beefSize = cugl::Size(8.0f, 8.0f);
-								//new_enemy = Beef::allocWithConstants(enemyPos, beefSize, scene.getScale(), _assets);
-								//new_enemy->setSceneNode(spritenode);
-								//new_enemy->setDebugColor(DEBUG_COLOR);
-								//new_enemy->setLimit(cugl::Spline2(enemyPos, Vec2(enemyPos.x, enemyPos.y + 1.0)));
-								//scene.addObstacle(new_enemy, spritenode);
-								//_enemies.push_back(new_enemy);
 							}
 							else if (pathWeWant.find("egg") != std::string::npos) {
 								scene.spawnEgg(enemyPos);
 							}
 							else if (pathWeWant.find("shrimp") != std::string::npos) {
 								scene.spawnShrimp(enemyPos);
-								//scene.spawnStation(enemyPos, StationType::BOIL);
 							}
 						}
 						else {

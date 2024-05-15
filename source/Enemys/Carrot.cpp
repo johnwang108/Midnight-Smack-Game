@@ -45,7 +45,7 @@ void Carrot::fixedUpdate(float step) {
         velocity.x = 0;
     }
     else if (_state == "patrolling") {
-        velocity.x = ENEMY_FORCE * _direction;
+        velocity.x = 0;
     }
     else {
         CULog("error: carrot");

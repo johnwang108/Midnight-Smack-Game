@@ -2219,12 +2219,13 @@ std::shared_ptr<EnemyModel> GameScene::spawnRiceSoldier(Vec2 pos, std::shared_pt
 }
 
 void GameScene::spawnCarrot(Vec2 pos) {
-    std::shared_ptr<Texture> image = _assets->get<Texture>("eggIdle");
-    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
-    Size s = Size(2.25f, 6.0f);
-    std::shared_ptr<EnemyModel> new_enemy = Egg::allocWithConstants(pos, s, getScale(), _assets);
+    std::shared_ptr<Texture> image = _assets->get<Texture>("carrotEnemy");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 1, 1, 1);
+    Size s = Size(2.25f, 2.25f);
+    std::shared_ptr<EnemyModel> new_enemy = Carrot::allocWithConstants(pos, s, getScale(), _assets);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
+    spritenode->setScale(0.2);
     spritenode->setAnchor(0.5, 0.35);
     addObstacle(new_enemy, spritenode);
     _enemies.push_back(new_enemy);
@@ -2274,18 +2275,6 @@ void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map
     _plates.push_back(plate);
 
     auto reader = JsonReader::alloc("./json/Tutorials/tutorialPopupStations.json");
-    std::shared_ptr<JsonValue> popupData = reader->readJson()->get("test");
-    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
-    std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
-
-    p->setActive(false);
-    p->setVisible(false);
-    _interactivePopups.push_back(p);
-    _uiScene->addChild(p);
-}
-
-std::shared_ptr<Popup> GameScene::createPopup(std::string path) {
-    auto reader = JsonReader::alloc(path);
     std::shared_ptr<JsonValue> popupData = reader->readJson()->get("test");
     std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
     std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
