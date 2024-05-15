@@ -4,11 +4,13 @@ bool Egg::init(const cugl::Vec2& pos, const cugl::Size& size, float scale) {
 	return init(pos, size, scale, EnemyModel::defaultSeq(EnemyType::egg), EnemyModel::defaultSeqAlt(EnemyType::egg));
 }
 
-bool Egg::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::vector<std::string> seq1, std::vector<std::string> seq2) {
+bool Egg::init(cugl::Vec2 pos, cugl::Size size, float scale, std::vector<std::string> seq1, std::vector<std::string> seq2) {
     if (EnemyModel::init(pos, size, scale, seq1, seq2)) {
         _type = EnemyType::egg;
         setName("egg");
         _health = 100.0f;
+        _attacktime = false;
+        setFixedRotation(true);
         return true;
     }
     return false;
@@ -90,42 +92,45 @@ b2Vec2 Egg::handleMovement(b2Vec2 vel) {
 }
 
 std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Egg::createAttack(std::shared_ptr<AssetManager> _assets, float scale) {
-    Vec2 pos = getPosition();
-    float attackOffsetY = getHeight() * 0.4;
-    pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
-    pos.y += attackOffsetY;
+    //Vec2 pos = getPosition();
+    //float attackOffsetY = getHeight() * 0.4;
+    //pos.x += (getDirection() > 0 ? ATTACK_OFFSET_X : -ATTACK_OFFSET_X);
+    //pos.y += attackOffsetY;
 
-    std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE);
+    //std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE);
 
-    Size s = Size(1.0f, 0.5f);
-    std::shared_ptr<Attack> attack = Attack::alloc(pos,
-        s);
-        //cugl::Size(image->getSize().width / scale, ATTACK_H * image->getSize().height / scale));
+    //Size s = Size(1.0f, 0.5f);
+    //std::shared_ptr<Attack> attack = Attack::alloc(pos,
+    //    s);
+    //    //cugl::Size(image->getSize().width / scale, ATTACK_H * image->getSize().height / scale));
 
-    if (getDirection() > 0) {
-        attack->setFaceRight(true);
-    }
-    attack->setName("enemy_attack");
-    attack->setBullet(true);
-    attack->setGravityScale(0);
-    attack->setDebugColor(Color4::RED);
-    attack->setDrawScale(scale);
-    attack->setstraight(_distanceToPlayer + getPosition());
-    attack->setEnabled(true);
-    attack->setrand(false);
-    attack->setLifetime(attack->getLifetime() * 10);
-    attack->setSpeed((attack->getSpeed()) * 0.5/ getMass());
+    //if (getDirection() > 0) {
+    //    attack->setFaceRight(true);
+    //}
+    //attack->setName("enemy_attack");
+    //attack->setBullet(true);
+    //attack->setGravityScale(0);
+    //attack->setDebugColor(Color4::RED);
+    //attack->setDrawScale(scale);
+    //attack->setstraight(_distanceToPlayer + getPosition());
+    //attack->setEnabled(true);
+    //attack->setrand(false);
+    //attack->setLifetime(attack->getLifetime() * 10);
+    //attack->setSpeed((attack->getSpeed()) * 0.5/ getMass());
 
 
 
-    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
-    attack->setSceneNode(sprite);
-    sprite->setPosition(pos);
+    //std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    //attack->setSceneNode(sprite);
+    //sprite->setPosition(pos);
 
-    return std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>>(attack, sprite);
+    //return std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>>(attack, sprite);
+
+
 
     /*std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
     AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);*/
+    return std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>>(nullptr, nullptr);
 }
 
 
@@ -175,3 +180,5 @@ std::string Egg::getNextState(std::string state) {
     }
     return 0;
 }
+
+

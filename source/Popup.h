@@ -136,10 +136,10 @@ public:
 						if (actionType == "animate") {
 							act = scene2::Animate::alloc(action->get("start")->asInt(), action->get("end")->asInt(), action->get("time")->asFloat(), action->get("repeat")->asInt());
 						}
-						else if (actionType == "fadein") {
+						else if (actionType == "fadeIn") {
 							act = scene2::FadeIn::alloc(action->get("time")->asFloat());
 						} 
-						else if (actionType == "fadeout") {
+						else if (actionType == "fadeOut") {
 							act = scene2::FadeOut::alloc(action->get("time")->asFloat());
 						}
 						else if (actionType == "moveBy") {

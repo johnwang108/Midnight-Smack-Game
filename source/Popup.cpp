@@ -101,6 +101,10 @@ void Popup::layoutEverything() {
 		child->setPosition(_childStartingPositions[child->getName()]);
 		child->setPositionX(child->getPositionX() + _childrenAnimBox->getWidth()/2);
 		child->setScale(_childScale[child->getName()] * _childrenAnimBox->getHeight()/child->getContentHeight());
+		Color4 c = child->getColor();
+		c.a = 255;
+		child->setColor(c);
+		_actionManager->clearAllActions(child);
 	}
 
 	_text->setAnchor(Vec2::ANCHOR_BOTTOM_CENTER);

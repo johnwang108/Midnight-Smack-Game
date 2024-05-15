@@ -82,6 +82,8 @@ protected:
 
     b2Fixture* _sensorFixture;
 
+    std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
+
     int _lastDirection;
 
     float _changeDirectionInterval; 

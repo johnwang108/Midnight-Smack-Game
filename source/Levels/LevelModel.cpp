@@ -401,7 +401,7 @@ void LevelModel::populate(GameScene& scene) {
 							}
 
 							else if (pathWeWant.find("carrot") != std::string::npos) {
-								scene.spawnRice(enemyPos);
+								scene.spawnEgg(enemyPos);
 							}
 
 							else if (pathWeWant.find("beef") != std::string::npos) {

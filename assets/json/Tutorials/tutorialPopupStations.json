@@ -1,11 +1,11 @@
 {
-    "test": 
+    "tutorialPopupStations": 
     {
         "position": [640,400],
         "size": [800, 400],
         "anchor": [0.5, 0.5],
         "visible": true,
-        "text": "When at a station, press [E] to insert the currently selected ingredient.\nPress [E] again to cook the ingredient.",
+        "text": "When at a station, press [E] to insert \nthe currently selected ingredient.\nPress [E] again to cook the ingredient.",
         "textMaxWidth%age": 0.5,
         "font": "popupFont",
         "background": "popupBackground",
@@ -66,6 +66,14 @@
                 "position": [-150.0, 250.0],
                 "scale": 0.2
             },
+            "boiledRiceIngredient": {
+                "texture": "boiledRice",
+                "rows": 1,
+                "cols": 1,
+                "frames": 1,
+                "position": [-150.0, 250.0],
+                "scale": 0.2
+            },
             "run": {
                 "texture": "su_run",
                 "rows": 3,
@@ -107,6 +115,36 @@
                         "nothingAction": {
                             "type": "nothing"
                         }
+                    },
+                    "highlightedInventorySlot": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot2": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot3": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot4": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot5": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "riceIngredient": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }  
                     }
                 }
             },
@@ -126,6 +164,36 @@
                         "nothingAction": {
                             "type": "nothing"
                         }
+                    },
+                    "highlightedInventorySlot": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot2": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot3": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot4": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot5": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "riceIngredient": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }  
                     }
                 }
             },
@@ -142,6 +210,31 @@
                         }
                     }, 
                    "station": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "highlightedInventorySlot": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot2": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot3": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot4": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot5": {
                         "nothingAction": {
                             "type": "nothing"
                         }
@@ -164,6 +257,36 @@
                         "nothingAction": {
                             "type": "nothing"
                         }
+                    },
+                    "highlightedInventorySlot": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot2": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot3": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot4": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot5": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "boiledRiceIngredient": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }  
                     }
                 }
             },
@@ -189,6 +312,36 @@
                         "nothingAction": {
                             "type": "nothing"
                         }
+                    },
+                    "highlightedInventorySlot": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot2": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot3": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot4": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot5": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "boiledRiceIngredient": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }  
                     }
                 }
             }

@@ -37,7 +37,7 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
     scaledSize.height *= ENEMY_VSHRINK;
     _drawScale = scale;
 
-    if (Entity::init(pos, scaledSize)) {
+    if (Entity::init(pos, size)) {
         setDensity(ENEMY_DENSITY);
         setFriction(0.0f); // Prevent sticking to walls
         setGravityScale(1.2f);
@@ -110,13 +110,22 @@ void EnemyModel::createFixtures() {
     sensorDef.userData.pointer = reinterpret_cast<uintptr_t>(getSensorName());
 
     _sensorFixture = _body->CreateFixture(&sensorDef);
-    b2Filter filter = getFilterData();
-    filter.groupIndex = -1;
-    _sensorFixture->SetFilterData(filter);
+    //b2Filter filter = getFilterData();
+    //filter.groupIndex = -1;
+    //_sensorFixture->SetFilterData(filter);
 }
 
 void EnemyModel::resetDebug() {
     Entity::resetDebug();
+
+    float w = ENEMY_HSHRINK * getWidth();
+    float h = SENSOR_HEIGHT;
+    Poly2 poly(Rect(-w / 2.0f, -h / 2.0f, w, h));
+
+    _sensorNode = scene2::WireNode::allocWithTraversal(poly, poly2::Traversal::INTERIOR);
+    _sensorNode->setColor(DEBUG_COLOR);
+    _sensorNode->setPosition(Vec2(_debug->getContentSize().width / 2.0f, 0.0f));
+    _debug->addChild(_sensorNode);
 }
 
 void EnemyModel::takeDamage(float damage, const int attackDirection) {
@@ -270,7 +279,6 @@ void EnemyModel::updatePlayerDistance(cugl::Vec2 playerPosition) {
     else if (_distanceToPlayer.length() > 1.5f * typeToAggroRange(_type) && _state != "patrolling") {
 		setIsChasing(false);
 	}
-    //CULog("Distance to player: %f", _distanceToPlayer.length());
 }
 
 /**Sets the nextstate and also sets how long the enemy stays in that state. 
@@ -281,10 +289,7 @@ void EnemyModel::setState(std::string state) {
 }
 
 void EnemyModel::jump(Vec2 dir) {
-    //do nothing
     b2Vec2 vel = _body->GetLinearVelocity();
-    //vel.y = 0;
-    //vel += b2Vec2(dir.x * DUDE_JUMP, DUDE_JUMP);
     _body->SetLinearVelocity(vel);
 }
 

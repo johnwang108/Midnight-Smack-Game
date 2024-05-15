@@ -498,6 +498,35 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     setName("night");
     Application::get()->setClearColor(Color4::CLEAR);
+
+    std::vector<std::string> paths = { 
+        "tutorialPopupWASD",
+        "tutorialPopupDash",
+        "tutorialPopupAttack",
+        "tutorialPopupInventory",
+        "tutorialPopupGestures",
+        "tutorialPopupStations",
+        "tutorialPopupPlates",
+        "tutorialPopupTimerDying",
+        "tutorialPopupMinimap"
+    };
+
+    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
+    for (std::string path : paths) {
+		auto reader = JsonReader::alloc("./json/Tutorials/" + path + ".json");
+        std::shared_ptr<JsonValue> popupData = reader->readJson()->get(path);
+        std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
+        p->setActive(false);
+        p->setVisible(false);
+        _interactivePopups.push_back(p);
+        _uiScene->addChild(p);
+        reader->close();
+        reader = nullptr;
+    }
+    _popupIndex = paths.size() - 1;
+    loader->dispose();
+    loader = nullptr;
+
     return true;
 }
 
@@ -641,6 +670,34 @@ void GameScene::reset() {
     _timer = 0.0f;
     _timeLimit = 200.0f;
     _respawnTimes = std::deque<float>({ 50.0f, 100.0f, 150.0f, 200.0f });
+
+    std::vector<std::string> paths = {
+    "tutorialPopupWASD",
+    "tutorialPopupDash",
+    "tutorialPopupAttack",
+    "tutorialPopupInventory",
+    "tutorialPopupGestures",
+    "tutorialPopupStations",
+    "tutorialPopupPlates",
+    "tutorialPopupTimerDying",
+    "tutorialPopupMinimap"
+    };
+
+    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
+    for (std::string path : paths) {
+        auto reader = JsonReader::alloc("./json/Tutorials/" + path + ".json");
+        std::shared_ptr<JsonValue> popupData = reader->readJson()->get(path);
+        std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
+        p->setActive(false);
+        p->setVisible(false);
+        _interactivePopups.push_back(p);
+        _uiScene->addChild(p);
+        reader->close();
+        reader = nullptr;
+    }
+    _popupIndex = paths.size() - 1;
+    loader->dispose();
+    loader = nullptr;
     // addChild(_gestureFeedback);
 }
 
@@ -677,6 +734,7 @@ void GameScene::reset() {
 void GameScene::addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj,
     const std::shared_ptr<cugl::scene2::SceneNode>& node,
     bool useObjPosition) {
+    if (node == nullptr || obj == nullptr) return;
     // Don't add out of bounds obstacles
     if (!(_world->inBounds(obj.get()))) {
         return;
@@ -847,7 +905,8 @@ void GameScene::preUpdate(float dt) {
         }
         //cancel run animation if stopped running
         else if (_actionManager->isActive("run") && _input->getHorizontal() == 0) {
-            animate(_avatar, "skid", true);
+            //animate(_avatar, "skid", true);
+            animate(_avatar, "idle", true);
         }
 
         else if (_avatar->isJumping() && _avatar->isGrounded()) {
@@ -961,14 +1020,33 @@ void GameScene::preUpdate(float dt) {
 
 
     if (_input->didLevel1()) {
-        //setLevel(1, 1);
-        _interactivePopups.back()->toggle();
+        ////setLevel(1, 1);
+        //_interactivePopups.back()->toggle();
+        _interactivePopups.at(_popupIndex)->toggle();
     }
     else if (_input->didLevel2()) {
-        setLevel(1, 2);
+        /*setLevel(1, 2);*/
+        bool b = _interactivePopups.at(_popupIndex)->isActive();
+        if (b) {
+            _interactivePopups.at(_popupIndex)->toggle();
+            _popupIndex--;
+            if (_popupIndex < 0) {
+                _popupIndex = _interactivePopups.size() - 1;
+            }
+            _interactivePopups.at(_popupIndex)->toggle();
+        }
     }
     else if (_input->didLevel3()) {
-        setLevel(1, 3);
+        /*setLevel(1, 3);*/
+        bool b = _interactivePopups.at(_popupIndex)->isActive();
+        if (b) {
+            _interactivePopups.at(_popupIndex)->toggle();
+            _popupIndex++;
+            if (_popupIndex == _interactivePopups.size()) {
+                _popupIndex = 0;
+            }
+            _interactivePopups.at(_popupIndex)->toggle();
+        }
     }
 
 
@@ -2185,9 +2263,6 @@ void GameScene::spawnEgg(Vec2 pos) {
 void GameScene::spawnRice(Vec2 pos, bool isSoldier) {
     std::shared_ptr<Texture> image = _assets->get<Texture>("riceLeader");
     std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
-    //float imageWidth = image->getWidth() / 4;
-    //float imageHeight = image->getHeight() / 4;
-    //Size singularSpriteSize = Size(imageWidth, imageHeight);
     Size s = Size(2.25f, 3.0f);
     std::shared_ptr<EnemyModel> new_enemy = Rice::allocWithConstants(pos, s, getScale(), _assets, isSoldier);
     spritenode->setAnchor(Vec2(0.5, 0.35));
@@ -2201,9 +2276,7 @@ std::shared_ptr<EnemyModel> GameScene::spawnRiceSoldier(Vec2 pos, std::shared_pt
     CULog("SPAWNING SOLDIER");
     std::shared_ptr<Texture> image = _assets->get<Texture>("riceLeader");
     std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
-    //float imageWidth = image->getWidth() / 4;
-    //float imageHeight = image->getHeight() / 4;
-    //Size singularSpriteSize = Size(imageWidth, imageHeight);
+
     Size s = Size(2.25f, 3.0f);
     std::shared_ptr<EnemyModel> new_enemy = Rice::allocWithConstants(pos, s, getScale(), _assets, true);
     spritenode->setAnchor(Vec2(0.5, 0.35));
@@ -2273,16 +2346,6 @@ void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map
     addObstacle(plate, plate->getSceneNode());
     _interactables.push_back(plate);
     _plates.push_back(plate);
-
-    auto reader = JsonReader::alloc("./json/Tutorials/tutorialPopupStations.json");
-    std::shared_ptr<JsonValue> popupData = reader->readJson()->get("test");
-    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
-    std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
-
-    p->setActive(false);
-    p->setVisible(false);
-    _interactivePopups.push_back(p);
-    _uiScene->addChild(p);
 }
 
 void GameScene::pogo() {

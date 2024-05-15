@@ -33,6 +33,9 @@
         "carrotEnemy": {
             "file": "textures/carrotEnemy.png"
         },
+        "minimapExample": {
+            "file": "textures/minimapExample.png"
+        },
         "carrot": {
             "file": "textures/day/food/rawCarrot.png"
         },

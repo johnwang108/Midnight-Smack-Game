@@ -18,7 +18,8 @@ bool Rice::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std:
         _soldiers = std::vector<std::shared_ptr<Rice>>();
         //vary speed by +- 1.0
         if (_type == EnemyType::rice_soldier) {
-            _force = ENEMY_FORCE + 2.0f * ((float)rand() / ((float)RAND_MAX)) - 1.0f;
+            float r  = ((double)rand() / (double)RAND_MAX);
+            _force = ENEMY_FORCE + r;
         }
         else {
             _force = ENEMY_FORCE - 1.0f;

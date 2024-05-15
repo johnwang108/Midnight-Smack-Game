@@ -188,6 +188,7 @@ protected:
     std::vector<std::tuple<std::shared_ptr<cugl::scene2::Label>, cugl::Timestamp>> _popups;
 
     std::vector<std::shared_ptr<Popup>> _interactivePopups;
+    int _popupIndex;
 
     std::shared_ptr<cugl::scene2::ActionManager> _actionManager;
 
