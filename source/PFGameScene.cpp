@@ -951,7 +951,7 @@ void GameScene::preUpdate(float dt) {
         }
     }
 
-    CULog(_avatar->getActiveAction().c_str());
+    //CULog(_avatar->getActiveAction().c_str());
 
     if (_input->didLevel1()) {
         setLevel(1, 1);
