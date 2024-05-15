@@ -85,7 +85,7 @@ protected:
 
     bool _focus;
 
-    bool _readyFori;
+    bool _readyForGestures;
 
     std::vector<std::string> _currentTargetGestures;
 
@@ -109,16 +109,7 @@ protected:
 
     std::vector<std::string> _validIngredients;
 
-    std::shared_ptr<cugl::scene2::SceneNode> _bottomBar;
-    std::shared_ptr<cugl::scene2::SceneNode> _conveyorBelt;
-    std::shared_ptr<cugl::scene2::PolygonNode> _stationHitbox;
-    std::shared_ptr<cugl::scene2::SceneNode> _indicatorGroup;
 
-    std::deque<std::shared_ptr<Ingredient>> _currentIngredients;
-
-    std::shared_ptr<Ingredient> _ingredientToRemove; 
-    std::shared_ptr<Ingredient> _currentlyHeldIngredient;
-    std::shared_ptr<Ingredient> _submittedIngredient;
 
     //technically unnecessary because ingredient knows if it is in pot but also easier to just store pointer
     std::shared_ptr<Ingredient> _ingredientInStation;
@@ -196,11 +187,8 @@ public:
     
     std::shared_ptr<Ingredient> getIngredientInStation() { return _ingredientInStation; }
 
-    std::shared_ptr<Ingredient> getCurrentlyHeldIngredient() { return _currentlyHeldIngredient; }
 
-    /* Only use to transfer ingredient to other station */
-    void removeHeldIngredient();
-    void receiveHeldIngredient(std::shared_ptr<Ingredient> ing);
+  
 
     bool isFocus() { return _focus; };
 
@@ -214,32 +202,16 @@ public:
 
     bool getIsDurationSequence() { return _isDurationSequence; }
 
-    std::shared_ptr<cugl::scene2::SceneNode> getBottomBar() { return _bottomBar; }
-    void setBottomBar(std::shared_ptr<cugl::scene2::SceneNode> bar);
-
-    void addIngredient(std::shared_ptr<Ingredient> ingredient);
-    std::shared_ptr<Ingredient> popIngredient();
 
 
-    void updateConveyor();
-    /* Internal use, searches through all ingredients to see which is held */
-    std::shared_ptr<Ingredient> findHeldIngredient();
+
 
     void addIngredientToStation(std::shared_ptr<Ingredient>);
 
-    void handleCompletedIngredient(std::shared_ptr<Ingredient>);
 
     void reset();
 
     void setReadyToCook(bool ready) { _readyToCook = ready; }
-
-    void launchIngredient(std::shared_ptr<Ingredient> ing);
-
-    void submitIngredient(std::shared_ptr<Ingredient> ing);
-
-    std::shared_ptr<Ingredient> getSubmittedIngredient() { return _submittedIngredient; }
-
-    void clearSubmittedIngredient() { _submittedIngredient.reset(); }
 
     void setNighttime(bool b) { _isNighttime = b; }
 };
