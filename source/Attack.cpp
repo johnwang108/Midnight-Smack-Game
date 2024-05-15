@@ -77,7 +77,7 @@ void Attack::fixedUpdate(float dt) {
 	}
 	if (_uppp > 0) {
 		if (_uppp == 1.5) {
-			_body->ApplyLinearImpulseToCenter(b2Vec2((50 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX)), 150), true);
+			_body->ApplyLinearImpulseToCenter(b2Vec2((100 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX))-50, 175), true);
 		}
 		_uppp -= dt;
 	}
