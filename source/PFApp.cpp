@@ -76,11 +76,8 @@ void PlatformApp::onStartup() {
  * causing the application to be deleted.
  */
 void PlatformApp::onShutdown() {
-    //_gameplay.save();
 
-    if (_currentScene == "night") {
-        _gameplay.save();
-    }
+    _gameplay.save();
 
     _menu.dispose();
     _loading.dispose();

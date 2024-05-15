@@ -2120,71 +2120,46 @@ persistent { ... }
 */
 
 void GameScene::save() {
-    /*std::string root = cugl::Application::get()->getSaveDirectory();
-    std::string path = cugl::filetool::join_path({ root,"save.json" });*/
-
-    //Should only change nighttime save data unless level was completed, in which case change level/chapter accordingly.
     std::string root = cugl::Application::get()->getSaveDirectory();
     std::string path = cugl::filetool::join_path({ root,"save.json" });
 
-    //auto reader = JsonReader::alloc(path);
-    //std::shared_ptr<JsonValue> prevSave = reader->readJson();
-    //reader->close();
 
     std::shared_ptr<JsonValue> json = JsonValue::allocObject();
-
-    //std::shared_ptr<JsonValue> persistent = prevSave->get("persistent");
-    std::shared_ptr<JsonValue> night = JsonValue::allocObject();
-    //CHAPTER COMPLETION LOGIC
     if (isComplete()) {
-        //if completed, don't need to save state. Just increment chapter and level accordingly
-        json->appendValue("chapter", 1.0f);
-        json->appendValue("level", 2.0f);
-        json->appendValue("startFromNight", false);
-        //json->appendChild("persistent", persistent);
-        json->appendChild("night", night);
-        return;
+        //increment most recently beaten chapter and level
+        json->appendValue("chapter",(float)_chapter);
+        json->appendValue("level", (float)_level);
+        auto writer = JsonWriter::alloc(path);
+        writer->writeJson(json);
+        writer->close();
     }
-    //else {
-    //    if (persistent == nullptr || persistent->isNull()) {
-    //        persistent = JsonValue::allocObject();
-    //    }
-    //    else {
-    //        persistent->_parent = nullptr;
-    //    }
-    //}
-    std::shared_ptr<JsonValue> player = JsonValue::allocObject();
-    player->appendValue("location_x", (double) _avatar->getPosition().x);
-    player->appendValue("location_y", (double) _avatar->getPosition().y);
-    player->appendValue("health", (double) _avatar->getHealth());
-    night->appendChild("player", player);
+ //   std::shared_ptr<JsonValue> player = JsonValue::allocObject();
+ //   player->appendValue("location_x", (double) _avatar->getPosition().x);
+ //   player->appendValue("location_y", (double) _avatar->getPosition().y);
+ //   player->appendValue("health", (double) _avatar->getHealth());
 
-    std::vector<std::string> types = { "egg", "carrot", "shrimp", "rice", "beef", "rice_soldier"};
-    for (auto t = types.begin(); t != types.end(); t++) {
-        std::string type = *t;
-        night->appendChild(type, JsonValue::allocObject());
-    }
+ //   std::vector<std::string> types = { "egg", "carrot", "shrimp", "rice", "beef", "rice_soldier"};
+ //   for (auto t = types.begin(); t != types.end(); t++) {
+ //       std::string type = *t;
+ //       night->appendChild(type, JsonValue::allocObject());
+ //   }
 
-    for (auto& e : _enemies) {
-        std::string type = EnemyModel::typeToStr(e->getType());
-        std::shared_ptr<JsonValue> x = JsonValue::allocObject();
-		x->appendValue("location_x", (double) e->getPosition().x);
-        x->appendValue("location_y", (double) e->getPosition().y);
-        x->appendValue("health", (double) e->getHealth());
-        x->appendValue("isDead", e->isRemoved());
-        night->get(type)->appendChild(e->getId(), x);
-	}
+ //   for (auto& e : _enemies) {
+ //       std::string type = EnemyModel::typeToStr(e->getType());
+ //       std::shared_ptr<JsonValue> x = JsonValue::allocObject();
+	//	x->appendValue("location_x", (double) e->getPosition().x);
+ //       x->appendValue("location_y", (double) e->getPosition().y);
+ //       x->appendValue("health", (double) e->getHealth());
+ //       x->appendValue("isDead", e->isRemoved());
+ //       night->get(type)->appendChild(e->getId(), x);
+	//}
 
-    //placeholder  values for chapter and level
-    json->appendValue("chapter", 1.0f);
-    json->appendValue("level", 1.0f);
-    json->appendValue("startFromNight", true);
-    //json->appendChild("persistent", persistent);
-    json->appendChild("night", night);
-
-    auto writer = JsonWriter::alloc(path);
-    writer->writeJson(json);
-    writer->close();
+ //   //placeholder  values for chapter and level
+ //   json->appendValue("chapter", 1.0f);
+ //   json->appendValue("level", 1.0f);
+ //   json->appendValue("startFromNight", true);
+ //   //json->appendChild("persistent", persistent);
+ //   json->appendChild("night", night);
 }
 
 bool GameScene::loadSave(std::shared_ptr<JsonValue> save) {
