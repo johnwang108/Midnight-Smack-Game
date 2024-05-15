@@ -90,11 +90,11 @@ void Rice::fixedUpdate(float step) {
                 //velocity.x = _force * dir * 5;
                 velocity.x = _force * _direction * 5;
             }
-            if (_distanceToPlayer.length() < 0.05) {
+/*            if (_distanceToPlayer.length() < 0.05) {
                 setState("attacking");
                 velocity.x = 0;
             }
-            else if (abs(_distanceToPlayer.x) < 0.001) {
+            else */if (abs(_distanceToPlayer.x) < 0.001) {
                 velocity.x = 0;
             }
         }
