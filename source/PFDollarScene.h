@@ -38,7 +38,7 @@
 //hardcode :3
 #define SCENE_WIDTH 1280
 #define SCENE_HEIGHT 800
-#define NIGHT_SEQUENCE_LENGTH 3
+#define NIGHT_SEQUENCE_LENGTH 1
 
 namespace GesturePaths {
     const std::vector<cugl::Vec2> vVertsPrimary = { Vec2(89,164),Vec2(90,162),Vec2(92,162),Vec2(94,164),Vec2(95,166),Vec2(96,169),Vec2(97,171),Vec2(99,175),Vec2(101,178),Vec2(103,182),Vec2(106,189),Vec2(108,194),Vec2(111,199),Vec2(114,204),Vec2(117,209),Vec2(119,214),Vec2(122,218),Vec2(124,222),Vec2(126,225),Vec2(128,228),Vec2(130,229),Vec2(133,233),Vec2(134,236),Vec2(136,239),Vec2(138,240),Vec2(139,242),Vec2(140,244),Vec2(142,242),Vec2(142,240),Vec2(142,237),Vec2(143,235),Vec2(143,233),Vec2(145,229),Vec2(146,226),Vec2(148,217),Vec2(149,208),Vec2(149,205),Vec2(151,196),Vec2(151,193),Vec2(153,182),Vec2(155,172),Vec2(157,165),Vec2(159,160),Vec2(162,155),Vec2(164,150),Vec2(165,148),Vec2(166,146) };
@@ -87,13 +87,6 @@ protected:
 
     bool _readyForGestures;
 
-    std::vector<std::string> _currentTargetGestures;
-
-    int _currentTargetIndex;
-
-    //todo:: integrate _currentTargetGestures into this. Right now, duration sequence is index 0, supereffect is index 1. Don't use index 1
-    std::vector<std::vector<std::string>> _currentTargetGesturesNighttime;
-    bool _isDurationSequence;
 
     // this is for cook time only
     bool _completed;
@@ -105,11 +98,10 @@ protected:
     int countdown;
 
     float _currentSimilarity; 
+    std::string _closestGesture;
 
 
     std::vector<std::string> _validIngredients;
-
-
 
     //technically unnecessary because ingredient knows if it is in pot but also easier to just store pointer
     std::shared_ptr<Ingredient> _ingredientInStation;
@@ -117,9 +109,6 @@ protected:
     bool _readyToCook;
 
     bool _isNighttime;
-
-    bool _isStation;
-
     
     //Todo: need library of existing predetermined inputs to check against
 
@@ -154,9 +143,7 @@ public:
 
     bool isPending();
 
-    void setIsStation(bool b) { _isStation = b; }
-
-    bool isStation() { return _isStation; }
+    bool isCompleted() { return _completed; }
     
     int gestureResult();
 
@@ -164,20 +151,10 @@ public:
 
     float getCurrentSimilarity() { return _currentSimilarity; }
 
+    std::string getClosestGesture() { return _closestGesture; }
  
 
     void setFocus(bool focus);
-
-    void setTargetGestures(std::vector<std::string> gestures) { 
-        _currentTargetGestures = gestures; 
-        _currentTargetIndex = 0;
-        _completed = false;
-    }
-
-    void setTargetGesturesNighttime(std::vector<std::vector<std::string>> v) {
-        _currentTargetGesturesNighttime = v;
-        _completed = false;
-    }
 
     void setPending(bool pending) { _completed = !pending; }
 
@@ -195,12 +172,8 @@ public:
     bool initGestureRecognizer();
     bool initAlternateGestures();
 
-
-    bool matchWithTouchPath();
-
     bool getJustCompletedGesture() { return _justCompletedGesture; }
 
-    bool getIsDurationSequence() { return _isDurationSequence; }
 
 
 

@@ -439,7 +439,7 @@ void DudeModel::walk(Vec2 dir, float dt) {
 void DudeModel::jump(Vec2 dir, bool wall) {
     b2Vec2 vel = _body->GetLinearVelocity();
     vel.y = 0;
-    vel += b2Vec2(dir.x * DUDE_JUMP, DUDE_JUMP);
+    vel += b2Vec2(dir.x * DUDE_JUMP * getJumpBuff(), DUDE_JUMP* getJumpBuff());
     _body->SetLinearVelocity(vel);
 }
 

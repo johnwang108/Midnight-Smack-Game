@@ -116,6 +116,14 @@ std::map<std::string, buff> ingredientToBuff = {
     {"carrot", buff::jump},
 };
 
+std::map<std::string, buff> gestureToBuff = {
+    {"triangle", buff::speed},
+    {"caret", buff::jump},
+    {"pigtail", buff::health},
+    {"v", buff::defense},
+    {"circle", buff::attack},
+};
+
 #pragma mark -
 #pragma mark Constructors
 /**
@@ -1001,61 +1009,7 @@ void GameScene::preUpdate(float dt) {
 
     _dollarnode->update(dt);
     if (_slowed){ 
-        //transition in dollar node
-        _dollarnode->setVisible(true);
-        if (!(_dollarnode->isFocus())) {
-            _dollarnode->setFocus(true);
-            _dollarnode->setReadyToCook(true);
-        }
-        //cooktime handling. Assume that _target not null, if it is null then continue
-        //if (!_dollarnode->isPending()) {
-        if (!_dollarnode->isPending()) {
-            _slowed = false;
-            std::string message = "";
-            if (_dollarnode->getLastResult() > 0) {
-                CULog("NICE!!!!!!!!!!!!!!");
-
-                if (_dollarnode->isStation()) {
-                    
-                    ////add cooked version of ingredient to inventory
-                    //IngredientType t = Ingredient::getIngredientTypeFromString(_dollarnode->getIngredientInStation()->getName());
-                    //IngredientProperties props = typeToPropertiesMap[cookedTypeMap[t]];
-
-                    //std::shared_ptr<Ingredient> ing = std::make_shared<Ingredient>("", props.gestures, 0.0f);
-                    //ing->setName(props.name);
-                    //std::shared_ptr<Texture> tex = _assets->get<Texture>(ing->getName());
-                    //ing->init(tex);
-
-                    ////hack
-                    //int id = _plates.back()->getId();
-
-                    //removeOrder(id, t, false);
-                    //createOrder(id, t, true);
-
-                    //_inventoryNode->addIngredient(ing);
-                }
-                else {
-                    modifier mod = _dollarnode->getIsDurationSequence() ? modifier::duration : modifier::effect;
-                    //_target->takeDamage(_avatar->getAttack(), 0);
-
-                    buff reward = ingredientToBuff[_dollarnode->getIngredientInStation()->getName()];
-                    _avatar->applyBuff(reward, mod);
-                }
-            }
-            else {
-                CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
-            }
-            CULog("%i", _dollarnode->getLastResult());
-            message = _feedbackMessages[_dollarnode->getLastResult()];
-            popup(message, cugl::Vec2(_avatar->getPosition().x * _scale, _avatar->getPosition().y * 1.1 * _scale));
-                
-            _dollarnode->setIngredientInStation(nullptr);
-            _dollarnode->setPending(true);
-            //}
-            //else {
-
-            //}
-        }
+        handleCooktime();
     }
 
     //CULog("sprite width/height: %f %f", _avatar->getSceneNode()->getSize().width, _avatar->getSceneNode()->getSize().height);
@@ -1699,13 +1653,16 @@ void GameScene::checkForCooktime() {
     if (_input->getLastSlowHeldDuration() < MIN_DISCARD_START_TIME && _input->justReleasedSlow() && _avatar->getMeter() > METER_COST) {
 
         std::shared_ptr<Ingredient> ing = _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
-        //
+ 
         if (ing != nullptr) {
             _slowed = true;
-            _dollarnode->setTargetGesturesNighttime({ ing->getGestures(), ing->getGestures() });
-            _dollarnode->setIngredientInStation(ing);
-            _dollarnode->setIsStation(false);
+            //_dollarnode->setTargetGestures({ ing->getGestures(), ing->getGestures() });
+            _dollarnode->addIngredientToStation(ing);
             _avatar->useMeter();
+            _dollarnode->setVisible(true);
+            if (!(_dollarnode->isFocus())) {
+                _dollarnode->setFocus(true);
+            }
         }
 
         //Old CookTime Style commented out
@@ -1731,13 +1688,40 @@ void GameScene::checkForCooktime() {
         //        //_dollarnode->setTargetGestures(_target->getGestureSeq1());
         //        _dollarnode->setTargetGesturesNighttime(std::vector({_target->getGestureSeq1(), _target->getGestureSeq2()}));
         //    }
-
         //}
-
     }
     else if (_input->getLastSlowHeldDuration() > DISCARD_HOLD_TIME && _input->justReleasedSlow()) {
-        /*std::shared_ptr<Ingredient> ing =*/ _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
+        /*std::shared_ptr<Ingredient> ing =*/ 
+        _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
         //i think thats all
+    }
+}
+
+void GameScene::handleCooktime() {
+    //transition in dollar node
+    //cooktime handling. 
+    if (_dollarnode->isCompleted()) {
+        _slowed = false;
+        std::string message = "";
+        if (_dollarnode->getLastResult() > 0) {
+            CULog("Succeeded gesture, awarding buff");
+            modifier mod = modifier::duration;
+            if (_dollarnode->getClosestGesture() != "") {
+                buff reward = gestureToBuff[_dollarnode->getClosestGesture()];
+                
+                _avatar->applyBuff(reward, mod);
+            }
+            else {
+                CULog("Closest gesture was empty, so no buff");
+            }
+        }
+        else {
+            CULog("No gestures matched with passing accuracy");
+        }
+
+        CULog("%i", _dollarnode->getLastResult());
+        message = _feedbackMessages[_dollarnode->getLastResult()];
+        popup(message, cugl::Vec2(_avatar->getPosition().x * _scale, _avatar->getPosition().y * 1.1 * _scale));
     }
 }
 
