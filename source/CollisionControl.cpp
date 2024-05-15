@@ -80,11 +80,8 @@ void GameScene::beginContact(b2Contact* contact) {
             for (auto& p : _platforms) {
                 if((_enemy.get() == bd1 && fd2 == p->getSensorName()) ||
                     (_enemy.get() == bd2 && fd1 == p->getSensorName())) {
-                    CULog("edge:");
-                    CULog("%i", _enemy->getDirection());
                     _enemy->setState("patrolling");
                     _enemy->setDirection(-_enemy->getDirection());
-                    CULog("%i", _enemy->getDirection());
                 }
             }
         }

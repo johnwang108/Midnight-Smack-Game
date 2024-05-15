@@ -34,7 +34,6 @@ protected:
     GameScene _gameplay;
 
     /** Primary controller for cooking */
-    //MultiScreenScene _multiScreen;
 
     int _currentlyFocused;
     /** The controller for the loading screen */

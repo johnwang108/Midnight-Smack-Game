@@ -118,6 +118,14 @@ std::map<std::string, buff> ingredientToBuff = {
     {"carrot", buff::jump},
 };
 
+std::map<std::string, buff> gestureToBuff = {
+    {"triangle", buff::speed},
+    {"caret", buff::jump},
+    {"pigtail", buff::health},
+    {"v", buff::defense},
+    {"circle", buff::attack},
+};
+
 #pragma mark -
 #pragma mark Constructors
 /**
@@ -384,6 +392,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _uiScene->addChild(_inventoryNode);
 
 
+    _pauseMenu = std::make_shared<MenuScene>();
+    _pauseMenu->init(_assets, "pause");
+    
+    
+
+
 # pragma mark: Background
 
     //_bgScene = cugl::Scene2::alloc(dimen);
@@ -523,7 +537,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
         reader->close();
         reader = nullptr;
     }
-    _popupIndex = paths.size() - 1;
+    _popupIndex = 0;
     loader->dispose();
     loader = nullptr;
 
@@ -592,6 +606,8 @@ void GameScene::dispose() {
  */
 void GameScene::reset() {
     _paused = false;
+    _pauseMenu->setActive(false);
+    _pauseMenu->reset();
     _worldnode->removeAllChildren();
     _world->clear();
     _debugnode->removeAllChildren();
@@ -792,8 +808,8 @@ void GameScene::preUpdate(float dt) {
     //has the level loaded yet
 
     // Process the toggled key commands
-    if (_input->didDebug()) { setDebug(!isDebug()); }
-    if (_input->didReset()) { reset(); }
+    //if (_input->didDebug()) { setDebug(!isDebug()); }
+    //if (_input->didReset()) { reset(); }
     if (_input->didExit()) {
         //transition(true);
         //setTarget("main_menu");
@@ -808,6 +824,22 @@ void GameScene::preUpdate(float dt) {
     if (_input->didPause()) {
         _paused = !_paused;
     }
+
+    _pauseMenu->setActive(_paused);
+
+    if (_paused) {
+        if (_pauseMenu->getReset()) {
+            reset();
+        }
+        else if (_pauseMenu->didTransition()){
+            transition(true);
+            setTarget(_pauseMenu->getTarget());
+            _pauseMenu->setTarget("");
+            _pauseMenu->setTransition(false);
+            _paused = false;
+        }   
+    }
+ 
 
     if (_input->getInventoryLeftPressed()) {
         _inventoryNode->selectPreviousSlot();
@@ -1087,46 +1119,15 @@ void GameScene::preUpdate(float dt) {
 
     _dollarnode->update(dt);
     if (_slowed){ 
-        //transition in dollar node
-        _dollarnode->setVisible(true);
-        if (!(_dollarnode->isFocus())) {
-            _dollarnode->setFocus(true);
-            _dollarnode->setReadyToCook(true);
-        }
-        //cooktime handling. Assume that _target not null, if it is null then continue
-        //if (!_dollarnode->isPending()) {
-        if (!_dollarnode->isPending()) {
-            _slowed = false;
-            std::string message = "";
-            if (_dollarnode->getLastResult() > 0) {
-                CULog("NICE!!!!!!!!!!!!!!");
-
-                if (_dollarnode->isStation()) {
-                    
-                }
-                else {
-                    modifier mod = _dollarnode->getIsDurationSequence() ? modifier::duration : modifier::effect;
-                    //_target->takeDamage(_avatar->getAttack(), 0);
-
-                    buff reward = ingredientToBuff[_dollarnode->getIngredientInStation()->getName()];
-                    _avatar->applyBuff(reward, mod);
-                }
-            }
-            else {
-                CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
-            }
-            CULog("%i", _dollarnode->getLastResult());
-            message = _feedbackMessages[_dollarnode->getLastResult()];
-            popup(message, cugl::Vec2(_avatar->getPosition().x * _scale, _avatar->getPosition().y * 1.1 * _scale));
-                
-            _dollarnode->setIngredientInStation(nullptr);
-            _dollarnode->setPending(true);
-            //}
-            //else {
-
-            //}
-        }
+        handleCooktime();
     }
+
+    //CULog("sprite width/height: %f %f", _avatar->getSceneNode()->getSize().width, _avatar->getSceneNode()->getSize().height);
+    //CULog("obstacle width/height: %f %f", _avatar->getHeight() * _scale, _avatar->getWidth() * _scale);
+
+    //CULog("camera sprite width/height: %f %f", _avatar->getSceneNode()->getSize().width * _camera->getZoom(), _avatar->getSceneNode()->getSize().height * _camera->getZoom());
+
+
 
 
     if (!_slowed) {
@@ -1817,13 +1818,16 @@ void GameScene::checkForCooktime() {
     if (_input->getLastSlowHeldDuration() < MIN_DISCARD_START_TIME && _input->justReleasedSlow() && _avatar->getMeter() > METER_COST) {
 
         std::shared_ptr<Ingredient> ing = _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
-        //
+ 
         if (ing != nullptr) {
             _slowed = true;
-            _dollarnode->setTargetGesturesNighttime({ ing->getGestures(), ing->getGestures() });
-            _dollarnode->setIngredientInStation(ing);
-            _dollarnode->setIsStation(false);
+            //_dollarnode->setTargetGestures({ ing->getGestures(), ing->getGestures() });
+            _dollarnode->addIngredientToStation(ing);
             _avatar->useMeter();
+            _dollarnode->setVisible(true);
+            if (!(_dollarnode->isFocus())) {
+                _dollarnode->setFocus(true);
+            }
         }
 
         //Old CookTime Style commented out
@@ -1849,13 +1853,40 @@ void GameScene::checkForCooktime() {
         //        //_dollarnode->setTargetGestures(_target->getGestureSeq1());
         //        _dollarnode->setTargetGesturesNighttime(std::vector({_target->getGestureSeq1(), _target->getGestureSeq2()}));
         //    }
-
         //}
-
     }
     else if (_input->getLastSlowHeldDuration() > DISCARD_HOLD_TIME && _input->justReleasedSlow()) {
-        /*std::shared_ptr<Ingredient> ing =*/ _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
+        /*std::shared_ptr<Ingredient> ing =*/ 
+        _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
         //i think thats all
+    }
+}
+
+void GameScene::handleCooktime() {
+    //transition in dollar node
+    //cooktime handling. 
+    if (_dollarnode->isCompleted()) {
+        _slowed = false;
+        std::string message = "";
+        if (_dollarnode->getLastResult() > 0) {
+            CULog("Succeeded gesture, awarding buff");
+            modifier mod = modifier::duration;
+            if (_dollarnode->getClosestGesture() != "") {
+                buff reward = gestureToBuff[_dollarnode->getClosestGesture()];
+                
+                _avatar->applyBuff(reward, mod);
+            }
+            else {
+                CULog("Closest gesture was empty, so no buff");
+            }
+        }
+        else {
+            CULog("No gestures matched with passing accuracy");
+        }
+
+        CULog("%i", _dollarnode->getLastResult());
+        message = _feedbackMessages[_dollarnode->getLastResult()];
+        popup(message, cugl::Vec2(_avatar->getPosition().x * _scale, _avatar->getPosition().y * 1.1 * _scale));
     }
 }
 
@@ -1891,6 +1922,7 @@ void GameScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
     }
 
     _uiScene->render(batch);
+    _pauseMenu->render(batch);
 }
 
 
