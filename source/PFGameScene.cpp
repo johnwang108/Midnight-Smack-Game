@@ -1577,9 +1577,11 @@ void GameScene::fixedUpdate(float step) {
             continue;
         }
         else {
+            if ((*it)->getName() == "ingredient2") {
+                (*it)->setstraight(_avatar->getPosition());
+            }
             (*it)->fixedUpdate(step);
         }
-
         if ((*it)->killMe()) {
             removeAttack((*it).get());
             it = _attacks.erase(it);
@@ -1900,6 +1902,7 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
     }
 
     addEnemyToInventory(enemy->getType());
+    addingredient(enemy->getPosition());
 
     _worldnode->removeChild(enemy->getSceneNode());
     enemy->setDebugScene(nullptr);
@@ -2468,6 +2471,35 @@ void GameScene::removeingredient(Vec2 pos) {
 
     addObstacle(attack, sprite, true);
     _attacks.push_back(attack);
+}
+
+void GameScene::addingredient(Vec2 pos) {
+
+    std::string t = _inventoryNode->getIngredientnameFromSlot(_inventoryNode->getSelectedSlot());
+    std::shared_ptr<Texture> image = _assets->get<Texture>(t);
+
+    std::shared_ptr<Attack> attack = Attack::alloc(pos,
+        cugl::Size(image->getSize().width * 0.2 / _scale, image->getSize().height * 0.2 / _scale));
 
 
+    attack->setName("ingredient2");
+    attack->setBullet(true);
+    attack->setGravityScale(0.5);
+    attack->setDebugColor(DEBUG_COLOR);
+    attack->setDrawScale(_scale);
+    attack->setEnabled(true);
+    attack->setstraight(_avatar->getPosition());
+    attack->setrand(false);
+    attack->setDie(false);
+    attack->setUp(1.5);
+    attack->setFollow(true);
+
+
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    attack->setSceneNode(sprite);
+    sprite->setPosition(pos);
+    sprite->setScale(0.2);
+
+    addObstacle(attack, sprite, true);
+    _attacks.push_back(attack);
 }

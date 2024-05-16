@@ -655,6 +655,8 @@ public:
 
     void removeingredient(Vec2 pos);
 
+    void addingredient(Vec2 pos);
+
     void setInteractable(int interactableID) {
 		_currentInteractableID = interactableID;
 	}

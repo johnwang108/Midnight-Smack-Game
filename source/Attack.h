@@ -67,6 +67,7 @@ protected:
 
     float _uppp;
 
+    bool _follow;
 public:
 #pragma mark Constructors
     /**
@@ -189,6 +190,7 @@ public:
     void setDie(bool die) { _die = die; }
     void setUp(float up) { _uppp = up; }
     float getUp() { return _uppp; }
+    void setFollow(bool follow) { _follow = follow; }
 };
 
 #endif /* __ATTACK_H__ */
