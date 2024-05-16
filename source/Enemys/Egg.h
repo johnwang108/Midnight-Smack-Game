@@ -26,6 +26,10 @@ public:
         if (res) {
             result->loadAnimationsFromConstant("egg", _assets);
         }
+
+        //manually add respawn 
+        auto info = result->getInfo("eggDeath");
+        result->addActionAnimation("eggRespawn", _assets->get<Texture>("eggDeath"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 4.0f, true);
         return res ? result : nullptr;
     }
 

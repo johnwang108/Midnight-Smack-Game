@@ -446,7 +446,7 @@ void DudeModel::jump(Vec2 dir, bool wall) {
 
     vel += b2Vec2(dir.x * getJumpForce(), getJumpForce());
     if (wall) {
-        vel.x *= 2.5;
+        vel.x *= 1.7;
         vel.y *= 1.2;
 	}
     _body->SetLinearVelocity(vel);

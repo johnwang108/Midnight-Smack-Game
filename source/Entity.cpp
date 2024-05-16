@@ -69,9 +69,13 @@ bool Entity::animate(std::string action_name) {
 
     if (getName() == "avatar") {
         if (name == "run" || name == "skid") {
-            getSceneNode()->setAnchor(Vec2(0.5, 0.4));
+            float offset = _node->isFlipHorizontal() ? -0.17 : 0.17;
+            getSceneNode()->setAnchor(Vec2(0.5 + offset, 0.4));
         }
         else getSceneNode()->setAnchor(Vec2(0.5, 0.35));
+    }
+    if (getName().find("shrimp") != std::string::npos && getName().find("Death") != std::string::npos) {
+        getSceneNode()->setAnchor(Vec2(0.5, 0.15));
     }
     
     changeSheet(name);

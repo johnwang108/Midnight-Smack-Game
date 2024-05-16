@@ -44,6 +44,9 @@ void Egg::update(float dt) {
         if (getActiveAction() == "eggAttack") prio = getActivePriority() + 1;
         setRequestedActionAndPrio("eggWindupQuick", prio);
     }
+    else if (_state == "respawning") {
+		setRequestedActionAndPrio("eggRespawn", 1000);
+	}
     else {
         CULog("error: egg");
         CULog(_state.c_str());
@@ -58,7 +61,7 @@ void Egg::fixedUpdate(float step) {
         velocity.x = ENEMY_FORCE * _direction * 1.2;
     }
     else if (_state == "stunned") {
-        velocity.x = 0;
+        
     }
     else if (_state == "windup") {
         velocity.x = 0;
@@ -71,6 +74,10 @@ void Egg::fixedUpdate(float step) {
     }
     else if (_state == "short_windup") {
         velocity.x = 0;
+    }
+    else if (_state == "respawning") {
+        setTangible(false);
+		velocity.x = 0;
     }
     else {
         CULog("error: egg");
@@ -125,11 +132,6 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Egg::c
     sprite->setPosition(pos);
 
     return std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>>(attack, sprite);
-
-
-
-    /*std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
-    AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);*/
 }
 
 
@@ -154,6 +156,9 @@ void Egg::setState(std::string state) {
     else if (state == "short_windup") {
         _behaviorCounter = getActionDuration("eggWindupQuick");
     }
+    else if (state == "respawning") {
+        _behaviorCounter = getActionDuration("eggRespawn");
+    }
 }
 
 std::string Egg::getNextState(std::string state) {
@@ -175,6 +180,9 @@ std::string Egg::getNextState(std::string state) {
         else return "short_windup";
     }
     else if (state == "patrolling") {
+        return "patrolling";
+    }
+    else if (state == "respawning") {
         return "patrolling";
     }
     return 0;

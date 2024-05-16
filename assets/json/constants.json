@@ -88,14 +88,14 @@
             "rows": 2,
             "cols": 2,
             "frames": 3,
-            "duration": 0.45
+            "duration": 0.25
         },
         "skid": {
             "sheet": "suSlide",
             "rows": 3,
             "cols": 4,
             "frames": 11,
-            "duration": 0.4
+            "duration": 0.5
         },
         
         "hurt": {
@@ -347,7 +347,7 @@
             "rows": 2,
             "cols": 2,
             "frames": 4,
-            "duration": 0.5
+            "duration": 1.0
         }
     },
     "shrimp": {

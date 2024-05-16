@@ -627,7 +627,8 @@ public:
 
     void pogo();
 
-    void createOrder(int id, IngredientType ing, bool isPlate = false);
+    void createOrder(int plateId, IngredientType ing);
+    void removeOrder(int plateId, IngredientType t);
 
     /** toggles visibility of orders*/
     void toggleOrders(bool v);
@@ -652,8 +653,6 @@ public:
 
     ///**Removes ingredient from currently selected slot. Wrapper for orders handling*/
     //std::shared_ptr<Ingredient> popFromInventory(std::shared_ptr<Ingredient>);
-
-    void removeOrder(int id, IngredientType t, bool isPlate = false);
 
     /**This respawns a fraction (p) of the enemies that have died, not including spawned rice soldiers. */
     void respawnEnemies(float p = 1.0);

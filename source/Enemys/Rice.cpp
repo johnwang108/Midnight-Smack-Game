@@ -1,11 +1,9 @@
 #include "Rice.h"
 
-
 bool Rice::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, bool isSoldier) {
     EnemyType t = isSoldier ? EnemyType::rice_soldier : EnemyType::rice;
     return init(pos, size, scale, EnemyModel::defaultSeq(t), EnemyModel::defaultSeqAlt(t), isSoldier);
 }
-
 
 bool Rice::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::vector<std::string> seq1, std::vector<std::string> seq2, bool isSoldier) {
     if (EnemyModel::init(pos, size, scale, seq1, seq2)) {
@@ -16,13 +14,15 @@ bool Rice::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std:
         std::string name = "rice";
         if (_isSoldier) name += "_soldier";
         _soldiers = std::vector<std::shared_ptr<Rice>>();
-        //vary speed by +- 1.0
+        //vary speed 
         if (_type == EnemyType::rice_soldier) {
-            float r  = ((double)rand() / (double)RAND_MAX);
-            _force = ENEMY_FORCE + r;
+            float randFactor = (float)(rand()) / (float)(RAND_MAX);
+            CULog("randFactor: %f", randFactor);
+            _force = ENEMY_FORCE + randFactor;
+            _closeEnough = CLOSE_ENOUGH + 2.0f * (float)(rand()) / (float)(RAND_MAX);
         }
         else {
-            _force = ENEMY_FORCE - 1.0f;
+            _force = ENEMY_FORCE - 0.75f;
         }
         setName(name);
         _health = 100.0f;
@@ -58,7 +58,7 @@ void Rice::fixedUpdate(float step) {
                     soldier->setTargetPosition(getPosition() + _distanceToPlayer);
                 }
             }
-            else {
+            else if (getState() != "stunned") {
                 for (auto& soldier : _soldiers) {
                     soldier->setState("patrolling");
                     soldier->setTargetPosition(getPosition());
@@ -84,7 +84,7 @@ void Rice::fixedUpdate(float step) {
 
             if (_type == EnemyType::rice) {
                 velocity.x = _force * _direction * 2;
-            }
+                }
             else {
                 float dir = SIGNUM(_targetPosition.x - getPosition().x);
                 //velocity.x = _force * dir * 5;
@@ -116,7 +116,7 @@ void Rice::fixedUpdate(float step) {
             if (_isSoldier) {
                 float diff = _targetPosition.x - getPosition().x;
                 //too far, start walking
-                if (std::abs(diff) > CLOSE_ENOUGH * 2 && velocity.x == 0) {
+                if (std::abs(diff) > CLOSE_ENOUGH * 4 && velocity.x == 0) {
                     setRequestedActionAndPrio("riceStartWalk", 30);
                     velocity.x = _force * SIGNUM(diff);
                 }
@@ -140,6 +140,10 @@ void Rice::fixedUpdate(float step) {
                 else setRequestedActionAndPrio("riceStartWalk", 30);
                 velocity.x = _force * _direction;
             }
+        }
+        else if (_state == "respawning") {
+            setRequestedActionAndPrio("riceRespawn", 1000);
+            velocity.x = 0;
         }
     }
 
@@ -172,7 +176,12 @@ void Rice::setState(std::string state) {
     else if (state == "attacking") {
         _behaviorCounter = getActionDuration("riceAttack");
     }
+    else if (state == "respawning") {
+        _behaviorCounter = getActionDuration("riceRespawn");
+    }
 }
+
+
 
 std::string Rice::getNextState(std::string state) {
     if (state == "chasing") {
@@ -193,6 +202,11 @@ std::string Rice::getNextState(std::string state) {
         return "pursuing";
     }
     else if (state == "patrolling") {
+        return "patrolling";
+    }
+    else if (state == "respawning") {
+        return "patrolling";
+    }else if (state == "respawning") {
         return "patrolling";
     }
     return "0";

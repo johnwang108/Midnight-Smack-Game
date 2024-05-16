@@ -17,15 +17,41 @@ enum class MenuType {
 	OPTIONS,
 	PAUSE,
 };
+
+std::unordered_map<std::string, int> nameToLevel =
+{
+	{"one", 1},
+	{"two", 2},
+	{"three", 3},
+	{"four", 4},
+	{"five", 5},
+	{"six", 6},
+	{"seven", 7},
+	{"eight", 8},
+	{"nine", 9},
+	{"ten", 10},
+	{"eleven", 11},
+	{"twelve", 12},
+	{"thirteen", 13},
+	{"fourteen", 14},
+	{"fifteen", 15},
+	{"sixteen", 16},
+	{"seventeen", 17},
+	{"eighteen", 18},
+	{"nineteen", 19},
+	{"twenty", 20},
+	{"twentyOne", 21},
+	{"twentyTwo", 22}
+};
 	
 MenuType strToMenuType(std::string str) {
 	if (str == "main") {
 		return MenuType::MAIN_MENU;
 	}
-	else if (str == "level") {
+	else if (str == "levelSelectMenu") {
 		return MenuType::LEVEL_SELECT;
 	}
-	else if (str == "options") {
+	else if (str == "settingsMenu") {
 		return MenuType::OPTIONS;
 	}
 	else if (str == "pause") {
@@ -53,7 +79,6 @@ bool MenuScene::init(const std::shared_ptr<cugl::AssetManager>& assets, std::str
     }
 
     _assets = assets;
-	_assets->loadDirectory("json/assets.json");
 
 	_rootNode = _assets->get<scene2::SceneNode>(id);
 	_started = false;
@@ -65,10 +90,10 @@ bool MenuScene::init(const std::shared_ptr<cugl::AssetManager>& assets, std::str
 
     switch (strToMenuType(id)) {
         case MenuType::MAIN_MENU:
-			//listeners
 			initMainMenu(dimen);
 			break;
 		case MenuType::LEVEL_SELECT:
+			initLevelSelectMenu(dimen);
 			break;
 		case MenuType::OPTIONS:
 			break;
@@ -83,7 +108,6 @@ bool MenuScene::init(const std::shared_ptr<cugl::AssetManager>& assets, std::str
 	_rootNode->doLayout(); // Repositions the HUD
 
     addChild(_rootNode);
-
 
 	setTransition(false);
 	setTarget("");
@@ -105,7 +129,7 @@ void MenuScene::initMainMenu(Size dimen) {
 				CULog("Button %s pressed in Main Menu, down: %d", name.c_str(), down);
 				this->_active = false;
 				this->setTransition(true);
-				this->setTarget("night");
+				this->setTarget("levelSelectMenu");
 				});
 		}
 		else if (bName == "exit_button") {
@@ -119,9 +143,43 @@ void MenuScene::initMainMenu(Size dimen) {
 	}
 
 	setName("main_menu");
-	this->setActive(true);
-
+	this->setActive(false);
 }
+
+void MenuScene::initLevelSelectMenu(Size dimen) {
+	_rootNode->setContentSize(dimen);
+
+	auto kids = _rootNode->getChildren();
+	for (auto it = kids.begin(); it != kids.end(); ++it) {
+		std::shared_ptr<scene2::SceneNode> node = *it;
+
+		std::string nodeName = node->getName();
+		CULog(nodeName.c_str());
+		if (nodeName == "back") {
+			std::shared_ptr<scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(node);
+			_buttons.push_back(butt);
+			butt->addListener([=](const std::string& name, bool down) {
+				CULog("back button pressed");
+				this->setTransition(true);
+				this->setTarget("main_menu");
+				});
+		}
+		else if (nameToLevel.find(nodeName) != nameToLevel.end()) {
+			std::shared_ptr<scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(node);
+			_buttons.push_back(butt);
+			butt->addListener([=](const std::string& name, bool down) {
+				CULog("%i button pressed", nameToLevel[nodeName]);
+				this->setTransition(true);
+				this->setTarget("night");
+				this->setSelectedLevel(nameToLevel[nodeName]);
+				});
+		}
+	}
+
+	setName("levelSelectMenu");
+	this->setActive(false);
+}
+
 void MenuScene::initPauseMenu(Size dimen) {
 	auto kids = _rootNode->getChildren();
 	for (auto it = kids.begin(); it != kids.end(); ++it) {
@@ -134,20 +192,16 @@ void MenuScene::initPauseMenu(Size dimen) {
 			butt->addListener([=](const std::string& name, bool down) {
 				CULog("reset button pressed");
 				this->_reset = true;
-				this->_active = false;
-
-			});
+				});
 		}
 		else if (nodeName == "home") {
 			std::shared_ptr<scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(node);
 			_buttons.push_back(butt);
 			butt->addListener([=](const std::string& name, bool down) {
 				CULog("main menu button pressed");
-				
-				this->_active = false;
 				this->setTransition(true);
 				this->setTarget("main_menu");
-			});
+				});
 		}
 		else if (nodeName == "settings") {
 			CULog("settings button pressed");
@@ -164,26 +218,50 @@ void MenuScene::initPauseMenu(Size dimen) {
 	this->setActive(false);
 }
 
+void MenuScene::initSettingsMenu(Size dimen) {
+	auto kids = _rootNode->getChildren();
+	for (auto it = kids.begin(); it != kids.end(); ++it) {
+		std::shared_ptr<scene2::SceneNode> node = *it;
+
+		std::string nodeName = node->getName();
+	}
+	this->setActive(false);
+}
+
 void MenuScene::setActive(bool b) {
 	_active = b;
 	for (auto it = _buttons.begin(); it != _buttons.end(); ++it) {
 		auto button = *it;
+		button->setDown(false);
 		if (b) {
-			button->setDown(false);
 			button->activate();
 		}
 		else {
 			button->deactivate();
-			button->setDown(false);
-
 		}
 	}
-
 	_rootNode->setVisible(b);
 }
 
 void MenuScene::update(float dt) {
 
+}
+
+void MenuScene::setHighestLevel(int i) { 
+	if (!isActive()) return;
+	_highestLevel = i; 
+	for (auto it = _buttons.begin(); it != _buttons.end(); ++it) {
+		auto button = *it;
+		button->setDown(false);
+		if (nameToLevel[button->getName()] <= _highestLevel + 1) {
+			button->activate();
+			button->setColor(Color4::WHITE);
+		}
+		else {
+			button->setColor(Color4::GRAY);
+			button->deactivate();
+		}
+	}
 }
 
 void MenuScene::reset() {
