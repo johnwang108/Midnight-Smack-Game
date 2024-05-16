@@ -911,7 +911,6 @@ void GameScene::preUpdate(float dt) {
 
     checkForCooktime();
 
-    _background->setVisible(false);
 
     for (auto& i : _interactivePopups) {
         if (i->isActive()) i->update(dt);
@@ -2221,8 +2220,8 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
     currentLevel = _level_model;
     if (chapter == 1) {
         if (level == 1) {
-            //_level_model->setFilePath("json/intermediate.json");
-            _level_model->setFilePath("json/TestLevel1.tmj");
+            _level_model->setFilePath("json/intermediate.json");
+            //_level_model->setFilePath("json/TestLevel1.tmj");
         }
         else if (level == 2) {
             _level_model->setFilePath("json/test_level_v2_experiment.json");
