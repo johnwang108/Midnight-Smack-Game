@@ -47,7 +47,7 @@ protected:
     bool _summoned;
     float _CA;
     int _CAcount;
-    bool _running;
+    float _running;
     float _breaking;
     std::string _attacktype;
     float _turing;
@@ -55,6 +55,7 @@ protected:
     int n;
     std::string _act;
     float _acttime;
+    b2Filter filter;
 
 
 public:
@@ -104,6 +105,7 @@ public:
     float getangrytime() { return _angrytime; }
 
     float getknockbacktime() { return _knockbackTime; }
+    void setknockbacktime(float time){_knockbackTime=time;}
 
     bool getshake() { return _shake; }
 
@@ -124,12 +126,14 @@ public:
     void circleattack(GameScene& scene);
     std::string getattacktype() { return _attacktype; }
     float getturing() { return _turing; }
+    void setturing(float time){_turing=time;}
     void setact(std::string act, float time){_acttime=time;
         _act=act;}
     float getacttime(){return _acttime;}
     std::string getact(){return _act;}
     void setbreaking(float breaking){_breaking=breaking;}
     float getbreaking(){return _breaking;}
+    float getrunning(){return _running;}
 };
 
 #endif /* __BULL_MODEL_H__ */

@@ -17,6 +17,9 @@ bool Carrot::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, st
 
 void Carrot::update(float dt) {
     EnemyModel::update(dt);
+    if (_state == "respawning") {
+
+    }
 }
 
 void Carrot::fixedUpdate(float step) {
@@ -45,7 +48,11 @@ void Carrot::fixedUpdate(float step) {
         velocity.x = 0;
     }
     else if (_state == "patrolling") {
-        velocity.x = ENEMY_FORCE * _direction;
+        velocity.x = 0;
+    }
+    else if (_state == "respawning") {
+        setTangible(false);
+        velocity.x = 0;
     }
     else {
         CULog("error: carrot");
@@ -53,6 +60,12 @@ void Carrot::fixedUpdate(float step) {
     }
 
     _body->SetLinearVelocity(EnemyModel::handleMovement(velocity));
+}
+
+b2Vec2 Carrot::handleMovement(b2Vec2 velocity) {
+	b2Vec2 v = EnemyModel::handleMovement(velocity);
+
+    return v;
 }
 
 void Carrot::setState(std::string state) {
@@ -75,6 +88,9 @@ void Carrot::setState(std::string state) {
     else if (state == "midair") {
         _behaviorCounter = -1;
     }
+    else if (state == "respawning") {
+        _behaviorCounter = getActionDuration("carrotRespawn");
+    }
 }
 
 std::string Carrot::getNextState(std::string state) {
@@ -96,6 +112,9 @@ std::string Carrot::getNextState(std::string state) {
         return "windup";
     }
     else if (state == "patrolling") {
+        return "patrolling";
+    }
+    else if (state == "respawning") {
         return "patrolling";
     }
     return 0;

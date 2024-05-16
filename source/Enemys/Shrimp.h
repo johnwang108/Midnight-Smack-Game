@@ -31,18 +31,23 @@ public:
 
         //result->addActionAnimation("shrimpRoll", _assets->get<Texture>("shrimpRollToIdle"), 2, 3, 6, 0.1f);
         //result->setAction("shrimpRoll", { 1 }, 0.1f);
+
+        auto info = result->getInfo("shrimpIdleDeath");
+        result->addActionAnimation("shrimpRespawn", _assets->get<Texture>("shrimpIdleDeath"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 4.0f, true);
         return res ? result : nullptr;
     }
 
     void markForDeletion() override {
         if (_killMeCountdown != 0.0f) return;
         EnemyModel::markForDeletion();
-        _killMeCountdown = 0.1;
+        _killMeCountdown = getActionDuration("shrimpStandDeath");
     }
 
     void update(float dt) override;
 
     void fixedUpdate(float step) override;
+
+    b2Vec2 handleMovement(b2Vec2 velocity) override;
 
     void setState(std::string state) override;
 

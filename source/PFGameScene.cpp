@@ -51,7 +51,13 @@ using namespace cugl;
 // #define DEFAULT_HEIGHT  25.0f
 #define DEFAULT_HEIGHT 30.0f
 
-#define INCLUDE_ROPE_BRIDGE false
+#define MINIMAP_ZOOM 0.1f
+
+#define MINIMAP_WIDTH 400
+
+#define MINIMAP_HEIGHT 400
+
+#define TIMER_DIAMETER_SIZE 40.0f
 
 #define CAMERA_FOLLOWS_PLAYER true
 
@@ -60,8 +66,65 @@ using namespace cugl;
 #define FEEDBACK_DURATION 1.2f
 
 #define HEALTHBAR_X_OFFSET 15
+#define DISCARD_HOLD_TIME 2.0f
+#define MIN_DISCARD_START_TIME 0.25f
+/**desired order width in pixels*/
+#define ORDER_WIDTH 100.0f
+
+struct IngredientProperties {
+    std::string name;
+    std::vector<std::string> gestures;
+};
 
 
+std::map<EnemyType, IngredientProperties> enemyToIngredientMap = {
+    {EnemyType::beef, {"beef", EnemyModel::defaultSeq(EnemyType::beef)}},
+    {EnemyType::carrot, {"carrot", EnemyModel::defaultSeq(EnemyType::carrot)}},
+    {EnemyType::egg, {"egg", EnemyModel::defaultSeq(EnemyType::egg)}},
+    {EnemyType::rice, {"rice", EnemyModel::defaultSeq(EnemyType::rice)}},
+    {EnemyType::rice_soldier, {"rice", EnemyModel::defaultSeq(EnemyType::rice_soldier)}},
+    {EnemyType::shrimp, {"shrimp", EnemyModel::defaultSeq(EnemyType::shrimp)}}
+};
+
+//TODO FIX
+std::map<IngredientType, IngredientType> cookedTypeMap = {
+	{IngredientType::beef, IngredientType::cookedBeef},
+	{IngredientType::carrot, IngredientType::cutCarrot},
+	{IngredientType::egg, IngredientType::boiledEgg},
+	{IngredientType::rice, IngredientType::boiledRice},
+	{IngredientType::shrimp, IngredientType::cookedShrimp}
+};
+
+std::map<IngredientType, IngredientProperties> typeToPropertiesMap = {
+    {IngredientType::beef, {"beef", EnemyModel::defaultSeq(EnemyType::beef)}},
+    {IngredientType::carrot, {"carrot", EnemyModel::defaultSeq(EnemyType::carrot)}},
+    {IngredientType::egg,  {"egg", EnemyModel::defaultSeq(EnemyType::egg)}},
+    {IngredientType::rice, {"rice", EnemyModel::defaultSeq(EnemyType::rice)}},
+    {IngredientType::shrimp, {"shrimp", EnemyModel::defaultSeq(EnemyType::shrimp)}},
+    {IngredientType::boiledRice, {"boiledRice", EnemyModel::defaultSeq(EnemyType::rice)}},
+    {IngredientType::cutCarrot, {"cutCarrot", EnemyModel::defaultSeq(EnemyType::carrot)}},
+    {IngredientType::cookedBeef, {"cookedBeef", EnemyModel::defaultSeq(EnemyType::beef)}},
+    {IngredientType::boiledEgg, {"boiledEgg", EnemyModel::defaultSeq(EnemyType::egg)}},
+    {IngredientType::cookedShrimp, {"cookedShrimp", EnemyModel::defaultSeq(EnemyType::shrimp)}},
+    {IngredientType::scrambledEgg, {"scrambledEgg", EnemyModel::defaultSeq(EnemyType::egg)}},
+};
+
+
+std::map<std::string, buff> ingredientToBuff = {
+    {"beef", buff::speed},
+    {"carrot", buff::jump},
+    {"egg", buff::health},
+    {"rice", buff::defense},
+    {"carrot", buff::jump},
+};
+
+std::map<std::string, buff> gestureToBuff = {
+    {"triangle", buff::speed},
+    {"caret", buff::jump},
+    {"pigtail", buff::health},
+    {"v", buff::defense},
+    {"circle", buff::attack},
+};
 
 #pragma mark -
 #pragma mark Constructors
@@ -166,8 +229,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     setSceneWidth(400);
     setSceneHeight(30);*/
     _level_model->setFilePath("json/intermediate.json");
-    // _level_model->setFilePath("json/empanada-platform-level-01.json");
-    // _level_model->setFilePath("json/bull-boss-level.json");
+    _timer = 0.0f;
+    _timeLimit = 200.0f;
+    _respawnTimes = std::deque<float>({10.0f, 100.0f, 150.0f, 200.0f});
     setSceneWidth(_level_model->loadLevelWidth());
     setSceneHeight(_level_model->loadLevelHeight());
 
@@ -248,13 +312,18 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
     _dollarnode = std::make_shared<DollarScene>();
-    //_dollarnode->init(_assets, _input, cugl::Rect(Vec2::ZERO, computeActiveSize()/2), "cooktime");
     _dollarnode->init(_assets, _input, "cooktime");
     _dollarnode->SceneNode::setAnchor(cugl::Vec2::ANCHOR_CENTER);
     _dollarnode->setVisible(false);
     _dollarnode->setNighttime(true);
     _dollarnode->setPosition(0,0);
 
+    _inventoryNode = std::make_shared<Inventory>();
+    std::shared_ptr<Texture> invTex = _assets->get<Texture>("inventorySlot");
+    _inventoryNode->init(_assets, _input, Size(invTex->getWidth()*NUM_SLOTS, 180.0f));
+    _inventoryNode->setName("inventoryNode");
+    _inventoryNode->setAnchor(Vec2::ANCHOR_BOTTOM_CENTER);
+    _inventoryNode->setPosition(Vec2(1280.0f / 2.0f, 0));
 
 #pragma mark: UI
 
@@ -285,12 +354,10 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _cookBarOutline = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifeoutline"));
     _cookBarFill = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifefill"));
 
-    _cookBarOutline = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifeoutline"));
-    _cookBarFill = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifefill"));
     //_cookBarGlow = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("gainingboost")->getChildByName("knifeglow"));
     for (std::string s : {"attackfill", "shieldfill", "speedfill", "healthfill", "jumpfill"}) {
-		_cookBarIcons[s] = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("boost")->getChildByName(s));
-        _cookBarIcons[s]->setVisible(false);
+        auto x = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("boost")->getChildByName(s));
+        x->setVisible(false);
 	}
     for (std::string s : {"attackready", "shieldready", "speedready", "healthready", "jumpready"}) {
         _cookBarIcons[s] = std::dynamic_pointer_cast<scene2::PolygonNode>(_meterUINode->getChildByName("boost")->getChildByName(s));
@@ -302,22 +369,18 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _bullBarNode = _assets->get<scene2::SceneNode>("bullbar");
     _BullhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
     _BullhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_bullBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
+    _BullhealthBarBackground->setVisible(false);
+    _BullhealthBarForeground->setVisible(false);
     _uiScene->addChild(_bullBarNode);
 
-    //std::shared_ptr<cugl::scene2::SceneNode> _SFRBarNode;
-    //_SFRBarNode = _assets->get<scene2::SceneNode>("shrimpbar");
-
-    //_SFRhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bullbar"));
-    //_SFRhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("fullbullbar")->getChildByName("bosshealth"));
-   // _uiScene->addChild(_SFRBarNode);
-
-
-    _buffLabel = scene2::Label::allocWithText("NO BUFF", _assets->get<Font>(MESSAGE_FONT));
-    _buffLabel->setAnchor(Vec2::ANCHOR_CENTER);
-    _buffLabel->setPosition(dimen.width - _buffLabel->getWidth()/2, dimen.height - _buffLabel->getHeight());
-
-    /*_pauseButton = std::dynamic_pointer_cast<scene2::Button>(_assets->get<scene2::SceneNode>("mymenubutton"));*/
-
+    std::shared_ptr<cugl::scene2::SceneNode> _SFRBarNode;
+    _SFRBarNode = _assets->get<scene2::SceneNode>("SFR");
+    _SFRhealthBarBackground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("shrimpbar"));
+    _SFRhealthBarForeground = std::dynamic_pointer_cast<scene2::PolygonNode>(_SFRBarNode->getChildByName("bosshealth"));
+    _SFRhealthBarBackground->setVisible(false);
+    _SFRhealthBarForeground->setVisible(false);
+    _uiScene->addChild(_SFRBarNode);
+   
     _paused = false;
     
     //_uiScene->addChild(_pauseButton);
@@ -326,11 +389,20 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _uiScene->addChild(_winnode);
     _uiScene->addChild(_losenode);
+    _uiScene->addChild(_inventoryNode);
+
+
+    _pauseMenu = std::make_shared<MenuScene>();
+    _pauseMenu->init(_assets, "pause");
+    
+    
+
+
 # pragma mark: Background
 
-    _bgScene = cugl::Scene2::alloc(dimen);
-    _bgScene->init(dimen);
-    _bgScene->setActive(true);
+    //_bgScene = cugl::Scene2::alloc(dimen);
+    //_bgScene->init(dimen);
+    //_bgScene->setActive(true);
     // _bgScene = cugl::Scene2::alloc(cugl::Size(210, 25));
     // _bgScene->init(cugl::Size(210, 25));
     // _bgScene->setActive(true);
@@ -345,25 +417,62 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 
     // _bgScene->addChild(_background);
-    _bgScene->setColor(Color4::CLEAR);
+    //_bgScene->setColor(Color4::CLEAR);
 
-    _target = std::make_shared<EnemyModel>();
+    _interactables = std::vector<std::shared_ptr<GestureInteractable>>();
+    _plates = std::vector<std::shared_ptr<Plate>>();
+    _stations = std::vector<std::shared_ptr<Station>>();
 
+    //minimap setup
+    _r = RenderTarget::alloc(MINIMAP_WIDTH, MINIMAP_HEIGHT);
 
+    _minimapCamera = OrthographicCamera::alloc(MINIMAP_WIDTH, MINIMAP_HEIGHT);
+    _minimapCamera->setZoom(MINIMAP_ZOOM);
+    _minimapNode = cugl::scene2::PolygonNode::alloc();
+    _minimapNode->setContentSize(MINIMAP_WIDTH, MINIMAP_HEIGHT);
+    _minimapNode->setVisible(false);
+    _minimapNode->setAnchor(Vec2::ANCHOR_CENTER);
+    _minimapNode->setPosition(1280/ 2, 800 / 2);
 
-   _chapter = 1;
-   _level = 1;
-   // loadLevel(_chapter, _level);
-   // 
-   // _level_model->setFilePath("json/empanada-platform-level-01.json");
-    currentLevel = _level_model;
-    loadLevel(_level_model);
-    addChild(_worldnode);
-    addChild(_debugnode);
+    _minimapIconNode = scene2::PolygonNode::alloc();
+    _minimapIconNode->setVisible(false);
+    _uiScene->addChild(_minimapIconNode);
+    _uiScene->addChild(_minimapNode);
+
+    _timerIcon = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("timer"));
+    _timerIcon->setScale(TIMER_DIAMETER_SIZE / _timerIcon->getContentWidth());
+    _timerIcon->setPosition(1280 - TIMER_DIAMETER_SIZE - 10, 800 - TIMER_DIAMETER_SIZE - 10);
+    _uiScene->addChild(_timerIcon);
+    
+    _timerFillIcon = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("timerFill"));
+    _timerFillIcon->setScale(TIMER_DIAMETER_SIZE / _timerFillIcon->getContentWidth());
+    _timerFillIcon->setPosition(1280 - TIMER_DIAMETER_SIZE - 10, 800 - TIMER_DIAMETER_SIZE - 10);
+    _uiScene->addChild(_timerFillIcon);
 
     _actionManager = cugl::scene2::ActionManager::alloc();
     _BullactionManager = cugl::scene2::ActionManager::alloc();
     _SHRactionManager = cugl::scene2::ActionManager::alloc();
+
+    _pendingAcrossAllPlates = std::unordered_map<IngredientType, int>();
+
+    _interactivePopups = std::vector<std::shared_ptr<Popup>>();
+
+   _chapter = 1;
+   _level = 1;
+   loadLevel(_chapter, _level);
+   // currentLevel = _level_model;
+   // loadLevel(currentLevel);
+    addChild(_worldnode);
+    addChild(_debugnode);
+    _numOrders = 0;
+
+    _orders = std::unordered_map<int, std::vector<std::shared_ptr<scene2::SceneNode>>>();
+    _orderNode = scene2::SceneNode::alloc();
+    generateOrders();
+    _orderNode->setAnchor(Vec2::ANCHOR_TOP_CENTER);
+    _orderNode->setPosition(1280 / 2, 800 - 50);
+    _orderNode->setVisible(true);
+    _uiScene->addChild(_orderNode);
 
     _afterimages = std::vector < std::shared_ptr < scene2::SpriteNode>>();
 
@@ -399,8 +508,39 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _debugAnimName = js->getString("animation");
     _overrideAnim = false;
 
+    _currentInteractableID = -1;
+
     setName("night");
     Application::get()->setClearColor(Color4::CLEAR);
+
+    std::vector<std::string> paths = { 
+        "tutorialPopupWASD",
+        "tutorialPopupDash",
+        "tutorialPopupAttack",
+        "tutorialPopupInventory",
+        "tutorialPopupGestures",
+        "tutorialPopupStations",
+        "tutorialPopupPlates",
+        "tutorialPopupTimerDying",
+        "tutorialPopupMinimap"
+    };
+
+    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
+    for (std::string path : paths) {
+		auto reader = JsonReader::alloc("./json/Tutorials/" + path + ".json");
+        std::shared_ptr<JsonValue> popupData = reader->readJson()->get(path);
+        std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
+        p->setActive(false);
+        p->setVisible(false);
+        _interactivePopups.push_back(p);
+        _uiScene->addChild(p);
+        reader->close();
+        reader = nullptr;
+    }
+    _popupIndex = 0;
+    loader->dispose();
+    loader = nullptr;
+
     return true;
 }
 
@@ -416,7 +556,7 @@ void GameScene::dispose() {
         _debugnode = nullptr;
         _winnode = nullptr;
         _losenode = nullptr;
-        _bgScene = nullptr;
+        //_bgScene = nullptr;
         _uiScene = nullptr;
         _dollarnode = nullptr;
         _world = nullptr;
@@ -425,8 +565,6 @@ void GameScene::dispose() {
         _avatar = nullptr;
         _enemies.clear();
         _afterimages.clear();
-        _vulnerables.clear();
-        _target = nullptr;
         for (auto& attack : _attacks) {
             attack = nullptr;
         }
@@ -434,8 +572,6 @@ void GameScene::dispose() {
         currentLevel = nullptr;
         _Bull = nullptr;
         _ShrimpRice = nullptr;
-        level2 = nullptr;
-        level1 = nullptr;
         level3 = nullptr;
         _healthBarForeground = nullptr;
         _healthBarBackground = nullptr;
@@ -447,7 +583,7 @@ void GameScene::dispose() {
         _cookBarOutline = nullptr;
         _cookBarIcons.clear();
         _cookBarGlows.clear();
-        _buffLabel = nullptr;
+        //_buffLabel = nullptr;
         _popups.clear();
         _actionManager = nullptr;
         _BullactionManager = nullptr;
@@ -469,14 +605,17 @@ void GameScene::dispose() {
  * This method disposes of the world and creates a new one.
  */
 void GameScene::reset() {
+    _paused = false;
+    _pauseMenu->setActive(false);
+    _pauseMenu->reset();
     _worldnode->removeAllChildren();
     _world->clear();
     _debugnode->removeAllChildren();
-    _avatar = nullptr;
+    _avatar->reset();
     _goalDoor = nullptr;
     _background = nullptr;
     _sensorFixtures.clear();
-
+    _inventoryNode->reset();
     for (auto& enemy : _enemies) {
         enemy = nullptr;
     }
@@ -485,10 +624,6 @@ void GameScene::reset() {
         attack = nullptr;
     }
     _attacks.clear();
-    for (auto& v : _vulnerables) {
-        v = nullptr;
-    }
-    _vulnerables.clear();
     for (auto& a : _afterimages) {
         a = nullptr;
     }
@@ -497,6 +632,34 @@ void GameScene::reset() {
 		std::get<0>(p) = nullptr;
 	}
     _popups.clear();
+
+    for (auto& s : _stations) {
+        s = nullptr;
+    }
+    _stations.clear();
+
+    for (auto& p : _plates) {
+        p = nullptr;
+    }
+    _plates.clear();
+
+    for (auto& i : _interactables) {
+        i = nullptr;
+    }
+    _interactables.clear();
+
+    for (auto& i : _orders) {
+        for (auto& j : i.second) {
+			j = nullptr;
+		}
+    }
+    _orders.clear();
+
+    for (auto& i : _interactivePopups) {
+        i->dispose();
+        i = nullptr;
+    }
+    _interactivePopups.clear();
     _Bull = nullptr;
 
     removeChild(_worldnode);
@@ -512,11 +675,45 @@ void GameScene::reset() {
     else if (_debugAnimTargetName == "shrimp" && _ShrimpRice != nullptr) {
         _debugAnimTarget = _ShrimpRice;
     }
-    // loadLevel(_level_model);
-    loadLevel(_level_model);
-    // loadLevel(_chapter, _level);
+
+
+    _level_model->removeBackgroundImages(*this);
+    loadLevel(_chapter, _level);
     addChild(_worldnode);
     addChild(_debugnode);
+
+    generateOrders();
+    _timer = 0.0f;
+    _timeLimit = 200.0f;
+    _respawnTimes = std::deque<float>({ 50.0f, 100.0f, 150.0f, 200.0f });
+
+    std::vector<std::string> paths = {
+    "tutorialPopupWASD",
+    "tutorialPopupDash",
+    "tutorialPopupAttack",
+    "tutorialPopupInventory",
+    "tutorialPopupGestures",
+    "tutorialPopupStations",
+    "tutorialPopupPlates",
+    "tutorialPopupTimerDying",
+    "tutorialPopupMinimap"
+    };
+
+    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
+    for (std::string path : paths) {
+        auto reader = JsonReader::alloc("./json/Tutorials/" + path + ".json");
+        std::shared_ptr<JsonValue> popupData = reader->readJson()->get(path);
+        std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
+        p->setActive(false);
+        p->setVisible(false);
+        _interactivePopups.push_back(p);
+        _uiScene->addChild(p);
+        reader->close();
+        reader = nullptr;
+    }
+    _popupIndex = paths.size() - 1;
+    loader->dispose();
+    loader = nullptr;
     // addChild(_gestureFeedback);
 }
 
@@ -553,6 +750,7 @@ void GameScene::reset() {
 void GameScene::addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj,
     const std::shared_ptr<cugl::scene2::SceneNode>& node,
     bool useObjPosition) {
+    if (node == nullptr || obj == nullptr) return;
     // Don't add out of bounds obstacles
     if (!(_world->inBounds(obj.get()))) {
         return;
@@ -611,156 +809,207 @@ void GameScene::preUpdate(float dt) {
 
     // Process the toggled key commands
     if (_input->didDebug()) { setDebug(!isDebug()); }
-    if (_input->didReset()) { reset(); }
+    //if (_input->didReset()) { reset(); }
     if (_input->didExit()) {
-        transition(true);
-        setTarget("main_menu");
+        //transition(true);
+        //setTarget("main_menu");
     }
 
-    if (_input->didTransition()) {
-        transition(true);
-        setTarget("day");
-        CULog("TTTTTTTTTTT");
-        return;
+
+    //this is now minimap
+    if (_input->didMinimap()) {
+        _minimapNode->setVisible(!_minimapNode->isVisible());
     }
 
-    //TODO handle vulnerables smarter
-    if (_input->didSlow()) {
-        if (_slowed) {
-            //_slowed = !_slowed;
-            //_target = nullptr;
+    if (_input->didPause()) {
+        _paused = !_paused;
+    }
+
+    _pauseMenu->setActive(_paused);
+
+    if (_paused) {
+        if (_pauseMenu->getReset()) {
+            reset();
         }
-        //activate cooktime
-        else {
-            CULog("Activate!");
-            float minDist = FLT_MAX;
-            for (auto& e : _enemies) {
-                if (e->isRemoved() || !(e->isVulnerable())) {
-                    continue;
-                }
-                if ((e->getPosition() - _avatar->getPosition()).length() < minDist) {
-                    _target = e;
-                    minDist = (e->getPosition() - _avatar->getPosition()).length();
-                }
-            }
-            if (minDist < COOKTIME_MAX_DIST) {
-                _slowed = true;
-                //_dollarnode->setTargetGestures(_target->getGestureSeq1());
-                _dollarnode->setTargetGesturesNighttime(std::vector({_target->getGestureSeq1(), _target->getGestureSeq2()}));
-            }
+        else if (_pauseMenu->didTransition()){
+            transition(true);
+            setTarget(_pauseMenu->getTarget());
+            _pauseMenu->setTarget("");
+            _pauseMenu->setTransition(false);
+            _paused = false;
+        }   
+    }
+ 
 
-        }
-
+    if (_input->getInventoryLeftPressed()) {
+        _inventoryNode->selectPreviousSlot();
+    }
+    else if (_input->getInventoryRightPressed()) {
+        _inventoryNode->selectNextSlot();
     }
 
+
+    if (_input->didInteract()) {
+        CULog("IIIII");
+        if (_currentInteractableID != -1) {
+
+            CULog("%i", _currentInteractableID);
+            for (auto& i : _plates) {
+                if (i->getId() == _currentInteractableID) {
+                    IngredientType t = _inventoryNode->getIngredientTypeFromSlot(_inventoryNode->getSelectedSlot());
+                    bool b = i->interact(t);
+                    if (b) {
+                        removeOrder(i->getId(), t);
+                        _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
+                    }
+                    break;
+                }
+                CULog("plate");
+            }
+
+            for (auto& i : _stations) {
+                if (i->getId() == _currentInteractableID) {
+                    IngredientType t = _inventoryNode->getIngredientTypeFromSlot(_inventoryNode->getSelectedSlot());
+                    if (i->interact(t)) {
+                        i->setIngredientPtr(_inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot()));
+                        removeingredient(i->getPosition());
+                    }
+                    else if (i->isFull()) {
+                        ////let's cook baby
+                        //std::shared_ptr<Ingredient> ing = i->getIngredientPtr();
+                        //_dollarnode->addIngredient(ing);
+                        //_slowed = true;
+                        //_dollarnode->setTargetGesturesNighttime({ ing->getGestures(), ing->getGestures() });
+                        //_dollarnode->setIngredientInStation(ing);
+                        //_dollarnode->setIsStation(true);
+                        //i->setIngredientPtr(nullptr);
+                        //
+
+                        //add cooked version of ingredient to inventory
+                        IngredientType t = Ingredient::getIngredientTypeFromString(i->getIngredientPtr()->getName());
+                        IngredientProperties props = typeToPropertiesMap[i->getCookedType(t)];
+
+                        std::shared_ptr<Ingredient> ing = std::make_shared<Ingredient>("", props.gestures, 0.0f);
+                        ing->setName(props.name);
+                        std::shared_ptr<Texture> tex = _assets->get<Texture>(ing->getName());
+                        ing->init(tex);
+
+                        //hack
+                        int id = _plates.back()->getId();
+
+                        IngredientType cookedType = i->getCookedType(t);
+
+                        _inventoryNode->addIngredient(ing);
+
+                        i->clearIngredients();
+                        i->setIngredientPtr(nullptr);
+                    }
+                }
+                else CULog("Station id: %i", i->getId());
+                CULog("station");
+            }
+        }
+        else CULog("failure");
+    }
+
+    checkForCooktime();
+
+    for (auto& i : _interactivePopups) {
+        if (i->isActive()) i->update(dt);
+    }
+    
     //handle animations
-
     if (!_actionManager->isActive("air_attack")) {
         _avatar->getBody()->SetFixedRotation(false);
         _avatar->getBody()->SetTransform(_avatar->getBody()->GetPosition(), 0.0f);
         _avatar->getBody()->SetFixedRotation(true);
     }
-    
-    //start running if idle or recovering and moving
-    if (!_overrideAnim) {
-        if ((_actionManager->isActive("idle") || _actionManager->isActive("recover")) && (_input->getHorizontal() != 0)) {
-            _avatar->animate("run");
-            auto runAction = _avatar->getAction("run");
-            _actionManager->clearAllActions(_avatar->getSceneNode());
-            _actionManager->activate("run", runAction, _avatar->getSceneNode());
+    //if (isFailure() && _avatar->getActiveAction() != "death") {
+    if (_avatar->isDead()){
+        animate(_avatar, "death", true);
+    }
+    else if (!_paused) {
+        if ((_actionManager->isActive("idle") || _actionManager->isActive("recover") || _actionManager->isActive("skid")) && (_input->getHorizontal() != 0)) {
+            animate(_avatar, "run", true);
         }
         //cancel run animation if stopped running
-        if (_actionManager->isActive("run") && _input->getHorizontal() == 0) {
-            _avatar->animate("idle");
-            auto idleAction = _avatar->getAction("idle");
-            _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
+        else if (_actionManager->isActive("run") && _input->getHorizontal() == 0) {
+            animate(_avatar, "skid", true);
         }
 
-        if (_avatar->isJumping() && _avatar->isGrounded()) {
-            _avatar->animate("jump_ready");
-            auto jumpAction = _avatar->getAction("jump_ready");
-            _actionManager->clearAllActions(_avatar->getSceneNode());
-            _actionManager->activate("jump_ready", jumpAction, _avatar->getSceneNode());
+        else if (_avatar->isJumping() && _avatar->isGrounded()) {
+            animate(_avatar, "jump_ready", true);
+        }
+
+        else if (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() < _avatar->getFloatyFrames() && !_actionManager->isActive("air_roll")) {
+            animate(_avatar, "air_roll", true);
         }
 
 
         //animate jumps if not attacking or taking damage
-        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && !(_avatar->getActiveAction() == "air_attack")&&  !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y > 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
-            //CULog("animating jump_up 1");
-            _avatar->animate("jump_up");
-            auto jumpAction = _avatar->getAction("jump_up");
-            _actionManager->clearAllActions(_avatar->getSceneNode());
-            _actionManager->activate("jump_up", jumpAction, _avatar->getSceneNode());
+        else if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("jump_up") && !_actionManager->isActive("air_attack") && 
+            !(_avatar->getActiveAction() == "air_attack") && !_actionManager->isActive("air_recover") && !_actionManager->isActive("air_roll")
+            && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
+            if (_avatar->getLinearVelocity().y > 0) animate(_avatar, "jump_up", true);
+            else animate(_avatar, "jump_down", true);
         }
-        if (!_avatar->isGrounded() && !_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && !(_avatar->getActiveAction() == "air_attack") && !_actionManager->isActive("air_roll") && _avatar->getLinearVelocity().y < 0 && (_avatar->getLastDamageTime() > _avatar->getHealthCooldown())) {
-           // CULog("animating jump_down");
-            _avatar->animate("jump_down");
-            auto jumpAction = _avatar->getAction("jump_down");
-            _actionManager->clearAllActions(_avatar->getSceneNode());
-            _actionManager->activate("jump_down", jumpAction, _avatar->getSceneNode());
-        }
-        if (_avatar->isGrounded() && (_actionManager->isActive("jump_down") || _actionManager->isActive("jump_up"))) {
+        else if (_avatar->isGrounded() && (_actionManager->isActive("jump_down") || _actionManager->isActive("jump_up"))) {
             //CULog("animating jump_land");
-            _avatar->animate("jump_land");
-            auto jumpAction = _avatar->getAction("jump_land");
-            _actionManager->clearAllActions(_avatar->getSceneNode());
-            _actionManager->activate("jump_land", jumpAction, _avatar->getSceneNode());
+            animate(_avatar, "jump_land", true);
         }
-
+        else if (_avatar->getLastDamageTime() < _avatar->getHealthCooldown() && !_actionManager->isActive("hurt") && !_avatar->didAnimateHurt()) {
+            animate(_avatar, "hurt", true);
+            _avatar->setDidAnimateHurt(true);
+        }
 
         //handle expired actions
-        if (!_actionManager->isActive(_avatar->getActiveAction())) {
+        else if (!_actionManager->isActive(_avatar->getActiveAction())) {
             if (_avatar->getActiveAction() == "attack") {
                 //CULog("animating attack");
-                _avatar->animate("recover");
-                auto recoverAction = _avatar->getAction("recover");
-                _actionManager->activate("recover", recoverAction, _avatar->getSceneNode());
+                animate(_avatar, "recover", false);
             }
             else if (_avatar->getActiveAction() == "run" && _input->getHorizontal() != 0) {
-                //CULog("animating run");
-                _avatar->animate("run");
-                auto runAction = _avatar->getAction("run");
-                _actionManager->clearAllActions(_avatar->getSceneNode());
-                _actionManager->activate("run", runAction, _avatar->getSceneNode());
+                animate(_avatar, "run", true);
             }
             else  if (_avatar->getActiveAction() == "air_attack") {
-                //CULog("animating air roll");
-                _avatar->animate("air_roll");
-                auto recoverAction = _avatar->getAction("air_roll");
-                _actionManager->activate("air_roll", recoverAction, _avatar->getSceneNode());
-            } 
+                animate(_avatar, "air_recover", true);
+            }
+            else if (_avatar->getActiveAction() == "death") {
+                //do nothing
+            }
             else {
                 //Todo:: blink idle
                 //CULog("animating idle");
-                if (((float)rand() / RAND_MAX) < 0.0f) {
-                    _avatar->animate("idle_blink");
-                    auto idleAction = _avatar->getAction("idle_blink");
-                    _actionManager->activate("idle_blink", idleAction, _avatar->getSceneNode());
-                }
-                else {
-                    _avatar->animate("idle");
-                    auto idleAction = _avatar->getAction("idle");
-                    _actionManager->activate("idle", idleAction, _avatar->getSceneNode());
-                }
+                //if (((float)rand() / RAND_MAX) < 0.0f) {
+                //    animate(_avatar, "idle_blink", true);
+                //}
+                //else {
+                animate(_avatar, "idle");
+                //}
             }
         }
+        else {
+            //CULog("ANIMATION ERROR!!!!");
+            //CULog(_avatar->getActiveAction().c_str());
+            //CULog(_actionManager->isActive(_avatar->getActiveAction()) ? "true" : "false");
+        }
 
-            if (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() < _avatar->getFloatyFrames() && _avatar->getDashCooldownMax() - _avatar->getDashCooldown() != 0 && _avatar->getDashCooldown() % 3  == 1) {
-				std::shared_ptr<scene2::SpriteNode> afterimage = scene2::SpriteNode::allocWithSprite(_avatar->getSpriteNode());
-                afterimage->setAnchor(Vec2(0.5, 0.35));
-                afterimage->setPosition(_avatar->getSceneNode()->getPosition());
-                afterimage->setPositionY(afterimage->getPositionY() + 0.0f);
-                afterimage->flipHorizontal(_avatar->getSpriteNode()->isFlipHorizontal());
-                Color4 b = Color4::CYAN;
-                b.a = 255;
-                afterimage->setColor(b);
-                afterimage->setScale(_avatar->getSpriteNode()->getScale());
-                _afterimages.push_back(afterimage);
-                addChild(afterimage);
-			}
+        if (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() < _avatar->getFloatyFrames() && _avatar->getDashCooldownMax() - _avatar->getDashCooldown() != 0 && _avatar->getDashCooldown() % 3 == 1) {
+            std::shared_ptr<scene2::SpriteNode> afterimage = scene2::SpriteNode::allocWithSprite(_avatar->getSpriteNode());
+            afterimage->setAnchor(Vec2(0.5, 0.35));
+            afterimage->setPosition(_avatar->getSceneNode()->getPosition());
+            afterimage->setPositionY(afterimage->getPositionY() + 0.0f);
+            afterimage->flipHorizontal(_avatar->getSpriteNode()->isFlipHorizontal());
+            Color4 b = Color4::CYAN;
+            b.a = 255;
+            afterimage->setColor(b);
+            afterimage->setScale(_avatar->getSpriteNode()->getScale());
+            _afterimages.push_back(afterimage);
+            addChild(afterimage);
+        }
 
         _avatar->setShooting(_input->didFire());
-        if (_avatar->isShooting() && (!_actionManager->isActive("attack") && !_actionManager->isActive("air_attack"))) {
+        if (_avatar->isShooting() && (!_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && !_actionManager->isActive("air_recover"))) {
             if (_avatar->isGrounded()) {
                 auto att = _avatar->createAttack(getAssets(), _scale);
                 addObstacle(std::get<0>(att), std::get<1>(att), true);
@@ -768,12 +1017,8 @@ void GameScene::preUpdate(float dt) {
                 std::get<0>(att)->setListener([=](physics2::Obstacle* obs) {
                     obs->setPosition(_avatar->getPosition());
                     obs->setAngle(_avatar->getBody()->GetAngle());
-					});
-
-                auto attackAction = _avatar->getAction("attack");
-                _avatar->animate("attack");
-                _actionManager->clearAllActions(_avatar->getSceneNode());
-                _actionManager->activate("attack", attackAction, _avatar->getSceneNode());
+                    });
+                animate(_avatar, "attack", true);
             }
             else {
                 float horiz = _input->getHorizontal();
@@ -790,48 +1035,52 @@ void GameScene::preUpdate(float dt) {
                     Vec2 angleVec = Vec2(cos(avAngle), sin(avAngle));
                     obs->setAngle(_avatar->getBody()->GetAngle());
                     obs->setPosition(_avatar->getPosition() + angleVec * 1.5);
-                });
-               
+                    });
+
                 _avatar->getBody()->SetFixedRotation(false);
-                _avatar->getBody()->SetTransform(_avatar->getBody()->GetPosition(), angle- (3.14159265 / 2));
+                _avatar->getBody()->SetTransform(_avatar->getBody()->GetPosition(), angle - (3.14159265 / 2));
                 _avatar->getBody()->SetFixedRotation(true);
 
-                auto attackAction = _avatar->getAction("air_attack");
-                _avatar->animate("air_attack");
-                _actionManager->clearAllActions(_avatar->getSceneNode());
-                _actionManager->activate("air_attack", attackAction, _avatar->getSceneNode());
+                animate(_avatar, "air_attack", true);
             }
         }
     }
 
+
+    if (_input->didLevel1()) {
+        ////setLevel(1, 1);
+        //_interactivePopups.back()->toggle();
+        _interactivePopups.at(_popupIndex)->toggle();
+    }
+    else if (_input->didLevel2()) {
+        /*setLevel(1, 2);*/
+        bool b = _interactivePopups.at(_popupIndex)->isActive();
+        if (b) {
+            _interactivePopups.at(_popupIndex)->toggle();
+            _popupIndex--;
+            if (_popupIndex < 0) {
+                _popupIndex = _interactivePopups.size() - 1;
+            }
+            _interactivePopups.at(_popupIndex)->toggle();
+        }
+    }
+    else if (_input->didLevel3()) {
+        /*setLevel(1, 3);*/
+        bool b = _interactivePopups.at(_popupIndex)->isActive();
+        if (b) {
+            _interactivePopups.at(_popupIndex)->toggle();
+            _popupIndex++;
+            if (_popupIndex == _interactivePopups.size()) {
+                _popupIndex = 0;
+            }
+            _interactivePopups.at(_popupIndex)->toggle();
+        }
+    }
+
+
+    //advance level for debug
     if (_input->didAnimate()) {
-        auto reader = JsonReader::alloc("./json/constants.json");
-
-        std::shared_ptr<JsonValue> js = reader->readJson();
-
-        _debugAnimTargetName = js->getString("entity");
-        if (_debugAnimTargetName == "su") {
-            _debugAnimTarget = _avatar;
-        }
-        else if (_debugAnimTargetName == "bull") {
-            _debugAnimTarget = _Bull;
-        }
-        else if (_debugAnimTargetName == "shrimp") {
-            _debugAnimTarget = _ShrimpRice;
-        }
-        else {
-            _debugAnimTarget = nullptr;
-        }
-
-        _debugAnimName = js->getString("animation");
-        if (_debugAnimTarget != nullptr) {
-            CULog("Overriding");
-            _overrideAnim = true;
-            _debugAnimTarget->animate(_debugAnimName);
-            auto action = _debugAnimTarget->getAction(_debugAnimName);
-            _actionManager->clearAllActions(_debugAnimTarget->getSceneNode());
-            _actionManager->activate(_debugAnimName, action, _debugAnimTarget->getSceneNode());
-        }
+        setComplete(true);
     }
     if (_overrideAnim && !_actionManager->isActive(_debugAnimName)) {
         _overrideAnim = false;
@@ -853,78 +1102,65 @@ void GameScene::preUpdate(float dt) {
         bgNode->setTexture(bgTexture);
         
     }
-    if (_input->didMusic()) {
+    //if (_input->didMusic()) {
 
-        auto reader = JsonReader::alloc("./json/constants.json");
+    //    auto reader = JsonReader::alloc("./json/constants.json");
 
-        std::shared_ptr<JsonValue> js = reader->readJson();
-        
-        std::shared_ptr<Sound> source = _assets->get<Sound>(js->get("environment")->get("1")->getString("music"));
-        AudioEngine::get()->getMusicQueue()->clear();
-        AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
-    }
-   
+    //    std::shared_ptr<JsonValue> js = reader->readJson();
+    //    
+    //    std::shared_ptr<Sound> source = _assets->get<Sound>(js->get("environment")->get("1")->getString("music"));
+    //    AudioEngine::get()->getMusicQueue()->clear();
+    //    AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
+    //}
 
     _dollarnode->update(dt);
-    if (!_slowed) {
-        //_dollarnode->setVisible(false);
-        //if (_dollarnode->isFocus()) {
-        //    _dollarnode->setFocus(false);
-        //    _dollarnode->setReadyToCook(false);
-        //}
+    if (_slowed){ 
+        handleCooktime();
+    }
 
-        ////_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
-        //_avatar->setAllMovement(_input->getHorizontal(), _input->getVertical());
-        //_avatar->setJumping(_input->didJump());
-        //_avatar->setDash(_input->didDash());
-        //_avatar->setInputWalk(_input->getHorizontal() != 0);
-        //_avatar->applyForce(_input->getHorizontal(), _input->getVertical());
-        //if (_avatar->isJumping() && _avatar->isGrounded()) {
-        //    std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
-        //    AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
-        //}
+    //CULog("sprite width/height: %f %f", _avatar->getSceneNode()->getSize().width, _avatar->getSceneNode()->getSize().height);
+    //CULog("obstacle width/height: %f %f", _avatar->getHeight() * _scale, _avatar->getWidth() * _scale);
+
+    //CULog("camera sprite width/height: %f %f", _avatar->getSceneNode()->getSize().width * _camera->getZoom(), _avatar->getSceneNode()->getSize().height * _camera->getZoom());
+
+
+
+
+    if (!_slowed) {
+        _dollarnode->setVisible(false);
+        if (_dollarnode->isFocus()) {
+            _dollarnode->setFocus(false);
+            _dollarnode->setReadyToCook(false);
+        }
+
+        //_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
+        if (!_avatar->isDead()) {
+            _avatar->setAllMovement(_input->getHorizontal(), _input->getVertical());
+            _avatar->setJumping(_input->didJump());
+            _avatar->setDash(_input->didDash());
+            _avatar->setInputWalk(_input->getHorizontal() != 0);
+        }
+        else {
+            _avatar->setAllMovement(0.0f, 0.0f);
+            _avatar->setJumping(false);
+            _avatar->setDash(false);
+            _avatar->setInputWalk(false);
+        }
+        if (_avatar->isJumping() && _avatar->isGrounded()) {
+            std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
+            AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
+        }
     }
     else {
-        _dollarnode->setVisible(true);
-        if (!(_dollarnode->isFocus())) {
-            _dollarnode->setFocus(true);
-            _dollarnode->setReadyToCook(true);
-        }
-        //cooktime handling. Assume that _target not null, if it is null then continue
-        //if (!_dollarnode->isPending()) {
-        if (_target != nullptr && !_dollarnode->isPending()) {
-            _slowed = false;
-            std::string message = "";
-            if (_dollarnode->getLastResult() > 0) {
-                CULog("NICE!!!!!!!!!!!!!!");
-                modifier mod = _dollarnode->getIsDurationSequence() ? modifier::duration : modifier::effect;
-                _target->takeDamage(_avatar->getAttack(), 0);
-
-                _avatar->applyBuff(EnemyModel::typeToBuff(_target->getType()), mod);
-                //set buff label
-                _buffLabel->setText(DudeModel::getStrForBuff(EnemyModel::typeToBuff(_target->getType())));
-                _buffLabel->setVisible(true);
-            }
-            else {
-                CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
-            }
-            CULog("%i", _dollarnode->getLastResult());
-            message = _feedbackMessages[_dollarnode->getLastResult()];
-            popup(message, cugl::Vec2(_target->getPosition().x * _scale, _target->getPosition().y * 1.1 * _scale));
-                
-            _target = nullptr;
-
-            _dollarnode->setPending(true);
-            //}
-            //else {
-
-            //}
-        }
+        _avatar->setAllMovement(0, 0);
+        _avatar->setJumping(false);
+        _avatar->setDash(false);
+        _avatar->setInputWalk(false);
     }
 
-    if (_avatar->getDuration() == 0 && !_avatar->hasSuper()) {
-        _buffLabel->setVisible(false);
-    }
+    //if (_avatar->getDuration() == 0 && !_avatar->hasSuper()) {
+    //    //_buffLabel->setVisible(false);
+    //}
 
     //iterate over popups to update
     for (auto& tpl : _popups) {
@@ -940,14 +1176,13 @@ void GameScene::preUpdate(float dt) {
         else {
             popup->setPositionY(popup->getPositionY() - 1.0f);
         }
-
     }
 
 
     Vec2 avatarPos = _avatar->getPosition();
-    std::vector<std::shared_ptr<Rice>> spawns = std::vector<std::shared_ptr<Rice>>();
+    std::vector<std::shared_ptr<EnemyModel>> spawns = std::vector<std::shared_ptr<EnemyModel>>();
     for (auto& enemy : _enemies) {
-        if (enemy != nullptr && !enemy->isRemoved()) {
+        if (enemy != nullptr && enemy->getBody() != nullptr && !enemy->isRemoved()) {
             enemy->update(dt);
             Vec2 enemyPos = enemy->getPosition();
             float distance = avatarPos.distance(enemyPos);
@@ -956,23 +1191,7 @@ void GameScene::preUpdate(float dt) {
 			if (enemy->getattacktime()) {
                 //spawn rice if rice
                 if (enemy->getType() == EnemyType::rice) {
-                    std::shared_ptr<Texture> image = _assets->get<Texture>("riceSoldier");
-                    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
-                    float imageWidth = image->getWidth() / 4;
-                    float imageHeight = image->getHeight() / 4;
-                    Size singularSpriteSize = Size(imageWidth, imageHeight);
-                    std::shared_ptr<Rice> riceSpawn = Rice::allocWithConstants(enemyPos + Vec2((rand() % 2) * enemy->getDirection(), rand() % 2), singularSpriteSize / (5 * getScale()), getScale(), _assets, true);
-
-                    riceSpawn->setState("acknowledging");
-                    riceSpawn->setListener([=](physics2::Obstacle* obs) {
-                        riceSpawn->setTargetPosition(_avatar->getPosition());
-                        riceSpawn->setPosition(obs->getPosition()* _scale);
-                        riceSpawn->setAngle(obs->getAngle());
-                        });
-                    riceSpawn->setSceneNode(spritenode);
-                    spritenode->setScale(0.375 / 1.75);
-                    addObstacle(riceSpawn, spritenode);
-                    spawns.push_back(riceSpawn);
+                    spawns.push_back(spawnRiceSoldier(enemyPos + Vec2((rand() % 2) * enemy->getDirection(), rand() % 2), std::static_pointer_cast<Rice>(enemy)));
                 }
                 else {
                     auto res = enemy->createAttack(_assets, _scale);
@@ -992,10 +1211,14 @@ void GameScene::preUpdate(float dt) {
                 enemy->animate(actionName);
                 auto action = enemy->getAction(actionName);
                 _actionManager->activate(actionName + enemy->getId(), action, enemy->getSceneNode());
-
-                //CULog("animating %s", actionName.c_str());
+				if (enemy->getType() == EnemyType::beef) {
+					CULog("animating %s", actionName);
+				}
             }
         }
+        //if (enemy->getType() == EnemyType::shrimp) {
+        //    CULog("frame %i", enemy->getSpriteNode()->getFrame());
+        //}
     }
 
     for (auto& spawn : spawns) {
@@ -1031,7 +1254,7 @@ void GameScene::preUpdate(float dt) {
                     _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
                 }
             }
-            if (_Bull->isChasing() && ((_Bull->getPosition().x > 20 && _Bull->getDirection() == -1) || (_Bull->getPosition().x < 30 && _Bull->getDirection() == 1))) {
+            if (_Bull->getCAcount()<=0 && _Bull->isChasing() && ((_Bull->getPosition().x > 20 && _Bull->getDirection() == -1) || (_Bull->getPosition().x < 30 && _Bull->getDirection() == 1))) {
                 Vec2 BullPos = _Bull->getPosition();
                 int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
                 if (direction != _Bull->getDirection()) {
@@ -1040,24 +1263,25 @@ void GameScene::preUpdate(float dt) {
 			}
             _Bull->update(dt);
         }
-    if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
+
+        if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
             Vec2 BullPos = _ShrimpRice->getPosition();
             if (_ShrimpRice->getHealth() <= 0) {
                 _worldnode->removeChild(_ShrimpRice->getSceneNode());
                 _ShrimpRice->setDebugScene(nullptr);
                 _ShrimpRice->markRemoved(true);
             }
-            if (_ShrimpRice->getact()=="SFRWave2") {
+            if (_ShrimpRice->getact() == "SFRWave2") {
                 float distance = avatarPos.distance(BullPos);
                 if (distance < 4) {
-                    _ShrimpRice->setact("SFRWave3",1.125);
+                    _ShrimpRice->setact("SFRWave3", 1.125);
                 }
             }
             if (_ShrimpRice->gettimetosummon()) {
                 _ShrimpRice->Summon(*this);
                 _ShrimpRice->settimetosummon(false);
             }
-            if (_ShrimpRice->getcanturn() && _ShrimpRice->getacttime()<=0) {
+            if (_ShrimpRice->getcanturn() && _ShrimpRice->getacttime() <= 0) {
                 if (_ShrimpRice->getnextchangetime() < 0) {
                     int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
                     _ShrimpRice->setDirection(direction);
@@ -1066,11 +1290,25 @@ void GameScene::preUpdate(float dt) {
             }
             if (_ShrimpRice->getangrytime() > 0 && !_enemies.empty()) {
                 for (auto& enemy : _enemies) {
+                    enemy->setnocoll(true);
                     Vec2 EnyPos = enemy->getPosition();
                     int direction = (BullPos.x > EnyPos.x) ? 1 : -1;
-                    enemy->setPosition(enemy->getPosition() + Vec2(direction*0.3, 0.0f));
-				}
+                    enemy->setPosition(enemy->getPosition() + Vec2(direction * 0.3, 0.0f));
+                }
             }
+            else if (_ShrimpRice->getHealth() <= 35 && _enemies.size() >= 4) {
+                _ShrimpRice->setact("SFRStunState2", 5.0f);
+                _ShrimpRice->setangrytime(5);
+            }
+            if (_ShrimpRice->getparry() && !_ShrimpRice->getparry2()) {
+                CULog("parry");
+                _ShrimpRice->setparry(false);
+                _ShrimpRice->setparry2(false);
+                _ShrimpRice->setact("SFRStunState1", 0.6);
+                _ShrimpRice->parry(*this);
+                _ShrimpRice->setdelay(0.5);
+            }
+
             _ShrimpRice->update(dt);
         }
 
@@ -1079,7 +1317,9 @@ void GameScene::preUpdate(float dt) {
 
 
     if (_Bull != nullptr) {
-        _BullactionManager->update(dt);
+        if (!_paused) {
+            _BullactionManager->update(dt);
+        }
         if (_Bull->getangrytime()>0) {
             if (!_BullactionManager->isActive("bullStunned")) {
                 _BullactionManager->clearAllActions(_Bull->getSceneNode());
@@ -1090,7 +1330,7 @@ void GameScene::preUpdate(float dt) {
                 _Bull->animate("bullStunned");
             }
         }
-        else if (_Bull->getbreaking()<=0 &&_Bull->isChasing() && ((_Bull->getPosition().x < 13 && _Bull->getDirection() == -1) || (_Bull->getPosition().x > 37 && _Bull->getDirection() == 1))) {
+        else if (_Bull->getCAcount()<=0 && _Bull->getbreaking()<=0 &&_Bull->isChasing() && ((_Bull->getPosition().x < 13 && _Bull->getDirection() == -1) || (_Bull->getPosition().x > 37 && _Bull->getDirection() == 1))) {
             if (!_BullactionManager->isActive("bullAttack")){
                 _BullactionManager->clearAllActions(_Bull->getSceneNode());
                 auto bullAttack = _Bull->getAction("bullAttack");
@@ -1120,7 +1360,7 @@ void GameScene::preUpdate(float dt) {
                 _Bull->animate("bullRun");
             }
         }
-        else if ( _Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0) {
+        else if ( _Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0 &&_Bull->getattacktype()!="none") {
             if (!_BullactionManager->isActive(_Bull->getattacktype())) {
                 _BullactionManager->clearAllActions(_Bull->getSceneNode());
                 auto bullTelegraph = _Bull->getAction(_Bull->getattacktype());
@@ -1136,7 +1376,9 @@ void GameScene::preUpdate(float dt) {
     }
 
     if (_ShrimpRice != nullptr) {
-        _SHRactionManager->update(dt);
+        if (!_paused) {
+            _SHRactionManager->update(dt);
+        }
         
         if (_ShrimpRice->getacttime() > 0) {
             if (!_SHRactionManager->isActive(_ShrimpRice->getact())) {
@@ -1171,16 +1413,15 @@ void GameScene::preUpdate(float dt) {
         
     }
 
-
-
     if ((_afterimages.size() > 4 || (_avatar->getDashCooldownMax() - _avatar->getDashCooldown() > _avatar->getFloatyFrames())) && !_afterimages.empty()) {
         std::shared_ptr<scene2::SceneNode> afterimage = _afterimages.front();
         _afterimages.erase(_afterimages.begin());
         removeChild(afterimage);
     }
      
-    _actionManager->update(dt);
-
+    if (!_paused) {
+        _actionManager->update(dt);
+    }
 }
 
 
@@ -1221,13 +1462,64 @@ void GameScene::fixedUpdate(float step) {
         std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
         _healthBarForeground->setScissor(scissor);
     }
-    if (_cookBarFill != nullptr) {
+    if (_timerFillIcon != nullptr) {
+        float timePercentage = 1.0f - (_timer / _timeLimit);
+        float width = _timerFillIcon->getWidth() * 2;
+        float height = _timerFillIcon->getHeight()* 2;
+        std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, width, height * timePercentage));
+        _timerFillIcon->setScissor(scissor);
+    }
+    if (_avatar != nullptr) {
         float meterPercentage = _avatar->getMeter() / 100.0f;
         float totalWidth = _cookBarFill->getWidth();
         float height = _cookBarFill->getHeight();
         float clipWidth = totalWidth * meterPercentage;
         std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
-        _cookBarFill->setScissor(scissor);
+
+        _cookBarIcons["attackready"]->setVisible(false);
+        _cookBarIcons["speedready"]->setVisible(false);
+        _cookBarIcons["jumpready"]->setVisible(false);
+        _cookBarIcons["shieldready"]->setVisible(false);
+        _cookBarIcons["healthready"]->setVisible(false);
+        _cookBarFill->setVisible(false);
+        
+        switch (_avatar->getBuffType()) {
+            case (buff::attack): {
+                _cookBarIcons["attackready"]->setScissor(scissor);
+                _cookBarIcons["attackready"]->setVisible(true);
+                break;
+            }
+            case (buff::defense): {
+                _cookBarIcons["shieldready"]->setScissor(scissor);
+                _cookBarIcons["shieldready"]->setVisible(true);
+                break;
+			}
+            case (buff::speed): {
+                _cookBarIcons["speedready"]->setScissor(scissor);
+                _cookBarIcons["speedready"]->setVisible(true);
+                break;
+            }
+            case (buff::health): {
+                _cookBarIcons["healthready"]->setScissor(scissor);
+                _cookBarIcons["healthready"]->setVisible(true);
+                break;
+            }
+            case (buff::jump): {
+                _cookBarIcons["jumpready"]->setScissor(scissor);
+                _cookBarIcons["jumpready"]->setVisible(true);
+                break;
+            }
+            case (buff::none): {
+                _cookBarFill->setScissor(scissor);
+                _cookBarFill->setVisible(true);
+                break;
+            }
+            default: {
+                _cookBarFill->setScissor(scissor);
+                _cookBarFill->setVisible(true);
+                break;
+            }
+        }
     }
     if (_BullhealthBarForeground != nullptr && _Bull != nullptr) {
         _healthPercentage = _Bull->getHealth() / 100;
@@ -1245,133 +1537,110 @@ void GameScene::fixedUpdate(float step) {
         std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, clipWidth, height));
         _SFRhealthBarForeground->setScissor(scissor);
     }
+    if (_paused) {
+        //step = 0;
+        return;
+    }
 
     if (_slowed) {
         step = step / 15;
     }
-    //camera logic
-    // 
-    // Commented out 03/27 4:30AM to check level editor
-    // 
-    if (CAMERA_FOLLOWS_PLAYER) {
-
-        if (_level_model->getFilePath() == "json/intermediate.json") {
-            _camera->setZoom(155.0 / 40.0);
-            // _camera->setZoom(1.0);
-        }
-
-        else if (_level_model->getFilePath() != "") {
-            _camera->setZoom(400.0 / 40.0);
-        }
-
-        // this might crash cuz 
-        //if (_chapter == 1) {
-        //    if (_level == 1) {
-        //        // we will have to not hard code this in future: WIDTH_OF_LEVEL / 40.0
-        //        // _camera->setZoom(210.0/40.0);
-        //        _camera->setZoom(400.0 / 40.0);
-        //    }
-        //    else if (_level == 2) {
-        //        _camera->setZoom(400.0 / 40.0);
-        //    }
-        //    else if (_level == 3) {
-        //        _camera->setZoom(210.0 / 40.0);
-        //    }
-        //    else if (_level == 4) {
-        //        _camera->setZoom(400.0 / 40.0);
-        //    }
-        //}
-
-        //else if (currentLevel == level2) {
-        //    _camera->setZoom(210.0 / 40.0);
-        //}
-        //else  if (currentLevel == level3) {
-        //    _camera->setZoom(210.0 / 40.0);
-        //}
-        //else {
-        //    _camera->setZoom(2.0);
-        //}
-
-        cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
-        ////cugl::Vec3 mapMin = Vec3(SCENE_WIDTH / 2, SCENE_HEIGHT / 2, 0);
-        ////cugl::Vec3 mapMax = Vec3(1400 - SCENE_WIDTH / 2, 900 - SCENE_HEIGHT / 2, 0); //replace magic numbers
-        // 
-        //CULog("%f",  _background->getBoundingRect().getMinX());
-        //CULog("%f", _background->getBoundingRect().getMaxX());
-        //CULog("%f", _background->getBoundingRect().getMinY());
-        //CULog("%f", _background->getBoundingRect().getMaxY());
-
-        //CULog("%f", _camera->getViewport().getMinX());
-        //CULog("%f", _camera->getViewport().getMaxX());
-        //CULog("%f", _camera->getViewport().getMinY());
-        //CULog("%f", _camera->getViewport().getMaxY());
-        //CULog("%f", _camera->getZoom() * (_camera->getViewport().getMaxX() - _camera->getViewport().getMinX()));
-        //cugl::Vec3 cameraLL = _camera->unproject(Vec2(_camera->getViewport().getMinX(), _camera->getViewport().getMinY()));
-        //cugl::Vec3 cameraUR = _camera->unproject(Vec2(_camera->getViewport().getMaxX(), _camera->getViewport().getMaxY()));
-
-        float invZoom = 1 / _camera->getZoom();
-        float cameraWidth = invZoom * (_camera->getViewport().getMaxX() - _camera->getViewport().getMinX()) / 2;
-        float cameraHeight = invZoom * (_camera->getViewport().getMaxY() - _camera->getViewport().getMinY()) / 2;
-
-        if (_level == 1 || _level == 2) {
-            cugl::Vec3 mapMin = Vec3(_background->getBoundingRect().getMinX() + cameraWidth, _background->getBoundingRect().getMinY() + cameraHeight, 0);
-            cugl::Vec3 mapMax = Vec3(_background->getBoundingRect().getMaxX() - cameraWidth, _background->getBoundingRect().getMaxY() - cameraHeight, 0);
-            target.clamp(mapMin, mapMax);
-        }
-       
-
-        cugl::Vec3 pos = _camera->getPosition();
-
-        Rect viewport = _camera->getViewport();
-
-        Vec2 worldPosition = Vec2(pos.x - viewport.size.width / 2 + 140,
-            pos.y + viewport.size.height / 2 - 50);
-
-
-        //magic number 0.2 are for smoothness
-        //float smooth = std::min(0.2f, (target - pos).length());
-        float smooth = 0.2;
-        pos.smooth(target, step, smooth);
-        //pos = _avatar->getPosition() * _scale;
-        _camera->setPosition(pos);
-        _camera->update();
-        //_dollarnode->setPosition(pos);
+    else {
+        _timer += step;
     }
-    if (_avatar->getHealth() <= 0) {
-        setFailure(true);
+
+    if (!_respawnTimes.empty() &&_timer >= _respawnTimes.front()) {
+		//setFailure(true);
+        respawnEnemies();
+        _respawnTimes.pop_front();
+	}
+
+	if (_level_model->getFilePath() == "json/intermediate.json") {
+		_camera->setZoom(155.0 / 40.0);
+	}
+	else if (_level_model->getFilePath() != "") {
+		_camera->setZoom(155.0 / 40.0);
+	}
+	else {
+		_camera->setZoom(400.0 / 40.0);
+	}
+
+	cugl::Vec3 target = _avatar->getPosition() * _scale + _cameraOffset;
+	float invZoom = 1 / _camera->getZoom();
+	float cameraWidth = invZoom * (_camera->getViewport().getMaxX() - _camera->getViewport().getMinX()) / 2;
+	float cameraHeight = invZoom * (_camera->getViewport().getMaxY() - _camera->getViewport().getMinY()) / 2;
+
+	if (_level == 1 || _level == 2 || _level == 3 || _level == 4) {
+
+		float backgroundWidth = _background->getBoundingRect().getMaxX() - _background->getBoundingRect().getMinX();
+		float backgroundHeight = _background->getBoundingRect().getMaxY() - _background->getBoundingRect().getMinY();
+
+		cugl::Vec3 mapMin = Vec3(_background->getBoundingRect().getMinX() + cameraWidth, _background->getBoundingRect().getMinY() + cameraHeight, 0);
+		cugl::Vec3 mapMax = Vec3(_background->getBoundingRect().getMaxX() - cameraWidth, _background->getBoundingRect().getMaxY() - cameraHeight, 0);
+		target.clamp(mapMin, mapMax);
+	}
+
+
+	cugl::Vec3 pos = _camera->getPosition();
+
+	Rect viewport = _camera->getViewport();
+
+	Vec2 worldPosition = Vec2(pos.x - viewport.size.width / 2 + 140,
+		pos.y + viewport.size.height / 2 - 50);
+
+
+	//magic number 0.2 are for smoothness
+	float smooth = 0.2;
+	pos.smooth(target, step, smooth);
+	_camera->setPosition(pos);
+	_camera->update();
+
+	if (_level == 1 || _level == 2 || _level == 3 || _level == 4) {
+
+		invZoom = 1 / _minimapCamera->getZoom();
+		cameraWidth = invZoom * (_minimapCamera->getViewport().getMaxX() - _minimapCamera->getViewport().getMinX()) / 2;
+		cameraHeight = invZoom * (_minimapCamera->getViewport().getMaxY() - _minimapCamera->getViewport().getMinY()) / 2;
+
+		float backgroundWidth = _background->getBoundingRect().getMaxX() - _background->getBoundingRect().getMinX();
+		float backgroundHeight = _background->getBoundingRect().getMaxY() - _background->getBoundingRect().getMinY();
+
+		if (backgroundWidth < cameraWidth * 2) {
+			_minimapCamera->setZoom(std::min(_minimapCamera->getZoom(), cameraWidth * 2 / backgroundWidth));
+			invZoom = 1 / _minimapCamera->getZoom();
+			cameraWidth = invZoom * (_minimapCamera->getViewport().getMaxX() - _minimapCamera->getViewport().getMinX()) / 2;
+			cameraHeight = invZoom * (_minimapCamera->getViewport().getMaxY() - _minimapCamera->getViewport().getMinY()) / 2;
+		}
+		if (backgroundHeight < cameraHeight * 2) {
+			_minimapCamera->setZoom(std::min(_minimapCamera->getZoom(), cameraHeight * 2 / backgroundHeight));
+			invZoom = 1 / _minimapCamera->getZoom();
+			cameraWidth = invZoom * (_minimapCamera->getViewport().getMaxX() - _minimapCamera->getViewport().getMinX()) / 2;
+			cameraHeight = invZoom * (_minimapCamera->getViewport().getMaxY() - _minimapCamera->getViewport().getMinY()) / 2;
+		}
+
+		cugl::Vec3 mapMin = Vec3(_background->getBoundingRect().getMinX() + cameraWidth, _background->getBoundingRect().getMinY() + cameraHeight, 0);
+		cugl::Vec3 mapMax = Vec3(_background->getBoundingRect().getMaxX() - cameraWidth, _background->getBoundingRect().getMaxY() - cameraHeight, 0);
+		pos.clamp(mapMin, mapMax);
+		_minimapCamera->setPosition(pos);
+		_minimapCamera->update();
     }
     if (_Bull != nullptr && _Bull->getHealth() <= 0) {
         setComplete(true);
     }
 
-    if (!_slowed) {
-        _dollarnode->setVisible(false);
-        if (_dollarnode->isFocus()) {
-            _dollarnode->setFocus(false);
-            _dollarnode->setReadyToCook(false);
-        }
-
-        //_avatar->setMovement(_input->getHorizontal() * _avatar->getForce());
-        _avatar->setAllMovement(_input->getHorizontal(), _input->getVertical());
-        _avatar->setJumping(_input->didJump());
-        _avatar->setDash(_input->didDash());
-        _avatar->setInputWalk(_input->getHorizontal() != 0);
-        _avatar->applyForce(_input->getHorizontal(), _input->getVertical());
-        if (_avatar->isJumping() && _avatar->isGrounded()) {
-            std::shared_ptr<Sound> source = _assets->get<Sound>(JUMP_EFFECT);
-            AudioEngine::get()->play(JUMP_EFFECT, source, false, EFFECT_VOLUME);
-        }
+    if (_timer > _timeLimit) {
+        setFailure(true);
     }
-    else {
-        _avatar->setAllMovement(0, 0);
-        _avatar->setJumping(false);
-        _avatar->setDash(false);
-    }
+ 
+    //su
     _avatar->fixedUpdate(step);
+    if (_avatar->getDeathTimer() < 0) {
+        respawnAvatar();
+        _timer += _timeLimit / 10.0f;
+    }
     for (auto& enemy : _enemies) {
-        if (enemy != nullptr && !enemy->isRemoved()) {
+        if (enemy != nullptr && enemy->getBody() != nullptr && !enemy->isRemoved()) {
             enemy->fixedUpdate(step);
-		}
+        }
         if (enemy->getHealth() <= 0) {
             enemy->markForDeletion();
         }
@@ -1379,6 +1648,54 @@ void GameScene::fixedUpdate(float step) {
             removeEnemy(enemy.get());
         }
     }
+    //attacks
+    for (auto it = _attacks.begin(); it != _attacks.end();) {
+        if ((*it) == nullptr || (*it)->isRemoved()) {
+            ++it;
+            continue;
+        }
+        else {
+            (*it)->fixedUpdate(step);
+        }
+
+        if ((*it)->killMe()) {
+            removeAttack((*it).get());
+            it = _attacks.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+
+    //interactables
+    /*for (auto it = _interactables.begin(); it != _interactables.end();) {
+        if ((*it) == nullptr || (*it)->isRemoved()) {
+			
+		}
+	}*/
+
+    //plates
+    bool allPlatesDone = !_plates.empty();
+    for (auto it = _plates.begin(); it != _plates.end();) {
+        if ((*it) == nullptr || (*it)->isRemoved()) {
+			++it;
+			continue;
+		}
+        else {
+            if (!(*it)->isSuccess()) {
+                allPlatesDone = false;
+            } else{
+                CULog("SUcceeded");
+                (*it)->getSceneNode()->setColor(Color4::GREEN);
+            }
+			++it;
+		}
+	}
+    if (allPlatesDone) {
+        setComplete(true);
+    }
+
+
 
     int timer = 0;
     int altTimer = 0;
@@ -1456,6 +1773,7 @@ void GameScene::postUpdate(float remain) {
     // Since items may be deleted, garbage collect
     _world->garbageCollect();
 
+
     // TODO: Update this demo to support interpolation
     // We can interpolate the rope bridge and spinner as we have the data structures
 
@@ -1468,21 +1786,6 @@ void GameScene::postUpdate(float remain) {
     // Otherwise, it looks like bullet appears far away
 
     //commented out avatar stuff, 03/27 4:30 AM
-
-
-
-    //iterate through physics objects and delete any timed-out attacks
-    //BAD CODE ALEART
-    for (auto it = _attacks.begin(); it != _attacks.end();) {
-        if ((*it)->killMe()) {
-            CULog("removing attack");
-            removeAttack((*it).get());
-            it = _attacks.erase(it);
-        }
-        else {
-            ++it;
-        }
-    }
 
     // Record failure if necessary.
 
@@ -1500,45 +1803,48 @@ void GameScene::postUpdate(float remain) {
         if (_failed == false) {
 
             //this is where we will change the scene width and heights for everything
+            save();
+            advanceLevel();
+            reset();
 
-            if (_level_model->getFilePath() == "json/intermediate.json") {
-                _bgScene->setColor(Color4::BLACK);
-                _level_model->removeBackgroundImages(*this);
-                _level_model->setFilePath("json/empanada-platform-level-01.json");
-                currentLevel = _level_model;
+            //if (_level_model->getFilePath() == "json/intermediate.json") {
+            //    //_bgScene->setColor(Color4::BLACK);
+            //    _level_model->removeBackgroundImages(*this);
+            //    _level_model->setFilePath("json/empanada-platform-level-01.json");
+            //    currentLevel = _level_model;
 
-                CULog("We should switch to our first initial level");
-                // currentLevel
-                reset();
-            }
-            else if (_level_model->getFilePath() == "json/empanada-platform-level-01.json") {
-                _bgScene->setColor(Color4::BLACK);
-                _level_model->removeBackgroundImages(*this);
-                _level_model->setFilePath("json/test_level_v2_experiment.json");
-                currentLevel = _level_model;
-                
-                CULog("We should switch to our first initial level");
-                // currentLevel
-                reset();
-            }
-            else if (_level_model->getFilePath() == "json/test_level_v2_experiment.json") {
-                _bgScene->setColor(Color4::BLACK);
-                _level_model->removeBackgroundImages(*this);
-                _level_model->setFilePath("json/bull-boss-level.json");
-                currentLevel = _level_model;
+            //    CULog("We should switch to our first initial level");
+            //    // currentLevel
+            //    reset();
+            //}
+            //else if (_level_model->getFilePath() == "json/empanada-platform-level-01.json") {
+            //    //_bgScene->setColor(Color4::BLACK);
+            //    _level_model->removeBackgroundImages(*this);
+            //    _level_model->setFilePath("json/test_level_v2_experiment.json");
+            //    currentLevel = _level_model;
+            //    
+            //    CULog("We should switch to our first initial level");
+            //    // currentLevel
+            //    reset();
+            //}
+            //else if (_level_model->getFilePath() == "json/test_level_v2_experiment.json") {
+            //    _bgScene->setColor(Color4::BLACK);
+            //    _level_model->removeBackgroundImages(*this);
+            //    _level_model->setFilePath("json/bull-boss-level.json");
+            //    currentLevel = _level_model;
 
-                CULog("We should switch to the bull boss level");
-                // currentLevel
-                reset();
-            }
-            else if (currentLevel == level3) {
-                currentLevel = _level_model;
-                reset();
-            }
-            else {
-                currentLevel = _level_model;
-                reset();
-            }
+            //    CULog("We should switch to the bull boss level");
+            //    // currentLevel
+            //    reset();
+            //}
+            //else if (currentLevel == level3) {
+            //    currentLevel = _level_model;
+            //    reset();
+            //}
+            //else {
+            //    currentLevel = _level_model;
+            //    reset();
+            //}
         }
             // advanceLevel();
             // reset();
@@ -1547,14 +1853,125 @@ void GameScene::postUpdate(float remain) {
             reset();
         }
     }
+
 }
 
-void GameScene::renderBG(std::shared_ptr<cugl::SpriteBatch> batch) {
-    _bgScene->render(batch);
+/* Checks input for cooktime or discard 
+*  if discard, it removes ingredient from inventory
+*  if cooktime, it initiates cooktime by setting _slowed = true, and the dollar node gestures
+*/
+void GameScene::checkForCooktime() {
+    if (_input->getLastSlowHeldDuration() > 0.0f) {
+        CULog("Slow Duration %f, %d", _input->getLastSlowHeldDuration(), _input->justReleasedSlow());
+    }
+    if (_input->getLastSlowHeldDuration() < MIN_DISCARD_START_TIME && _input->justReleasedSlow() && _avatar->getMeter() > METER_COST) {
+
+        std::shared_ptr<Ingredient> ing = _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
+ 
+        if (ing != nullptr) {
+            _slowed = true;
+            //_dollarnode->setTargetGestures({ ing->getGestures(), ing->getGestures() });
+            _dollarnode->addIngredientToStation(ing);
+            _avatar->useMeter();
+            _dollarnode->setVisible(true);
+            if (!(_dollarnode->isFocus())) {
+                _dollarnode->setFocus(true);
+            }
+        }
+
+        //Old CookTime Style commented out
+        //if (_slowed) {
+        //    //_slowed = !_slowed;
+        //    //_target = nullptr;
+        //}
+        ////activate cooktime
+        //else {
+        //    CULog("Activate!");
+        //    float minDist = FLT_MAX;
+        //    for (auto& e : _enemies) {
+        //        if (e->isRemoved() || !(e->isVulnerable())) {
+        //            continue;
+        //        }
+        //        if ((e->getPosition() - _avatar->getPosition()).length() < minDist) {
+        //            _target = e;
+        //            minDist = (e->getPosition() - _avatar->getPosition()).length();
+        //        }
+        //    }
+        //    if (minDist < COOKTIME_MAX_DIST) {
+        //        _slowed = true;
+        //        //_dollarnode->setTargetGestures(_target->getGestureSeq1());
+        //        _dollarnode->setTargetGesturesNighttime(std::vector({_target->getGestureSeq1(), _target->getGestureSeq2()}));
+        //    }
+        //}
+    }
+    else if (_input->getLastSlowHeldDuration() > DISCARD_HOLD_TIME && _input->justReleasedSlow()) {
+        /*std::shared_ptr<Ingredient> ing =*/ 
+        _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
+        //i think thats all
+    }
 }
+
+void GameScene::handleCooktime() {
+    //transition in dollar node
+    //cooktime handling. 
+    if (_dollarnode->isCompleted()) {
+        _slowed = false;
+        std::string message = "";
+        if (_dollarnode->getLastResult() > 0) {
+            CULog("Succeeded gesture, awarding buff");
+            modifier mod = modifier::duration;
+            if (_dollarnode->getClosestGesture() != "") {
+                buff reward = gestureToBuff[_dollarnode->getClosestGesture()];
+                
+                _avatar->applyBuff(reward, mod);
+            }
+            else {
+                CULog("Closest gesture was empty, so no buff");
+            }
+        }
+        else {
+            CULog("No gestures matched with passing accuracy");
+        }
+
+        CULog("%i", _dollarnode->getLastResult());
+        message = _feedbackMessages[_dollarnode->getLastResult()];
+        popup(message, cugl::Vec2(_avatar->getPosition().x * _scale, _avatar->getPosition().y * 1.1 * _scale));
+    }
+}
+
+//void GameScene::renderBG(std::shared_ptr<cugl::SpriteBatch> batch) {
+//    _bgScene->render(batch);
+//}
 
 void GameScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
+    //render minimap
+    std::shared_ptr<Texture> t;
+    if (_minimapNode->isVisible()) {
+        _r->begin();
+        batch->begin(_minimapCamera->getCombined());
+        batch->setSrcBlendFunc(_srcFactor);
+        batch->setDstBlendFunc(_dstFactor);
+        batch->setBlendEquation(_blendEquation);
+
+        for (auto it = _children.begin(); it != _children.end(); ++it) {
+            if ((*it)->getName() == "background") {
+				(*it)->render(batch, Affine2::IDENTITY, _color);
+			}
+            else if ((*it)->getName() == "dude") {
+                _minimapIconNode->setPosition((*it)->getPosition());
+            }
+            (*it)->render(batch, Affine2::IDENTITY, _color);
+        }
+
+        batch->end();
+        _r->end();
+
+        _minimapNode->setTexture(_r->getTexture());
+        _minimapNode->flipVertical(true);
+    }
+
     _uiScene->render(batch);
+    _pauseMenu->render(batch);
 }
 
 
@@ -1590,17 +2007,19 @@ void GameScene::setComplete(bool value) {
  * @param value whether the level is failed.
  */
 void GameScene::setFailure(bool value) {
-    _failed = value;
     if (value) {
-        std::shared_ptr<Sound> source = _assets->get<Sound>(LOSE_MUSIC);
-        AudioEngine::get()->getMusicQueue()->play(source, false, MUSIC_VOLUME);
-        _losenode->setVisible(true);
-        _countdown = EXIT_COUNT;
+        if (!_failed && !_complete) {
+            std::shared_ptr<Sound> source = _assets->get<Sound>(LOSE_MUSIC);
+            AudioEngine::get()->getMusicQueue()->play(source, false, MUSIC_VOLUME);
+            _losenode->setVisible(true);
+            _countdown = EXIT_COUNT;
+        }
     }
     else {
         _losenode->setVisible(false);
         _countdown = -1;
     }
+    _failed = value;
 }
 
 
@@ -1619,13 +2038,16 @@ void GameScene::removeAttack(T* attack) {
     _worldnode->removeChild(attack->getSceneNode());
     attack->setDebugScene(nullptr);
     attack->markRemoved(true);
-    attack->dispose();
+    //attack->dispose();
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
 }
 
-
+void GameScene::respawnAvatar() {
+    _avatar->reset();
+    _avatar->setPosition(_spawnPoint);
+}
 
 
 
@@ -1634,14 +2056,37 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
     if (enemy->isRemoved()) {
         return;
     }
-    CULog("removing");
+
+    addEnemyToInventory(enemy->getType());
+
     _worldnode->removeChild(enemy->getSceneNode());
     enemy->setDebugScene(nullptr);
     enemy->markRemoved(true);
-    enemy->dispose();
 
     std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
     AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
+}
+
+void GameScene::respawnEnemy(std::shared_ptr<EnemyModel> enemy) {
+    if (enemy->getType() == EnemyType::rice_soldier) {
+        return;
+    }
+    else {
+        CULog(("Respawned " + enemy->getName()).c_str());
+        addObstacle(enemy, enemy->getSceneNode());
+        enemy->respawn();
+    }
+}
+
+void GameScene::addEnemyToInventory(EnemyType enemyType) {
+    IngredientProperties props = enemyToIngredientMap[enemyType];
+
+    std::shared_ptr<Ingredient> ing = std::make_shared<Ingredient>("", props.gestures, 0.0f);
+    ing->setName(props.name);
+    std::shared_ptr<Texture> tex = _assets->get<Texture>(ing->getName());
+    ing->init(tex);
+
+    _inventoryNode->addIngredient(ing);
 }
 
 
@@ -1724,75 +2169,50 @@ persistent { ... }
 */
 
 void GameScene::save() {
-    /*std::string root = cugl::Application::get()->getSaveDirectory();
-    std::string path = cugl::filetool::join_path({ root,"save.json" });*/
-
-    //Should only change nighttime save data unless level was completed, in which case change level/chapter accordingly.
     std::string root = cugl::Application::get()->getSaveDirectory();
     std::string path = cugl::filetool::join_path({ root,"save.json" });
-
-    auto reader = JsonReader::alloc(path);
-    std::shared_ptr<JsonValue> prevSave = reader->readJson();
-    reader->close();
-
     std::shared_ptr<JsonValue> json = JsonValue::allocObject();
-
-    std::shared_ptr<JsonValue> persistent = prevSave->get("persistent");
-    std::shared_ptr<JsonValue> night = JsonValue::allocObject();
-    //CHAPTER COMPLETION LOGIC
     if (isComplete()) {
-        //if completed, don't need to save state. Just increment chapter and level accordingly
-        json->appendValue("chapter", 1.0f);
-        json->appendValue("level", 2.0f);
-        json->appendValue("startFromNight", false);
-        json->appendChild("persistent", persistent);
-        json->appendChild("night", night);
-        return;
+        //increment most recently beaten chapter and level
+        json->appendValue("chapter",(float)_chapter);
+        json->appendValue("level", (float)_level);
+        auto writer = JsonWriter::alloc(path);
+        writer->writeJson(json);
+        writer->close();
     }
-    else {
-        if (persistent == nullptr || persistent->isNull()) {
-            persistent = JsonValue::allocObject();
-        }
-        else {
-            persistent->_parent = nullptr;
-        }
-    }
-    std::shared_ptr<JsonValue> player = JsonValue::allocObject();
-    player->appendValue("location_x", (double) _avatar->getPosition().x);
-    player->appendValue("location_y", (double) _avatar->getPosition().y);
-    player->appendValue("health", (double) _avatar->getHealth());
-    night->appendChild("player", player);
+ //   std::shared_ptr<JsonValue> player = JsonValue::allocObject();
+ //   player->appendValue("location_x", (double) _avatar->getPosition().x);
+ //   player->appendValue("location_y", (double) _avatar->getPosition().y);
+ //   player->appendValue("health", (double) _avatar->getHealth());
 
-    std::vector<std::string> types = { "egg", "carrot", "shrimp", "rice", "beef", "rice_soldier"};
-    for (auto t = types.begin(); t != types.end(); t++) {
-        std::string type = *t;
-        night->appendChild(type, JsonValue::allocObject());
-    }
+ //   std::vector<std::string> types = { "egg", "carrot", "shrimp", "rice", "beef", "rice_soldier"};
+ //   for (auto t = types.begin(); t != types.end(); t++) {
+ //       std::string type = *t;
+ //       night->appendChild(type, JsonValue::allocObject());
+ //   }
 
-    for (auto& e : _enemies) {
-        std::string type = EnemyModel::typeToStr(e->getType());
-        std::shared_ptr<JsonValue> x = JsonValue::allocObject();
-		x->appendValue("location_x", (double) e->getPosition().x);
-        x->appendValue("location_y", (double) e->getPosition().y);
-        x->appendValue("health", (double) e->getHealth());
-        x->appendValue("isDead", e->isRemoved());
-        night->get(type)->appendChild(e->getId(), x);
-	}
+ //   for (auto& e : _enemies) {
+ //       std::string type = EnemyModel::typeToStr(e->getType());
+ //       std::shared_ptr<JsonValue> x = JsonValue::allocObject();
+	//	x->appendValue("location_x", (double) e->getPosition().x);
+ //       x->appendValue("location_y", (double) e->getPosition().y);
+ //       x->appendValue("health", (double) e->getHealth());
+ //       x->appendValue("isDead", e->isRemoved());
+ //       night->get(type)->appendChild(e->getId(), x);
+	//}
 
-    //placeholder  values for chapter and level
-    json->appendValue("chapter", 1.0f);
-    json->appendValue("level", 1.0f);
-    json->appendValue("startFromNight", true);
-    json->appendChild("persistent", persistent);
-    json->appendChild("night", night);
-
-    auto writer = JsonWriter::alloc(path);
-    writer->writeJson(json);
-    writer->close();
+ //   //placeholder  values for chapter and level
+ //   json->appendValue("chapter", 1.0f);
+ //   json->appendValue("level", 1.0f);
+ //   json->appendValue("startFromNight", true);
+ //   //json->appendChild("persistent", persistent);
+ //   json->appendChild("night", night);
 }
 
 bool GameScene::loadSave(std::shared_ptr<JsonValue> save) {
-    if (save->size() == 0) {
+    if (save == nullptr || save->size() == 0) {
+        int chap = 1;
+        int level = 1;
         reset();
         return true;
     }
@@ -1802,24 +2222,20 @@ bool GameScene::loadSave(std::shared_ptr<JsonValue> save) {
     changeCurrentLevel(chap, level);
     reset();
 
-    // max health, dash cooldown, attack damage, speed, metergain
-    float locationX = save->get("player")->getFloat("location_x");
-    float locationY = save->get("player")->getFloat("location_y");
-    float health = save->get("player")->getFloat("health");
-    _avatar->setPosition(locationX, locationY);
-    _avatar->setHealth(health);
-    for (auto& e : _enemies) {
-        std::shared_ptr<JsonValue> enemy = save->get(EnemyModel::typeToStr(e->getType()))->get(e->getId());
-        if (enemy->getBool("isDead", false)) {
-            removeEnemy(e.get());
-            continue;
-        }
-        e->setPosition(enemy->getFloat("location_x"), enemy->getFloat("location_y"));
-        e->setHealth(enemy->getFloat("health"));
-    }
-
-    //todo: persistent
-
+    //float locationX = save->get("player")->getFloat("location_x");
+    //float locationY = save->get("player")->getFloat("location_y");
+    //float health = save->get("player")->getFloat("health");
+    //_avatar->setPosition(locationX, locationY);
+    //_avatar->setHealth(health);
+    //for (auto& e : _enemies) {
+    //    std::shared_ptr<JsonValue> enemy = save->get(EnemyModel::typeToStr(e->getType()))->get(e->getId());
+    //    if (enemy->getBool("isDead", false)) {
+    //        removeEnemy(e.get());
+    //        continue;
+    //    }
+    //    e->setPosition(enemy->getFloat("location_x"), enemy->getFloat("location_y"));
+    //    e->setHealth(enemy->getFloat("health"));
+    //}
 
     return true;
 }
@@ -1832,24 +2248,34 @@ void GameScene::loadLevel(int chapter, int level) {
 
 void GameScene::advanceLevel() {
     _level += 1;
-    _level = _level % 5;
+    _level = _level % 6;
     if (_level == 0) _level = 1;
     changeCurrentLevel(_chapter, _level);
+}
+
+void GameScene::setLevel(int chapter, int level) {
+    _level = level;
+    _chapter = chapter;
+    reset();
 }
 
 void GameScene::changeCurrentLevel(int chapter, int level) {
     currentLevel = _level_model;
     if (chapter == 1) {
         if (level == 1) {
-            _level_model->setFilePath("json/test_level_v2_experiment.json");
+            _level_model->setFilePath("json/intermediate.json");
         }
         else if (level == 2) {
-            _level_model->setFilePath("json/empanada-platform-level-01.json");
+            _level_model->setFilePath("json/test_level_v2_experiment.json");
         }
         else if (level == 3) {
-            currentLevel = level2;
+            _level_model->setFilePath("json/empanada-platform-level-01.json");
         }
         else if (level == 4) {
+            //currentLevel = level2;
+            _level_model->setFilePath("json/bull-boss-level.json"); 
+        }
+        else if (level == 5) {
             currentLevel = level3;
         }
     }
@@ -1868,7 +2294,7 @@ void GameScene::spawnShrimp(Vec2 pos) {
 void GameScene::spawnBeef(Vec2 pos) {
     std::shared_ptr<Texture> image = _assets->get<Texture>("beefIdle");
     std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
-    Size s = cugl::Size(8.0f, 8.0f);
+    Size s = cugl::Size(6.0f, 6.0f);
     std::shared_ptr<EnemyModel> new_enemy = Beef::allocWithConstants(pos, s, getScale(), _assets);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
@@ -1878,7 +2304,7 @@ void GameScene::spawnBeef(Vec2 pos) {
 void GameScene::spawnEgg(Vec2 pos) {
     std::shared_ptr<Texture> image = _assets->get<Texture>("eggIdle");
     std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
-    Size s = Size(2.25f, 6.0f);
+    Size s = Size(1.75f, 5.0f);
     std::shared_ptr<EnemyModel> new_enemy = Egg::allocWithConstants(pos, s, getScale(), _assets);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
@@ -1889,25 +2315,245 @@ void GameScene::spawnEgg(Vec2 pos) {
 void GameScene::spawnRice(Vec2 pos, bool isSoldier) {
     std::shared_ptr<Texture> image = _assets->get<Texture>("riceLeader");
     std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
-    float imageWidth = image->getWidth() / 4;
-    float imageHeight = image->getHeight() / 4;
-    Size singularSpriteSize = Size(imageWidth, imageHeight);
-    std::shared_ptr<EnemyModel> new_enemy = Rice::allocWithConstants(pos, singularSpriteSize / (5 * getScale()), getScale(), _assets, isSoldier);
+    Size s = Size(2.0f, 2.5f);
+    std::shared_ptr<EnemyModel> new_enemy = Rice::allocWithConstants(pos, s, getScale(), _assets, isSoldier);
     spritenode->setAnchor(Vec2(0.5, 0.35));
+    spritenode->setScale(0.35 / 1.75);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
     addObstacle(new_enemy, spritenode);
     _enemies.push_back(new_enemy);
 }
+std::shared_ptr<EnemyModel> GameScene::spawnRiceSoldier(Vec2 pos, std::shared_ptr<Rice> leader) {
+    CULog("SPAWNING SOLDIER");
+    std::shared_ptr<Texture> image = _assets->get<Texture>("riceLeader");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
 
-void GameScene::spawnCarrot(Vec2 pos) {
-    std::shared_ptr<Texture> image = _assets->get<Texture>("eggIdle");
-    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
-    Size s = Size(2.25f, 6.0f);
-    std::shared_ptr<EnemyModel> new_enemy = Egg::allocWithConstants(pos, s, getScale(), _assets);
+    Size s = Size(2.0f, 2.5f);
+    std::shared_ptr<EnemyModel> new_enemy = Rice::allocWithConstants(pos, s, getScale(), _assets, true);
+    spritenode->setAnchor(Vec2(0.5, 0.35));
+    spritenode->setScale(0.35 / 1.75);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
+    addObstacle(new_enemy, spritenode);
+    //DONT PUSH BACK INTO _enemies, just add to leader
+    //_enemies.push_back(new_enemy);
+
+    leader->addSoldier(std::static_pointer_cast<Rice>(new_enemy));
+    return new_enemy;
+}
+
+void GameScene::spawnCarrot(Vec2 pos) {
+    std::shared_ptr<Texture> image = _assets->get<Texture>("carrotEnemy");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 1, 1, 1);
+    Size s = Size(2.25f, 2.25f);
+    std::shared_ptr<EnemyModel> new_enemy = Carrot::allocWithConstants(pos, s, getScale(), _assets);
+    new_enemy->setSceneNode(spritenode);
+    new_enemy->setDebugColor(DEBUG_COLOR);
+    spritenode->setScale(0.2);
     spritenode->setAnchor(0.5, 0.35);
     addObstacle(new_enemy, spritenode);
     _enemies.push_back(new_enemy);
+}
+
+void GameScene::spawnStation(Vec2 pos, StationType type) {
+    //obstacle has small size, not reflective of intended size
+    Size s = Size(5.0f, 5.0f);
+    std::shared_ptr<Texture> image;
+    switch (type) {
+    case StationType::CUT: {
+        image = _assets->get<Texture>("knife");
+        break;
+    }
+    case StationType::BOIL: {
+        image = _assets->get<Texture>("pot");
+        break;
+    }
+    case StationType::FRY: {
+		image = _assets->get<Texture>("pan");
+		break;
+    } default: {
+        image = _assets->get<Texture>("knife");
+		break;
+    }
+
+    }
+    std::shared_ptr<Station> station = Station::alloc(image, pos, s, type);
+
+    addObstacle(station, station->getSceneNode());
+    _interactables.push_back(station);
+    _stations.push_back(station);
+}
+
+void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map) {
+    //obstacle has small size, not reflective of intended size
+    Size s = Size(5.0f, 5.0f);
+    std::shared_ptr<Texture> image = _assets->get<Texture>("sink");
+    std::shared_ptr<Plate> plate = Plate::alloc(image, pos, s, map);
+
+    for (const auto& [key, value] : map) {
+        _pendingAcrossAllPlates[key] += value;
+    }
+
+    addObstacle(plate, plate->getSceneNode());
+    _interactables.push_back(plate);
+    _plates.push_back(plate);
+}
+
+void GameScene::pogo() {
+    float pi = 3.1416f;
+    float angle = _avatar->getAngle();
+    CULog("ANGLE: %f", angle);
+    //pogo
+    if (_avatar->getActiveAction() == "air_attack" && std::abs(angle) > pi / 2.0f && std::abs(angle) < 3 * pi / 2.0f) {
+        //_avatar->setLinearVelocity(_avatar->getLinearVelocity().x, 0.0f);
+        _avatar->jump(Vec2(std::sin((angle - pi) / 2.0f), 1 - std::cos((angle - pi) / 2.0f)));
+    }
+}
+
+void GameScene::createOrder(int plateId, IngredientType ing) {
+    std::shared_ptr<scene2::SceneNode> order = scene2::SceneNode::alloc();
+    std::shared_ptr<scene2::PolygonNode> background = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("orderBackground"));
+    order->addChild(background);
+    std::shared_ptr<Texture> texture;
+    switch (ing) {
+    case IngredientType::cutCarrot: {
+        texture = _assets->get<Texture>("cutCarrotOrder");
+        break;
+    }
+
+    case IngredientType::boiledEgg: {
+        texture = _assets->get<Texture>("boilEggOrder");
+        break;
+    }
+    case IngredientType::scrambledEgg: {
+        texture = _assets->get<Texture>("scrambledEggOrder");
+        break;
+    }
+    case IngredientType::cookedShrimp: {
+        texture = _assets->get<Texture>("fryShrimpOrder");
+        break;
+    }
+    case IngredientType::boiledRice: {
+        texture = _assets->get<Texture>("boilRiceOrder");
+        break;
+    }
+    case IngredientType::cookedBeef: {
+        texture = _assets->get<Texture>("fryBeefOrder");
+        break;
+    }
+    default: {
+        texture = nullptr;
+        CULog("Order error");
+    }
+    }
+    std::shared_ptr<scene2::PolygonNode> text = scene2::PolygonNode::allocWithTexture(texture);
+    float scale = ORDER_WIDTH / texture->getWidth();
+    text->setPosition(0, 0);
+    text->setScale(scale);
+    background->setPosition(0,0);
+    background->setScale(scale);
+    order->addChild(text);
+    order->setScale(scale);
+    order->setContentWidth(ORDER_WIDTH);
+    order->setName(Ingredient::getIngredientStringFromType(ing) + "Order");
+
+    _orders[plateId].push_back(order);
+    _orderNode->addChild(_orders[plateId].back());
+    _numOrders += 1;
+    positionOrders();
+}
+
+void GameScene::removeOrder(int plateId, IngredientType ing) {
+    for (auto it = _orders[plateId].begin(); it != _orders[plateId].end(); it++) {
+        if ((*it) != nullptr && (*it)->getName() == (Ingredient::getIngredientStringFromType(ing) + "Order")) {
+            std::shared_ptr<scene2::SceneNode> order = *it;
+            _orderNode->removeChild(order);
+            _orders[plateId].erase(it);
+            order->dispose();
+            _numOrders -= 1;
+            positionOrders();
+            return;
+		}
+	}
+
+}
+
+void GameScene::toggleOrders(bool v) {
+    //todo polish, moving them instead of popping them in and out
+    for (auto const& t : _orders) {
+        for (auto& b : t.second) {
+            b->setVisible(v);
+        }
+	}
+}
+
+void GameScene::positionOrders() {
+    CULog("positioning");
+    float totalWidth = _numOrders * ORDER_WIDTH;
+    float start = 0;
+    for (auto& t : _orders) {
+		int i = 0;
+        for (auto& b : t.second) {
+			b->setPositionX(start);
+            start += ORDER_WIDTH;
+		}
+	}
+    _orderNode->setContentWidth(totalWidth);
+    _orderNode->setAnchor(Vec2::ANCHOR_TOP_CENTER);
+    _orderNode->setPosition(1280 / 2, 800 - 50);
+}
+
+void GameScene::generateOrders() {
+    _numOrders = 0;
+    _orderNode->removeAllChildren();
+    for (auto& p : _plates) {
+        std::vector<IngredientType> x = p->getTargetIngredients();
+        int id = p->getId();
+        _orders[id] = std::vector<std::shared_ptr<scene2::SceneNode>>();
+        for (IngredientType t : x) {
+            createOrder(id, t);
+        }
+    }
+}
+
+void GameScene::respawnEnemies(float p) {
+    CULog("RESPAWNING!");
+    for (auto& e : _enemies) {
+        if (e->isRemoved()) {
+            respawnEnemy(e);
+        }
+    }
+}
+
+void GameScene::removeingredient(Vec2 pos) {
+
+    std::string t = _inventoryNode->getIngredientnameFromSlot(_inventoryNode->getSelectedSlot());
+    std::shared_ptr<Texture> image = _assets->get<Texture>(t);
+
+    std::shared_ptr<Attack> attack = Attack::alloc(_avatar->getPosition(),
+        cugl::Size(image->getSize().width*0.2/ _scale, image->getSize().height*0.2/ _scale));
+
+
+    attack->setName("ingredient");
+    attack->setBullet(true);
+    attack->setGravityScale(0.5);
+    attack->setDebugColor(DEBUG_COLOR);
+    attack->setDrawScale(_scale);
+    attack->setEnabled(true);
+    attack->setstraight(pos);
+    attack->setrand(false);
+    attack->setDie(false);
+    attack->setUp(1.5);
+
+
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    attack->setSceneNode(sprite);
+    sprite->setPosition(_avatar->getPosition());
+    sprite->setScale(0.2);
+
+    addObstacle(attack, sprite, true);
+    _attacks.push_back(attack);
+
+
 }

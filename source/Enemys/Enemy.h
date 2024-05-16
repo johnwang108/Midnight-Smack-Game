@@ -82,6 +82,8 @@ protected:
 
     b2Fixture* _sensorFixture;
 
+    std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
+
     int _lastDirection;
 
     float _changeDirectionInterval; 
@@ -116,10 +118,12 @@ protected:
     //cugl::Vec2 _targetPosition;
     //float _closeEnough;
 
-    /**Limits on movement for egg and beef*/
-    cugl::Spline2 _limit;
 
     bool _killMe;
+    
+    bool _nocoll;
+
+    Vec2 _spawnPoint;
 
 
 public:
@@ -279,9 +283,6 @@ public:
 
     virtual std::string getNextState(std::string state) { return ""; };
 
-    /**Sets the predefined path limits, still wip */
-    void setLimit(cugl::Spline2 limit) { _limit = limit; }
-
     std::string getState() { return _state; }
 
     void jump(Vec2 dir);
@@ -289,6 +290,8 @@ public:
     //void syncStateTimes();
 
     bool isTangible() { return _isTangible; }
+
+    void setTangible(bool b);
 
     void setActiveAction(std::string action) {
         Entity::setActiveAction(action);
@@ -304,6 +307,9 @@ public:
 	}
 
     bool isDying() { return _killMe; }
+    
+    void setnocoll(bool coll){_nocoll=false;}
+    bool getnocoll(){return _nocoll;}
 
     static std::string typeToStr(EnemyType type) {
         switch (type) {
@@ -347,7 +353,7 @@ public:
     };
 
     static std::vector<std::string> defaultSeqAlt(EnemyType type) {
-        switch (type) {
+        /*switch (type) {
         case EnemyType::shrimp:
             return { "pigtail", "v", "circle" };
         case EnemyType::rice:
@@ -362,7 +368,8 @@ public:
             return { "pigtail", "v", "pigtail" };
         default:
             return {};
-        }
+        }*/
+        return defaultSeq(type);
     };
 
     //Dict for enemy type to buff 
@@ -388,20 +395,23 @@ public:
     static float typeToAggroRange(EnemyType type) {
 		switch (type) {
 		case EnemyType::shrimp:
-			return 20.0f;
+			return 15.0f;
 		case EnemyType::rice:
-			return 20.0f;
+			return 15.0f;
 		case EnemyType::rice_soldier:
-			return 20.0f;
+			return 15.0f;
 		case EnemyType::egg:
 			return 20.0f;
 		case EnemyType::carrot:
-			return 20.0f;
+			return 15.0f;
 		case EnemyType::beef:
-			return 20.0f;
+			return 15.0f;
 		}
 		return 0.0f;
 	};
 
+    virtual void respawn();
+
+    //void activatePhysics(std::shared_ptr<physics2::ObstacleWorld> world) override;
 };
 #endif /* __ENEMY_MODEL_H__ */

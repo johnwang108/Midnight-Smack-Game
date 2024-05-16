@@ -1,6 +1,10 @@
 {
     "entity" : "su",
     "animation" : "air_attack",
+    "tap_jump_height": 80.0,
+    "full_jump_height": 100.0,
+    "jump_boost": 1.0,
+    "dash_distance": 80.0,
     "su": {
         "idle": {
             "sheet": "su_idle",
@@ -17,11 +21,11 @@
             "duration": 2.0
         },
         "attack": {
-            "sheet": "su_attack_sheet",
+            "sheet": "su_attack",
             "rows": 4,
             "cols": 5,
             "frames": 18,
-            "duration": 0.6
+            "duration": 0.3
         },
         "recover": {
             "sheet": "su_attack_recover",
@@ -70,7 +74,7 @@
             "rows": 3,
             "cols": 3,
             "frames": 8,
-            "duration": 0.4
+            "duration": 0.2
         },
         "air_roll": {
             "sheet": "su_air_roll",
@@ -78,6 +82,35 @@
             "cols": 2,
             "frames": 3,
             "duration": 0.15
+        },
+        "air_recover": {
+            "sheet": "su_air_roll",
+            "rows": 2,
+            "cols": 2,
+            "frames": 3,
+            "duration": 0.25
+        },
+        "skid": {
+            "sheet": "suSlide",
+            "rows": 3,
+            "cols": 4,
+            "frames": 11,
+            "duration": 0.5
+        },
+        
+        "hurt": {
+            "sheet": "suHurt",
+            "rows": 3,
+            "cols": 3,
+            "frames": 7,
+            "duration": 0.40
+        },
+        "death": {
+            "sheet": "suDeath",
+            "rows": 6,
+            "cols": 7,
+            "frames": 39,
+            "duration": 3.0
         }
     },
     "rice" : {
@@ -314,7 +347,7 @@
             "rows": 2,
             "cols": 2,
             "frames": 4,
-            "duration": 0.5
+            "duration": 1.0
         }
     },
     "shrimp": {
@@ -379,6 +412,27 @@
             "rows": 1,
             "cols": 1,
             "frames": 1,
+            "duration": 1
+        },
+        "shrimpRollDeath": {
+            "sheet": "shrimpRollDeath",
+            "rows": 3,
+            "cols": 3,
+            "frames": 9,
+            "duration": 1
+        },
+        "shrimpIdleDeath": {
+            "sheet": "shrimpIdleDeath",
+            "rows": 2,
+            "cols": 3,
+            "frames": 6,
+            "duration": 1
+        },
+        "shrimpStandDeath": {
+            "sheet": "shrimpRollDeath",
+            "rows": 4,
+            "cols": 5,
+            "frames": 17,
             "duration": 1
         }
     },

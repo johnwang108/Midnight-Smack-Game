@@ -1,0 +1,123 @@
+{
+    "tutorialPopupWASD": 
+    {
+        "position": [640,400],
+        "size": [800, 400],
+        "anchor": [0.5, 0.5],
+        "visible": true,
+        "text": "<- Press [A] [D] to move, Press [Space] to jump ->",
+        "textMaxWidth%age": 0.5,
+        "font": "popupFont",
+        "background": "popupBackground",
+        "children": {
+            "run": {
+                "texture": "su_run",
+                "rows": 3,
+                "cols": 4,
+                "frames": 10,
+                "position": [-100.0, 0.0],
+                "scale": 0.2
+            },
+            "jumpUp": {
+                "texture": "su_jump_airborne_up",
+                "rows": 2,
+                "cols": 2,
+                "frames": 3,
+                "position": [0.0, 0.0],
+                "scale": 0.2
+            },
+            "jumpDown": {
+                "texture": "su_jump_airborne_down",
+                "rows": 2,
+                "cols": 2,
+                "frames": 3,
+                "position": [0.0, 60.0],
+                "scale": 0.2
+            }
+        },
+
+        "states": {
+            "run_1": {
+                "duration": 1.5,
+                "children": {
+                    "run": {
+                        "moveAction": {
+                            "type": "moveBy",
+                            "x": 100.0,
+                            "y": 0,
+                            "time": 1.3
+                        },
+                        "animateAction": {
+                            "type": "animate",
+                            "start": 0,
+                            "end": 9,
+                            "time": 1.5,
+                            "repeat": 2
+                        }
+                    }
+                }
+            },
+            "jump_1": {
+                "duration": 0.6,
+                "children": {
+                    "jumpUp": {
+                        "moveAction": {
+                            "type": "moveBy",
+                            "x": 0.0,
+                            "y": 60,
+                            "time": 0.6
+                        },
+                        "animateAction": {
+                            "type": "animate",
+                            "start": 0,
+                            "end": 2,
+                            "time": 0.6,
+                            "repeat": 2
+                        }
+                    }
+                }
+            },
+            "jump_2": {
+                "duration": 0.6,
+                "children": {
+                    "jumpDown": {
+                        "moveAction": {
+                            "type": "moveBy",
+                            "x": 0.0,
+                            "y": -60,
+                            "time": 0.6
+                        },
+                        "animateAction": {
+                            "type": "animate",
+                            "start": 0,
+                            "end": 2,
+                            "time": 0.6,
+                            "repeat": 2
+                        }
+                    }
+                }
+            },
+            "run_2": {
+                "duration": 1.5,
+                "children": {
+                    "run": {
+                        "moveAction": {
+                            "type": "moveBy",
+                            "x": 100.0,
+                            "y": 0,
+                            "time": 1.3
+                        },
+                        "animateAction": {
+                            "type": "animate",
+                            "start": 0,
+                            "end": 9,
+                            "time": 1.5,
+                            "repeat": 2
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+}

@@ -84,7 +84,7 @@ public:
 
 	void addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool reverse = false);
 
-	void animate(std::string action_name);
+	virtual bool animate(std::string action_name);
 
 	void changeSheet(std::string action_name);
 

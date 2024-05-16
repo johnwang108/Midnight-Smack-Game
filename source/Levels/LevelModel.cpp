@@ -70,6 +70,7 @@ void LevelModel::populate(GameScene& scene) {
 	//_enemies = scene.getEnemies();
 	_goalDoor = scene.getGoalDoor();
 
+	removeBackgroundImages(scene);
 
 	std::shared_ptr<cugl::JsonReader> levelReader;
 	//have to set the filepath before this
@@ -208,6 +209,8 @@ void LevelModel::populate(GameScene& scene) {
 	//initialize our backgrounds variable
 	// _drawings = {};
 
+	Vec2 p;
+
 	std::shared_ptr<physics2::PolygonObstacle> mainPlatform;
 	if (layers != nullptr && layers->isArray()) {
 		for (int i = 0; i < layers->size(); i++) {
@@ -316,6 +319,8 @@ void LevelModel::populate(GameScene& scene) {
 							// Vec2 dudePos = Vec2(colNum + (3 * scale_refactor), rowPos + (3 * scale_refactor));
 							Vec2 dudePos = Vec2(colNum, rowPos);
 
+							p = dudePos;
+
 							//Vec2 dudePos = Vec2(colNum, (window_height - (rowNum * 32)) / 32);
 							// this is what we actually want, but code being annoying
 							// _avatar = DudeModel::alloc(dudePos, image->getSize() / (2 + scene.getScale()), scene.getScale());
@@ -327,21 +332,20 @@ void LevelModel::populate(GameScene& scene) {
 							CULog(std::to_string(rowPos).c_str());
 							Size size = Size(1.7, 3.3);
 							CULog(std::to_string(scene.getScale()).c_str());
-							_avatar = DudeModel::allocWithConstants(dudePos, size, scene.getScale(), _assets);
-							// _avatar = DudeModel::alloc(dudePos, image->getSize(), scene.getScale());
-							CULog(std::to_string(_avatar->getWidth()).c_str());
-							CULog(std::to_string(_avatar->getHeight()).c_str());
-							//we manually set this to combat an error in gameScene, does it work tho?
-							// _avatar->setHeight(170.0f);
-							// _avatar->setWidth(100.0f);
-							//----------------
-							// sprite = scene2::PolygonNode::allocWithTexture(image);
-							std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
-							spritenode->setAnchor(Vec2(0.5, 0.35));
-							_avatar->setSceneNode(spritenode);
-							_avatar->setDebugColor(DEBUG_COLOR);
-							// scene.addChild(sprite);
-							scene.addObstacle(_avatar, spritenode);
+							if (_avatar == nullptr) {
+								_avatar = DudeModel::allocWithConstants(dudePos, size, scene.getScale(), _assets);
+								std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
+								spritenode->setAnchor(Vec2(0.5, 0.35));
+								_avatar->setSceneNode(spritenode);
+								_avatar->setDebugColor(DEBUG_COLOR);
+								scene.addObstacle(_avatar, spritenode);
+							}
+							else {
+								_avatar->reset();
+								_avatar->setPosition(dudePos);
+								scene.addObstacle(_avatar, _avatar->getSceneNode());
+							}
+							scene.setSpawn(dudePos);
 						}
 						else if (type == "boss") {
 							int rowPos = ((window_height - rowNum) % window_height + window_height) % window_height;
@@ -394,64 +398,19 @@ void LevelModel::populate(GameScene& scene) {
 
 							if (pathWeWant.find("rice") != std::string::npos) {
 								scene.spawnRice(enemyPos, false);
-								/*if (numOfRice == 0) {
-									image = _assets->get<Texture>("riceLeader");
-									spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
-									float imageWidth = image->getWidth() / 4;
-									float imageHeight = image->getHeight() / 4;
-									Size singularSpriteSize = Size(imageWidth, imageHeight);
-									new_enemy = Rice::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, false);
-								}
-								else {
-									image = _assets->get<Texture>("riceSoldier");
-									spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 15);
-									float imageWidth = image->getWidth() / 4;
-									float imageHeight = image->getHeight() / 4;
-									Size singularSpriteSize = Size(imageWidth, imageHeight);
-									new_enemy = Rice::allocWithConstants(enemyPos, singularSpriteSize / (5 * scene.getScale()), scene.getScale(), _assets, true);
-								}
-								spritenode->setAnchor(Vec2(0.5, 0.35));
-								new_enemy->setSceneNode(spritenode);
-								new_enemy->setDebugColor(DEBUG_COLOR);
-								scene.addObstacle(new_enemy, spritenode);
-								_enemies.push_back(new_enemy);*/
 								numOfRice += 1;
 							}
 
 							else if (pathWeWant.find("carrot") != std::string::npos) {
-								scene.spawnCarrot(enemyPos);
-
-								/*image = _assets->get<Texture>("carrotIdle");
-								spritenode = EntitySpriteNode::allocWithSheet(image, 1, 1, 1);
-								Size singularSpriteSize = Size(image->getWidth(), image->getHeight());
-								Size s = Size(2.25f, 6.0f);
-								new_enemy = Egg::allocWithConstants(enemyPos, s, scene.getScale(), _assets);
-								new_enemy->setSceneNode(spritenode);
-								new_enemy->setDebugColor(DEBUG_COLOR);
-								spritenode->setAnchor(0.5, 0.35);
-								scene.addObstacle(new_enemy, spritenode);
-								_enemies.push_back(new_enemy);*/
+								scene.spawnEgg(enemyPos);
 							}
 
 							else if (pathWeWant.find("beef") != std::string::npos) {
 
 								scene.spawnBeef(enemyPos);
-								//image = _assets->get<Texture>("beefIdle");
-								//spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
-								//float imageWidth = image->getWidth() / 3;
-								//float imageHeight = image->getHeight() / 3;
-								//Size singularSpriteSize = Size(imageWidth, imageHeight);
-								//// enemyPos.y -= 100.0f;
-								//Size beefSize = cugl::Size(8.0f, 8.0f);
-								//new_enemy = Beef::allocWithConstants(enemyPos, beefSize, scene.getScale(), _assets);
-								//new_enemy->setSceneNode(spritenode);
-								//new_enemy->setDebugColor(DEBUG_COLOR);
-								//new_enemy->setLimit(cugl::Spline2(enemyPos, Vec2(enemyPos.x, enemyPos.y + 1.0)));
-								//scene.addObstacle(new_enemy, spritenode);
-								//_enemies.push_back(new_enemy);
 							}
 							else if (pathWeWant.find("egg") != std::string::npos) {
-								scene.spawnEgg(enemyPos);
+								scene.spawnCarrot(enemyPos);
 							}
 							else if (pathWeWant.find("shrimp") != std::string::npos) {
 								scene.spawnShrimp(enemyPos);
@@ -501,6 +460,22 @@ void LevelModel::populate(GameScene& scene) {
 		}
 	}
 
+
+	//hardcode :3
+	if (getFilePath() == "json/intermediate.json") {
+		Vec2 boilStation = p + Vec2(10.0f, 40.0f);
+		Vec2 cutStation = p + Vec2(40.0f, 40.0f);
+		Vec2 fryStation = p + Vec2(80.0f, 30.0f);
+		Vec2 plate = p;
+
+		scene.spawnStation(boilStation, StationType::BOIL);
+		scene.spawnStation(cutStation, StationType::CUT);
+		scene.spawnStation(fryStation, StationType::FRY);
+		std::unordered_map<IngredientType, int> map = { {IngredientType::boiledEgg, 2}, {IngredientType::boiledRice, 2}, {IngredientType::cookedBeef, 1} };
+		scene.spawnPlate(plate, map);
+	}
+
+
 	scene.setAssets(_assets);
 	scene.setScale(scene.getScale());
 	scene.setBackground(_background);
@@ -516,7 +491,7 @@ std::string LevelModel::getLevelScenery(std::string levelNumber) {
 }
 
 void LevelModel::removeBackgroundImages(GameScene& scene) {
-	for (std::shared_ptr<scene2::SceneNode > node: scene.getChildren()) {
+	for (std::shared_ptr<scene2::SceneNode > node : scene.getChildren()) {
 		if (node->getName() == "background") {
 			scene.removeChild(node);
 		}
@@ -540,7 +515,7 @@ std::shared_ptr<physics2::PolygonObstacle> LevelModel::loadMainPlatform(const st
 
 
 	std::shared_ptr<cugl::JsonValue> platform_vertices = json->get("polygon");
-	std::shared_ptr<physics2::PolygonObstacle> platobj;
+	std::shared_ptr<Platform> platobj;
 	std::vector<Vec2> polygon_points = {};
 
 	if (platform_vertices != nullptr && platform_vertices->isArray()) {
@@ -575,7 +550,7 @@ std::shared_ptr<physics2::PolygonObstacle> LevelModel::loadMainPlatform(const st
 	triangulator.clear();
 
 	// platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_BOTTOM_LEFT);
-	platobj = physics2::PolygonObstacle::alloc(platform);
+	platobj = Platform::alloc(platform);
 	platobj->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 	// platobj->setPosition(5.0, 0.0);
 	platobj->setName(std::string(PLATFORM_NAME));
@@ -595,6 +570,8 @@ std::shared_ptr<physics2::PolygonObstacle> LevelModel::loadMainPlatform(const st
 	sprite->setColor(Color4::CLEAR);
 	sprite->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 	scene.addObstacle(platobj, sprite, 1);
+
+	scene.getPlatform().push_back(platobj);
 
 	return platobj;
 	CULog("we reached the end of loadMainPlatform!!");

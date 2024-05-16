@@ -162,10 +162,32 @@ void GameScene::beginContact(b2Contact* contact) {
                 (_enemy->getSensorName() == fd1 && _enemy.get() != bd2 && bd2->getName().find("attack") == std::string::npos)) {
                     _enemy->setGrounded(true);
             }
+            for (auto& p : _platforms) {
+                if((_enemy.get() == bd1 && fd2 == p->getSensorName()) ||
+                    (_enemy.get() == bd2 && fd1 == p->getSensorName())) {
+                    _enemy->setState("patrolling");
+                    _enemy->setDirection(-_enemy->getDirection());
+                }
+            }
         }
     }
 
-    if (_Bull != nullptr && _Bull->isChasing() && bd1 == _Bull.get() && bd2->getName() == WALL_NAME) {
+    for (auto& s : _stations) {
+        if (s.get() == bd1 && bd2->getName() == "ingredient" ) {
+            if (((Attack*)bd2)->getUp() <= 0) {
+                ((Attack*)bd2)->setLifetime(1);
+                ((Attack*)bd2)->setDie(true);
+            }
+        }
+        else if (s.get() == bd2 && bd1->getName() == "ingredient") {
+            if (((Attack*)bd1)->getUp() <= 0) {
+                ((Attack*)bd1)->setLifetime(1);
+                ((Attack*)bd1)->setDie(true);
+            }
+        }
+    }
+
+    if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1 == _Bull.get() && bd2->getName() == WALL_NAME) {
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd2)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
@@ -175,15 +197,15 @@ void GameScene::beginContact(b2Contact* contact) {
         }
         else {
             _Bull->setIsChasing(false);
+
+            pogo();
             _Bull->takeDamage(0, direction, true);
             _Bull->setact("bullCrash", 3.0f);
 
         }
-
-
        // popup(std::to_string(5), bullPos * _scale);
     }
-    else if (_Bull != nullptr && _Bull->isChasing() && bd1->getName() == WALL_NAME && bd2 == _Bull.get()) {
+    else if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1->getName() == WALL_NAME && bd2 == _Bull.get()) {
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd1)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
@@ -193,9 +215,9 @@ void GameScene::beginContact(b2Contact* contact) {
         }
         else {
             _Bull->setIsChasing(false);
+            pogo();
             _Bull->takeDamage(0, direction, true);
             _Bull->setact("bullCrash", 2.0f);
-
         }
       //  popup(std::to_string(5), bullPos * _scale);
     }
@@ -203,7 +225,7 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 avatarPos = _avatar->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
-        _avatar->addTouching();
+        //_avatar->addTouching();
         _avatar->takeDamage(34, direction);
     }
     else if (_Bull != nullptr && bd1 == _avatar.get() && bd2 == _Bull.get()) {
@@ -221,6 +243,7 @@ void GameScene::beginContact(b2Contact* contact) {
         _avatar->addMeter(5.0f);
 
         float damage = _Bull->getHealth();
+        pogo();
 
         if (_Bull->getHealth() == 74.5f) {
             _Bull->takeDamage(_avatar->getAttack() / 4, direction, true);
@@ -245,6 +268,7 @@ void GameScene::beginContact(b2Contact* contact) {
         Vec2 enemyPos = _Bull->getPosition();
         Vec2 attackerPos = ((Attack*)bd2)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+        pogo();
         if (_Bull->getHealth() == 74.5f) {
             _Bull->takeDamage(_avatar->getAttack() / 4, direction, true);
             _Bull->setsummoned(true);
@@ -283,12 +307,27 @@ void GameScene::beginContact(b2Contact* contact) {
         _avatar->takeDamage(34, direction);
         removeAttack((Attack*)bd1);
     }
-    else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
-        Vec2 enemyPos = ((Attack*)bd2)->getPosition();
-        Vec2 attackerPos = _avatar->getPosition();
-        int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-        _avatar->takeDamage(34, direction);
-        removeAttack((Attack*)bd2);
+    //else if (bd2->getName() == "enemy_attack" && bd1 == _avatar.get()) {
+    //    Vec2 enemyPos = ((Attack*)bd2)->getPosition();
+    //    Vec2 attackerPos = _avatar->getPosition();
+    //    int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+    //    _avatar->takeDamage(34, direction);
+    //    removeAttack((Attack*)bd2);
+    //}
+
+    //interactable 
+    if (bd1->getName() == "interactable" && bd2 == _avatar.get()) {
+        ((GestureInteractable*)bd1)->getSceneNode()->setColor(Color4::BLUE);
+        setInteractable(((GestureInteractable*)bd1)->getId());
+	}
+    if (bd2->getName() == "interactable" && bd1 == _avatar.get()) {
+        ((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::BLUE);
+        setInteractable(((GestureInteractable*)bd2)->getId());
+    }
+
+    //station hit it to remove 
+    if (bd1->getName() == "interactable" && bd2->getName() == ATTACK_NAME) {
+        ((GestureInteractable*)bd1)->hit();
     }
 
     // Test bullet collision with enemy
@@ -300,6 +339,8 @@ void GameScene::beginContact(b2Contact* contact) {
             int damage = ((EnemyModel*)bd2)->getHealth();
             ((EnemyModel*)bd2)->takeDamage(_avatar->getAttack(), direction);
             damage -= ((EnemyModel*)bd2)->getHealth();
+
+            pogo();
 
             _avatar->addMeter(5.0f);
             if (damage > 0) popup(std::to_string((int)damage), enemyPos * _scale);
@@ -334,13 +375,14 @@ void GameScene::beginContact(b2Contact* contact) {
     }
 
     if (_avatar->getBodySensorName() == fd1 && enemies.find(bd2->getName()) != enemies.end()) {
-        if (((EnemyModel*)bd2)->isTangible()) {
+        if (((EnemyModel*)bd2)->isTangible() && !((EnemyModel*)bd2)->getnocoll()) {
             Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
             Vec2 attackerPos = _avatar->getPosition();
             int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
 
             _avatar->addTouching();
             _avatar->takeDamage(34, direction);
+            
         }
         else CULog("Intangible!");
     }
@@ -356,43 +398,11 @@ void GameScene::beginContact(b2Contact* contact) {
     //    _avatar->takeDamage(34, direction);
     //}
     
-    if (_ShrimpRice != nullptr && bd1->getName() == ATTACK_NAME && bd2->getName() == "shrimpBoss" && _ShrimpRice->getknockbacktime() <= 0) {
-        if (_ShrimpRice->getact() == "SFRJoustState2") {
-            _ShrimpRice->setact("SFRJoustState3", 0.6);
-            
-        }
-        else {
-            Vec2 enemyPos = _ShrimpRice->getPosition();
-            Vec2 attackerPos = ((Attack*)bd1)->getPosition();
-            int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-            _avatar->addMeter(5.0f);
 
-            _ShrimpRice->takeDamage(_avatar->getAttack() / 4, direction, false);
-
-            popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos* _scale);
-            CULog("shrimpBoss: %f", _ShrimpRice->getHealth());
-        }
-
-    }
-    else if (_ShrimpRice != nullptr && bd2->getName() == ATTACK_NAME && bd1->getName() == "shrimpBoss" && _ShrimpRice->getknockbacktime() <= 0) {
-        if (_ShrimpRice->getact() == "SFRJoustState2") {
-            _ShrimpRice->setact("SFRJoustState3", 0.6);
-        }
-        else {
-            Vec2 enemyPos = _ShrimpRice->getPosition();
-            Vec2 attackerPos = ((Attack*)bd2)->getPosition();
-            int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
-
-            _ShrimpRice->takeDamage(_avatar->getAttack() / 4, direction, false);
-
-            popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos* _scale);
-            CULog("shrimpBoss: %f", _ShrimpRice->getHealth());
-        }
-
-    }
     if (_ShrimpRice != nullptr && bd1 == _ShrimpRice.get() && bd2 == _avatar.get()) {
-        if (_ShrimpRice->getact() == "SFRJoustState2") {
-            _ShrimpRice->setact("SFRJoustState2", 0.5);
+        if (_ShrimpRice->getact() == "SFRJoustState2" ) {
+            _ShrimpRice->setact("SFRJoustState2", 0.3);
+            _ShrimpRice->setparry2(true);
         }
         Vec2 avatarPos = _avatar->getPosition();
         Vec2 bullPos = _ShrimpRice->getPosition();
@@ -401,20 +411,60 @@ void GameScene::beginContact(b2Contact* contact) {
         _avatar->takeDamage(34, direction);
     }
     else if (_ShrimpRice != nullptr && bd1 == _avatar.get() && bd2 == _ShrimpRice.get()) {
-        if (_ShrimpRice->getact() == "SFRJoustState2") {
-            _ShrimpRice->setact("SFRJoustState2", 0.5);
+        if (_ShrimpRice->getact() == "SFRJoustState2" ) {
+            _ShrimpRice->setact("SFRJoustState2", 0.3);
+            _ShrimpRice->setparry2(true);
         }
         Vec2 avatarPos = _avatar->getPosition();
         Vec2 bullPos = _ShrimpRice->getPosition();
         int direction = (avatarPos.x > bullPos.x) ? 1 : -1;
         _avatar->takeDamage(34, direction);
     }
+    if (_ShrimpRice != nullptr && bd1->getName() == ATTACK_NAME && bd2->getName() == "shrimpBoss" && _ShrimpRice->getknockbacktime() <= 0) {
+        if (_ShrimpRice->getact() == "SFRJoustState2") {
+            _ShrimpRice->setparry(true);
+			_ShrimpRice->setparry2(false);
+        }
+        else {
+            Vec2 enemyPos = _ShrimpRice->getPosition();
+            Vec2 attackerPos = ((Attack*)bd1)->getPosition();
+            int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+            _avatar->addMeter(5.0f);
+            pogo();
+            _ShrimpRice->takeDamage(_avatar->getAttack() / 4, direction, false);
+
+            popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
+            CULog("shrimpBoss: %f", _ShrimpRice->getHealth());
+        }
+
+    }
+
+    else if (_ShrimpRice != nullptr && bd2->getName() == ATTACK_NAME && bd1->getName() == "shrimpBoss" && _ShrimpRice->getknockbacktime() <= 0) {
+        if (_ShrimpRice->getact() == "SFRJoustState2") {
+            _ShrimpRice->setparry(true);
+            _ShrimpRice->setparry2(false);
+        }
+        else {
+            Vec2 enemyPos = _ShrimpRice->getPosition();
+            Vec2 attackerPos = ((Attack*)bd2)->getPosition();
+            int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+            _avatar->addMeter(5.0f);
+            pogo();
+            _ShrimpRice->takeDamage(_avatar->getAttack() / 4, direction, false);
+
+            popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
+            CULog("shrimpBoss: %f", _ShrimpRice->getHealth());
+        }
+
+    }
+    
     if (_ShrimpRice != nullptr&& !_enemies.empty()&& _ShrimpRice->getangrytime()>0) {
         for (auto& _enemy : _enemies) {
             if (!_enemy->isRemoved()) {
                 if (( _enemy.get() == bd1 && _ShrimpRice.get() == bd2) ||
                     (_enemy.get() == bd2 && _ShrimpRice.get() == bd1)) {
                     _enemy->markForDeletion();
+                    pogo();
                     _ShrimpRice->takeDamage(-10, 0, false);
                 }
             }
@@ -465,6 +515,16 @@ void GameScene::endContact(b2Contact* contact) {
         }
     }
 
+    //interactable 
+    if (bd1->getName() == "interactable" && bd2 == _avatar.get()) {
+        ((GestureInteractable*)bd1)->getSceneNode()->setColor(Color4::WHITE);
+        setInteractable(-1);
+    }
+    if (bd2->getName() == "interactable" && bd1 == _avatar.get()) {
+        ((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::WHITE);
+        setInteractable(-1);
+    }
+
     //// Check if the player is no longer in contact with any walls
     //bool p1 = (_avatar->getLeftSensorName() == fd1);
     //bool p2 = (_avatar->getRightSensorName() == fd1);
@@ -486,7 +546,7 @@ void GameScene::endContact(b2Contact* contact) {
     }
 
     if (_avatar->getBodySensorName() == fd1 && enemies.find(bd2->getName()) != enemies.end()) {
-        if (((EnemyModel*)bd2)->isTangible()) {
+        if (((EnemyModel*)bd2)->isTangible() && !((EnemyModel*)bd2)->getnocoll()) {
             Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
             Vec2 attackerPos = _avatar->getPosition();
             int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;

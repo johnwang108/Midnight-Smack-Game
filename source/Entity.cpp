@@ -7,16 +7,19 @@ bool Entity::init(cugl::Vec2 pos, cugl::Size size) {
     _dimension = size;
     return PolygonObstacle::init(rect);*/
 
-    _entityID = ID++;
+    if (CapsuleObstacle::init(pos, size, poly2::Capsule::FULL)) {
+        _entityID = ID++;
 
-    //CULog("Entity ID: %d", _entityID);
-    _activated = false;
-    _finished = false;
-    _activeAction = "";
-    _pausedFrame = 0;
-    _activeFrame = 0;
-    _paused = false;
-    return CapsuleObstacle::init(pos, size);
+        //CULog("Entity ID: %d", _entityID);
+        _activated = false;
+        _finished = false;
+        _activeAction = "";
+        _pausedFrame = 0;
+        _activeFrame = 0;
+        _paused = false;
+        return true;
+    }
+    return false;
 }
 /** Register a new animation in the dict*/
 void Entity::addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool reverse) {
@@ -41,14 +44,13 @@ void Entity::setAction(std::string action_name, std::vector<int> vec, float dura
 }
 
 /**Unsure if override needed. Begins an animation, switching the sheet if needed.*/
-void Entity::animate(std::string action_name) {
+bool Entity::animate(std::string action_name) {
     std::string name = action_name;
 
     //info = {int rows, int cols, int size, float duration}
     auto info = _info[name];
 
     //first, switch the sheet
-    changeSheet(name);
     if (name.find("bull") != std::string::npos) {
 		_node->setScale(0.5/4);
     }
@@ -58,13 +60,33 @@ void Entity::animate(std::string action_name) {
     else if (name == "idle") {
         _node->setScale(0.35 / 1.75);
     }
+    else if (name == "skid" || name == "hurt" || name == "death") {
+        _node->setScale(0.35 / 1.25);
+    }
     else {
         _node->setScale(0.35 / 1.75);
     }
 
+    if (getName() == "avatar") {
+        if (name == "run" || name == "skid") {
+            float offset = _node->isFlipHorizontal() ? -0.17 : 0.17;
+            getSceneNode()->setAnchor(Vec2(0.5 + offset, 0.4));
+        }
+        else getSceneNode()->setAnchor(Vec2(0.5, 0.35));
+    }
+    if (getName().find("shrimp") != std::string::npos && getName().find("Death") != std::string::npos) {
+        getSceneNode()->setAnchor(Vec2(0.5, 0.15));
+    }
+    
+    changeSheet(name);
+
+    _node->setFrame(0);
+
     setActiveAction(action_name);
     _activePriority = _priority;
     _activeAction = name;
+
+    return true;
 }
 
 void Entity::changeSheet(std::string action_name) {

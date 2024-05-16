@@ -26,6 +26,8 @@ Wall::Wall() {
 	respawnTime = -1;
 	breakingClock = -1;
 	activeDisplay = true;
+    
+
 }
 
 bool Wall::init(std::shared_ptr<Texture> image, std::shared_ptr<PolygonObstacle> _collisionPoly, float _scale, float BASIC_DENSITY, float BASIC_FRICTION,

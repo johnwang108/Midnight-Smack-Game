@@ -19,13 +19,31 @@ protected:
 
     bool _started;
 
+    /* Menu wants to reset the scene */
+    bool _reset;
+
     bool _transitionScenes;
 
     std::string _targetScene;
 
     std::vector<std::shared_ptr<cugl::scene2::Button>> _buttons;
 
+    int _selectedLevel;
+
+    int _highestLevel;
+
+    float _musicVolume;
+    float _sfxVolume;
+
 private:
+
+    void initMainMenu(cugl::Size);
+
+    void initPauseMenu(cugl::Size);
+
+    void initLevelSelectMenu(cugl::Size);
+
+    void initSettingsMenu(cugl::Size);
 
 public:
 
@@ -52,6 +70,15 @@ public:
     void setTarget(std::string s) { _targetScene = s; };
 
     void setActive(bool b);
+    void setReset(bool b) { _reset = b; };
+    bool getReset() { return _reset; };
+
+    void setSelectedLevel(int i) { _selectedLevel = i;}
+    int getSelectedLevel() { return _selectedLevel;}
+
+    void setHighestLevel(int i);
+
+    void reset();
 };
 
 #endif /* __MENU_SCENE__ */

@@ -126,7 +126,7 @@ void Level2::populate(GameScene& scene) {
 
 		platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_CENTER);
 		// You cannot add constant "".  Must stringify
-		platobj->setName(std::string(PLATFORM_NAME) + cugl::strtool::to_string(ii));
+		platobj->setName(std::string(PLATFORM_NAME));
 
 		// Set the physics attributes
 		platobj->setBodyType(b2_staticBody);

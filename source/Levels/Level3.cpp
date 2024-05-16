@@ -117,7 +117,7 @@ void Level3::populate(GameScene& scene) {
 	for (int ii = 0; ii < ALT_PLATFORM_COUNT; ii++) {
 		std::shared_ptr<physics2::PolygonObstacle> platobj;
 		Poly2 platform(reinterpret_cast<Vec2*>(ALT_PLATFORMS[ii]), sizeof(ALT_PLATFORMS[ii]) / sizeof(float) / 2);
-
+        
 		EarclipTriangulator triangulator;
 		triangulator.set(platform.vertices);
 		triangulator.calculate();
@@ -126,8 +126,9 @@ void Level3::populate(GameScene& scene) {
 
 		platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_CENTER);
 		// You cannot add constant "".  Must stringify
-		platobj->setName(std::string(PLATFORM_NAME) + cugl::strtool::to_string(ii));
-
+        platobj->setName(std::string(PLATFORM_NAME));// + cugl::strtool::to_string(ii));
+        
+        
 		// Set the physics attributes
 		platobj->setBodyType(b2_staticBody);
 		platobj->setDensity(BASIC_DENSITY);
@@ -177,16 +178,18 @@ void Level3::populate(GameScene& scene) {
 	_shrimprice->addActionAnimation("SFR_Idle", _assets->get<Texture>("SFR_Idle"), 6, 6, 31, 1.291f);
 	_shrimprice->addActionAnimation("SFR_Move", _assets->get<Texture>("SFR_Move"), 4, 4, 14, 0.583f);
 	_shrimprice->addActionAnimation("SFR_Attack", _assets->get<Texture>("SFR_Attack"), 6, 5, 28, 1.125f);
-	_shrimprice->addActionAnimation("SFRJoustState1", _assets->get<Texture>("SFRJoustState1"), 4, 5, 18, 1.125f);
+	_shrimprice->addActionAnimation("SFRJoustState1", _assets->get<Texture>("SFRJoustState1"), 4, 5, 18, 2.25f);
 	_shrimprice->addActionAnimation("SFRJoustState2", _assets->get<Texture>("SFRJoustState2"), 3, 4, 12, 1.125f);
 	_shrimprice->addActionAnimation("SFRJoustState3", _assets->get<Texture>("SFRJoustState3"), 2, 2, 3, 0.6f);
 	_shrimprice->addActionAnimation("SFRWave1", _assets->get<Texture>("SFRWave1"), 3, 3, 8, 1.125f);
 	_shrimprice->addActionAnimation("SFRWave2", _assets->get<Texture>("SFRWave2"), 3, 3, 7, 1.125f);
 	_shrimprice->addActionAnimation("SFRWave3", _assets->get<Texture>("SFRWave3"), 4, 5, 18, 1.125f);
 	_shrimprice->addActionAnimation("SFRWheelofDoom", _assets->get<Texture>("SFRWheelofDoom"), 3, 4, 12, 0.1f);
-	_shrimprice->addActionAnimation("SFRMoveState1", _assets->get<Texture>("SFRMoveState1"), 3, 4, 11, 0.7f);
-	_shrimprice->addActionAnimation("SFRMoveState2", _assets->get<Texture>("SFRMoveState2"), 4, 4, 14, 1.0f);
+	_shrimprice->addActionAnimation("SFRMoveState1", _assets->get<Texture>("SFRMoveState1"), 4, 4, 14, 1.0f);
+	_shrimprice->addActionAnimation("SFRMoveState2", _assets->get<Texture>("SFRMoveState2"), 3, 4, 11, 0.7f);
 	_shrimprice->addActionAnimation("SFRTurn", _assets->get<Texture>("SFRTurn"), 3, 4, 11, 0.61f);
+    _shrimprice->addActionAnimation("SFRStunState2", _assets->get<Texture>("SFRStunState2"), 3, 3, 7, 0.46f);
+    _shrimprice->addActionAnimation("SFRStunState1", _assets->get<Texture>("SFRStunState1"), 3, 3, 7, 0.6f);
 
 	scene.addObstacle(_shrimprice, spritenode);
 

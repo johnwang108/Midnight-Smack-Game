@@ -59,13 +59,26 @@ private:
     bool  _keyRight;
     /** Whether the slow key is down */
     bool _keySlow;
+    /** Whether the slow key was just released */
+    bool _keySlowReleased;
+    /* Whether the interact key is down */
+    bool _keyInteract;
 
-    bool _keyTransition;
+    bool _keyInventoryLeft;
+    bool _keyInventoryRight;
+
+    bool _keyMinimap;
+
+    bool _keyPause;
+
+    bool _keyLevel1;
+    bool _keyLevel2;
+    bool _keyLevel3;
 
     //for Leon
     bool  _keyAnimate;
     bool  _keyBackground;
-    bool  _keyMusic;
+    //bool  _keyMusic;
 
 
     //is the current path ready for recog and rendering
@@ -73,7 +86,7 @@ private:
   
     bool  _keyDown;
     bool  _keyUp;
-    bool _dashKey;
+    bool _keyDash;
    
     std::shared_ptr<cugl::GameController> _gameCont;
 
@@ -93,18 +106,31 @@ protected:
     bool _firePressed;
     /** Whether the jump action was chosen. */
     bool _jumpPressed;
+
+    bool _interactPressed;
     /** Whether the slow action was chosen. */
     bool _slowPressed;
+    float _slowHeldDuration;
+    float _lastSlowHeldDuration;
+    bool _slowReleased;
+
+    bool _inventoryLeftPressed;
+    bool _inventoryRightPressed;
     /** How much did we move horizontally? */
     float _horizontal;
     float _vertical;
     bool _dashPressed;
 
-    bool _transitionPressed;
+    bool _minimapPressed;
+    bool _pausePressed;
+
+    bool _level1Pressed;
+    bool _level2Pressed;
+    bool _level3Pressed;
 
     bool _animatePressed;
     bool _backgroundPressed;
-    bool _musicPressed;
+    //bool _musicPressed;
 
     bool _zoomIn;
     bool _zoomOut;
@@ -148,13 +174,8 @@ protected:
     
     /** Whether or not we have processed a jump for this swipe yet */
     bool _hasJumped;
-    /** The timestamp for a double tap on the right */
-    cugl::Timestamp _rtime;
-	/** The timestamp for a double tap in the middle */
-	cugl::Timestamp _mtime;
 
     cugl::Path2 _touchPath;
-    cugl::Vec2 _swipeDelta;
 
   
     /**
@@ -177,18 +198,7 @@ protected:
 
 
     
-    /**
-     * Returns a nonzero value if this is a quick left or right swipe
-     *
-     * The function returns -1 if it is left swipe and 1 if it is a right swipe.
-     *
-     * @param  start    the start position of the candidate swipe
-     * @param  stop     the end position of the candidate swipe
-     * @param  current  the current timestamp of the gesture
-     *
-     * @return a nonzero value if this is a quick left or right swipe
-     */
-	int processSwipe(const cugl::Vec2 start, const cugl::Vec2 stop, cugl::Timestamp current);
+  
   
 public:
 #pragma mark -
@@ -312,21 +322,51 @@ public:
 	 * @return true if the exit button was pressed.
 	 */
 	bool didExit() const { return _exitPressed; }
+
+    bool didInteract() const {
+        return _interactPressed;
+    }
     bool didSlow() const { 
             return _slowPressed; 
+    }
+
+    float didSlowHeldDuration() const {
+        return _slowHeldDuration;
+    }
+
+    bool justReleasedSlow() const {
+        return _slowReleased;
+    }
+
+    float getLastSlowHeldDuration() const {
+        return _lastSlowHeldDuration;
+    }
+
+    bool getInventoryLeftPressed() const {
+        return _inventoryLeftPressed;
+    }
+
+    bool getInventoryRightPressed() const {
+        return _inventoryRightPressed;
     }
 
 
     bool didDash() const { return _dashPressed; }
 
-    bool didTransition() const { return _transitionPressed; }
+    bool didMinimap() const { return _minimapPressed; }
+
+    bool didPause() const { return _pausePressed; }
 
     bool didAnimate() const { return _animatePressed; }
 
-    bool didMusic() const { return _musicPressed; }
+    //bool didMusic() const { return _musicPressed; }
     bool didBackground() const { return _backgroundPressed; }
 
     cugl::Vec2 getTouchPos() { return _touchPos; }
+
+    bool didLevel1() const { return _level1Pressed; }
+    bool didLevel2() const { return _level2Pressed; }
+    bool didLevel3() const { return _level3Pressed; }
 
 #pragma mark -
 #pragma mark Touch and Mouse Callbacks
@@ -356,14 +396,7 @@ public:
      */
     void touchesMovedCB(const cugl::TouchEvent& event, const cugl::Vec2& previous, bool focus);
 
-    void swipeBeganCB(const cugl::PanEvent& event, bool focus);
-
-
-    void swipeEndedCB(const cugl::PanEvent& event, bool focus);
-
-
-  
-
+ 
   
 
     cugl::Path2 getTouchPath();
@@ -396,8 +429,6 @@ public:
 
     bool isGestureCompleted() { return _gestureCompleted; };
 
-
-    cugl::Vec2 getSwipeDelta() { return _swipeDelta; }
 
     void gestureStartCB(cugl::Vec2 pos, bool focus);
     void gestureMoveCB(cugl::Vec2 pos, bool focus);

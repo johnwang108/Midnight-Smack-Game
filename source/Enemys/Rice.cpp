@@ -1,11 +1,9 @@
 #include "Rice.h"
 
-
 bool Rice::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, bool isSoldier) {
     EnemyType t = isSoldier ? EnemyType::rice_soldier : EnemyType::rice;
     return init(pos, size, scale, EnemyModel::defaultSeq(t), EnemyModel::defaultSeqAlt(t), isSoldier);
 }
-
 
 bool Rice::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::vector<std::string> seq1, std::vector<std::string> seq2, bool isSoldier) {
     if (EnemyModel::init(pos, size, scale, seq1, seq2)) {
@@ -15,7 +13,17 @@ bool Rice::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std:
         _closeEnough = CLOSE_ENOUGH;
         std::string name = "rice";
         if (_isSoldier) name += "_soldier";
-        CULog(name.c_str());
+        _soldiers = std::vector<std::shared_ptr<Rice>>();
+        //vary speed 
+        if (_type == EnemyType::rice_soldier) {
+            float randFactor = (float)(rand()) / (float)(RAND_MAX);
+            CULog("randFactor: %f", randFactor);
+            _force = ENEMY_FORCE + randFactor;
+            _closeEnough = CLOSE_ENOUGH + 2.0f * (float)(rand()) / (float)(RAND_MAX);
+        }
+        else {
+            _force = ENEMY_FORCE - 0.75f;
+        }
         setName(name);
         _health = 100.0f;
         setFixedRotation(true);
@@ -40,79 +48,104 @@ void Rice::fixedUpdate(float step) {
         setRequestedActionAndPrio("riceDeath", 1000);
         velocity = b2Vec2(0, 0);
     }
-
-    else if (_state == "chasing") {
-        setRequestedActionAndPrio("riceIdle", 1);
-    }
-	else if (_state == "yelling") {
-        velocity.x = 0;
-        setRequestedActionAndPrio("riceYell", 50);
-	}
-	else if (_state == "acknowledging") {
-        velocity.x = 0;
-        setRequestedActionAndPrio("riceAcknowledge", 50);
-	}
-	else if (_state == "pursuing") {
-        if (getActiveAction() == "riceStartWalk" || getActiveAction() == "riceWalk") setRequestedActionAndPrio("riceWalk", 20);
-        else setRequestedActionAndPrio("riceStartWalk", 60);
-
-        if (_distanceToPlayer.length() < 0.05) {
-            setState("attacking");
+    else {
+        if (!_isSoldier) {
+            if (getState() == "pursuing") {
+                for (auto& soldier : _soldiers) {
+                    if (soldier->getState() == "patrolling") {
+                        soldier->setState("acknowledging");
+                    }
+                    soldier->setTargetPosition(getPosition() + _distanceToPlayer);
+                }
+            }
+            else if (getState() != "stunned") {
+                for (auto& soldier : _soldiers) {
+                    soldier->setState("patrolling");
+                    soldier->setTargetPosition(getPosition());
+                }
+            }
+        }
+        if (_state == "chasing") {
+            setRequestedActionAndPrio("riceIdle", 1);
+        }
+        else if (_state == "yelling") {
             velocity.x = 0;
+            setRequestedActionAndPrio("riceYell", 50);
         }
-        if (_type == EnemyType::rice) {
-            velocity.x = ENEMY_FORCE * _direction * 2;
-            //CULog("here :(");
+        else if (_state == "acknowledging") {
+            velocity.x = 0;
+            setRequestedActionAndPrio("riceAcknowledge", 50);
         }
-        else {
-            float dir = SIGNUM(_targetPosition.x - getPosition().x);
-            //velocity.x = ENEMY_FORCE * dir * 5;
-            velocity.x = ENEMY_FORCE * _direction * 5;
-        }
-	}
-	else if (_state == "attacking") {
-        velocity.x = 0;
-        setRequestedActionAndPrio("riceAttack", 80);
-	}
-	else if (_state == "stunned") {
-        if (!isGrounded()) {
-            setPausedAndFrame(true, 2);
-        }
-        else {
-            setPausedAndFrame(false, -1);
-        }
-        setRequestedActionAndPrio("riceHurt", 100);
-	}
-	else if (_state == "patrolling") {
+        else if (_state == "pursuing") {
+            if ((getActiveAction() == "riceStartWalk" || getActiveAction() == "riceWalk") && velocity.x != 0) setRequestedActionAndPrio("riceWalk", 20);
+            else if ((getActiveAction() == "riceStartWalk" || getActiveAction() == "riceWalk") && velocity.x == 0) setRequestedActionAndPrio("riceEndWalk", 30);
+            else if (velocity.x != 0) setRequestedActionAndPrio("riceStartWalk", 60);
+            else setRequestedActionAndPrio("riceIdle", 1);
 
-        if (_isSoldier) {
-            float diff = _targetPosition.x - getPosition().x;
-            //too far, start walking
-            if (std::abs(diff) > CLOSE_ENOUGH * 2 && velocity.x == 0) {
-                setRequestedActionAndPrio("riceStartWalk", 30);
-                velocity.x = ENEMY_FORCE * SIGNUM(diff);
+            if (_type == EnemyType::rice) {
+                velocity.x = _force * _direction * 2;
+                }
+            else {
+                float dir = SIGNUM(_targetPosition.x - getPosition().x);
+                //velocity.x = _force * dir * 5;
+                velocity.x = _force * _direction * 5;
             }
-            //chilling
-            else if ((std::abs(diff) > CLOSE_ENOUGH || std::abs(diff) < CLOSE_ENOUGH) && velocity.x == 0) {
-                setRequestedActionAndPrio("riceIdle", 1);
+/*            if (_distanceToPlayer.length() < 0.05) {
+                setState("attacking");
                 velocity.x = 0;
             }
-            //can stop walking
-            else if (std::abs(diff) < CLOSE_ENOUGH && velocity.x != 0) {
-                setRequestedActionAndPrio("riceEndWalk", 30);
+            else */if (abs(_distanceToPlayer.x) < 0.001) {
                 velocity.x = 0;
+            }
+        }
+        else if (_state == "attacking") {
+            velocity.x = 0;
+            setRequestedActionAndPrio("riceAttack", 80);
+        }
+        else if (_state == "stunned") {
+            if (!isGrounded()) {
+                setPausedAndFrame(true, 2);
             }
             else {
-                setRequestedActionAndPrio("riceWalk", 20);
-                velocity.x = ENEMY_FORCE * SIGNUM(diff);
+                setPausedAndFrame(false, -1);
+            }
+            setRequestedActionAndPrio("riceHurt", 100);
+        }
+        else if (_state == "patrolling") {
+
+            if (_isSoldier) {
+                float diff = _targetPosition.x - getPosition().x;
+                //too far, start walking
+                if (std::abs(diff) > CLOSE_ENOUGH * 4 && velocity.x == 0) {
+                    setRequestedActionAndPrio("riceStartWalk", 30);
+                    velocity.x = _force * SIGNUM(diff);
+                }
+                //chilling
+                else if ((std::abs(diff) > CLOSE_ENOUGH || std::abs(diff) < CLOSE_ENOUGH) && velocity.x == 0) {
+                    setRequestedActionAndPrio("riceIdle", 1);
+                    velocity.x = 0;
+                }
+                //can stop walking
+                else if (std::abs(diff) < CLOSE_ENOUGH && velocity.x != 0) {
+                    setRequestedActionAndPrio("riceEndWalk", 30);
+                    velocity.x = 0;
+                }
+                else {
+                    setRequestedActionAndPrio("riceWalk", 20);
+                    velocity.x = _force * SIGNUM(diff);
+                }
+            }
+            else {
+                if (getActiveAction() == "riceStartWalk" || getActiveAction() == "riceWalk") setRequestedActionAndPrio("riceWalk", 20);
+                else setRequestedActionAndPrio("riceStartWalk", 30);
+                velocity.x = _force * _direction;
             }
         }
-        else {
-            if (getActiveAction() == "riceStartWalk" || getActiveAction() == "riceWalk") setRequestedActionAndPrio("riceWalk", 20);
-                else setRequestedActionAndPrio("riceStartWalk", 30);
-                velocity.x = ENEMY_FORCE * _direction;
+        else if (_state == "respawning") {
+            setRequestedActionAndPrio("riceRespawn", 1000);
+            velocity.x = 0;
         }
-	}
+    }
 
     _body->SetLinearVelocity(EnemyModel::handleMovement(velocity));
 }
@@ -143,7 +176,12 @@ void Rice::setState(std::string state) {
     else if (state == "attacking") {
         _behaviorCounter = getActionDuration("riceAttack");
     }
+    else if (state == "respawning") {
+        _behaviorCounter = getActionDuration("riceRespawn");
+    }
 }
+
+
 
 std::string Rice::getNextState(std::string state) {
     if (state == "chasing") {
@@ -164,6 +202,11 @@ std::string Rice::getNextState(std::string state) {
         return "pursuing";
     }
     else if (state == "patrolling") {
+        return "patrolling";
+    }
+    else if (state == "respawning") {
+        return "patrolling";
+    }else if (state == "respawning") {
         return "patrolling";
     }
     return "0";

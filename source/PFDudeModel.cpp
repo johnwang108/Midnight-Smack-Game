@@ -74,9 +74,6 @@ float dashModif = 1.3;
 /** The density of the character */
 #define DUDE_DENSITY    .80f
 /** The impulse for the character jump */
-#define DUDE_JUMP       17.5f * getJumpBuff()//(sqrt( 3 * 2 * (9.8) * getHeight() * jmpHeight ) * getMass() * getJumpBuff())
-/** The impulse for the character dash */
-#define DUDE_DASH       40.0f
 /** Debug color for the sensor */
 #define DEBUG_COLOR     Color4::RED
 
@@ -133,10 +130,17 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
         _jumpCooldown = 0;
         _dashNum = 1;
 
+        _dashForce = DUDE_DASH;
+        _jumpForce = DUDE_JUMP;
+        _walkForce = DUDE_FORCE;
+
         _health = 100;
 
-        _healthCooldown = 0.2;
-        _lastDamageTime = 0;
+        _deathTimer = 0.0f;
+        _buffType = buff::none;
+
+        _healthCooldown = 1.5;
+        _lastDamageTime = getHealthCooldown();
         _knockbackTime = 0;
         _isOnDangerousGround = false;
 
@@ -426,20 +430,25 @@ void DudeModel::applyForce(float h, float v) {
 
 void DudeModel::walk(Vec2 dir, float dt) {
     if (_dashCooldown > DASH_COOLDOWN - floatyFrames) return;
-    if (_wallJumpTimer == 0.0f)
+    if (_wallJumpTimer == 0.0f && _knockbackTime == 0.0f)
     {
-        _body->SetLinearVelocity(b2Vec2(dir.x * DUDE_FORCE, getLinearVelocity().y));
+        _body->SetLinearVelocity(b2Vec2(dir.x * getForce(), getLinearVelocity().y));
     }
     else
     {
-        setLinearVelocity(getLinearVelocity().lerp(Vec2(dir.x * DUDE_FORCE, getLinearVelocity().y), WALL_JUMP_LERP));
+        setLinearVelocity(getLinearVelocity().lerp(Vec2(dir.x * getForce(), getLinearVelocity().y), WALL_JUMP_LERP));
     }
 }
 
 void DudeModel::jump(Vec2 dir, bool wall) {
     b2Vec2 vel = _body->GetLinearVelocity();
     vel.y = 0;
-    vel += b2Vec2(dir.x * DUDE_JUMP, DUDE_JUMP);
+
+    vel += b2Vec2(dir.x * getJumpForce(), getJumpForce());
+    if (wall) {
+        vel.x *= 1.7;
+        vel.y *= 1.2;
+	}
     _body->SetLinearVelocity(vel);
 }
 
@@ -447,10 +456,10 @@ void DudeModel::handleJump(float dt) {
     Vec2 vel = getLinearVelocity();
     //falling
     if (vel.y < 0) {
-        vel += Vec2(0, LEVELS_H_GRAVITY * FALL_MULTIPLIER * dt);
+        vel += Vec2(0, LEVELS_H_GRAVITY * (FALL_MULTIPLIER - 1) * dt);
     }
     else if (vel.y > 0 && !isJumping()) {
-		vel += Vec2(0, LEVELS_H_GRAVITY * FALL_MULTIPLIER_LOW * dt);
+        vel += Vec2(0, LEVELS_H_GRAVITY * (FALL_MULTIPLIER - 1) * dt);
 	}
     _body->SetLinearVelocity(b2Vec2(vel.x, vel.y));
 }
@@ -462,12 +471,16 @@ void DudeModel::dash(Vec2 dir) {
         dir.x = _faceRight ? 1.0f : -1.0f;
     }
     dir = dir.normalize();
-    _body->SetLinearVelocity(b2Vec2(dir.x * DUDE_DASH, dir.y * DUDE_DASH));
+    if (dir.y == 1) {
+		dir.y = 0.8;
+	}
+    _body->SetLinearVelocity(b2Vec2(dir.x * getDashForce(), dir.y * getDashForce()));
     setLinearDamping(DUDE_DAMPING);
 }
 
 void DudeModel::wallJump() {
     Vec2 wallDir = contactingLeftWall() ? Vec2(1,1) : Vec2(-1,1);
+    CULog("contacting left wall right wall: %s %s", contactingLeftWall() ? "true" : "false", contactingRightWall() ? "true" : "false");
     jump(wallDir, true);
     _wallJumpTimer = WALL_JUMP_LERP_TIMER;
 }
@@ -482,39 +495,47 @@ void DudeModel::wallJump() {
 void DudeModel::update(float dt) {
 
     Entity::update(dt);
+	if (_deathTimer != 0.0f) {
+        _node->setVisible(true);
+		return;
+	}
 
     //take damage anim
-    if (_knockbackTime > 0) {
-        if (int(_knockbackTime * 10) % 2 < 1) {
+    if (_lastDamageTime > _healthCooldown) {
+        setDidAnimateHurt(false);
+    }
+    else {
+        if (int(_lastDamageTime * 10) % 2 < 1) {
             _node->setVisible(true);
         }
         else {
             _node->setVisible(false);
         }
-        _knockbackTime -= dt;
-        if (_node != nullptr) {
-            _node->setPosition(getPosition() * _drawScale);
-            _node->setAngle(getAngle());
-        }
-        //return;
-    }
-    else {
-        _lastDamageTime += dt;
-    }
-
-    if (_node != nullptr) {
-        _node->setPosition(getPosition() * _drawScale);
-        _node->setAngle(getAngle());
     }
 }
 
 void DudeModel::fixedUpdate(float step) {
+    if (_deathTimer != 0.0f) {
+        _deathTimer -= step;
+    }
+
+    if (isBuffed()) {
+        useMeter(METER_COST * step / BASE_DURATION);
+    }
+
+    _lastDamageTime += step;
+
+    if (_knockbackTime > 0) {
+        _knockbackTime -= step;
+        _knockbackTime = std::max(0.0f, _knockbackTime);
+    }
     if (_duration > 0) {
         _duration -= step;
         _duration = std::max(0.0f, _duration);
         //reset buff state if duration is over
         if (_duration == 0) {
             resetBuff();
+            _node->setColor(Color4::WHITE);
         }
         else {
             _node->setColor(Color4::BLACK);
@@ -539,7 +560,7 @@ void DudeModel::fixedUpdate(float step) {
     if (_dashCooldown > DASH_COOLDOWN - floatyFrames) {
         setGravityScale(0);
         //slow down dash
-        setLinearDamping(std::max(DUDE_DAMPING_BASE, getLinearDamping() * 0.9f));
+        setLinearDamping(std::max(DUDE_DAMPING_BASE, getLinearDamping() * 0.95f));
     }
     else {
         handleJump(step);
@@ -557,8 +578,8 @@ void DudeModel::fixedUpdate(float step) {
             _jumpCooldown = JUMP_COOLDOWN;
             jump(Vec2(_movement, _vertical));
         }
-        else if (contactingLeftWall() || contactingRightWall()) {
-            // wallJump();
+        else if ((contactingLeftWall() || contactingRightWall()) && ((!isGrounded() && _jumpPressed))) {
+            wallJump();
         }
     }
     else {
@@ -647,20 +668,28 @@ void DudeModel::takeDamage(float damage, const int attackDirection) {
     if (_lastDamageTime >= _healthCooldown) {
         _lastDamageTime = 0;
         _health -= damage * getDefenseBuff();
-        if (_health < 0) {
+        if (_health <= 0) {
             _health = 0;
+            startDeath();
         }
         else {
-            b2Vec2 impulse = b2Vec2(attackDirection * 15, 10);
+            b2Vec2 impulse = b2Vec2(attackDirection * 25, 20);
             /*_body->ApplyLinearImpulseToCenter(impulse, true);*/
             _body->SetLinearVelocity(impulse);
-            _knockbackTime = 2;
+            _knockbackTime = 0.5f;
         }
     }
 }
 
+void DudeModel::startDeath() {
+    _duration = 0;
+    _meter = 0;
+    if (_deathTimer == 0) {
+        _deathTimer = DEATH_COOLDOWN;
+    }
+}
+
 bool DudeModel::useMeter(float f) {
-    CULog("Meter: %f", _meter);
     if (_meter > f) {
         _meter -= f;
 		return true;
@@ -670,9 +699,16 @@ bool DudeModel::useMeter(float f) {
     }
 }
 
+void DudeModel::addMeter(float f) {
+    if (isBuffed()) return;
+	_meter += f;
+	if (_meter > _maxMeter) _meter = _maxMeter;
+};
 
 void DudeModel::applyBuff(const buff b, modifier m) {
     resetBuff();
+    addMeter(METER_COST);
+    _buffType = b;
     switch (b) {
     case buff::attack:
         if (m == modifier::duration) {
@@ -742,6 +778,7 @@ void DudeModel::applyBuff(const buff b, modifier m) {
  * Resets the buff to default values
  */
 void DudeModel::resetBuff() {
+    _buffType = buff::none;
     _attackBuff = DEFAULT_BUFF;
     _healthBuff = 0.0f;
     _jumpBuff = DEFAULT_BUFF;
@@ -775,6 +812,7 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeMo
     attack->setrand(false);
     attack->setShoot(false);
     attack->setnorotate(true);
+    attack->setLifetime(getActionDuration("attack") * 1.5f);
     //b2Filter filter = attack->getFilterData();
     //filter.groupIndex = -1;
     //0x0010 is the category bit for intangible enemies (beef)
@@ -813,6 +851,7 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> DudeMo
     attack->setShoot(false);
     attack->setnorotate(true);
     attack->setAngle(angle - (3.14159265 / 2));
+    attack->setLifetime(getActionDuration("air_attack") * 1.5f);
     //b2Filter filter = attack->getFilterData();
     //filter.groupIndex = -1;
     ////0x0010 is the category bit for intangible enemies (beef)
@@ -831,3 +870,40 @@ void DudeModel::gainHealth(float f) {
     _health += f;
     if (_health > MAX_HEALTH + _healthUpgrade) _health = MAX_HEALTH + _healthUpgrade;
 };
+
+bool DudeModel::animate(std::string action_name) {
+    if (_deathTimer != 0 && action_name == getActiveAction()) {
+        return false;
+    }
+    return Entity::animate(action_name);
+}
+
+void DudeModel::reset() {
+	_health = 100;
+	_lastDamageTime = 0;
+	_knockbackTime = 0;
+	_deathTimer = 0;
+	_meter = 0;
+	_duration = 0;
+	_hasSuper = false;
+	_numberOfTouchingEnemies = 0;
+	_activeAction = "";
+	_dashCooldown = 0;
+	_shootCooldown = 0;
+	_jumpCooldown = 0;
+	_dashNum = 1;
+	_dashForce = DUDE_DASH;
+	_jumpForce = DUDE_JUMP;
+	_attack = 34;
+	_isOnDangerousGround = false;
+	_isGrounded = false;
+	_isShooting = false;
+	_isJumping = false;
+	_dash = true;
+	_contactingLeftWall = false;
+	_contactingRightWall = false;
+	_wallJumpTimer = 0.0f;
+	_movement = 0;
+	_vertical = 0;
+    _buffType = buff::none;
+}

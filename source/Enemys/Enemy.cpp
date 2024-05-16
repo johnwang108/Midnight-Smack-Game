@@ -37,11 +37,12 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
     scaledSize.height *= ENEMY_VSHRINK;
     _drawScale = scale;
 
-    if (Entity::init(pos, scaledSize)) {
+    if (Entity::init(pos, size)) {
         setDensity(ENEMY_DENSITY);
         setFriction(0.0f); // Prevent sticking to walls
+        setGravityScale(1.2f);
         setFixedRotation(false);
-        setFriction(1.0f);
+        setFriction(0.0f);
         _isChasing = false;
         _isGrounded = false;
         _direction = -1;
@@ -65,6 +66,7 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
         _killMeCountdown = 0.0f;
         _useID = true;
         _isTangible = true;
+        _spawnPoint = pos;
 
         return true;
     }
@@ -107,14 +109,12 @@ void EnemyModel::createFixtures() {
 
     sensorDef.userData.pointer = reinterpret_cast<uintptr_t>(getSensorName());
 
-
     _sensorFixture = _body->CreateFixture(&sensorDef);
-    b2Filter filter = getFilterData();
-    filter.groupIndex = -1;
-    _sensorFixture->SetFilterData(filter);
-
-
+    //b2Filter filter = getFilterData();
+    //filter.groupIndex = -1;
+    //_sensorFixture->SetFilterData(filter);
 }
+
 
 void EnemyModel::takeDamage(float damage, const int attackDirection) {
     if (_lastDamageTime >= _healthCooldown) {
@@ -130,6 +130,9 @@ void EnemyModel::takeDamage(float damage, const int attackDirection) {
                 _body->SetLinearVelocity(impulse);
                 setState("stunned");
                 _knockbackTime = 1;
+                if (_type == EnemyType::shrimp) {
+                    _body->SetAngularVelocity(10.0 * attackDirection);
+                }
             }
         }
     }
@@ -157,9 +160,18 @@ void EnemyModel::update(float dt) {
     if (_body == nullptr) {
         return;
     }
-    if (_node != nullptr) {
-        _node->setPosition(getPosition() * _drawScale);
-        _node->setAngle(getAngle());
+    //if (_node != nullptr) {
+    //    _node->setPosition(getPosition() * _drawScale);
+    //    _node->setAngle(getAngle());
+    //}
+
+    if (_state == "respawning") {
+        Color4 c = _node->getColor();
+        //hack: use _prepareTime
+        if (_type != EnemyType::rice_soldier) {
+            c.a = 255.0f * (1 - (_preparetime / getActionDuration(getName() + "Respawn")));
+        }
+        _node->setColor(c);
     }
 }
 
@@ -178,16 +190,19 @@ void EnemyModel::fixedUpdate(float step) {
         _knockbackTime -= step;
     }
     else if (_preparetime > 0) {
-        if (_preparetime < 1 && _shooted) {
-            _attacktime = true;
-        }
-        _preparetime -= step;
-        _body->SetLinearVelocity(b2Vec2(0, 0));
-        if (_node != nullptr) {
-            _node->setPosition(getPosition() * _drawScale);
-            _node->setAngle(getAngle());
-        }
+        _preparetime -= std::min(_preparetime, step);
     }
+    //else if (_preparetime > 0) {
+    //    if (_preparetime < 1 && _shooted) {
+    //        _attacktime = true;
+    //    }
+    //    _preparetime -= step;
+    //    _body->SetLinearVelocity(b2Vec2(0, 0));
+    //    if (_node != nullptr) {
+    //        _node->setPosition(getPosition() * _drawScale);
+    //        _node->setAngle(getAngle());
+    //    }
+    //}
 
     //set behaviors
     b2Vec2 velocity = _body->GetLinearVelocity();
@@ -213,9 +228,24 @@ b2Vec2 EnemyModel::handleMovement(b2Vec2 velocity) {
         velocity.x = -ENEMY_MAXSPEED;
     }
 
+    if (std::abs(_distanceToPlayer.x) < 0.1 && _type != EnemyType::carrot) {
+        velocity.x = _distanceToPlayer.x;
+    }
+    if (std::abs(velocity.x) < 0.01) {
+        velocity.x = 0;
+    }
+
     if (std::abs(velocity.x) < 0.03) velocity.x = 0;
-    if (velocity.x != 0) {
+    if (velocity.x != 0 && _type != EnemyType::carrot) {
         if (_state != "patrolling") {
+            setDirection(SIGNUM(_distanceToPlayer.x));
+        }
+        else {
+            setDirection(SIGNUM(velocity.x));
+        }
+    }
+    else if (_type == EnemyType::carrot) {
+        if (_state != "patrolling" && _state != "midair") {
             setDirection(SIGNUM(_distanceToPlayer.x));
         }
         else {
@@ -260,23 +290,50 @@ void EnemyModel::updatePlayerDistance(cugl::Vec2 playerPosition) {
     if (_distanceToPlayer.length() <= typeToAggroRange(_type) && _state == "patrolling") {
         setIsChasing(true);
     }
-    else if (_distanceToPlayer.length() > 1.5f * typeToAggroRange(_type) && _state != "patrolling") {
+    else if (_distanceToPlayer.length() > 1.5f * typeToAggroRange(_type) && _state != "patrolling" && _type != EnemyType::rice_soldier) {
 		setIsChasing(false);
 	}
-    //CULog("Distance to player: %f", _distanceToPlayer.length());
 }
 
 /**Sets the nextstate and also sets how long the enemy stays in that state. 
 Counters set to -1 if the state will transition away based off of requirements
 other than time.*/
 void EnemyModel::setState(std::string state) {
+    if (_state == "respawning") setTangible(true);
+    if (state == "patrolling") {
+        setLinearVelocity(Vec2(0, getLinearVelocity().y));
+    }
     _state = state;   
 }
 
 void EnemyModel::jump(Vec2 dir) {
-    //do nothing
     b2Vec2 vel = _body->GetLinearVelocity();
-    //vel.y = 0;
-    //vel += b2Vec2(dir.x * DUDE_JUMP, DUDE_JUMP);
     _body->SetLinearVelocity(vel);
+}
+
+void EnemyModel::setTangible(bool tangible) {
+	_isTangible = tangible;
+}
+
+void EnemyModel::respawn() {
+    if (!isRemoved()) {
+		return;
+	}
+    assert(_type != EnemyType::rice_soldier);
+    _killMe = false;
+    _killMeCountdown = 0.0f;
+    _isTangible = true;
+    _preparetime = getActionDuration(getName() + "Respawn");
+    setattacktime(false);
+    setGravityScale(1.2f);
+    setFriction(0.0f);
+    setHealth(100.0f);
+    markRemoved(false);
+    if (_type == EnemyType::shrimp) {
+        setFixedRotation(false);
+        setFriction(1.0f);
+    }
+    setPosition(_spawnPoint);
+    _state = "patrolling";
+    setState("respawning");
 }
