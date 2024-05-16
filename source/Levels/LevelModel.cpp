@@ -476,6 +476,12 @@ void LevelModel::populate(GameScene& scene) {
 					if (object->getString("name") == "Floating_Platform") {
 						CULog("We are in loadFloatingBox!");
 						CULog(object->getString("id").c_str());
+						loadMainPlatform(object, scene, sprite, window_height * 32.0f);
+						// loadMainPlatform(object, scene, sprite, window_height * 32.0f);
+					}
+					if (object->getString("name") == "Floating_Breakable_Platform") {
+						CULog("We are in loadFloatingBox!");
+						CULog(object->getString("id").c_str());
 						loadFloatingPlatform(nullptr, object, scene, sprite, window_height * 32.0f);
 						// loadMainPlatform(object, scene, sprite, window_height * 32.0f);
 					}

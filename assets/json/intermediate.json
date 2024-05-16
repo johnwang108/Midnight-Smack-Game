@@ -20695,7 +20695,7 @@
                 {
                  "height":0,
                  "id":3,
-                 "name":"Floating_Platform",
+                 "name":"Floating_Breakable_Platform",
                  "polygon":[
                         {
                          "x":0,
@@ -20720,194 +20720,200 @@
                  "x":325,
                  "y":1562.5
                 },
-                {
-                 "height":0,
-                 "id":4,
-                 "name":"Floating_Platform",
-                 "polygon":[
-                        {
-                         "x":0,
-                         "y":0
-                        },
-                        {
-                         "x":0.5,
-                         "y":48.25
-                        },
-                        {
-                         "x":147.25,
-                         "y":48.5
-                        },
-                        {
-                         "x":147.5,
-                         "y":-2
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":325,
-                 "y":1274
-                },
-                {
-                 "height":0,
-                 "id":5,
-                 "name":"Floating_Platform",
-                 "polygon":[
-                        {
-                         "x":0,
-                         "y":0
-                        },
-                        {
-                         "x":-1.5,
-                         "y":53
-                        },
-                        {
-                         "x":335.5,
-                         "y":49.5
-                        },
-                        {
-                         "x":336,
-                         "y":1.5
-                        },
-                        {
-                         "x":254.5,
-                         "y":1
-                        },
-                        {
-                         "x":256.5,
-                         "y":-248
-                        },
-                        {
-                         "x":79.5,
-                         "y":-248
-                        },
-                        {
-                         "x":79,
-                         "y":-1
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":754.5,
-                 "y":1271
-                },
-                {
-                 "height":0,
-                 "id":6,
-                 "name":"Floating_Platform",
-                 "polygon":[
-                        {
-                         "x":0,
-                         "y":0
-                        },
-                        {
-                         "x":-1.25,
-                         "y":49
-                        },
-                        {
-                         "x":147.75,
-                         "y":48.75
-                        },
-                        {
-                         "x":145.75,
-                         "y":-0.5
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":1085.25,
-                 "y":923.75
-                },
-                {
-                 "height":0,
-                 "id":7,
-                 "name":"Floating_Platform",
-                 "polygon":[
-                        {
-                         "x":0,
-                         "y":0
-                        },
-                        {
-                         "x":-1.33333333333326,
-                         "y":48.6666666666666
-                        },
-                        {
-                         "x":294.666666666667,
-                         "y":49.3333333333333
-                        },
-                        {
-                         "x":296.666666666667,
-                         "y":-2
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":1506.66666666667,
-                 "y":874
-                },
-                {
-                 "height":0,
-                 "id":10,
-                 "name":"Floating_Platform",
-                 "polygon":[
-                        {
-                         "x":0,
-                         "y":0
-                        },
-                        {
-                         "x":1,
-                         "y":50
-                        },
-                        {
-                         "x":200.666666666667,
-                         "y":49.5
-                        },
-                        {
-                         "x":200.916666666667,
-                         "y":-0.25
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":3059.33333333333,
-                 "y":1113
-                },
-                {
-                 "height":0,
-                 "id":11,
-                 "name":"Floating_Platform",
-                 "polygon":[
-                        {
-                         "x":0,
-                         "y":0
-                        },
-                        {
-                         "x":2,
-                         "y":49.5
-                        },
-                        {
-                         "x":200,
-                         "y":49.75
-                        },
-                        {
-                         "x":199.333333333333,
-                         "y":-1.25
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":3298,
-                 "y":1213.25
-                },
+          {
+            "height": 0,
+            "id": 4,
+            "name": "Floating_Breakable_Platform",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 0.5,
+                "y": 48.25
+              },
+              {
+                "x": 147.25,
+                "y": 48.5
+              },
+              {
+                "x": 147.5,
+                "y": -2
+              }
+            ],
+            "rotation": 0,
+            "type": "",
+            "visible": true,
+            "width": 0,
+            "x": 325,
+            "y": 1274
+          },
+          {
+            "height": 0,
+            "id": 5,
+            "name": "Floating_Breakable_Platform",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": -1.5,
+                "y": 53
+              },
+              {
+                "x": 335.5,
+                "y": 49.5
+              },
+              {
+                "x": 336,
+                "y": 1.5
+              },
+              {
+                "x": 254.5,
+                "y": 1
+              },
+              {
+                "x": 256.5,
+                "y": -248
+              },
+              {
+                "x": 79.5,
+                "y": -248
+              },
+              {
+                "x": 79,
+                "y": -1
+              }
+            ],
+            "rotation": 0,
+            "type": "",
+            "visible": true,
+            "width": 0,
+            "x": 754.5,
+            "y": 1271
+          },
+          {
+            "height": 0,
+            "id": 6,
+            "name": "Floating_Breakable_Platform",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": -1.25,
+                "y": 49
+              },
+              {
+                "x": 147.75,
+                "y": 48.75
+              },
+              {
+                "x": 145.75,
+                "y": -0.5
+              }
+            ],
+            "rotation": 0,
+            "type": "",
+            "visible": true,
+            "width": 0,
+            "x": 1085.25,
+            "y": 923.75
+          },
+          {
+            "height": 0,
+            "id": 7,
+            "name": "Floating_Breakable_Platform",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": -1.33333333333326,
+                "y": 48.6666666666666
+              },
+              {
+                "x": 294.666666666667,
+                "y": 49.3333333333333
+              },
+              {
+                "x": 296.666666666667,
+                "y": -2
+              }
+            ],
+            "rotation": 0,
+            "type": "",
+            "visible": true,
+            "width": 0,
+            "x": 1506.66666666667,
+            "y": 874
+          },
+          {
+            "height": 0,
+            "id": 10,
+            "name": "Floating_Breakable_Platform",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 1,
+                "y": 50
+              },
+              {
+                "x": 200.666666666667,
+                "y": 49.5
+              },
+              {
+                "x": 200.916666666667,
+                "y": -0.25
+              }
+            ],
+            "rotation": 0,
+            "type": "",
+            "visible": true,
+            "width": 0,
+            "x": 3059.33333333333,
+            "y": 1113
+          },
+          {
+            "height": 0,
+            "id": 11,
+            "name": "Floating_Breakable_Platform",
+            "polygon": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 2,
+                "y": 49.5
+              },
+              {
+                "x": 200,
+                "y": 49.75
+              },
+              {
+                "x": 199.333333333333,
+                "y": -1.25
+              }
+            ],
+            "rotation": 0,
+            "type": "",
+            "visible": true,
+            "width": 0,
+            "x": 3298,
+            "y": 1213.25
+          },
           {
             "height": 0,
             "id": 12,
-            "name": "Floating_Platform",
+            "name": "Floating_Breakable_Platform",
             "polygon": [
               {
                 "x": 0,
@@ -20936,7 +20942,7 @@
           {
             "height": 0,
             "id": 13,
-            "name": "Floating_Platform",
+            "name": "Floating_Breakable_Platform",
             "polygon": [
               {
                 "x": 0,
@@ -20965,7 +20971,7 @@
           {
             "height": 0,
             "id": 14,
-            "name": "Floating_Platform",
+            "name": "Floating_Breakable_Platform",
             "polygon": [
               {
                 "x": 0,
@@ -20994,7 +21000,7 @@
           {
             "height": 0,
             "id": 15,
-            "name": "Floating_Platform",
+            "name": "Floating_Breakable_Platform",
             "polygon": [
               {
                 "x": 0,
@@ -21023,7 +21029,7 @@
           {
             "height": 0,
             "id": 16,
-            "name": "Floating_Platform",
+            "name": "Floating_Breakable_Platform",
             "polygon": [
               {
                 "x": 0,
@@ -21052,7 +21058,7 @@
           {
             "height": 0,
             "id": 17,
-            "name": "Floating_Platform",
+            "name": "Floating_Breakable_Platform",
             "polygon": [
               {
                 "x": 0,
@@ -21081,7 +21087,7 @@
           {
             "height": 0,
             "id": 18,
-            "name": "Floating_Platform",
+            "name": "Floating_Breakable_Platform",
             "polygon": [
               {
                 "x": 0,
@@ -21118,7 +21124,7 @@
           {
             "height": 0,
             "id": 19,
-            "name": "Floating_Platform",
+            "name": "Floating_Breakable_Platform",
             "polygon": [
               {
                 "x": 0,
@@ -21147,7 +21153,7 @@
           {
             "height": 0,
             "id": 20,
-            "name": "Floating_Platform",
+            "name": "Floating_Breakable_Platform",
             "polygon": [
               {
                 "x": 0,
