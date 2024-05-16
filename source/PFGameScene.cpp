@@ -458,7 +458,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _interactivePopups = std::vector<std::shared_ptr<Popup>>();
 
    _chapter = 1;
-   _level = 1;
+   _level = 4;
    loadLevel(_chapter, _level);
    // currentLevel = _level_model;
    // loadLevel(currentLevel);

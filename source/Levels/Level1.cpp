@@ -177,7 +177,7 @@ void Level1::populate(GameScene& scene) {
 	_enemy->setSceneNode(spritenode);
 	_enemy->setName(ENEMY_NAME);
 	_enemy->setDebugColor(DEBUG_COLOR);
-	_enemy->setLimit(cugl::Spline2(Vec2(0.0f, 0.3f), Vec2(100.0f, 0.3f)));
+	//_enemy->setLimit(cugl::Spline2(Vec2(0.0f, 0.3f), Vec2(100.0f, 0.3f)));
 	//scene.addObstacle(_enemy, spritenode);
 	//_enemies.push_back(_enemy);
 

@@ -59,29 +59,6 @@ void Level3::populate(GameScene& scene) {
 	//scene.addObstacle(_background, sprite);
 
 
-#pragma mark : Goal door
-	image = _assets->get<Texture>(GOAL_TEXTURE);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	std::shared_ptr<scene2::WireNode> draw;
-
-	// Create obstacle
-	Vec2 goalPos = GOAL_POS;
-	Size goalSize(image->getSize().width / _scale,
-		image->getSize().height / _scale);
-	_goalDoor = physics2::BoxObstacle::alloc(goalPos, goalSize);
-
-	// Set the physics attributes
-	_goalDoor->setBodyType(b2_staticBody);
-	_goalDoor->setDensity(0.0f);
-	_goalDoor->setFriction(0.0f);
-	_goalDoor->setRestitution(0.0f);
-	_goalDoor->setSensor(true);
-	// _goalDoor->setEnabled
-
-	// Add the scene graph nodes to this object
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_goalDoor->setDebugColor(DEBUG_COLOR);
-	scene.addObstacle(_goalDoor, sprite);
 
 #pragma mark : Walls
 	// All walls and platforms share the same texture
