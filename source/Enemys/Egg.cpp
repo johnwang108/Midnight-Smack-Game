@@ -107,9 +107,7 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Egg::c
     std::shared_ptr<Texture> image = _assets->get<Texture>(ATTACK_TEXTURE);
 
     Size s = Size(1.0f, 0.5f);
-    std::shared_ptr<Attack> attack = Attack::alloc(pos,
-        s);
-        //cugl::Size(image->getSize().width / scale, ATTACK_H * image->getSize().height / scale));
+    std::shared_ptr<Attack> attack = Attack::alloc(pos, s);
 
     if (getDirection() > 0) {
         attack->setFaceRight(true);

@@ -129,7 +129,7 @@ void LevelModel::populate(GameScene& scene) {
 
 			// it should be harder than just this
 			std::string tileSource = tile->getString("source");
-			// CULog(tileSource.c_str());
+			CULog(tileSource.c_str());
 			tileSource.insert(0, "json\\");
 
 			// tileSource.insert(0, _getcwd(NULL, 0));

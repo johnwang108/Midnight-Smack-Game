@@ -1,0 +1,15 @@
+{ "columns":32,
+ "image":"..\/textures\/jars.png",
+ "imageheight":763,
+ "imagewidth":1027,
+ "margin":0,
+ "name":"jars",
+ "spacing":0,
+ "tilecount":736,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "transparentcolor":"#000000",
+ "type":"tileset",
+ "version":"1.10"
+}

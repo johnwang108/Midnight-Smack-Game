@@ -1,0 +1,14 @@
+{ "columns":10,
+ "image":"..\/..\/..\/..\/..\/..\/Downloads\/Tiled Assets-20240516T071104Z-001\/Tiled Assets\/far\/jarsFar.png",
+ "imageheight":363,
+ "imagewidth":350,
+ "margin":0,
+ "name":"jarsFar",
+ "spacing":0,
+ "tilecount":110,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}
