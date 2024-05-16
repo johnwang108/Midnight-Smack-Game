@@ -99,7 +99,7 @@
 #define WALL_JUMP_LERP 0.05f
 
 //lerp timer in seconds
-#define WALL_JUMP_LERP_TIMER 1.75f
+#define WALL_JUMP_LERP_TIMER 0.75f
 
 
 #pragma mark -

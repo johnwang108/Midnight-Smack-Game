@@ -281,8 +281,6 @@ public:
 
     virtual void setState(std::string state);
 
-    void resetDebug() override;
-
     virtual std::string getNextState(std::string state) { return ""; };
 
     std::string getState() { return _state; }
@@ -292,6 +290,8 @@ public:
     //void syncStateTimes();
 
     bool isTangible() { return _isTangible; }
+
+    void setTangible(bool b);
 
     void setActiveAction(std::string action) {
         Entity::setActiveAction(action);

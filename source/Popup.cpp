@@ -118,9 +118,6 @@ void Popup::layoutEverything() {
 	float height = r1.size.height + r2.size.height;
 	float targetScale = _targetSize.width * _targetSize.height / (width * height);
 	setScale(targetScale);
-
-	CULog("DONE AUTOLAYOUT");
-	CULog("width: %f, height: %f, scale: %f", width, height, targetScale);
 }
 
 std::string Popup::processText(std::string input) {

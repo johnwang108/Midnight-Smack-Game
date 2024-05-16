@@ -41,7 +41,13 @@ protected:
 
     MenuScene _menu;
 
+    MenuScene _levelSelectMenu;
+
+    MenuScene _settingsMenu;
+
     std::string _currentScene;
+
+    std::unordered_map<std::string, float> _settingsData;
     
     /** Whether or not we have finished loading all assets */
     bool _loaded;

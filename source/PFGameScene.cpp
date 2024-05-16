@@ -231,7 +231,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _level_model->setFilePath("json/intermediate.json");
     _timer = 0.0f;
     _timeLimit = 200.0f;
-    _respawnTimes = std::deque<float>({50.0f, 100.0f, 150.0f, 200.0f});
+    _respawnTimes = std::deque<float>({10.0f, 100.0f, 150.0f, 200.0f});
     setSceneWidth(_level_model->loadLevelWidth());
     setSceneHeight(_level_model->loadLevelHeight());
 
@@ -808,7 +808,7 @@ void GameScene::preUpdate(float dt) {
     //has the level loaded yet
 
     // Process the toggled key commands
-    //if (_input->didDebug()) { setDebug(!isDebug()); }
+    if (_input->didDebug()) { setDebug(!isDebug()); }
     //if (_input->didReset()) { reset(); }
     if (_input->didExit()) {
         //transition(true);
@@ -859,7 +859,7 @@ void GameScene::preUpdate(float dt) {
                     IngredientType t = _inventoryNode->getIngredientTypeFromSlot(_inventoryNode->getSelectedSlot());
                     bool b = i->interact(t);
                     if (b) {
-                        removeOrder(i->getId(), t, true);
+                        removeOrder(i->getId(), t);
                         _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
                     }
                     break;
@@ -872,6 +872,7 @@ void GameScene::preUpdate(float dt) {
                     IngredientType t = _inventoryNode->getIngredientTypeFromSlot(_inventoryNode->getSelectedSlot());
                     if (i->interact(t)) {
                         i->setIngredientPtr(_inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot()));
+                        removeingredient(i->getPosition());
                     }
                     else if (i->isFull()) {
                         ////let's cook baby
@@ -897,21 +898,17 @@ void GameScene::preUpdate(float dt) {
                         int id = _plates.back()->getId();
 
                         IngredientType cookedType = i->getCookedType(t);
-                        removeOrder(id, cookedType, false);
-                        createOrder(id, cookedType, true);
 
                         _inventoryNode->addIngredient(ing);
 
                         i->clearIngredients();
                         i->setIngredientPtr(nullptr);
-
                     }
                 }
                 else CULog("Station id: %i", i->getId());
                 CULog("station");
             }
         }
-
         else CULog("failure");
     }
 
@@ -937,8 +934,7 @@ void GameScene::preUpdate(float dt) {
         }
         //cancel run animation if stopped running
         else if (_actionManager->isActive("run") && _input->getHorizontal() == 0) {
-            //animate(_avatar, "skid", true);
-            animate(_avatar, "idle", true);
+            animate(_avatar, "skid", true);
         }
 
         else if (_avatar->isJumping() && _avatar->isGrounded()) {
@@ -1013,7 +1009,7 @@ void GameScene::preUpdate(float dt) {
         }
 
         _avatar->setShooting(_input->didFire());
-        if (_avatar->isShooting() && (!_actionManager->isActive("attack") && !_actionManager->isActive("air_attack"))) {
+        if (_avatar->isShooting() && (!_actionManager->isActive("attack") && !_actionManager->isActive("air_attack") && !_actionManager->isActive("air_recover"))) {
             if (_avatar->isGrounded()) {
                 auto att = _avatar->createAttack(getAssets(), _scale);
                 addObstacle(std::get<0>(att), std::get<1>(att), true);
@@ -1215,10 +1211,14 @@ void GameScene::preUpdate(float dt) {
                 enemy->animate(actionName);
                 auto action = enemy->getAction(actionName);
                 _actionManager->activate(actionName + enemy->getId(), action, enemy->getSceneNode());
-
-                //CULog("animating %s", actionName.c_str());
+				if (enemy->getType() == EnemyType::beef) {
+					CULog("animating %s", actionName);
+				}
             }
         }
+        //if (enemy->getType() == EnemyType::shrimp) {
+        //    CULog("frame %i", enemy->getSpriteNode()->getFrame());
+        //}
     }
 
     for (auto& spawn : spawns) {
@@ -1755,6 +1755,7 @@ void GameScene::postUpdate(float remain) {
         if (_failed == false) {
 
             //this is where we will change the scene width and heights for everything
+            save();
             advanceLevel();
             reset();
 
@@ -2122,8 +2123,6 @@ persistent { ... }
 void GameScene::save() {
     std::string root = cugl::Application::get()->getSaveDirectory();
     std::string path = cugl::filetool::join_path({ root,"save.json" });
-
-
     std::shared_ptr<JsonValue> json = JsonValue::allocObject();
     if (isComplete()) {
         //increment most recently beaten chapter and level
@@ -2163,7 +2162,9 @@ void GameScene::save() {
 }
 
 bool GameScene::loadSave(std::shared_ptr<JsonValue> save) {
-    if (save->size() == 0) {
+    if (save == nullptr || save->size() == 0) {
+        int chap = 1;
+        int level = 1;
         reset();
         return true;
     }
@@ -2173,24 +2174,20 @@ bool GameScene::loadSave(std::shared_ptr<JsonValue> save) {
     changeCurrentLevel(chap, level);
     reset();
 
-    // max health, dash cooldown, attack damage, speed, metergain
-    float locationX = save->get("player")->getFloat("location_x");
-    float locationY = save->get("player")->getFloat("location_y");
-    float health = save->get("player")->getFloat("health");
-    _avatar->setPosition(locationX, locationY);
-    _avatar->setHealth(health);
-    for (auto& e : _enemies) {
-        std::shared_ptr<JsonValue> enemy = save->get(EnemyModel::typeToStr(e->getType()))->get(e->getId());
-        if (enemy->getBool("isDead", false)) {
-            removeEnemy(e.get());
-            continue;
-        }
-        e->setPosition(enemy->getFloat("location_x"), enemy->getFloat("location_y"));
-        e->setHealth(enemy->getFloat("health"));
-    }
-
-    //todo: persistent
-
+    //float locationX = save->get("player")->getFloat("location_x");
+    //float locationY = save->get("player")->getFloat("location_y");
+    //float health = save->get("player")->getFloat("health");
+    //_avatar->setPosition(locationX, locationY);
+    //_avatar->setHealth(health);
+    //for (auto& e : _enemies) {
+    //    std::shared_ptr<JsonValue> enemy = save->get(EnemyModel::typeToStr(e->getType()))->get(e->getId());
+    //    if (enemy->getBool("isDead", false)) {
+    //        removeEnemy(e.get());
+    //        continue;
+    //    }
+    //    e->setPosition(enemy->getFloat("location_x"), enemy->getFloat("location_y"));
+    //    e->setHealth(enemy->getFloat("health"));
+    //}
 
     return true;
 }
@@ -2249,7 +2246,7 @@ void GameScene::spawnShrimp(Vec2 pos) {
 void GameScene::spawnBeef(Vec2 pos) {
     std::shared_ptr<Texture> image = _assets->get<Texture>("beefIdle");
     std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
-    Size s = cugl::Size(8.0f, 8.0f);
+    Size s = cugl::Size(6.0f, 6.0f);
     std::shared_ptr<EnemyModel> new_enemy = Beef::allocWithConstants(pos, s, getScale(), _assets);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
@@ -2259,7 +2256,7 @@ void GameScene::spawnBeef(Vec2 pos) {
 void GameScene::spawnEgg(Vec2 pos) {
     std::shared_ptr<Texture> image = _assets->get<Texture>("eggIdle");
     std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
-    Size s = Size(1.75f, 6.0f);
+    Size s = Size(1.75f, 5.0f);
     std::shared_ptr<EnemyModel> new_enemy = Egg::allocWithConstants(pos, s, getScale(), _assets);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
@@ -2270,7 +2267,7 @@ void GameScene::spawnEgg(Vec2 pos) {
 void GameScene::spawnRice(Vec2 pos, bool isSoldier) {
     std::shared_ptr<Texture> image = _assets->get<Texture>("riceLeader");
     std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
-    Size s = Size(2.25f, 3.0f);
+    Size s = Size(2.0f, 2.5f);
     std::shared_ptr<EnemyModel> new_enemy = Rice::allocWithConstants(pos, s, getScale(), _assets, isSoldier);
     spritenode->setAnchor(Vec2(0.5, 0.35));
     spritenode->setScale(0.35 / 1.75);
@@ -2284,7 +2281,7 @@ std::shared_ptr<EnemyModel> GameScene::spawnRiceSoldier(Vec2 pos, std::shared_pt
     std::shared_ptr<Texture> image = _assets->get<Texture>("riceLeader");
     std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
 
-    Size s = Size(2.25f, 3.0f);
+    Size s = Size(2.0f, 2.5f);
     std::shared_ptr<EnemyModel> new_enemy = Rice::allocWithConstants(pos, s, getScale(), _assets, true);
     spritenode->setAnchor(Vec2(0.5, 0.35));
     spritenode->setScale(0.35 / 1.75);
@@ -2366,65 +2363,35 @@ void GameScene::pogo() {
     }
 }
 
-void GameScene::createOrder(int plateId, IngredientType ing, bool isPlate) {
+void GameScene::createOrder(int plateId, IngredientType ing) {
     std::shared_ptr<scene2::SceneNode> order = scene2::SceneNode::alloc();
     std::shared_ptr<scene2::PolygonNode> background = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("orderBackground"));
     order->addChild(background);
     std::shared_ptr<Texture> texture;
     switch (ing) {
     case IngredientType::cutCarrot: {
-        if (isPlate) {
-            texture = _assets->get<Texture>("plateCarrotOrder");
-        }
-        else {
-            texture = _assets->get<Texture>("cutCarrotOrder");
-        }
+        texture = _assets->get<Texture>("cutCarrotOrder");
         break;
     }
 
     case IngredientType::boiledEgg: {
-        if (isPlate) {
-            texture = _assets->get<Texture>("plateBoiledEggOrder");
-        }
-        else {
-            texture = _assets->get<Texture>("boilEggOrder");
-        }
+        texture = _assets->get<Texture>("boilEggOrder");
         break;
     }
     case IngredientType::scrambledEgg: {
-        if (isPlate) {
-            texture = _assets->get<Texture>("plateScrambledEggOrder");
-        }
-        else {
-            texture = _assets->get<Texture>("scrambledEggOrder");
-        }
+        texture = _assets->get<Texture>("scrambledEggOrder");
         break;
     }
     case IngredientType::cookedShrimp: {
-        if (isPlate) {
-            texture = _assets->get<Texture>("plateShrimpOrder");
-        }
-        else {
-            texture = _assets->get<Texture>("fryShrimpOrder");
-        }
+        texture = _assets->get<Texture>("fryShrimpOrder");
         break;
     }
     case IngredientType::boiledRice: {
-        if (isPlate) {
-            texture = _assets->get<Texture>("plateRiceOrder");
-        }
-        else {
-            texture = _assets->get<Texture>("boilRiceOrder");
-        }
+        texture = _assets->get<Texture>("boilRiceOrder");
         break;
     }
     case IngredientType::cookedBeef: {
-        if (isPlate) {
-            texture = _assets->get<Texture>("plateBeefOrder");
-        }
-        else {
-            texture = _assets->get<Texture>("fryBeefOrder");
-        }
+        texture = _assets->get<Texture>("fryBeefOrder");
         break;
     }
     default: {
@@ -2449,7 +2416,7 @@ void GameScene::createOrder(int plateId, IngredientType ing, bool isPlate) {
     positionOrders();
 }
 
-void GameScene::removeOrder(int plateId, IngredientType ing, bool isPlate) {
+void GameScene::removeOrder(int plateId, IngredientType ing) {
     for (auto it = _orders[plateId].begin(); it != _orders[plateId].end(); it++) {
         if ((*it) != nullptr && (*it)->getName() == (Ingredient::getIngredientStringFromType(ing) + "Order")) {
             std::shared_ptr<scene2::SceneNode> order = *it;
@@ -2497,7 +2464,7 @@ void GameScene::generateOrders() {
         int id = p->getId();
         _orders[id] = std::vector<std::shared_ptr<scene2::SceneNode>>();
         for (IngredientType t : x) {
-            createOrder(id, t, false);
+            createOrder(id, t);
         }
     }
 }
@@ -2509,4 +2476,36 @@ void GameScene::respawnEnemies(float p) {
             respawnEnemy(e);
         }
     }
+}
+
+void GameScene::removeingredient(Vec2 pos) {
+
+    std::string t = _inventoryNode->getIngredientnameFromSlot(_inventoryNode->getSelectedSlot());
+    std::shared_ptr<Texture> image = _assets->get<Texture>(t);
+
+    std::shared_ptr<Attack> attack = Attack::alloc(_avatar->getPosition(),
+        cugl::Size(image->getSize().width*0.2/ _scale, image->getSize().height*0.2/ _scale));
+
+
+    attack->setName("ingredient");
+    attack->setBullet(true);
+    attack->setGravityScale(0.5);
+    attack->setDebugColor(DEBUG_COLOR);
+    attack->setDrawScale(_scale);
+    attack->setEnabled(true);
+    attack->setstraight(pos);
+    attack->setrand(false);
+    attack->setDie(false);
+    attack->setUp(1.5);
+
+
+    std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
+    attack->setSceneNode(sprite);
+    sprite->setPosition(_avatar->getPosition());
+    sprite->setScale(0.2);
+
+    addObstacle(attack, sprite, true);
+    _attacks.push_back(attack);
+
+
 }

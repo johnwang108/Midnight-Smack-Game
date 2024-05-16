@@ -87,6 +87,21 @@ void GameScene::beginContact(b2Contact* contact) {
         }
     }
 
+    for (auto& s : _stations) {
+        if (s.get() == bd1 && bd2->getName() == "ingredient" ) {
+            if (((Attack*)bd2)->getUp() <= 0) {
+                ((Attack*)bd2)->setLifetime(1);
+                ((Attack*)bd2)->setDie(true);
+            }
+        }
+        else if (s.get() == bd2 && bd1->getName() == "ingredient") {
+            if (((Attack*)bd1)->getUp() <= 0) {
+                ((Attack*)bd1)->setLifetime(1);
+                ((Attack*)bd1)->setDie(true);
+            }
+        }
+    }
+
     if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1 == _Bull.get() && bd2->getName() == WALL_NAME) {
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd2)->getPosition();
         Vec2 bullPos = _Bull->getPosition();

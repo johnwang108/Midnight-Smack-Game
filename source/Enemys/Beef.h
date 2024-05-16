@@ -39,6 +39,10 @@ public:
         //manually add rise (dig reversed)
         auto info = result->getInfo("beefDig");
         result->addActionAnimation("beefRise", _assets->get<Texture>("beefDig"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 0.2, true);
+
+        //manually add respawn (death reversed)
+        info = result->getInfo("beefDeath");
+        result->addActionAnimation("beefRespawn", _assets->get<Texture>("beefDeath"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 4.0f, true);
         return res ? result : nullptr;
     }
 
@@ -59,8 +63,6 @@ public:
     void setState(std::string state) override;
 
     std::string getNextState(std::string state) override;
-
-    void setTangible(bool b);
 
     //linear projection of a point onto the internal pathLimit
   //  cugl::Vec2 projectOntoPath(Vec2 point) {

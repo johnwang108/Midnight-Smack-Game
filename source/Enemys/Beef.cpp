@@ -30,7 +30,7 @@ void Beef::update(float dt) {
     }
     else if (_state == "burrowing") {
         int prio = 29;
-        if (getActiveAction() == "beefAttack") prio = 39;
+        if (getActiveAction() == "beefAttack" || getActiveAction() == "beefIdle") prio = 39;
         setRequestedActionAndPrio("beefDig", prio);
     }
     else if (_state == "tracking") {
@@ -44,11 +44,14 @@ void Beef::update(float dt) {
         setRequestedActionAndPrio("beefAttack", 33);
     }
     else if (_state == "stunned") {
-        setRequestedActionAndPrio("beefHurt", 40);
+        setRequestedActionAndPrio("beefIdle", 34);
     }
     else if (_state == "patrolling") {
         setRequestedActionAndPrio("beefIdle", 1);
     }
+    else if (_state == "respawning") {
+		setRequestedActionAndPrio("beefRespawn", 1000);
+	}
 }
 
 void Beef::fixedUpdate(float step) {
@@ -93,11 +96,11 @@ void Beef::fixedUpdate(float step) {
         velocity.x = 0;
         _attacked = false;
     }
+    else if (_state == "respawning") {
+		setTangible(false);
+		velocity.x = 0;
+	}
     _body->SetLinearVelocity(handleMovement(velocity));
-}
-
-void Beef::setTangible(bool b) {
-    _isTangible = b;
 }
 
 b2Vec2 Beef::handleMovement(b2Vec2 velocity) {
@@ -164,7 +167,10 @@ void Beef::setState(std::string state) {
         _behaviorCounter = getActionDuration("beefAttack");
     }
     else if (state == "stunned") {
-        _behaviorCounter = getActionDuration("beefHurt");
+        _behaviorCounter = 0.5;
+    }
+    else if (state == "respawning") {
+        _behaviorCounter = getActionDuration("beefRespawn");
     }
 }
 
@@ -183,12 +189,15 @@ std::string Beef::getNextState(std::string state) {
         return "attacking";
     }
     else if (state == "attacking") {
-        return "burrowing";
+        return "stunned";
     }
     else if (state == "stunned") {
         return "burrowing";
     }
     else if (state == "patrolling") {
+        return "patrolling";
+    }
+    else if (state == "respawning") {
         return "patrolling";
     }
     return 0;

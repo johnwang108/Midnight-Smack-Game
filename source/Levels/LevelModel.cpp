@@ -409,7 +409,7 @@ void LevelModel::populate(GameScene& scene) {
 								scene.spawnBeef(enemyPos);
 							}
 							else if (pathWeWant.find("egg") != std::string::npos) {
-								scene.spawnEgg(enemyPos);
+								scene.spawnCarrot(enemyPos);
 							}
 							else if (pathWeWant.find("shrimp") != std::string::npos) {
 								scene.spawnShrimp(enemyPos);
