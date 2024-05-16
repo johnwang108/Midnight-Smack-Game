@@ -1077,7 +1077,6 @@ void GameScene::preUpdate(float dt) {
         }
     }
 
-
     //advance level for debug
     if (_input->didAnimate()) {
         setComplete(true);
@@ -1211,14 +1210,14 @@ void GameScene::preUpdate(float dt) {
                 enemy->animate(actionName);
                 auto action = enemy->getAction(actionName);
                 _actionManager->activate(actionName + enemy->getId(), action, enemy->getSceneNode());
-				if (enemy->getType() == EnemyType::beef) {
+				if (enemy->getType() == EnemyType::beef && enemy->getState() != "patrolling") {
 					CULog("animating %s", actionName);
 				}
             }
+            if (enemy->getType() == EnemyType::beef && enemy->getState() != "patrolling") {
+                CULog("frame %i", enemy->getSpriteNode()->getFrame());
+            }
         }
-        //if (enemy->getType() == EnemyType::shrimp) {
-        //    CULog("frame %i", enemy->getSpriteNode()->getFrame());
-        //}
     }
 
     for (auto& spawn : spawns) {
