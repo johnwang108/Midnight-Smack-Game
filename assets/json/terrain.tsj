@@ -1,0 +1,21 @@
+{ "columns":31,
+ "image":"..\/textures\/terrain.png",
+ "imageheight":836,
+ "imagewidth":1011,
+ "margin":0,
+ "name":"terrain",
+ "spacing":0,
+ "tilecount":806,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "transformations":
+    {
+     "hflip":true,
+     "preferuntransformed":true,
+     "rotate":true,
+     "vflip":true
+    },
+ "type":"tileset",
+ "version":"1.10"
+}

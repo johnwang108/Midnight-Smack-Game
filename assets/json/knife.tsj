@@ -1,0 +1,14 @@
+{ "columns":5,
+ "image":"..\/textures\/day\/knife.png",
+ "imageheight":108,
+ "imagewidth":169,
+ "margin":0,
+ "name":"knife",
+ "spacing":0,
+ "tilecount":15,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}
