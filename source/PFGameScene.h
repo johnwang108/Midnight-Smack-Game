@@ -40,6 +40,7 @@
 #include "NightLevelObjects/GestureInteractable.h"
 #include "NightLevelObjects/Plate.h"
 #include "NightLevelObjects/Station.h"
+#include "MenuScene.h"
 #include "NightLevelObjects/platform.h"
 #include "Popup.h"
 
@@ -77,7 +78,7 @@ protected:
     //std::shared_ptr<Scene2> _bgScene;
     std::shared_ptr<Scene2> _uiScene;
     std::shared_ptr<Inventory> _inventoryNode;
-
+    std::shared_ptr<MenuScene> _pauseMenu;
     std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
 
 
@@ -188,6 +189,7 @@ protected:
     std::vector<std::tuple<std::shared_ptr<cugl::scene2::Label>, cugl::Timestamp>> _popups;
 
     std::vector<std::shared_ptr<Popup>> _interactivePopups;
+    int _popupIndex;
 
     std::shared_ptr<cugl::scene2::ActionManager> _actionManager;
 
@@ -591,6 +593,7 @@ public:
     void setTarget(std::string s) { _targetScene = s; };
 
     void checkForCooktime();
+    void handleCooktime();
 
     void save();
 
@@ -628,6 +631,10 @@ public:
 
     /** toggles visibility of orders*/
     void toggleOrders(bool v);
+
+    std::shared_ptr<Popup> createPopup(std::string name) {
+
+    }
 
     void positionOrders();
 

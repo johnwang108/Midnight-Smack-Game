@@ -1,0 +1,399 @@
+{
+    "tutorialPopupInventory": 
+    {
+        "position": [640,400],
+        "size": [800, 400],
+        "anchor": [0.5, 0.5],
+        "visible": true,
+        "text": "Enemies drop ingredients when they die! \nLook at your inventory slots with [L ARROW][R ARROW]",
+        "textMaxWidth%age": 0.5,
+        "font": "popupFont",
+        "background": "popupBackground",
+        "children": {
+            "riceIdle": {
+                "texture": "riceIdle",
+                "rows": 2,
+                "cols": 3,
+                "frames": 5,
+                "position": [45.0, 0.0],
+                "scale": 0.15
+            },
+            "riceDeath": {
+                "texture": "riceDeath",
+                "rows": 3,
+                "cols": 4,
+                "frames": 9,
+                "position": [45.0, 0.0],
+                "scale": 0.15
+            },
+            "inventorySlot1": {
+                "texture": "inventorySlot",
+                "rows": 1,
+                "cols": 1,
+                "frames": 1,
+                "position": [-150.0, 250.0],
+                "scale": 0.2
+            }, 
+            "inventorySlot2": {
+                "texture": "inventorySlot",
+                "rows": 1,
+                "cols": 1,
+                "frames": 1,
+                "position": [-75.0, 250.0],
+                "scale": 0.2
+            }, 
+            "inventorySlot3": {
+                "texture": "inventorySlot",
+                "rows": 1,
+                "cols": 1,
+                "frames": 1,
+                "position": [0.0, 250.0],
+                "scale": 0.2
+            }, 
+            "inventorySlot4": {
+                "texture": "inventorySlot",
+                "rows": 1,
+                "cols": 1,
+                "frames": 1,
+                "position": [75.0, 250.0],
+                "scale": 0.2
+            }, 
+            "inventorySlot5": {
+                "texture": "inventorySlot",
+                "rows": 1,
+                "cols": 1,
+                "frames": 1,
+                "position": [150.0, 250.0],
+                "scale": 0.2
+            }, 
+            "highlightedInventorySlot": {
+                "texture": "highlightedInventorySlot",
+                "rows": 1,
+                "cols": 1,
+                "frames": 1,
+                "position": [-150.0, 250.0],
+                "scale": 0.2
+            },
+            "riceIngredient": {
+                "texture": "rice",
+                "rows": 1,
+                "cols": 1,
+                "frames": 1,
+                "position": [45.0, 0.0],
+                "scale": 0.05
+            }
+        },
+
+        "states": {
+            "startState": {
+                "duration": 1.5,
+                "children": {
+                    "riceIdle": {
+                        "animateAction": {
+                            "type": "animate",
+                            "start": 0,
+                            "end": 4,
+                            "time": 1.5,
+                            "repeat": 3
+                        }
+                    },
+                    "highlightedInventorySlot": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot2": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot3": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot4": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot5": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    }
+                }
+            },
+            "deathState": {
+                "duration": 1.0,
+                "children": {
+                    "riceDeath": {
+                        "animateAction": {
+                            "type": "animate",
+                            "start": 0,
+                            "end": 8,
+                            "time": 1.0,
+                            "repeat": 1
+                        }
+                    },
+                    "highlightedInventorySlot": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot2": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot3": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot4": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot5": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    }
+                }
+            },
+            "ingredientMovingState": {
+                "duration": 1.5,
+                "children": {
+                    "riceIngredient": {
+                        "moveAction": {
+                            "type": "moveBy",
+                            "x": -195.0,
+                            "y": 250.0,
+                            "time": 1.5
+                        },
+                        "scaleAction": {
+                            "type": "scaleTo",
+                            "x": 0.15,
+                            "y": 0.15,
+                            "time": 1.5
+                        }
+                    },
+                    "highlightedInventorySlot": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot2": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot3": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot4": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot5": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    }
+                }
+            },
+            "inventoryHighlightState1": {
+                "duration": 1.0,
+                "children": {
+                    "riceIngredient": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }  
+                    },
+                    "highlightedInventorySlot": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot2": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot3": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot4": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot5": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    }
+                }
+            },
+            "inventoryHighlightState2": {
+                "duration": 0.5,
+                "children": {
+                    "riceIngredient": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }  
+                    },
+                    "inventorySlot1": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "highlightedInventorySlot": {
+                        "moveByAction": {
+                            "type": "moveBy",
+                            "x": 75.0,
+                            "y": 0.0,
+                            "time": 0.0
+                        }
+                    },
+                    "inventorySlot3": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot4": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot5": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    }
+                }
+            },
+            "inventoryHighlightState3": {
+                "duration": 0.5,
+                "children": {
+                    "riceIngredient": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }  
+                    },
+                    "inventorySlot1": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot2": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "highlightedInventorySlot": {
+                        "moveByAction": {
+                            "type": "moveBy",
+                            "x": 75.0,
+                            "y": 0.0,
+                            "time": 0.0
+                        }
+                    },
+                    "inventorySlot4": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot5": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    }
+                }
+            },
+            "inventoryHighlightState4": {
+                "duration": 0.5,
+                "children": {
+                    "riceIngredient": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }  
+                    },
+                    "inventorySlot1": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot2": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot3": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "highlightedInventorySlot": {
+                        "moveByAction": {
+                            "type": "moveBy",
+                            "x": 75.0,
+                            "y": 0.0,
+                            "time": 0.0
+                        }
+                    },
+                    "inventorySlot5": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    }
+                }
+            },
+            "inventoryHighlightState5": {
+                "duration": 0.5,
+                "children": {
+                    "riceIngredient": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }  
+                    },
+                    "inventorySlot1": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot2": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot3": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "inventorySlot4": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    },
+                    "highlightedInventorySlot": {
+                        "moveByAction": {
+                            "type": "moveBy",
+                            "x": 75.0,
+                            "y": 0.0,
+                            "time": 0.0
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

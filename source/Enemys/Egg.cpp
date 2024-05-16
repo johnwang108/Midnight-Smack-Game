@@ -1,23 +1,15 @@
 #include "Egg.h"
 
 bool Egg::init(const cugl::Vec2& pos, const cugl::Size& size, float scale) {
-	return init(pos, size, scale, cugl::Spline2());
+	return init(pos, size, scale, EnemyModel::defaultSeq(EnemyType::egg), EnemyModel::defaultSeqAlt(EnemyType::egg));
 }
 
-bool Egg::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, cugl::Spline2 limit) {
-	return init(pos, size, scale, EnemyModel::defaultSeq(EnemyType::egg), EnemyModel::defaultSeqAlt(EnemyType::egg), limit);
-}
-/**init with gesture sequences*/
-bool Egg::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::vector<std::string> seq1, std::vector<std::string> seq2) {
-	return init(pos, size, scale, seq1, seq2, cugl::Spline2());
-}
-
-bool Egg::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::vector<std::string> seq1, std::vector<std::string> seq2, cugl::Spline2 limit) {
+bool Egg::init(cugl::Vec2 pos, cugl::Size size, float scale, std::vector<std::string> seq1, std::vector<std::string> seq2) {
     if (EnemyModel::init(pos, size, scale, seq1, seq2)) {
         _type = EnemyType::egg;
-        _limit = limit;
         setName("egg");
         _health = 100.0f;
+        _attacktime = false;
         setFixedRotation(true);
         return true;
     }
@@ -88,8 +80,6 @@ void Egg::fixedUpdate(float step) {
     if (_state != "patrolling") {
         setDirection(SIGNUM(_distanceToPlayer.x));
     }
-    CULog("velocty: %f", velocity.y);
-    CULog("isGrounded: %s", isGrounded() ? "true" : "false");
     _body->SetLinearVelocity(handleMovement(velocity));
 }
 
@@ -135,6 +125,8 @@ std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>> Egg::c
     sprite->setPosition(pos);
 
     return std::tuple<std::shared_ptr<Attack>, std::shared_ptr<scene2::PolygonNode>>(attack, sprite);
+
+
 
     /*std::shared_ptr<Sound> source = _assets->get<Sound>(PEW_EFFECT);
     AudioEngine::get()->play(PEW_EFFECT, source, false, EFFECT_VOLUME, true);*/
@@ -187,3 +179,5 @@ std::string Egg::getNextState(std::string state) {
     }
     return 0;
 }
+
+

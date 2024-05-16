@@ -96,7 +96,7 @@
 /** Cooldown (in animation frames) for dashing */
 #define DASH_COOLDOWN  floatyFrames + 5
 
-#define WALL_JUMP_LERP 0.1f
+#define WALL_JUMP_LERP 0.05f
 
 //lerp timer in seconds
 #define WALL_JUMP_LERP_TIMER 1.75f
@@ -221,6 +221,7 @@ protected:
     float _dashDamping;
     float _dashForce;
     float _jumpForce;
+    float _walkForce;
     bool _didAnimateHurt;
 
     //float _health;
@@ -590,7 +591,7 @@ public:
     void setDash(bool value) { _dash = value; }
 
     void setDashForce(float f) { _dashForce = f; }
-    float getDashForce() { return _dashForce; }
+    float getDashForce() { return _dashForce + getJumpBuff(); }
 
     void setDashDamping(float f) { _dashDamping = f; }
     float getDashDamping() { return _dashDamping; }
@@ -648,7 +649,7 @@ public:
      *
      * @return how much force to apply to get the dude moving
      */
-    float getForce() const { return DUDE_FORCE; }
+    float getForce() { return _walkForce * getSpeedBuff(); }
 
     float getJumpForce() { return _jumpForce * getJumpBuff(); }
 
@@ -830,7 +831,7 @@ public:
 
     void setInputWalk(bool b) { _isInputWalk = b; };
 
-    float getAttackBuff() {
+    const float getAttackBuff() {
         if (_duration > 0) {
             return _attackBuff;
         }
@@ -841,7 +842,7 @@ public:
         return DEFAULT_BUFF;
     };
 
-    float getDefenseBuff() {
+    const float getDefenseBuff() {
         if (_duration > 0) {
             return _defenseBuff;
         }
@@ -852,7 +853,7 @@ public:
         return DEFAULT_BUFF;
     }
 
-    float getJumpBuff() {
+    const float getJumpBuff() {
         if (_duration > 0) {
             return _jumpBuff;
         }
@@ -875,7 +876,7 @@ public:
     }
 
     //maybe not needed
-    float getHealthBuff() { return 0.0f; };
+    const float getHealthBuff() { return 0.0f; };
 
     static char* getStrForBuff(buff enumVal)
     {

@@ -15,8 +15,6 @@
 
 using namespace cugl;
 
-#define MULTI_SCREEN true
-
 
 #pragma mark -
 #pragma mark Application State
@@ -49,8 +47,6 @@ void PlatformApp::onStartup() {
     _assets->attach<Sound>(SoundLoader::alloc()->getHook());
     _assets->attach<scene2::SceneNode>(Scene2Loader::alloc()->getHook());
     _assets->attach<WidgetValue>(WidgetLoader::alloc()->getHook());
-
-    _assets->attach<JsonValue>(JsonLoader::alloc()->getHook());
     // _assets->attach<JsonReader>(cugl::JsonReader::alloc()->getHook());
 
     // Create a "loading" screen
@@ -80,16 +76,10 @@ void PlatformApp::onStartup() {
  * causing the application to be deleted.
  */
 void PlatformApp::onShutdown() {
-    //_gameplay.save();
 
-    if (_currentScene == "night") {
-        _gameplay.save();
-    }
-    /*else if (_currentScene == "day"){
-        _multiScreen.save();
-    }*/
+    _gameplay.save();
+
     _menu.dispose();
-    //_multiScreen.dispose();
     _loading.dispose();
     _gameplay.dispose();
     _assets = nullptr;
@@ -200,9 +190,6 @@ void PlatformApp::preUpdate(float dt) {
     else if (_gameplay.isActive()) {
         _gameplay.preUpdate(dt);
     }
-    else {
-
-    }
 }
 
 /**
@@ -232,9 +219,7 @@ void PlatformApp::fixedUpdate() {
     if (_gameplay.isActive()) {
         _gameplay.fixedUpdate(time);
     }
-  /*  else if (_multiScreen.isActive()){
-        _multiScreen.fixedUpdate(time);
-    }*/
+
     
     
 }
@@ -268,9 +253,7 @@ void PlatformApp::postUpdate(float dt) {
     if (_gameplay.isActive()) {
 		_gameplay.postUpdate(time);
 	}
- /*   else if (_multiScreen.isActive()){
-		_multiScreen.postUpdate(time);
-	}*/
+ 
 }
 
 /**
@@ -350,18 +333,6 @@ void PlatformApp::loadSave() {
         //load night
         _gameplay.loadSave(night);
         _gameplay.setActive(true);
-        
-      /*  _multiScreen.transition(false);
-        _multiScreen.setActive(false);
-        _multiScreen.unfocusAll();*/
     }
-    //else {
-    //    //load day
-    //    /*_multiScreen.loadSave(loadedSave);
-    //    _multiScreen.setActive(true);
-    //    _multiScreen.focusCurr();*/
-
-    //    _gameplay.transition(false);
-    //    _gameplay.setActive(false);
-    //}
+ 
 }

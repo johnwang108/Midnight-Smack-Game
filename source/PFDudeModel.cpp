@@ -132,6 +132,7 @@ bool DudeModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale)
 
         _dashForce = DUDE_DASH;
         _jumpForce = DUDE_JUMP;
+        _walkForce = DUDE_FORCE;
 
         _health = 100;
 
@@ -442,7 +443,12 @@ void DudeModel::walk(Vec2 dir, float dt) {
 void DudeModel::jump(Vec2 dir, bool wall) {
     b2Vec2 vel = _body->GetLinearVelocity();
     vel.y = 0;
-    vel += b2Vec2(dir.x * DUDE_JUMP, DUDE_JUMP);
+
+    vel += b2Vec2(dir.x * getJumpForce(), getJumpForce());
+    if (wall) {
+        vel.x *= 2.5;
+        vel.y *= 1.2;
+	}
     _body->SetLinearVelocity(vel);
 }
 
@@ -474,6 +480,7 @@ void DudeModel::dash(Vec2 dir) {
 
 void DudeModel::wallJump() {
     Vec2 wallDir = contactingLeftWall() ? Vec2(1,1) : Vec2(-1,1);
+    CULog("contacting left wall right wall: %s %s", contactingLeftWall() ? "true" : "false", contactingRightWall() ? "true" : "false");
     jump(wallDir, true);
     _wallJumpTimer = WALL_JUMP_LERP_TIMER;
 }
@@ -513,7 +520,7 @@ void DudeModel::fixedUpdate(float step) {
     }
 
     if (isBuffed()) {
-        useMeter(METER_COST * step / _duration);
+        useMeter(METER_COST * step / BASE_DURATION);
     }
 
     _lastDamageTime += step;
@@ -528,6 +535,7 @@ void DudeModel::fixedUpdate(float step) {
         //reset buff state if duration is over
         if (_duration == 0) {
             resetBuff();
+            _node->setColor(Color4::WHITE);
         }
         else {
             _node->setColor(Color4::BLACK);
@@ -570,7 +578,7 @@ void DudeModel::fixedUpdate(float step) {
             _jumpCooldown = JUMP_COOLDOWN;
             jump(Vec2(_movement, _vertical));
         }
-        else if ((contactingLeftWall() || contactingRightWall()) && ((!isGrounded() && _jumpPressed) || _wallJumpTimer != 0.0f)) {
+        else if ((contactingLeftWall() || contactingRightWall()) && ((!isGrounded() && _jumpPressed))) {
             wallJump();
         }
     }

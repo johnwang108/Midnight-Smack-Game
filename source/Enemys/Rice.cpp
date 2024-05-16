@@ -18,7 +18,8 @@ bool Rice::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std:
         _soldiers = std::vector<std::shared_ptr<Rice>>();
         //vary speed by +- 1.0
         if (_type == EnemyType::rice_soldier) {
-            _force = ENEMY_FORCE + 2.0f * ((float)rand() / ((float)RAND_MAX)) - 1.0f;
+            float r  = ((double)rand() / (double)RAND_MAX);
+            _force = ENEMY_FORCE + r;
         }
         else {
             _force = ENEMY_FORCE - 1.0f;
@@ -89,11 +90,11 @@ void Rice::fixedUpdate(float step) {
                 //velocity.x = _force * dir * 5;
                 velocity.x = _force * _direction * 5;
             }
-            if (_distanceToPlayer.length() < 0.05) {
+/*            if (_distanceToPlayer.length() < 0.05) {
                 setState("attacking");
                 velocity.x = 0;
             }
-            else if (abs(_distanceToPlayer.x) < 0.001) {
+            else */if (abs(_distanceToPlayer.x) < 0.001) {
                 velocity.x = 0;
             }
         }

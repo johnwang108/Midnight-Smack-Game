@@ -118,6 +118,14 @@ std::map<std::string, buff> ingredientToBuff = {
     {"carrot", buff::jump},
 };
 
+std::map<std::string, buff> gestureToBuff = {
+    {"triangle", buff::speed},
+    {"caret", buff::jump},
+    {"pigtail", buff::health},
+    {"v", buff::defense},
+    {"circle", buff::attack},
+};
+
 #pragma mark -
 #pragma mark Constructors
 /**
@@ -384,6 +392,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _uiScene->addChild(_inventoryNode);
 
 
+    _pauseMenu = std::make_shared<MenuScene>();
+    _pauseMenu->init(_assets, "pause");
+    
+    
+
+
 # pragma mark: Background
 
     //_bgScene = cugl::Scene2::alloc(dimen);
@@ -498,6 +512,35 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     setName("night");
     Application::get()->setClearColor(Color4::CLEAR);
+
+    std::vector<std::string> paths = { 
+        "tutorialPopupWASD",
+        "tutorialPopupDash",
+        "tutorialPopupAttack",
+        "tutorialPopupInventory",
+        "tutorialPopupGestures",
+        "tutorialPopupStations",
+        "tutorialPopupPlates",
+        "tutorialPopupTimerDying",
+        "tutorialPopupMinimap"
+    };
+
+    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
+    for (std::string path : paths) {
+		auto reader = JsonReader::alloc("./json/Tutorials/" + path + ".json");
+        std::shared_ptr<JsonValue> popupData = reader->readJson()->get(path);
+        std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
+        p->setActive(false);
+        p->setVisible(false);
+        _interactivePopups.push_back(p);
+        _uiScene->addChild(p);
+        reader->close();
+        reader = nullptr;
+    }
+    _popupIndex = 0;
+    loader->dispose();
+    loader = nullptr;
+
     return true;
 }
 
@@ -563,6 +606,8 @@ void GameScene::dispose() {
  */
 void GameScene::reset() {
     _paused = false;
+    _pauseMenu->setActive(false);
+    _pauseMenu->reset();
     _worldnode->removeAllChildren();
     _world->clear();
     _debugnode->removeAllChildren();
@@ -641,6 +686,34 @@ void GameScene::reset() {
     _timer = 0.0f;
     _timeLimit = 200.0f;
     _respawnTimes = std::deque<float>({ 50.0f, 100.0f, 150.0f, 200.0f });
+
+    std::vector<std::string> paths = {
+    "tutorialPopupWASD",
+    "tutorialPopupDash",
+    "tutorialPopupAttack",
+    "tutorialPopupInventory",
+    "tutorialPopupGestures",
+    "tutorialPopupStations",
+    "tutorialPopupPlates",
+    "tutorialPopupTimerDying",
+    "tutorialPopupMinimap"
+    };
+
+    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
+    for (std::string path : paths) {
+        auto reader = JsonReader::alloc("./json/Tutorials/" + path + ".json");
+        std::shared_ptr<JsonValue> popupData = reader->readJson()->get(path);
+        std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
+        p->setActive(false);
+        p->setVisible(false);
+        _interactivePopups.push_back(p);
+        _uiScene->addChild(p);
+        reader->close();
+        reader = nullptr;
+    }
+    _popupIndex = paths.size() - 1;
+    loader->dispose();
+    loader = nullptr;
     // addChild(_gestureFeedback);
 }
 
@@ -677,6 +750,7 @@ void GameScene::reset() {
 void GameScene::addObstacle(const std::shared_ptr<cugl::physics2::Obstacle>& obj,
     const std::shared_ptr<cugl::scene2::SceneNode>& node,
     bool useObjPosition) {
+    if (node == nullptr || obj == nullptr) return;
     // Don't add out of bounds obstacles
     if (!(_world->inBounds(obj.get()))) {
         return;
@@ -734,8 +808,8 @@ void GameScene::preUpdate(float dt) {
     //has the level loaded yet
 
     // Process the toggled key commands
-    if (_input->didDebug()) { setDebug(!isDebug()); }
-    if (_input->didReset()) { reset(); }
+    //if (_input->didDebug()) { setDebug(!isDebug()); }
+    //if (_input->didReset()) { reset(); }
     if (_input->didExit()) {
         //transition(true);
         //setTarget("main_menu");
@@ -750,6 +824,22 @@ void GameScene::preUpdate(float dt) {
     if (_input->didPause()) {
         _paused = !_paused;
     }
+
+    _pauseMenu->setActive(_paused);
+
+    if (_paused) {
+        if (_pauseMenu->getReset()) {
+            reset();
+        }
+        else if (_pauseMenu->didTransition()){
+            transition(true);
+            setTarget(_pauseMenu->getTarget());
+            _pauseMenu->setTarget("");
+            _pauseMenu->setTransition(false);
+            _paused = false;
+        }   
+    }
+ 
 
     if (_input->getInventoryLeftPressed()) {
         _inventoryNode->selectPreviousSlot();
@@ -848,7 +938,8 @@ void GameScene::preUpdate(float dt) {
         }
         //cancel run animation if stopped running
         else if (_actionManager->isActive("run") && _input->getHorizontal() == 0) {
-            animate(_avatar, "skid", true);
+            //animate(_avatar, "skid", true);
+            animate(_avatar, "idle", true);
         }
 
         else if (_avatar->isJumping() && _avatar->isGrounded()) {
@@ -962,14 +1053,33 @@ void GameScene::preUpdate(float dt) {
 
 
     if (_input->didLevel1()) {
-        //setLevel(1, 1);
-        _interactivePopups.back()->toggle();
+        ////setLevel(1, 1);
+        //_interactivePopups.back()->toggle();
+        _interactivePopups.at(_popupIndex)->toggle();
     }
     else if (_input->didLevel2()) {
-        setLevel(1, 2);
+        /*setLevel(1, 2);*/
+        bool b = _interactivePopups.at(_popupIndex)->isActive();
+        if (b) {
+            _interactivePopups.at(_popupIndex)->toggle();
+            _popupIndex--;
+            if (_popupIndex < 0) {
+                _popupIndex = _interactivePopups.size() - 1;
+            }
+            _interactivePopups.at(_popupIndex)->toggle();
+        }
     }
     else if (_input->didLevel3()) {
-        setLevel(1, 3);
+        /*setLevel(1, 3);*/
+        bool b = _interactivePopups.at(_popupIndex)->isActive();
+        if (b) {
+            _interactivePopups.at(_popupIndex)->toggle();
+            _popupIndex++;
+            if (_popupIndex == _interactivePopups.size()) {
+                _popupIndex = 0;
+            }
+            _interactivePopups.at(_popupIndex)->toggle();
+        }
     }
 
 
@@ -1010,46 +1120,15 @@ void GameScene::preUpdate(float dt) {
 
     _dollarnode->update(dt);
     if (_slowed){ 
-        //transition in dollar node
-        _dollarnode->setVisible(true);
-        if (!(_dollarnode->isFocus())) {
-            _dollarnode->setFocus(true);
-            _dollarnode->setReadyToCook(true);
-        }
-        //cooktime handling. Assume that _target not null, if it is null then continue
-        //if (!_dollarnode->isPending()) {
-        if (!_dollarnode->isPending()) {
-            _slowed = false;
-            std::string message = "";
-            if (_dollarnode->getLastResult() > 0) {
-                CULog("NICE!!!!!!!!!!!!!!");
-
-                if (_dollarnode->isStation()) {
-                    
-                }
-                else {
-                    modifier mod = _dollarnode->getIsDurationSequence() ? modifier::duration : modifier::effect;
-                    //_target->takeDamage(_avatar->getAttack(), 0);
-
-                    buff reward = ingredientToBuff[_dollarnode->getIngredientInStation()->getName()];
-                    _avatar->applyBuff(reward, mod);
-                }
-            }
-            else {
-                CULog("BOOOOOOOOOOOOOOO!!!!!!!!!!");
-            }
-            CULog("%i", _dollarnode->getLastResult());
-            message = _feedbackMessages[_dollarnode->getLastResult()];
-            popup(message, cugl::Vec2(_avatar->getPosition().x * _scale, _avatar->getPosition().y * 1.1 * _scale));
-                
-            _dollarnode->setIngredientInStation(nullptr);
-            _dollarnode->setPending(true);
-            //}
-            //else {
-
-            //}
-        }
+        handleCooktime();
     }
+
+    //CULog("sprite width/height: %f %f", _avatar->getSceneNode()->getSize().width, _avatar->getSceneNode()->getSize().height);
+    //CULog("obstacle width/height: %f %f", _avatar->getHeight() * _scale, _avatar->getWidth() * _scale);
+
+    //CULog("camera sprite width/height: %f %f", _avatar->getSceneNode()->getSize().width * _camera->getZoom(), _avatar->getSceneNode()->getSize().height * _camera->getZoom());
+
+
 
 
     if (!_slowed) {
@@ -1742,13 +1821,16 @@ void GameScene::checkForCooktime() {
     if (_input->getLastSlowHeldDuration() < MIN_DISCARD_START_TIME && _input->justReleasedSlow() && _avatar->getMeter() > METER_COST) {
 
         std::shared_ptr<Ingredient> ing = _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
-        //
+ 
         if (ing != nullptr) {
             _slowed = true;
-            _dollarnode->setTargetGesturesNighttime({ ing->getGestures(), ing->getGestures() });
-            _dollarnode->setIngredientInStation(ing);
-            _dollarnode->setIsStation(false);
+            //_dollarnode->setTargetGestures({ ing->getGestures(), ing->getGestures() });
+            _dollarnode->addIngredientToStation(ing);
             _avatar->useMeter();
+            _dollarnode->setVisible(true);
+            if (!(_dollarnode->isFocus())) {
+                _dollarnode->setFocus(true);
+            }
         }
 
         //Old CookTime Style commented out
@@ -1774,13 +1856,40 @@ void GameScene::checkForCooktime() {
         //        //_dollarnode->setTargetGestures(_target->getGestureSeq1());
         //        _dollarnode->setTargetGesturesNighttime(std::vector({_target->getGestureSeq1(), _target->getGestureSeq2()}));
         //    }
-
         //}
-
     }
     else if (_input->getLastSlowHeldDuration() > DISCARD_HOLD_TIME && _input->justReleasedSlow()) {
-        /*std::shared_ptr<Ingredient> ing =*/ _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
+        /*std::shared_ptr<Ingredient> ing =*/ 
+        _inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot());
         //i think thats all
+    }
+}
+
+void GameScene::handleCooktime() {
+    //transition in dollar node
+    //cooktime handling. 
+    if (_dollarnode->isCompleted()) {
+        _slowed = false;
+        std::string message = "";
+        if (_dollarnode->getLastResult() > 0) {
+            CULog("Succeeded gesture, awarding buff");
+            modifier mod = modifier::duration;
+            if (_dollarnode->getClosestGesture() != "") {
+                buff reward = gestureToBuff[_dollarnode->getClosestGesture()];
+                
+                _avatar->applyBuff(reward, mod);
+            }
+            else {
+                CULog("Closest gesture was empty, so no buff");
+            }
+        }
+        else {
+            CULog("No gestures matched with passing accuracy");
+        }
+
+        CULog("%i", _dollarnode->getLastResult());
+        message = _feedbackMessages[_dollarnode->getLastResult()];
+        popup(message, cugl::Vec2(_avatar->getPosition().x * _scale, _avatar->getPosition().y * 1.1 * _scale));
     }
 }
 
@@ -1816,6 +1925,7 @@ void GameScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
     }
 
     _uiScene->render(batch);
+    _pauseMenu->render(batch);
 }
 
 
@@ -2014,71 +2124,46 @@ persistent { ... }
 */
 
 void GameScene::save() {
-    /*std::string root = cugl::Application::get()->getSaveDirectory();
-    std::string path = cugl::filetool::join_path({ root,"save.json" });*/
-
-    //Should only change nighttime save data unless level was completed, in which case change level/chapter accordingly.
     std::string root = cugl::Application::get()->getSaveDirectory();
     std::string path = cugl::filetool::join_path({ root,"save.json" });
 
-    //auto reader = JsonReader::alloc(path);
-    //std::shared_ptr<JsonValue> prevSave = reader->readJson();
-    //reader->close();
 
     std::shared_ptr<JsonValue> json = JsonValue::allocObject();
-
-    //std::shared_ptr<JsonValue> persistent = prevSave->get("persistent");
-    std::shared_ptr<JsonValue> night = JsonValue::allocObject();
-    //CHAPTER COMPLETION LOGIC
     if (isComplete()) {
-        //if completed, don't need to save state. Just increment chapter and level accordingly
-        json->appendValue("chapter", 1.0f);
-        json->appendValue("level", 2.0f);
-        json->appendValue("startFromNight", false);
-        //json->appendChild("persistent", persistent);
-        json->appendChild("night", night);
-        return;
+        //increment most recently beaten chapter and level
+        json->appendValue("chapter",(float)_chapter);
+        json->appendValue("level", (float)_level);
+        auto writer = JsonWriter::alloc(path);
+        writer->writeJson(json);
+        writer->close();
     }
-    //else {
-    //    if (persistent == nullptr || persistent->isNull()) {
-    //        persistent = JsonValue::allocObject();
-    //    }
-    //    else {
-    //        persistent->_parent = nullptr;
-    //    }
-    //}
-    std::shared_ptr<JsonValue> player = JsonValue::allocObject();
-    player->appendValue("location_x", (double) _avatar->getPosition().x);
-    player->appendValue("location_y", (double) _avatar->getPosition().y);
-    player->appendValue("health", (double) _avatar->getHealth());
-    night->appendChild("player", player);
+ //   std::shared_ptr<JsonValue> player = JsonValue::allocObject();
+ //   player->appendValue("location_x", (double) _avatar->getPosition().x);
+ //   player->appendValue("location_y", (double) _avatar->getPosition().y);
+ //   player->appendValue("health", (double) _avatar->getHealth());
 
-    std::vector<std::string> types = { "egg", "carrot", "shrimp", "rice", "beef", "rice_soldier"};
-    for (auto t = types.begin(); t != types.end(); t++) {
-        std::string type = *t;
-        night->appendChild(type, JsonValue::allocObject());
-    }
+ //   std::vector<std::string> types = { "egg", "carrot", "shrimp", "rice", "beef", "rice_soldier"};
+ //   for (auto t = types.begin(); t != types.end(); t++) {
+ //       std::string type = *t;
+ //       night->appendChild(type, JsonValue::allocObject());
+ //   }
 
-    for (auto& e : _enemies) {
-        std::string type = EnemyModel::typeToStr(e->getType());
-        std::shared_ptr<JsonValue> x = JsonValue::allocObject();
-		x->appendValue("location_x", (double) e->getPosition().x);
-        x->appendValue("location_y", (double) e->getPosition().y);
-        x->appendValue("health", (double) e->getHealth());
-        x->appendValue("isDead", e->isRemoved());
-        night->get(type)->appendChild(e->getId(), x);
-	}
+ //   for (auto& e : _enemies) {
+ //       std::string type = EnemyModel::typeToStr(e->getType());
+ //       std::shared_ptr<JsonValue> x = JsonValue::allocObject();
+	//	x->appendValue("location_x", (double) e->getPosition().x);
+ //       x->appendValue("location_y", (double) e->getPosition().y);
+ //       x->appendValue("health", (double) e->getHealth());
+ //       x->appendValue("isDead", e->isRemoved());
+ //       night->get(type)->appendChild(e->getId(), x);
+	//}
 
-    //placeholder  values for chapter and level
-    json->appendValue("chapter", 1.0f);
-    json->appendValue("level", 1.0f);
-    json->appendValue("startFromNight", true);
-    //json->appendChild("persistent", persistent);
-    json->appendChild("night", night);
-
-    auto writer = JsonWriter::alloc(path);
-    writer->writeJson(json);
-    writer->close();
+ //   //placeholder  values for chapter and level
+ //   json->appendValue("chapter", 1.0f);
+ //   json->appendValue("level", 1.0f);
+ //   json->appendValue("startFromNight", true);
+ //   //json->appendChild("persistent", persistent);
+ //   json->appendChild("night", night);
 }
 
 bool GameScene::loadSave(std::shared_ptr<JsonValue> save) {
@@ -2189,9 +2274,6 @@ void GameScene::spawnEgg(Vec2 pos) {
 void GameScene::spawnRice(Vec2 pos, bool isSoldier) {
     std::shared_ptr<Texture> image = _assets->get<Texture>("riceLeader");
     std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
-    //float imageWidth = image->getWidth() / 4;
-    //float imageHeight = image->getHeight() / 4;
-    //Size singularSpriteSize = Size(imageWidth, imageHeight);
     Size s = Size(2.25f, 3.0f);
     std::shared_ptr<EnemyModel> new_enemy = Rice::allocWithConstants(pos, s, getScale(), _assets, isSoldier);
     spritenode->setAnchor(Vec2(0.5, 0.35));
@@ -2205,9 +2287,7 @@ std::shared_ptr<EnemyModel> GameScene::spawnRiceSoldier(Vec2 pos, std::shared_pt
     CULog("SPAWNING SOLDIER");
     std::shared_ptr<Texture> image = _assets->get<Texture>("riceLeader");
     std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 4, 4, 16);
-    //float imageWidth = image->getWidth() / 4;
-    //float imageHeight = image->getHeight() / 4;
-    //Size singularSpriteSize = Size(imageWidth, imageHeight);
+
     Size s = Size(2.25f, 3.0f);
     std::shared_ptr<EnemyModel> new_enemy = Rice::allocWithConstants(pos, s, getScale(), _assets, true);
     spritenode->setAnchor(Vec2(0.5, 0.35));
@@ -2223,12 +2303,13 @@ std::shared_ptr<EnemyModel> GameScene::spawnRiceSoldier(Vec2 pos, std::shared_pt
 }
 
 void GameScene::spawnCarrot(Vec2 pos) {
-    std::shared_ptr<Texture> image = _assets->get<Texture>("eggIdle");
-    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
-    Size s = Size(2.25f, 6.0f);
-    std::shared_ptr<EnemyModel> new_enemy = Egg::allocWithConstants(pos, s, getScale(), _assets);
+    std::shared_ptr<Texture> image = _assets->get<Texture>("carrotEnemy");
+    std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 1, 1, 1);
+    Size s = Size(2.25f, 2.25f);
+    std::shared_ptr<EnemyModel> new_enemy = Carrot::allocWithConstants(pos, s, getScale(), _assets);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
+    spritenode->setScale(0.2);
     spritenode->setAnchor(0.5, 0.35);
     addObstacle(new_enemy, spritenode);
     _enemies.push_back(new_enemy);
@@ -2273,18 +2354,9 @@ void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map
         _pendingAcrossAllPlates[key] += value;
     }
 
-    auto reader = JsonReader::alloc("./json/examplePopup.json");
-    std::shared_ptr<JsonValue> popupData = reader->readJson()->get("test");
-    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
-    std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
-
-    p->setActive(false);
     addObstacle(plate, plate->getSceneNode());
     _interactables.push_back(plate);
     _plates.push_back(plate);
-  //  p->setVisible(false);
-  //  _interactivePopups.push_back(p);
-  //  _uiScene->addChild(p);
 }
 
 void GameScene::pogo() {

@@ -1,21 +1,12 @@
 #include "Beef.h"
 
 bool Beef::init(const cugl::Vec2& pos, const cugl::Size& size, float scale) {
-	return init(pos, size, scale, cugl::Spline2());
-}
-
-bool Beef::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, cugl::Spline2 limit) {
-	return init(pos, size, scale, EnemyModel::defaultSeq(EnemyType::beef), EnemyModel::defaultSeqAlt(EnemyType::beef), limit);
+	return init(pos, size, scale, EnemyModel::defaultSeq(EnemyType::beef), EnemyModel::defaultSeq(EnemyType::beef));
 }
 /**init with gesture sequences*/
 bool Beef::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::vector<std::string> seq1, std::vector<std::string> seq2) {
-	return init(pos, size, scale, seq1, seq2, cugl::Spline2());
-}
-
-bool Beef::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::vector<std::string> seq1, std::vector<std::string> seq2, cugl::Spline2 limit) {
     if (EnemyModel::init(pos, size, scale, seq1, seq2)) {
 		_type = EnemyType::beef;
-		_limit = limit;
 		setName("beef");
 		_health = 100.0f;
         setFixedRotation(true);
@@ -24,7 +15,6 @@ bool Beef::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std:
         _attacked = false;
         //todo
         _isTangible = true;
-        _dirtPile = nullptr;
 		return true;
     }
     return false;

@@ -7,16 +7,19 @@ bool Entity::init(cugl::Vec2 pos, cugl::Size size) {
     _dimension = size;
     return PolygonObstacle::init(rect);*/
 
-    _entityID = ID++;
+    if (CapsuleObstacle::init(pos, size, poly2::Capsule::FULL)) {
+        _entityID = ID++;
 
-    //CULog("Entity ID: %d", _entityID);
-    _activated = false;
-    _finished = false;
-    _activeAction = "";
-    _pausedFrame = 0;
-    _activeFrame = 0;
-    _paused = false;
-    return CapsuleObstacle::init(pos, size);
+        //CULog("Entity ID: %d", _entityID);
+        _activated = false;
+        _finished = false;
+        _activeAction = "";
+        _pausedFrame = 0;
+        _activeFrame = 0;
+        _paused = false;
+        return true;
+    }
+    return false;
 }
 /** Register a new animation in the dict*/
 void Entity::addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool reverse) {
