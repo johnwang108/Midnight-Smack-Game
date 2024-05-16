@@ -37,6 +37,8 @@ void GameScene::beginContact(b2Contact* contact) {
     b2Body* body2 = fix2->GetBody();
 
 
+
+
     std::string* fd1 = reinterpret_cast<std::string*>(fix1->GetUserData().pointer);
     std::string* fd2 = reinterpret_cast<std::string*>(fix2->GetUserData().pointer);
 
@@ -44,23 +46,106 @@ void GameScene::beginContact(b2Contact* contact) {
     physics2::Obstacle* bd2 = reinterpret_cast<physics2::Obstacle*>(body2->GetUserData().pointer);
 
 
+    // points to the wall class specifically
+    Wall* bdWall1 = reinterpret_cast<Wall*>(body1->GetUserData().pointer);
+    Wall* bdWall2 = reinterpret_cast<Wall*>(body2->GetUserData().pointer);
+
+
     if (bd1->getName() == BACKGROUND_NAME || bd2->getName() == BACKGROUND_NAME) {
         return;
     }
 
+    if (fd1 == _avatar->getLeftSensorName() && (bdWall2->getName() == WALL_NAME)) {
+        // in this condition, body1 is avatar and body2 is wall type
+        _avatar->setContactingLeftWall(true);
+        _avatar->setVX(0);
+        CULog("collision on left side");
+        CULog("our body2, which is a breakable platform object, should break in theory here");
+        bdWall2->setFlag(true);
+        // bdWall2->applyBreaking();
+    }
+
+    if (fd2 == _avatar->getLeftSensorName() && (bdWall1->getName() == WALL_NAME)) {
+        // in this condition, body1 is avatar and body2 is wall type
+        _avatar->setContactingLeftWall(true);
+        _avatar->setVX(0);
+        CULog("collision on left side");
+        CULog("our body1, which is a breakable platform object, should break in theory here");
+        bdWall1->setFlag(true);
+        // bdWall1->applyBreaking();
+    }
+
+    if (fd1 == _avatar->getRightSensorName() && (bdWall2->getName() == WALL_NAME)) {
+        // in this condition, body1 is avatar and body2 is wall type
+        _avatar->setContactingRightWall(true);
+        _avatar->setVX(0);
+        CULog("collision on right side");
+        CULog("our body2, which is a breakable platform object, should break in theory here");
+        bdWall2->setFlag(true);
+        // bdWall2->applyBreaking();
+    }
+
+    if (fd2 == _avatar->getRightSensorName() && (bdWall1->getName() == WALL_NAME)) {
+        // in this condition, body1 is avatar and body2 is wall type
+        _avatar->setContactingRightWall(true);
+        _avatar->setVX(0);
+        CULog("collision on right side");
+        CULog("our body1, which is a breakable platform object, should break in theory here");
+        bdWall1->setFlag(true);
+        // bdWall1->applyBreaking();
+    }
+
+    // we need to see if a wall type block can intersect with the avatar and have it actually work
+    /*if (fd1 == _avatar->getLeftSensorName() && (bdWall2->getName() == WALL_NAME || bdWall2->getName() == PLATFORM_NAME) ||
+        (fd2 == _avatar->getLeftSensorName() && (bdWall1->getName() == WALL_NAME || bdWall1->getName() == PLATFORM_NAME))) {
+        CULog("collision detected with breakable platform 1");
+        _avatar->setContactingLeftWall(true);
+        _avatar->setVX(0);
+        bdWall1->applyBreaking();
+        bdWall2->applyBreaking();
+        CULog("did the wall actually break on conditional 1?");
+    }*/
+
+    //if (fd1 == _avatar->getRightSensorName() && (bdWall2->getName() == WALL_NAME || bdWall2->getName() == PLATFORM_NAME) ||
+    //    (fd2 == _avatar->getRightSensorName() && (bdWall1->getName() == WALL_NAME || bdWall1->getName() == PLATFORM_NAME))) {
+    //    CULog("collision detected with breakable platform 2");
+    //    _avatar->setContactingRightWall(true);
+    //    _avatar->setVX(0);
+    //    // bdWall1->applyBreaking();
+    //    // bdWall2->applyBreaking();
+    //    // CULog("did the wall actually break conditional 2?");
+    //}
+
+
     // Check if the player hits a wall NOT PLATFORM (not implemented for that atm)
-    if (fd1 == _avatar->getLeftSensorName() && (bd2->getName() == WALL_NAME || bd2->getName() == PLATFORM_NAME) ||
-        (fd2 == _avatar->getLeftSensorName() && (bd1->getName() == WALL_NAME || bd1->getName() == PLATFORM_NAME))) {
+    if (fd1 == _avatar->getLeftSensorName() && (bd2->getName() == PLATFORM_NAME) ||
+        (fd2 == _avatar->getLeftSensorName() && (bd1->getName() == PLATFORM_NAME))) {
         _avatar->setContactingLeftWall(true);
         _avatar->setVX(0);
     } 
         
-    if (fd1 == _avatar->getRightSensorName() && (bd2->getName() == WALL_NAME || bd2->getName() == PLATFORM_NAME) ||
-        (fd2 == _avatar->getRightSensorName() && (bd1->getName() == WALL_NAME || bd1->getName() == PLATFORM_NAME))) {
+    if (fd1 == _avatar->getRightSensorName() && (bd2->getName() == PLATFORM_NAME) ||
+        (fd2 == _avatar->getRightSensorName() && (bd1->getName() == PLATFORM_NAME))) {
         _avatar->setContactingRightWall(true);
         _avatar->setVX(0);
     }
 
+    // See if we have landed on a breakable platform.
+    if ((_avatar->getSensorName() == fd2 && bdWall1->getName() == WALL_NAME) ||
+        (_avatar->getSensorName() == fd1 && bdWall2->getName() == WALL_NAME)) {
+        _avatar->setGrounded(true);
+        CULog("collision with the ground of breakable platform");
+        // Could have more than one ground
+
+        if (_avatar.get() == bd1) {
+            bdWall2->setFlag(true);
+        }
+        else {
+            bdWall1->setFlag(true);
+        }
+
+        _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
+    }
 
     // See if we have landed on the ground.
     if ((_avatar->getSensorName() == fd2 && bd1->getName() == PLATFORM_NAME) ||

@@ -94,6 +94,7 @@ protected:
     // scene height
     int _scene_height;
 
+
     // Physics objects for the game
     /** Reference to the goalDoor (for collision detection) */
     std::shared_ptr<cugl::physics2::BoxObstacle>    _goalDoor;

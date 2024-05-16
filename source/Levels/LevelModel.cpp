@@ -3,6 +3,7 @@
 #include "LevelModel.h"
 #include "../PFDudeModel.h"
 #include "../PFGameScene.h"
+#include "../NightLevelObjects/Wall.h"
 //#include <direct.h>
 #include "Levels.h"
 
@@ -475,8 +476,8 @@ void LevelModel::populate(GameScene& scene) {
 					if (object->getString("name") == "Floating_Platform") {
 						CULog("We are in loadFloatingBox!");
 						CULog(object->getString("id").c_str());
-						// loadFloatingBoxPlatform(object, scene, sprite, window_height * 32.0f);
-						loadMainPlatform(object, scene, sprite, window_height * 32.0f);
+						loadFloatingPlatform(nullptr, object, scene, sprite, window_height * 32.0f);
+						// loadMainPlatform(object, scene, sprite, window_height * 32.0f);
 					}
 					else if (object->getString("name") == "Main_Platform") {
 						CULog("We are in loadMainPlatform!");
@@ -594,7 +595,8 @@ std::shared_ptr<physics2::PolygonObstacle> LevelModel::loadMainPlatform(const st
 
 }
 
-void LevelModel::loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height) {
+//we aren't actually using this, so I think I'm gonna try and designate this for Wall types
+void LevelModel::loadFloatingPlatform(const std::shared_ptr<Texture> image, const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height) {
 
 	float startingX = json->getFloat("x");
 	float startingY = json->getFloat("y");
@@ -602,18 +604,49 @@ void LevelModel::loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json,
 	float height = json->getFloat("height");
 	float width = json->getFloat("width");
 
-	std::shared_ptr<physics2::PolygonObstacle> platobj;
-	float scene_refactor = 210.0f / 40.0f;
-	float DIMENSIONS[8] = { startingX / 32.0f, (level_height - startingY) / 32.0f, startingX / 32.0f, (level_height - startingY - height) / 32.0f, (startingX + width) / 32.0f, (level_height - startingY - height) / 32.0f, (startingX + width) / 32.0f, (level_height - startingY) / 32.0f };
+	std::shared_ptr<Wall> platobj;
 
+	std::shared_ptr<cugl::JsonValue> platform_vertices = json->get("polygon");
+	std::vector<Vec2> polygon_points = {};
 
-	for (int i = 0; i < 8; i++) {
-		// DIMENSIONS[i] = DIMENSIONS[i] * (2);
-		std::string val = "Point " + std::to_string(i) + ": " + std::to_string(DIMENSIONS[i]);
-		CULog(val.c_str());
+	int numOfVerts = 0;
+
+	if (platform_vertices != nullptr && platform_vertices->isArray()) {
+		for (int i = 0; i < platform_vertices->size(); i++) {
+			//current x, y pairing
+			std::shared_ptr<JsonValue> point = platform_vertices->get(i);
+			// one possible issue: point->getFloat("y") also contains negative numbers,
+			// so we may want to add a % window_height or something, but not sure
+			float refactor_scale = 210.0f / 40.0f;
+			polygon_points.push_back(Vec2(((startingX + point->getFloat("x"))) / 32.0f, ((level_height - (startingY + point->getFloat("y")))) / 32.0f));
+			std::string value = "Point " + std::to_string(i);
+			CULog(value.c_str());
+			std::string x_print = "x: " + std::to_string((startingX + point->getFloat("x")) / 32.0f);
+			std::string y_print = "y: " + std::to_string((level_height - (startingY + point->getFloat("y"))) / 32.0f);
+			std::string x_refactored = "x refactored: " + std::to_string((startingX + point->getFloat("x")) * refactor_scale / 32.0f);
+			std::string y_refactored = "y refactored: " + std::to_string((level_height - (startingY + point->getFloat("y"))) * refactor_scale / 32.0f);
+			CULog(x_print.c_str());
+			CULog(y_print.c_str());
+			CULog(x_refactored.c_str());
+			CULog(y_refactored.c_str());
+			CULog("-------------------------");
+			numOfVerts++;
+
+		}
 	}
-	CULog("Did we get here?");
-	Poly2 platform(reinterpret_cast<Vec2*>(DIMENSIONS), sizeof(DIMENSIONS) / sizeof(float) / 2);
+	//float scene_refactor = 210.0f / 40.0f;
+	//float DIMENSIONS[8] = { startingX / 32.0f, (level_height - startingY) / 32.0f, startingX / 32.0f, (level_height - startingY - height) / 32.0f, (startingX + width) / 32.0f, (level_height - startingY - height) / 32.0f, (startingX + width) / 32.0f, (level_height - startingY) / 32.0f };
+
+	//for (int i = 0; i < 8; i++) {
+	//	// DIMENSIONS[i] = DIMENSIONS[i] * (2);
+	//	std::string val = "Point " + std::to_string(i) + ": " + std::to_string(DIMENSIONS[i]);
+	//	CULog(val.c_str());
+	//}
+	//CULog("Did we get here?");
+	//Poly2 platform(reinterpret_cast<Vec2*>(DIMENSIONS), sizeof(DIMENSIONS) / sizeof(float) / 2);
+
+
+	Poly2 platform(polygon_points);
 
 	EarclipTriangulator triangulator;
 	triangulator.set(platform.vertices);
@@ -621,22 +654,40 @@ void LevelModel::loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json,
 	platform.setIndices(triangulator.getTriangulation());
 	triangulator.clear();
 
-	platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_BOTTOM_LEFT);
-	// CULog(std::to_string(platobj->isRemoved()).c_str());
-	platobj->setName(std::string(PLATFORM_NAME));
+	// we gotta make sure that a proper image is actually being placed here
 
+	// is this Vec2 pointer rly necessary or are we just creating additional memory
+	Vec2* startingPos = &(Vec2(startingX, startingY));
+
+	// we set image to nullptr because we should not have to worry about that when creating the colliders
+
+	std::shared_ptr<physics2::PolygonObstacle> _obj = physics2::PolygonObstacle::alloc(platform);
+	platobj = Wall::alloc(nullptr, _obj, scene.getScale(), BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION,
+		DEBUG_COLOR, startingPos, numOfVerts, PLATFORM_NAME, false);
+	platobj->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
+
+	platobj->initBreakable(50,25);
+
+	// CULog(std::to_string(platobj->isRemoved()).c_str());
+	platobj->setName(std::string(WALL_NAME));
+	// platobj->setEnabled(false);
+	// platobj->setSensor(true);
 	platobj->setBodyType(b2_staticBody);
 	platobj->setDensity(BASIC_DENSITY);
 	platobj->setFriction(BASIC_FRICTION);
 	platobj->setRestitution(BASIC_RESTITUTION);
 	platobj->setDebugColor(DEBUG_COLOR);
+	platobj->setReadyToBeReset(false);
 
 	platform *= scene.getScale();
 
-	std::shared_ptr<Texture> image = _assets->get<Texture>("textures\\placeholder_block_PLATFORM.png");
+	std::string msg = "Starting flag status of breakable platform: " + std::to_string(platobj->isFlagged());
+	CULog(msg.c_str());
 
+	// std::shared_ptr<Texture> image = _assets->get<Texture>("textures\\placeholder_block_PLATFORM.png");
 	sprite = scene2::PolygonNode::allocWithTexture(nullptr, platform);
 	sprite->setColor(Color4::CLEAR);
 	sprite->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 	scene.addObstacle(platobj, sprite, 1);
+	_breakable_platforms.push_back(platobj);
 }

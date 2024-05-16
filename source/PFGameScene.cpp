@@ -1379,6 +1379,54 @@ void GameScene::fixedUpdate(float step) {
             removeEnemy(enemy.get());
         }
     }
+
+    int timer = 0;
+    int altTimer = 0;
+    CULog("Size of breakable platforms array");
+    CULog(std::to_string(_level_model->getBreakablePlatforms().size()).c_str());
+    CULog("-----------------");
+    for (std::shared_ptr<Wall> bPlatform : _level_model->getBreakablePlatforms()) {
+        // conditional where we know that our avatar has collided with the wall
+        if (bPlatform->isFlagged()) {
+
+            bPlatform->applyBreaking();
+
+            /*while (timer < 10000000) {
+                timer++;
+            }
+
+            CULog("we are about to change bPlatform's physical properties");
+            bPlatform->setSensor(true);
+            bPlatform->setReadyToBeReset(true);
+            timer = 0;*/
+        }
+        else {
+            /*if (bPlatform->isSensor()) {
+                while (altTimer < 1000000) {
+                    altTimer++;
+                }
+                bPlatform->setSensor(false);
+                bPlatform->setReadyToBeReset(false);
+                altTimer = 0;
+            }*/
+        }
+    }
+
+    //for (std::shared_ptr<Wall> bp : _level_model->getBreakablePlatforms()) {
+    //    if (bp->isReadyToReset()) {
+    //        bp->setFlag(false);
+    //        // bp->setSensor(false);
+    //        bp->setReadyToBeReset(false);
+    //    }
+    //}
+
+    //for (std::shared_ptr<Wall> bPlatform : _level_model->getBreakablePlatforms()) {
+    //    // conditional where we know that our avatar has collided with the wall
+    //    if (bPlatform->isFlagged()) {
+    //        bPlatform->setSensor(false);
+    //        bPlatform->setFlag(false);
+    //    }
+    //}
     _world->update(step);
 }
 

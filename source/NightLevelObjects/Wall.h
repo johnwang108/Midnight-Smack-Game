@@ -23,6 +23,8 @@ private:
     bool activeDisplay;
 
     bool doesDamage;
+    bool flag;
+    bool readyToBeReset;
 
     float ogX;
     float ogY;
@@ -38,9 +40,9 @@ private:
     void setActive(bool state);
 public:
     Wall();
-    bool init(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION, float BASIC_RESTITUTION,
+    bool init(std::shared_ptr<Texture> image, std::shared_ptr<physics2::PolygonObstacle> _collisionPoly, float _scale, float BASIC_DENSITY, float BASIC_FRICTION, float BASIC_RESTITUTION,
         Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, bool doesDamage = false);
-    static std::shared_ptr<Wall> alloc(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION, float BASIC_RESTITUTION,
+    static std::shared_ptr<Wall> alloc(std::shared_ptr<Texture> image, std::shared_ptr<physics2::PolygonObstacle> _collisionPoly, float _scale, float BASIC_DENSITY, float BASIC_FRICTION, float BASIC_RESTITUTION,
         Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, bool doesDamage = false);
     std::shared_ptr<physics2::PolygonObstacle> getObj();
     Poly2 getCollisionPoly();
@@ -57,6 +59,22 @@ public:
     float getOGY();
     void resetBreaking();
     int getBreakingClock();
+
+    bool isFlagged() {
+        return flag;
+    }
+
+    void setFlag(bool f) {
+        flag = f;
+    }
+
+    bool isReadyToReset() {
+        return readyToBeReset;
+    }
+
+    void setReadyToBeReset(bool rr) {
+        readyToBeReset = rr;
+    }
 };
 
 #endif /* __WALL_H__ */

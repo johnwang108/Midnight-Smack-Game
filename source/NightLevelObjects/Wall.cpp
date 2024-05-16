@@ -28,39 +28,50 @@ Wall::Wall() {
 	activeDisplay = true;
 }
 
-bool Wall::init(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION,
+bool Wall::init(std::shared_ptr<Texture> image, std::shared_ptr<PolygonObstacle> _collisionPoly, float _scale, float BASIC_DENSITY, float BASIC_FRICTION,
 	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, bool doesDamage) {
-	Poly2 _collisionPoly(WALL_POS, WALL_VERTS / 2);
-	// Call this on a polygon to get a solid shape
-	EarclipTriangulator triangulator;
-	triangulator.set(_collisionPoly.vertices);
-	triangulator.calculate();
-	_collisionPoly.setIndices(triangulator.getTriangulation());
-	triangulator.clear();
+	
+	// this was all being done in Wall init, but instead we will do this within levelmodel
+	//Poly2 _collisionPoly(WALL_POS, WALL_VERTS / 2);
+	//// Call this on a polygon to get a solid shape
+	//EarclipTriangulator triangulator;
+	//triangulator.set(_collisionPoly.vertices);
+	//triangulator.calculate();
+	//_collisionPoly.setIndices(triangulator.getTriangulation());
+	//triangulator.clear();
 
-	_obj = physics2::PolygonObstacle::allocWithAnchor(_collisionPoly, Vec2::ANCHOR_CENTER);
+	CULog("we are in wall init method right now");
+
+
+	PolygonObstacle::init(_collisionPoly->getPolygon(), Vec2(WALL_POS->x, WALL_POS->y));
+	// we called init of PolygonObstacle
+	_obj = _collisionPoly;
 	// You cannot add constant "".  Must stringify
 
 	// Set the physics attributes
-	_obj->setBodyType(b2_staticBody);
-	_obj->setDensity(BASIC_DENSITY);
-	_obj->setFriction(BASIC_FRICTION);
-	_obj->setRestitution(BASIC_RESTITUTION);
-	_obj->setDebugColor(DEBUG_COLOR);
+	// _obj->setBodyType(b2_staticBody);
+	// _obj->setDensity(BASIC_DENSITY);
+	// _obj->setFriction(BASIC_FRICTION);
+	// _obj->setRestitution(BASIC_RESTITUTION);
+	// _obj->setDebugColor(DEBUG_COLOR);
 
-	_collisionPoly *= _scale;
-	sprite = scene2::PolygonNode::allocWithTexture(image, _collisionPoly);
+	// _collisionPoly *= _scale;
+	// sprite = scene2::PolygonNode::allocWithTexture(image, _collisionPoly);
 
 
 
 	this->_obj = _obj;
 
-	this->_collisionPoly = _collisionPoly;
+	// I added this, does it work? Idk
+	// this->_collisionPoly = _collisionPoly->getPolygon();
 	//this->_collisionPoly = Poly2 collisionPoly(reinterpret_cast<Vec2*>(WALL[ii]), WALL_VERTS / 2);
 
 	this->image = image;
 
 	this->_scale = _scale;
+	// we are setting flag to false because avatar has not touched it
+	// at initialization
+	this->setFlag(false);
 
 	this->BASIC_DENSITY = BASIC_DENSITY;
 	this->BASIC_FRICTION = BASIC_FRICTION;
@@ -75,17 +86,16 @@ bool Wall::init(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSIT
 	this->doesDamage = doesDamage;
 	this->name = name + (doesDamage ? "dd" : "");
 	_obj->setName(this->name);
-
 	this->breakableCoolDown = -1;
 	this->respawnTime = -1;
 	this->breakingClock = -1;
 	return true;
 }
 
-std::shared_ptr<Wall> Wall::alloc(std::shared_ptr<Texture> image, float _scale, float BASIC_DENSITY, float BASIC_FRICTION,
+std::shared_ptr<Wall> Wall::alloc(std::shared_ptr<Texture> image, std::shared_ptr<physics2::PolygonObstacle> _collisionPoly, float _scale, float BASIC_DENSITY, float BASIC_FRICTION,
 	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, bool doesDamage) {
 	std::shared_ptr<Wall> result = std::make_shared<Wall>();
-	return (result->init(image, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, DEBUG_COLOR, WALL_POS, WALL_VERTS, name, doesDamage) ? result : nullptr);
+	return (result->init(image, _collisionPoly, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, DEBUG_COLOR, WALL_POS, WALL_VERTS, name, doesDamage) ? result : nullptr);
 }
 
 std::shared_ptr<physics2::PolygonObstacle> Wall::getObj()
@@ -105,26 +115,28 @@ std::shared_ptr<scene2::SceneNode> Wall::getSprite()
 
 void Wall::initBreakable(int duration, int respawnTime)
 {
-	breakableCoolDown = duration;
+	this->breakableCoolDown = duration;
 	this->respawnTime = respawnTime;
-	breakingClock = breakableCoolDown;
+	this->breakingClock = this->breakableCoolDown;
 	name = name + "breakable";
-	_obj->setName(name);
+	this->_obj->setName(name);
 }
 
 void Wall::applyBreaking() {
-	breakingClock--;
+	this->breakingClock--;
 	//CULog("%f", breakingClock);
+	CULog("we in applyBreaking");
+	CULog(std::to_string(this->breakingClock).c_str());
 	if (activeDisplay) {
-		if (breakingClock == 0) {
-			breakingClock = respawnTime;
-			setActive(false);
+		if (this->breakingClock == 0) {
+			this->breakingClock = this->respawnTime;
+			this->setActive(false);
 		}
 	}
 	else {
-		if (breakingClock == 0) {
-			breakingClock = breakableCoolDown;
-			setActive(true);
+		if (this->breakingClock == 0) {
+			this->breakingClock = this->breakableCoolDown;
+			this->setActive(true);
 		}
 	}
 }
@@ -138,15 +150,20 @@ int Wall::getBreakingClock() {
 }
 
 void Wall::setActive(bool state) {
+	CULog("we in setActive now");
 	activeDisplay = state;
 	CULog("%d", state);
 	if (state) {
 		CULog("1");
-		setEnabled(true);
+		// setEnabled(true);
+		this->setSensor(true);
 	}
 	else {
 		CULog("2");
-		setEnabled(false);
+		CULog("we want our platform to no longer have collision properties now");
+		// setEnabled(false);
+		this->setSensor(false);
+		this->setFlag(false);
 		//image->dispose();
 	}
 }
@@ -199,9 +216,11 @@ void Wall::applyPathMovement(float step) {
 	_obj->setPosition(pos.x, pos.y);
 
 	scene2::TexturedNode* image = dynamic_cast<scene2::TexturedNode*>(sprite.get());
-	image->setPositionX(this->_obj->getX());
-	image->setPositionY(this->_obj->getY());
-	image->setPosition(this->_obj->getPosition() * _scale);
+	// this was given us a nullptr error with the setPosition of image
+	// this is because we commented out sprite previously, will have to add back in
+	// image->setPositionX(this->_obj->getX());
+	// image->setPositionY(this->_obj->getY());
+	// image->setPosition(this->_obj->getPosition() * _scale);
 
 	if (std::abs(pos.x - target.x) < 0.1 && std::abs(pos.y - target.y) < 0.1) {
 		if (pathNodeCoolDown == -1) {
