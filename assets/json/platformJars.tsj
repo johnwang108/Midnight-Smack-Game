@@ -1,0 +1,14 @@
+{ "columns":18,
+ "image":"..\/..\/..\/tiled\/textures\/platformJars.png",
+ "imageheight":471,
+ "imagewidth":588,
+ "margin":0,
+ "name":"platformJars",
+ "spacing":0,
+ "tilecount":252,
+ "tiledversion":"1.10.1",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

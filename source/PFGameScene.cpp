@@ -157,7 +157,7 @@ _debug(false)
  * @return true if the controller is initialized properly, false otherwise.
  */
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
-    _level_model->setFilePath("json/intermediate.json");
+    _level_model->setFilePath("json/shrimpIntro.tmj");
     // _level_model->setFilePath("json/empanada-platform-level-01.json");
     // _level_model->setFilePath("json/bull-boss-level.json");
     setSceneWidth(_level_model->loadLevelWidth());
@@ -168,7 +168,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_pt
 bool GameScene::initWithSave(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::shared_ptr<JsonValue> save) {
     /*setSceneWidth(400);
     setSceneHeight(30);*/
-    _level_model->setFilePath("json/intermediate.json");
+    _level_model->setFilePath("json/shrimpIntro.tmj");
     // _level_model->setFilePath("json/empanada-platform-level-01.json");
     // _level_model->setFilePath("json/bull-boss-level.json");
     setSceneWidth(_level_model->loadLevelWidth());
@@ -226,7 +226,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _scene_height = 30;
     setSceneWidth(400);
     setSceneHeight(30);*/
-    _level_model->setFilePath("json/intermediate.json");
+    _level_model->setFilePath("json/shrimpIntro.tmj");
     // _level_model->setFilePath("json/empanada-platform-level-01.json");
     // _level_model->setFilePath("json/bull-boss-level.json");
     setSceneWidth(_level_model->loadLevelWidth());
@@ -837,7 +837,6 @@ void GameScene::preUpdate(float dt) {
 
     checkForCooktime();
     
-
     //handle animations
     if (!_actionManager->isActive("air_attack")) {
         _avatar->getBody()->SetFixedRotation(false);
@@ -2066,7 +2065,7 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
     currentLevel = _level_model;
     if (chapter == 1) {
         if (level == 1) {
-            _level_model->setFilePath("json/intermediate.json");
+            _level_model->setFilePath("json/shrimpIntro.tmj");
         }
         else if (level == 2) {
             _level_model->setFilePath("json/test_level_v2_experiment.json");
