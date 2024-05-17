@@ -137,9 +137,6 @@ void Level3::populate(GameScene& scene) {
 
 	scene.addObstacle(_avatar, spritenode); // Put this at the very front
 
-	// Play the background music on a loop.
-	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
-	AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
 	Vec2 shrimp_pos = SHRIMP_POS;
 	image = _assets->get<Texture>("SFR_Idle");

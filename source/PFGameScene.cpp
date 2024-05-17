@@ -2187,6 +2187,15 @@ bool GameScene::loadSave(std::shared_ptr<JsonValue> save) {
 //load level with int specifiers
 void GameScene::loadLevel(int chapter, int level) {
     changeCurrentLevel(chapter, level);
+    AudioEngine::get()->clear();
+    if (level == 4) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("theBull");
+        AudioEngine::get()->play("theBull", source, true, EFFECT_VOLUME, true);
+    }
+    if (level == 5) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("theShrimp");
+        AudioEngine::get()->play("theShrimp", source, true, EFFECT_VOLUME, true);
+    }
     loadLevel(currentLevel);
 }
 
