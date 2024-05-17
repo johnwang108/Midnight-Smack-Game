@@ -1,3 +1,4 @@
+
 #include "Plate.h"
 
 bool Plate::init(const std::shared_ptr<Texture>& texture, const cugl::Vec2& pos, const cugl::Size& size) {

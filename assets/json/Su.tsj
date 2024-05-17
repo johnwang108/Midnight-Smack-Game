@@ -1,0 +1,14 @@
+{ "columns":2,
+ "image":"..\/textures\/Su.png",
+ "imageheight":160,
+ "imagewidth":80,
+ "margin":0,
+ "name":"Su",
+ "spacing":0,
+ "tilecount":10,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

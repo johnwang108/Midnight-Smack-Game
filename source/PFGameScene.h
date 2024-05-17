@@ -659,9 +659,9 @@ public:
 
     void respawnEnemy(std::shared_ptr<EnemyModel> enemy);
 
-    void removeingredient(Vec2 pos);
+    void removeingredient(Vec2 pos, std::string textureName);
 
-    void addingredient(Vec2 pos);
+    void addingredient(Vec2 pos, std::string textureName);
 
     void setInteractable(int interactableID) {
 		_currentInteractableID = interactableID;

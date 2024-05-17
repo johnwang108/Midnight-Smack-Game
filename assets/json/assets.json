@@ -546,6 +546,9 @@
         "sink": {
             "file": "textures/day/sink.png"
         },
+        "plate": {
+            "file": "textures/day/plate.png"
+        },
         "knife": {
             "file": "textures/day/knife.png"
         },

@@ -1,0 +1,14 @@
+{ "columns":2,
+ "image":"..\/..\/..\/..\/Documents\/College\/CS 4152\/Midnight-Smack-Game\/assets\/textures\/carrotLevelDesign.png",
+ "imageheight":98,
+ "imagewidth":71,
+ "margin":0,
+ "name":"carrotLevelDesign",
+ "spacing":0,
+ "tilecount":6,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

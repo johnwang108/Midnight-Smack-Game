@@ -824,6 +824,12 @@ void GameScene::preUpdate(float dt) {
     if (_input->didPause()) {
         _paused = !_paused;
     }
+    bool flag = false;
+    if (_input->didReset() && _paused) {
+        CULog("Stepping one frame");
+        flag = true;
+        _paused = false;
+	}
 
     _pauseMenu->setActive(_paused);
 
@@ -872,18 +878,9 @@ void GameScene::preUpdate(float dt) {
                     IngredientType t = _inventoryNode->getIngredientTypeFromSlot(_inventoryNode->getSelectedSlot());
                     if (i->interact(t)) {
                         i->setIngredientPtr(_inventoryNode->popIngredientFromSlot(_inventoryNode->getSelectedSlot()));
-                        removeingredient(i->getPosition());
+                        removeingredient(i->getPosition(), Ingredient::getIngredientStringFromType(t));
                     }
                     else if (i->isFull()) {
-                        ////let's cook baby
-                        //std::shared_ptr<Ingredient> ing = i->getIngredientPtr();
-                        //_dollarnode->addIngredient(ing);
-                        //_slowed = true;
-                        //_dollarnode->setTargetGesturesNighttime({ ing->getGestures(), ing->getGestures() });
-                        //_dollarnode->setIngredientInStation(ing);
-                        //_dollarnode->setIsStation(true);
-                        //i->setIngredientPtr(nullptr);
-                        //
 
                         //add cooked version of ingredient to inventory
                         IngredientType t = Ingredient::getIngredientTypeFromString(i->getIngredientPtr()->getName());
@@ -913,6 +910,7 @@ void GameScene::preUpdate(float dt) {
     }
 
     checkForCooktime();
+
 
     for (auto& i : _interactivePopups) {
         if (i->isActive()) i->update(dt);
@@ -1077,7 +1075,6 @@ void GameScene::preUpdate(float dt) {
         }
     }
 
-
     //advance level for debug
     if (_input->didAnimate()) {
         setComplete(true);
@@ -1211,14 +1208,15 @@ void GameScene::preUpdate(float dt) {
                 enemy->animate(actionName);
                 auto action = enemy->getAction(actionName);
                 _actionManager->activate(actionName + enemy->getId(), action, enemy->getSceneNode());
-				if (enemy->getType() == EnemyType::beef) {
+				if (enemy->getType() == EnemyType::beef && enemy->getState() != "patrolling" && !_paused) {
 					CULog("animating %s", actionName);
 				}
             }
+            if (enemy->getType() == EnemyType::beef && enemy->getState() != "patrolling" && !_paused) {
+                CULog("frame %i", enemy->getSpriteNode()->getFrame());
+
+            }
         }
-        //if (enemy->getType() == EnemyType::shrimp) {
-        //    CULog("frame %i", enemy->getSpriteNode()->getFrame());
-        //}
     }
 
     for (auto& spawn : spawns) {
@@ -1421,6 +1419,10 @@ void GameScene::preUpdate(float dt) {
      
     if (!_paused) {
         _actionManager->update(dt);
+    }
+
+    if (flag && !_paused) {
+        _paused = true;
     }
 }
 
@@ -2012,7 +2014,7 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
     }
 
     addEnemyToInventory(enemy->getType());
-    addingredient(enemy->getPosition());
+    addingredient(enemy->getPosition(), enemyToIngredientMap[enemy->getType()].name);
 
     _worldnode->removeChild(enemy->getSceneNode());
     enemy->setDebugScene(nullptr);
@@ -2219,6 +2221,7 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
     if (chapter == 1) {
         if (level == 1) {
             _level_model->setFilePath("json/intermediate.json");
+            //_level_model->setFilePath("json/TestLevel1.tmj");
         }
         else if (level == 2) {
             _level_model->setFilePath("json/test_level_v2_experiment.json");
@@ -2481,10 +2484,9 @@ void GameScene::respawnEnemies(float p) {
     }
 }
 
-void GameScene::removeingredient(Vec2 pos) {
+void GameScene::removeingredient(Vec2 pos, std::string textureName) {
 
-    std::string t = _inventoryNode->getIngredientnameFromSlot(_inventoryNode->getSelectedSlot());
-    std::shared_ptr<Texture> image = _assets->get<Texture>(t);
+    std::shared_ptr<Texture> image = _assets->get<Texture>(textureName);
 
     std::shared_ptr<Attack> attack = Attack::alloc(_avatar->getPosition(),
         cugl::Size(image->getSize().width*0.2/ _scale, image->getSize().height*0.2/ _scale));
@@ -2511,10 +2513,9 @@ void GameScene::removeingredient(Vec2 pos) {
     _attacks.push_back(attack);
 }
 
-void GameScene::addingredient(Vec2 pos) {
+void GameScene::addingredient(Vec2 pos, std::string textureName) {
 
-    std::string t = _inventoryNode->getIngredientnameFromSlot(_inventoryNode->getSelectedSlot());
-    std::shared_ptr<Texture> image = _assets->get<Texture>(t);
+    std::shared_ptr<Texture> image = _assets->get<Texture>(textureName);
 
     std::shared_ptr<Attack> attack = Attack::alloc(pos,
         cugl::Size(image->getSize().width * 0.2 / _scale, image->getSize().height * 0.2 / _scale));
