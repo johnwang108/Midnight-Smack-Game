@@ -3,6 +3,7 @@
 #include "LevelModel.h"
 #include "../PFDudeModel.h"
 #include "../PFGameScene.h"
+#include "../NightLevelObjects/Wall.h"
 //#include <direct.h>
 #include "Levels.h"
 
@@ -238,7 +239,7 @@ void LevelModel::populate(GameScene& scene) {
 						//means that we have found a key in our unordered map
 						std::string pathWeWant = idToImage.at(tileId);
 						CULog(pathWeWant.c_str());
-//						CULog(_getcwd(NULL, 0));
+						//						CULog(_getcwd(NULL, 0));
 						CULog("----------- ");
 						if (_assets == nullptr) {
 							CULog("you gotta define assets bro");
@@ -279,32 +280,50 @@ void LevelModel::populate(GameScene& scene) {
 								scene.addChild(_background);
 							}
 						}
-						else if (type == "golden_door") {
-							CULog("identified class field as golden door");
-							sprite = scene2::PolygonNode::allocWithTexture(image);
-							// std::shared_ptr<scene2::WireNode> draw;
-							// Create obstacle
-							int rowPos = ((window_height - rowNum) % window_height + window_height) % window_height;
-							Vec2 goalPos = Vec2(colNum, rowPos);
-							Size goalSize(image->getSize().width / scene.getScale(),
-								image->getSize().height / scene.getScale());
-							_goalDoor = physics2::BoxObstacle::alloc(goalPos, goalSize);
-							// _goalDoor->setPosition(0, 0);
-							// Set the physics attributes
-							_goalDoor->setBodyType(b2_staticBody);
-							_goalDoor->setDensity(0.0f);
-							_goalDoor->setFriction(0.0f);
-							_goalDoor->setRestitution(0.0f);
-							_goalDoor->setSensor(true);
-							// _goalDoor->setEnabled
+						else if (type == "interactable") {
 
-							// Add the scene graph nodes to this object
-							_goalDoor->setDebugColor(DEBUG_COLOR);
-							scene.addObstacle(_goalDoor, sprite);
+							int rowPos = ((window_height - rowNum) % window_height + window_height) % window_height;
+							Vec2 interactablePos = Vec2(colNum, rowPos);
+
+							// knife, pan, plate, pot, sink
+
+							if (pathWeWant.find("knife") != std::string::npos) {
+								scene.spawnStation(interactablePos, StationType::CUT);
+							}
+							else if (pathWeWant.find("pan") != std::string::npos) {
+								scene.spawnStation(interactablePos, StationType::FRY);
+
+							}
+							else if (pathWeWant.find("pot") != std::string::npos) {
+								scene.spawnStation(interactablePos, StationType::BOIL);
+							}
+
 						}
+						//else if (type == "golden_door") {
+						//	CULog("identified class field as golden door");
+						//	sprite = scene2::PolygonNode::allocWithTexture(image);
+						//	// std::shared_ptr<scene2::WireNode> draw;
+						//	// Create obstacle
+						//	int rowPos = ((window_height - rowNum) % window_height + window_height) % window_height;
+						//	Vec2 goalPos = Vec2(colNum, rowPos);
+						//	Size goalSize(image->getSize().width / scene.getScale(),
+						//		image->getSize().height / scene.getScale());
+						//	_goalDoor = physics2::BoxObstacle::alloc(goalPos, goalSize);
+						//	// _goalDoor->setPosition(0, 0);
+						//	// Set the physics attributes
+						//	_goalDoor->setBodyType(b2_staticBody);
+						//	_goalDoor->setDensity(0.0f);
+						//	_goalDoor->setFriction(0.0f);
+						//	_goalDoor->setRestitution(0.0f);
+						//	_goalDoor->setSensor(true);
+						//	// _goalDoor->setEnabled
+
+						//	// Add the scene graph nodes to this object
+						//	_goalDoor->setDebugColor(DEBUG_COLOR);
+						//	scene.addObstacle(_goalDoor, sprite);
+						//}
 						else if (type == "avatar") {
 							CULog("identified class field as avatar");
-							CULog("TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
 							sprite = scene2::PolygonNode::allocWithTexture(image);
 							// harcoded window_height to 25
 
@@ -383,7 +402,7 @@ void LevelModel::populate(GameScene& scene) {
 							}
 						}
 						// WE COMMENTED OUT ALL THIS FOR NOW BECAUSE JUST TRYING TO TEST MOVING BETWEEN LEVELS
-			
+
 						else if (type == "enemy") {
 							CULog("Enemy layer spotted!");
 							// sprite = scene2::PolygonNode::allocWithTexture(image);
@@ -422,6 +441,7 @@ void LevelModel::populate(GameScene& scene) {
 				}
 			}
 
+
 			else if (objects != nullptr && objects->isArray()) {
 				//we are looking at the object layer now
 				CULog("we are now looking at the object layer");
@@ -434,13 +454,58 @@ void LevelModel::populate(GameScene& scene) {
 					if (object->getString("name") == "Floating_Platform") {
 						CULog("We are in loadFloatingBox!");
 						CULog(object->getString("id").c_str());
-						// loadFloatingBoxPlatform(object, scene, sprite, window_height * 32.0f);
 						loadMainPlatform(object, scene, sprite, window_height * 32.0f);
+						// loadMainPlatform(object, scene, sprite, window_height * 32.0f);
+					}
+					if (object->getString("name") == "Floating_Breakable_Platform") {
+						CULog("We are in loadFloatingBox!");
+						CULog(object->getString("id").c_str());
+						loadFloatingPlatform(nullptr, object, scene, sprite, window_height * 32.0f);
+						// loadMainPlatform(object, scene, sprite, window_height * 32.0f);
 					}
 					else if (object->getString("name") == "Main_Platform") {
 						CULog("We are in loadMainPlatform!");
 						CULog(object->getString("id").c_str());
 						mainPlatform = loadMainPlatform(object, scene, sprite, window_height * 32.0f);
+					}
+					else if (object->getString("name") == "Damageable_Platform") {
+						//fill in later
+					}
+					else if (object->getString("name") == "Moving_Platform") {
+						// fill in later
+						// Here, we gonna have to set up wall while not letting it be a breakable platform
+					}
+					else if (object->getString("name") == "Plate") {
+						CULog("we are loading in a plate station");
+						std::shared_ptr<JsonValue> plateProperties = object->get("properties");
+						std::unordered_map<IngredientType, int> map = {};
+						if (plateProperties != nullptr && plateProperties->isArray()) {
+							for (int j = 0; j < plateProperties->size(); j++) {
+								std::shared_ptr<JsonValue> ingredientSpec = plateProperties->get(j);
+								// egg, rice, carrot, beef, shrimp
+								if (ingredientSpec->getString("name") == "cutCarrot") {
+									map.emplace(IngredientType::cutCarrot, ingredientSpec->getInt("value"));
+									CULog("we added cutCarrot, no errors here");
+								}
+								else if (ingredientSpec->getString("name") == "scrambledEgg") {
+									map.emplace(IngredientType::scrambledEgg, ingredientSpec->getInt("value"));
+								}
+								else if (ingredientSpec->getString("name") == "boiledEgg") {
+									map.emplace(IngredientType::boiledEgg, ingredientSpec->getInt("value"));
+								}
+								else if (ingredientSpec->getString("name") == "boiledRice") {
+									map.emplace(IngredientType::boiledRice, ingredientSpec->getInt("value"));
+								}
+								else if (ingredientSpec->getString("name") == "cookedBeef") {
+									map.emplace(IngredientType::cookedBeef, ingredientSpec->getInt("value"));
+								}
+								else if (ingredientSpec->getString("name") == "cookedShrimp") {
+									map.emplace(IngredientType::cookedShrimp, ingredientSpec->getInt("value"));
+								}
+							}
+						}
+						CULog("now, we are going to spawn the plate into the scene");
+						scene.spawnPlate(Vec2(object->getInt("x"), object->getInt("y")), map);
 					}
 					else {
 						CULog(object->getString("name").c_str());
@@ -454,8 +519,12 @@ void LevelModel::populate(GameScene& scene) {
 	}
 
 
+	// Use this as future reference for plate later
+	/*std::unordered_map<IngredientType, int> map = { {IngredientType::boiledEgg, 2}, {IngredientType::boiledRice, 2}, {IngredientType::cookedBeef, 1} };
+	scene.spawnPlate(plate, map);*/
+
 	//hardcode :3
-	if (getFilePath() == "json/intermediate.json") {
+	/*if (getFilePath() == "json/intermediate.json") {
 		Vec2 boilStation = p + Vec2(10.0f, 40.0f);
 		Vec2 cutStation = p + Vec2(40.0f, 40.0f);
 		Vec2 fryStation = p + Vec2(80.0f, 30.0f);
@@ -466,7 +535,7 @@ void LevelModel::populate(GameScene& scene) {
 		scene.spawnStation(fryStation, StationType::FRY);
 		std::unordered_map<IngredientType, int> map = { {IngredientType::boiledEgg, 2}, {IngredientType::boiledRice, 2}, {IngredientType::cookedBeef, 1} };
 		scene.spawnPlate(plate, map);
-	}
+	}*/
 
 
 	scene.setAssets(_assets);
@@ -571,7 +640,8 @@ std::shared_ptr<physics2::PolygonObstacle> LevelModel::loadMainPlatform(const st
 
 }
 
-void LevelModel::loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height) {
+//we aren't actually using this, so I think I'm gonna try and designate this for Wall types
+void LevelModel::loadFloatingPlatform(const std::shared_ptr<Texture> image, const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height) {
 
 	float startingX = json->getFloat("x");
 	float startingY = json->getFloat("y");
@@ -579,18 +649,49 @@ void LevelModel::loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json,
 	float height = json->getFloat("height");
 	float width = json->getFloat("width");
 
-	std::shared_ptr<physics2::PolygonObstacle> platobj;
-	float scene_refactor = 210.0f / 40.0f;
-	float DIMENSIONS[8] = { startingX / 32.0f, (level_height - startingY) / 32.0f, startingX / 32.0f, (level_height - startingY - height) / 32.0f, (startingX + width) / 32.0f, (level_height - startingY - height) / 32.0f, (startingX + width) / 32.0f, (level_height - startingY) / 32.0f };
+	std::shared_ptr<Wall> platobj;
 
+	std::shared_ptr<cugl::JsonValue> platform_vertices = json->get("polygon");
+	std::vector<Vec2> polygon_points = {};
 
-	for (int i = 0; i < 8; i++) {
-		// DIMENSIONS[i] = DIMENSIONS[i] * (2);
-		std::string val = "Point " + std::to_string(i) + ": " + std::to_string(DIMENSIONS[i]);
-		CULog(val.c_str());
+	int numOfVerts = 0;
+
+	if (platform_vertices != nullptr && platform_vertices->isArray()) {
+		for (int i = 0; i < platform_vertices->size(); i++) {
+			//current x, y pairing
+			std::shared_ptr<JsonValue> point = platform_vertices->get(i);
+			// one possible issue: point->getFloat("y") also contains negative numbers,
+			// so we may want to add a % window_height or something, but not sure
+			float refactor_scale = 210.0f / 40.0f;
+			polygon_points.push_back(Vec2(((startingX + point->getFloat("x"))) / 32.0f, ((level_height - (startingY + point->getFloat("y")))) / 32.0f));
+			std::string value = "Point " + std::to_string(i);
+			CULog(value.c_str());
+			std::string x_print = "x: " + std::to_string((startingX + point->getFloat("x")) / 32.0f);
+			std::string y_print = "y: " + std::to_string((level_height - (startingY + point->getFloat("y"))) / 32.0f);
+			std::string x_refactored = "x refactored: " + std::to_string((startingX + point->getFloat("x")) * refactor_scale / 32.0f);
+			std::string y_refactored = "y refactored: " + std::to_string((level_height - (startingY + point->getFloat("y"))) * refactor_scale / 32.0f);
+			CULog(x_print.c_str());
+			CULog(y_print.c_str());
+			CULog(x_refactored.c_str());
+			CULog(y_refactored.c_str());
+			CULog("-------------------------");
+			numOfVerts++;
+
+		}
 	}
-	CULog("Did we get here?");
-	Poly2 platform(reinterpret_cast<Vec2*>(DIMENSIONS), sizeof(DIMENSIONS) / sizeof(float) / 2);
+	//float scene_refactor = 210.0f / 40.0f;
+	//float DIMENSIONS[8] = { startingX / 32.0f, (level_height - startingY) / 32.0f, startingX / 32.0f, (level_height - startingY - height) / 32.0f, (startingX + width) / 32.0f, (level_height - startingY - height) / 32.0f, (startingX + width) / 32.0f, (level_height - startingY) / 32.0f };
+
+	//for (int i = 0; i < 8; i++) {
+	//	// DIMENSIONS[i] = DIMENSIONS[i] * (2);
+	//	std::string val = "Point " + std::to_string(i) + ": " + std::to_string(DIMENSIONS[i]);
+	//	CULog(val.c_str());
+	//}
+	//CULog("Did we get here?");
+	//Poly2 platform(reinterpret_cast<Vec2*>(DIMENSIONS), sizeof(DIMENSIONS) / sizeof(float) / 2);
+
+
+	Poly2 platform(polygon_points);
 
 	EarclipTriangulator triangulator;
 	triangulator.set(platform.vertices);
@@ -598,22 +699,40 @@ void LevelModel::loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json,
 	platform.setIndices(triangulator.getTriangulation());
 	triangulator.clear();
 
-	platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_BOTTOM_LEFT);
-	// CULog(std::to_string(platobj->isRemoved()).c_str());
-	platobj->setName(std::string(PLATFORM_NAME));
+	// we gotta make sure that a proper image is actually being placed here
 
+	// is this Vec2 pointer rly necessary or are we just creating additional memory
+	Vec2* startingPos = &(Vec2(startingX, startingY));
+
+	// we set image to nullptr because we should not have to worry about that when creating the colliders
+
+	std::shared_ptr<physics2::PolygonObstacle> _obj = physics2::PolygonObstacle::alloc(platform);
+	platobj = Wall::alloc(nullptr, _obj, scene.getScale(), BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION,
+		DEBUG_COLOR, startingPos, numOfVerts, PLATFORM_NAME, false);
+	platobj->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
+
+	platobj->initBreakable(50, 25);
+
+	// CULog(std::to_string(platobj->isRemoved()).c_str());
+	platobj->setName(std::string(WALL_NAME));
+	// platobj->setEnabled(false);
+	// platobj->setSensor(true);
 	platobj->setBodyType(b2_staticBody);
 	platobj->setDensity(BASIC_DENSITY);
 	platobj->setFriction(BASIC_FRICTION);
 	platobj->setRestitution(BASIC_RESTITUTION);
 	platobj->setDebugColor(DEBUG_COLOR);
+	platobj->setReadyToBeReset(false);
 
 	platform *= scene.getScale();
 
-	std::shared_ptr<Texture> image = _assets->get<Texture>("textures\\placeholder_block_PLATFORM.png");
+	std::string msg = "Starting flag status of breakable platform: " + std::to_string(platobj->isFlagged());
+	CULog(msg.c_str());
 
+	// std::shared_ptr<Texture> image = _assets->get<Texture>("textures\\placeholder_block_PLATFORM.png");
 	sprite = scene2::PolygonNode::allocWithTexture(nullptr, platform);
 	sprite->setColor(Color4::CLEAR);
 	sprite->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 	scene.addObstacle(platobj, sprite, 1);
+	_breakable_platforms.push_back(platobj);
 }

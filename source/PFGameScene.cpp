@@ -1252,7 +1252,10 @@ void GameScene::preUpdate(float dt) {
                     _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
                 }
             }
-            if (_Bull->getCAcount()<=0 && _Bull->isChasing() && ((_Bull->getPosition().x > 20 && _Bull->getDirection() == -1) || (_Bull->getPosition().x < 30 && _Bull->getDirection() == 1))) {
+            if (_Bull->getCAcount() <= 0 && _Bull->getbreaking() <= 0 && _Bull->isChasing() && ((_Bull->getPosition().x < 18 && _Bull->getDirection() == -1) || (_Bull->getPosition().x > 58 && _Bull->getDirection() == 1))) {
+                _Bull->setact("bullAttack",2.0);
+            }
+            if (_Bull->getCAcount()<=0 && _Bull->isChasing() && ((_Bull->getPosition().x > 20 && _Bull->getDirection() == -1) || (_Bull->getPosition().x < 56 && _Bull->getDirection() == 1))) {
                 Vec2 BullPos = _Bull->getPosition();
                 int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
                 if (direction != _Bull->getDirection()) {
@@ -1328,16 +1331,6 @@ void GameScene::preUpdate(float dt) {
                 _Bull->animate("bullStunned");
             }
         }
-        else if (_Bull->getCAcount()<=0 && _Bull->getbreaking()<=0 &&_Bull->isChasing() && ((_Bull->getPosition().x < 13 && _Bull->getDirection() == -1) || (_Bull->getPosition().x > 37 && _Bull->getDirection() == 1))) {
-            if (!_BullactionManager->isActive("bullAttack")){
-                _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                auto bullAttack = _Bull->getAction("bullAttack");
-                _BullactionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
-            }
-            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                _Bull->animate("bullAttack");
-            }
-        }
         else if (_Bull->getacttime() > 0) {
             if (!_BullactionManager->isActive(_Bull->getact())) {
                 _BullactionManager->clearAllActions(_Bull->getSceneNode());
@@ -1369,8 +1362,6 @@ void GameScene::preUpdate(float dt) {
             }
         }
 
-
-        
     }
 
     if (_ShrimpRice != nullptr) {

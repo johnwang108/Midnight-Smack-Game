@@ -120,7 +120,8 @@ void GameScene::beginContact(b2Contact* contact) {
     }
     
 
-    if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1 == _Bull.get() && bd2->getName() == WALL_NAME) {
+    if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1 == _Bull.get() && bd2->getName() == PLATFORM_NAME) {
+        CULog("sdfs");
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd2)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
@@ -138,7 +139,8 @@ void GameScene::beginContact(b2Contact* contact) {
         }
        // popup(std::to_string(5), bullPos * _scale);
     }
-    else if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1->getName() == WALL_NAME && bd2 == _Bull.get()) {
+    else if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1->getName() == PLATFORM_NAME && bd2 == _Bull.get()) {
+        CULog("sdfs");
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd1)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;

@@ -10,7 +10,7 @@ using namespace cugl;
 #define BULL_SENSOR_NAME     "bullsensor" // If the Bull requires a unique sensor
 #define BULL_CHASE_SPEED     10.0f         // Using the CHASE_SPEED for consistency
 #define BULL_DENSITY         2.0f         // Assuming the Bull is heavier than a regular enemy
-#define BULL_FORCE           1.0f         // Force specific to the Bull's movement, potentially stronger
+#define BULL_FORCE           1.5f         // Force specific to the Bull's movement, potentially stronger
 #define BULL_MAXSPEED        7.5f         // A reasonable max speed for the Bull, ensuring it's fast but manageable
 #define BULL_KNOCKBACK_FORCE 5.0f        // Increased knockback force due to the Bull's strength
 #define BULL_KNOCKBACK_FORCE_UP 15.0f      // Vertical knockback component
@@ -20,7 +20,7 @@ using namespace cugl;
 
 #define SENSOR_HEIGHT 0.1f
 
-#define BULL_ATTACK_CHANCE 0.002f
+#define BULL_ATTACK_CHANCE 0.003f
 
 class GameScene;
 class BullModel : public Entity {
