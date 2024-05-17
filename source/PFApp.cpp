@@ -310,6 +310,10 @@ void PlatformApp::transitionScenes() {
         if (_currentScene == "main_menu"){
 			_menu.setActive(true);
         }
+        else if (_currentScene == "settingsMenu") {
+            _settingsMenu.setActive(true);
+            _settingsMenu.setTransitionedFrom("night");
+        }
         CULog("Transed");
         CULog("From gameplay");
 	}
@@ -338,6 +342,7 @@ void PlatformApp::transitionScenes() {
         else if (_currentScene == "settingsMenu") {
             CULog("settings active");
             _settingsMenu.setActive(true);
+            _settingsMenu.setTransitionedFrom("main_menu");
         }
 
         CULog("Transed");
@@ -359,6 +364,21 @@ void PlatformApp::transitionScenes() {
         else if (_currentScene == "main_menu") {
 			_menu.setActive(true);
 		}
+    }
+    else if (_settingsMenu.didTransition()) {
+        _settingsMenu.setActive(false);
+        _settingsMenu.setTransition(false);
+
+        _currentScene = _settingsMenu.getTarget();
+        _settingsMenu.setTarget("");
+
+        if (_currentScene == "night") {
+            _gameplay.setActive(true);
+            CULog("transed, settings to night");
+        }
+        else if (_currentScene == "main_menu") {
+            _menu.setActive(true);
+        }
     }
 }
 

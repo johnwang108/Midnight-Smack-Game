@@ -35,6 +35,8 @@ protected:
     float _musicVolume;
     float _sfxVolume;
 
+    std::string _transitionedFrom;
+
 private:
 
     void initMainMenu(cugl::Size);
@@ -79,6 +81,10 @@ public:
     int getSelectedLevel() { return _selectedLevel;}
 
     void setHighestLevel(int i);
+
+    void setTransitionedFrom(std::string sceneName) { _transitionedFrom = sceneName; };
+
+    std::string getTransitionedFrom() { return _transitionedFrom; }
 
     void reset();
 };

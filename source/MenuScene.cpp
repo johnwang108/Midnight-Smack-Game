@@ -99,7 +99,7 @@ bool MenuScene::init(const std::shared_ptr<cugl::AssetManager>& assets, std::str
 			initLevelSelectMenu(dimen);
 			break;
 		case MenuType::OPTIONS:
-			//initSettingsMenu(dimen);
+			initSettingsMenu(dimen);
 			break;
 		case MenuType::PAUSE:
 			initPauseMenu(dimen);
@@ -124,40 +124,53 @@ bool MenuScene::init(const std::shared_ptr<cugl::AssetManager>& assets, std::str
 void MenuScene::initMainMenu(Size dimen) {
 	_rootNode->setContentSize(dimen);
 
-	std::shared_ptr<scene2::SceneNode> menu = _rootNode->getChildByName("startmenu")->getChildByName("menu");
-	auto kids = menu->getChildren();
+	//std::shared_ptr<scene2::SceneNode> menu = _rootNode->getChildByName("startmenu")->getChildByName("menu");
+	auto kids = _rootNode->getChildren();
 	for (auto it = kids.begin(); it != kids.end(); ++it) {
-		std::shared_ptr<scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(*it);
-		_buttons.push_back(butt);
-		std::string bName = butt->getName();
-
-		if (bName == "start_button") {
+		std::shared_ptr<scene2::SceneNode> node = *it;
+		std::string nodeName = node->getName();
+		
+		if (nodeName == "play") {
+			CULog("play listener");
+			std::shared_ptr<scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(*it);
+			_buttons.push_back(butt);
 			butt->addListener([=](const std::string& name, bool down) {
 				CULog("Button %s pressed in Main Menu, down: %d", name.c_str(), down);
 				this->_active = false;
 				this->setTransition(true);
 				this->setTarget("levelSelectMenu");
 				});
+			butt->setDown(true);
+
+			CULog("butt pos: %f %f", butt->getPosition().x, butt->getPosition().y);
 		}
-		else if (bName == "exit_button") {
+		/*else if (nodeName == "exit_button") {
+		* std::shared_ptr<scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(*it);
+		_buttons.push_back(butt);
+		std::string bName = butt->getName();
+
 			butt->addListener([=](const std::string& name, bool down) {
 				CULog("Button %s pressed in Main Menu, down: %d", name.c_str(), down);
 				if (down) {
 					Application::get()->quit();
 				}
 			});
-		}
-		else if (bName == "settings_button") {
-			CULog("settings button pressed 123");
+		}*/
+		else if (nodeName == "settings") {
+			std::shared_ptr<scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(*it);
+			_buttons.push_back(butt);
+
 			butt->addListener([=](const std::string& name, bool down) {
 				CULog("settin pressed");
 				this->setTransition(true);
 				this->setTarget("settingsMenu");
 				});
 			CULog("after listener");
+
 		}
 	}
 
+	
 	setName("main_menu");
 	this->setActive(false);
 }
@@ -247,6 +260,34 @@ void MenuScene::initSettingsMenu(Size dimen) {
 		std::shared_ptr<scene2::SceneNode> node = *it;
 
 		std::string nodeName = node->getName();
+		if (nodeName == "exit") {
+			std::shared_ptr<scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(node);
+			_buttons.push_back(butt);
+			butt->addListener([=](const std::string& name, bool down) {
+				CULog("leave settings button pressed");
+				this->setTransition(true);
+				if (this->getTransitionedFrom() != "") {
+					this->setTarget(this->getTransitionedFrom());
+				}
+				else {
+					this->setTarget("main_menu");
+				}
+			});
+		}
+		else if (nodeName == "toggle") {
+			std::shared_ptr<scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(node);
+			_buttons.push_back(butt);
+			butt->setToggle(true);
+			butt->addListener([=](const std::string& name, bool down) {
+				CULog("settings toggle button pressed down: %d", down);
+				});
+		}
+		else if (nodeName == "slider1") {
+
+		}
+		else if (nodeName == "slider2") {
+
+		}
 	}
 	this->setActive(false);
 }
@@ -328,6 +369,7 @@ void MenuScene::reset() {
 	_transitionScenes = false;
 	_targetScene = "";
 	_started = false;
+	_transitionedFrom = "";
 	//for (auto it = _buttons.begin(); it != _buttons.end(); ++it) {
 	//	auto button = *it;
 	//	button->setDown(false);	
