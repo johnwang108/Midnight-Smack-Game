@@ -912,7 +912,6 @@ void GameScene::preUpdate(float dt) {
 
     checkForCooktime();
 
-   _background->setVisible(true);
 
     for (auto& i : _interactivePopups) {
         if (i->isActive()) i->update(dt);
