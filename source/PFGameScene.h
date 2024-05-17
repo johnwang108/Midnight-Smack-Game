@@ -56,6 +56,11 @@
  * really a mini-GameEngine in its own right.  As in 3152, we separate it out
  * so that we can have a separate mode for the loading screen.
  */
+struct IngredientProperties {
+    std::string name;
+    std::vector<std::string> gestures;
+};
+
 class GameScene : public cugl::Scene2 {
 protected:
     /** The asset manager for this game mode. */
@@ -526,6 +531,7 @@ public:
 
     void removeEnemy(EnemyModel* enemy);
     void addEnemyToInventory(EnemyType);
+    void addIngredientToInventory(IngredientProperties);
 
 
     std::shared_ptr<AssetManager> getAssets() const { return _assets; }

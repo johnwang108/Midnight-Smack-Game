@@ -71,10 +71,7 @@ using namespace cugl;
 /**desired order width in pixels*/
 #define ORDER_WIDTH 100.0f
 
-struct IngredientProperties {
-    std::string name;
-    std::vector<std::string> gestures;
-};
+
 
 
 std::map<EnemyType, IngredientProperties> enemyToIngredientMap = {
@@ -84,6 +81,15 @@ std::map<EnemyType, IngredientProperties> enemyToIngredientMap = {
     {EnemyType::rice, {"rice", EnemyModel::defaultSeq(EnemyType::rice)}},
     {EnemyType::rice_soldier, {"rice", EnemyModel::defaultSeq(EnemyType::rice_soldier)}},
     {EnemyType::shrimp, {"shrimp", EnemyModel::defaultSeq(EnemyType::shrimp)}}
+};
+
+std::map<std::string, IngredientProperties> ingredientNameToIngredientProperties = {
+    {"beef", {"beef", EnemyModel::defaultSeq(EnemyType::beef)}},
+    {"carrot", {"carrot", EnemyModel::defaultSeq(EnemyType::carrot)}},
+    {"egg", {"egg", EnemyModel::defaultSeq(EnemyType::egg)}},
+    {"rice", {"rice", EnemyModel::defaultSeq(EnemyType::rice)}},
+    {"rice_soldier", {"rice", EnemyModel::defaultSeq(EnemyType::rice_soldier)}},
+    {"shrimp", {"shrimp", EnemyModel::defaultSeq(EnemyType::shrimp)}}
 };
 
 //TODO FIX
@@ -159,7 +165,7 @@ _debug(false)
  * @return true if the controller is initialized properly, false otherwise.
  */
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
-    _level_model->setFilePath("json/shrimpIntro.tmj");
+    _level_model->setFilePath("json/intermediate.json");
     // _level_model->setFilePath("json/empanada-platform-level-01.json");
     // _level_model->setFilePath("json/bull-boss-level.json");
     setSceneWidth(_level_model->loadLevelWidth());
@@ -170,7 +176,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_pt
 bool GameScene::initWithSave(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::shared_ptr<JsonValue> save) {
     /*setSceneWidth(400);
     setSceneHeight(30);*/
-    _level_model->setFilePath("json/shrimpIntro.tmj");
+    _level_model->setFilePath("json/intermediate.json");
     // _level_model->setFilePath("json/empanada-platform-level-01.json");
     // _level_model->setFilePath("json/bull-boss-level.json");
     setSceneWidth(_level_model->loadLevelWidth());
@@ -228,7 +234,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _scene_height = 30;
     setSceneWidth(400);
     setSceneHeight(30);*/
-    _level_model->setFilePath("json/shrimpIntro.tmj");
+    _level_model->setFilePath("json/intermediate.json");
     // _level_model->setFilePath("json/empanada-platform-level-01.json");
     // _level_model->setFilePath("json/bull-boss-level.json");
     setSceneWidth(_level_model->loadLevelWidth());
@@ -1664,6 +1670,10 @@ void GameScene::fixedUpdate(float step) {
             (*it)->fixedUpdate(step);
         }
         if ((*it)->killMe()) {
+            if ((*it)->getName() == "ingredient2" || (*it)->getName() == "ingredient2") {
+                addIngredientToInventory(ingredientNameToIngredientProperties[(*it)->getSceneNode()->getName()]);
+            }
+            
             removeAttack((*it).get());
             it = _attacks.erase(it);
         }
@@ -2062,7 +2072,7 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
         return;
     }
 
-    addEnemyToInventory(enemy->getType());
+    //addEnemyToInventory(enemy->getType());
     addingredient(enemy->getPosition(), enemyToIngredientMap[enemy->getType()].name);
 
     _worldnode->removeChild(enemy->getSceneNode());
@@ -2094,6 +2104,16 @@ void GameScene::addEnemyToInventory(EnemyType enemyType) {
 
     _inventoryNode->addIngredient(ing);
 }
+void GameScene::addIngredientToInventory(IngredientProperties ingProp) {
+    std::shared_ptr<Ingredient> ing = std::make_shared<Ingredient>("", ingProp.gestures, 0.0f);
+    ing->setName(ingProp.name);
+    std::shared_ptr<Texture> tex = _assets->get<Texture>(ing->getName());
+    ing->init(tex);
+
+    _inventoryNode->addIngredient(ing);
+}
+
+
 
 
 /**
@@ -2269,7 +2289,7 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
     currentLevel = _level_model;
     if (chapter == 1) {
         if (level == 1) {
-            _level_model->setFilePath("json/shrimpIntro.tmj");
+            _level_model->setFilePath("json/intermediate.json");
         }
         else if (level == 2) {
             _level_model->setFilePath("json/test_level_v2_experiment.json");
@@ -2537,7 +2557,7 @@ void GameScene::removeingredient(Vec2 pos, std::string textureName) {
     std::shared_ptr<Texture> image = _assets->get<Texture>(textureName);
 
     std::shared_ptr<Attack> attack = Attack::alloc(_avatar->getPosition(),
-        cugl::Size(image->getSize().width*0.2/ _scale, image->getSize().height*0.2/ _scale));
+        cugl::Size(image->getSize().width*0.15/ _scale, image->getSize().height*0.15/ _scale));
 
 
     attack->setName("ingredient");
@@ -2555,7 +2575,7 @@ void GameScene::removeingredient(Vec2 pos, std::string textureName) {
     std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
     attack->setSceneNode(sprite);
     sprite->setPosition(_avatar->getPosition());
-    sprite->setScale(0.2);
+    sprite->setScale(0.15);
 
     addObstacle(attack, sprite, true);
     _attacks.push_back(attack);
@@ -2566,7 +2586,7 @@ void GameScene::addingredient(Vec2 pos, std::string textureName) {
     std::shared_ptr<Texture> image = _assets->get<Texture>(textureName);
 
     std::shared_ptr<Attack> attack = Attack::alloc(pos,
-        cugl::Size(image->getSize().width * 0.2 / _scale, image->getSize().height * 0.2 / _scale));
+        cugl::Size(image->getSize().width * 0.15 / _scale, image->getSize().height * 0.15 / _scale));
 
 
     attack->setName("ingredient2");
@@ -2585,7 +2605,8 @@ void GameScene::addingredient(Vec2 pos, std::string textureName) {
     std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
     attack->setSceneNode(sprite);
     sprite->setPosition(pos);
-    sprite->setScale(0.2);
+    sprite->setScale(0.15);
+    sprite->setName(textureName);
 
     addObstacle(attack, sprite, true);
     _attacks.push_back(attack);

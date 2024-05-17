@@ -78,7 +78,7 @@ void Attack::fixedUpdate(float dt) {
 	}
 	if (_uppp > 0) {
 		if (_uppp == 1.5) {
-			_body->ApplyLinearImpulseToCenter(b2Vec2((100 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX))-50, 175), true);
+			_body->ApplyLinearImpulseToCenter(b2Vec2((60 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX))-50, 100), true);
 		}
 		_uppp -= dt;
 	}
@@ -103,7 +103,7 @@ void Attack::fixedUpdate(float dt) {
 		if (_straight != Vec2(-87, -87)) {
 			b2Vec2 targetDirection = b2Vec2(_straight.x - getPosition().x, _straight.y - getPosition().y);
 			targetDirection.Normalize();
-			_body->SetLinearVelocity(b2Vec2(targetDirection.x*20, targetDirection.y*20));
+			_body->SetLinearVelocity(b2Vec2(targetDirection.x*10, targetDirection.y*10));
 		}
 	}
 
