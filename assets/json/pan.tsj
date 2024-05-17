@@ -1,0 +1,14 @@
+{ "columns":4,
+ "image":"..\/textures\/day\/pan.png",
+ "imageheight":120,
+ "imagewidth":148,
+ "margin":0,
+ "name":"pan",
+ "spacing":0,
+ "tilecount":12,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

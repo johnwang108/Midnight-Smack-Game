@@ -1,0 +1,14 @@
+{ "columns":12,
+ "image":"..\/textures\/testPopupBack.png",
+ "imageheight":400,
+ "imagewidth":400,
+ "margin":0,
+ "name":"testPopupBack",
+ "spacing":0,
+ "tilecount":144,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

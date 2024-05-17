@@ -61,8 +61,11 @@ private:
 protected:
     /** The type of the enemy */
     EnemyType _type;
-    /** The current horizontal movement direction of the enemy (-1 for left, 1 for right) */
+    /** The current facing direction of the enemy (-1 for left, 1 for right) */
     int _direction;
+
+    int _moveDirection;
+
     /** Whether the enemy is currently on the ground */
     //bool _isGrounded;
     /** Whether the enemy is aggroed*/
@@ -72,6 +75,8 @@ protected:
 
     /** Enemy state*/
     std::string _state;
+
+    float _randFactor;
 
     /** The node for debugging the sensor */
  //   std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
@@ -411,6 +416,7 @@ public:
 	};
 
     virtual void respawn();
+    void resetDebug();
 
     //void activatePhysics(std::shared_ptr<physics2::ObstacleWorld> world) override;
 };

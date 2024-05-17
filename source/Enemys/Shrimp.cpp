@@ -66,9 +66,6 @@ void Shrimp::update(float dt) {
             setRequestedActionAndPrio("shrimpUncurl", 30);
         }
         else {
-            /*if (getActiveAction() == "shrimpIdle" && velocity.x != 0) setRequestedActionAndPrio("shrimpWalkStart", getPriority() + 1);
-            else if (getActiveAction() == "shrimpWalkStart" && velocity.x != 0) setRequestedActionAndPrio("shrimpWalk", 30);
-            else if (velocity.x == 0)setRequestedActionAndPrio("shrimpIdle", getPriority() + 1);*/
             if (velocity.x != 0) {
                 if (getActiveAction() == "shrimpWalkStart" || getActiveAction() == "shrimpWalk") setRequestedActionAndPrio("shrimpWalk", 30);
 				else setRequestedActionAndPrio("shrimpWalkStart", getPriority() + 1);
@@ -98,13 +95,13 @@ void Shrimp::fixedUpdate(float step) {
         velocity.x = 0;
     }
     else if (_state == "chasing") {
-        velocity.x = ENEMY_FORCE * _direction / 3;
+        velocity.x = ENEMY_FORCE * _moveDirection / 3;
     }
     else if (_state == "standing") {
         velocity.x = 0;
     }
     else if (_state == "standingRunning") {
-        velocity.x = ENEMY_FORCE * _direction * 2;
+        velocity.x = ENEMY_FORCE * _moveDirection * 2;
     }
     else if (_state == "curling") {
         //jump forward is todo
@@ -132,7 +129,7 @@ void Shrimp::fixedUpdate(float step) {
         
     }
     else if (_state == "patrolling") {
-        velocity.x = ENEMY_FORCE * _direction;
+        velocity.x = ENEMY_FORCE * _moveDirection;
     }
     else if (_state == "alarm") {
         velocity.x = 0;

@@ -6,6 +6,9 @@ bool GestureInteractable::init(const std::shared_ptr<Texture>& texture, const cu
 		setFriction(0.0f); // Prevent sticking to walls
 		setFixedRotation(false);
 		setFriction(1.0f);
+		b2Filter filter = getFilterData();
+		filter.groupIndex = -1;
+		setFilterData(filter);
 		_isActive = false;
 		_node = EntitySpriteNode::allocWithSheet(texture, 1, 1, 1);
 		_node->setAnchor(Vec2::ANCHOR_CENTER);
