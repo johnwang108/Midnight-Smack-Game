@@ -84,6 +84,7 @@ protected:
     std::shared_ptr<Scene2> _uiScene;
     std::shared_ptr<Inventory> _inventoryNode;
     std::shared_ptr<MenuScene> _pauseMenu;
+    std::shared_ptr<MenuScene> _loseScreen;
     std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
 
 

@@ -5,7 +5,7 @@
         "format": {
             "type": "Anchored"
         },
-    "data": {
+        "data": {
             "anchor": [
                 0,
                 0
@@ -246,8 +246,11 @@
                                 "data": {
                                     "key": "mymenubutton",
                                     "variables": {
-                                        "text":"START",
-                                        "size": [220,60]
+                                        "text": "START",
+                                        "size": [
+                                            220,
+                                            60
+                                        ]
                                     }
                                 },
                                 "layout": {
@@ -265,8 +268,11 @@
                                 "data": {
                                     "key": "mymenubutton",
                                     "variables": {
-                                        "text":"SETTINGS",
-                                        "size": [220,60]
+                                        "text": "START",
+                                        "size": [
+                                            220,
+                                            60
+                                        ]
                                     }
                                 },
                                 "layout": {
@@ -275,7 +281,7 @@
                                         27,
                                         10,
                                         27,
-                                        0
+                                        8
                                     ]
                                 }
                             },
@@ -284,8 +290,11 @@
                                 "data": {
                                     "key": "mymenubutton",
                                     "variables": {
-                                        "text":"EXIT",
-                                        "size": [220,60]
+                                        "text": "EXIT",
+                                        "size": [
+                                            220,
+                                            60
+                                        ]
                                     }
                                 },
                                 "layout": {
@@ -343,7 +352,6 @@
                     "y_offset": -0.05
                 }
             }
-            
         }
     }
 }

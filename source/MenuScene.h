@@ -45,6 +45,8 @@ private:
 
     void initSettingsMenu(cugl::Size);
 
+    void initLoseMenu(cugl::Size);
+
 public:
 
     MenuScene() : Scene2() { }
