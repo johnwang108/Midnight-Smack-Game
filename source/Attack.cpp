@@ -103,7 +103,7 @@ void Attack::fixedUpdate(float dt) {
 		if (_straight != Vec2(-87, -87)) {
 			b2Vec2 targetDirection = b2Vec2(_straight.x - getPosition().x, _straight.y - getPosition().y);
 			targetDirection.Normalize();
-			_body->SetLinearVelocity(b2Vec2(targetDirection.x*10, targetDirection.y*10));
+			_body->SetLinearVelocity(b2Vec2(targetDirection.x*15, targetDirection.y*15));
 		}
 	}
 
