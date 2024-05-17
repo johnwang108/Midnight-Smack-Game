@@ -91,13 +91,15 @@
 #define METER_COST 99.0f
 #define floatyFrames   10
 
+#define DEATH_COOLDOWN 5.0f
+
 /** Cooldown (in animation frames) for dashing */
 #define DASH_COOLDOWN  floatyFrames + 5
 
-#define WALL_JUMP_LERP 0.1f
+#define WALL_JUMP_LERP 0.05f
 
 //lerp timer in seconds
-#define WALL_JUMP_LERP_TIMER 1.75f
+#define WALL_JUMP_LERP_TIMER 0.75f
 
 
 #pragma mark -
@@ -219,6 +221,7 @@ protected:
     float _dashDamping;
     float _dashForce;
     float _jumpForce;
+    float _walkForce;
     bool _didAnimateHurt;
 
     //float _health;
@@ -231,6 +234,10 @@ protected:
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
 
     //float _attack;
+
+    float _deathTimer;
+
+    buff _buffType;
 
     //attack damage buff
     float _attackBuff;
@@ -584,7 +591,7 @@ public:
     void setDash(bool value) { _dash = value; }
 
     void setDashForce(float f) { _dashForce = f; }
-    float getDashForce() { return _dashForce; }
+    float getDashForce() { return _dashForce + getJumpBuff(); }
 
     void setDashDamping(float f) { _dashDamping = f; }
     float getDashDamping() { return _dashDamping; }
@@ -642,7 +649,7 @@ public:
      *
      * @return how much force to apply to get the dude moving
      */
-    float getForce() const { return DUDE_FORCE; }
+    float getForce() { return _walkForce * getSpeedBuff(); }
 
     float getJumpForce() { return _jumpForce * getJumpBuff(); }
 
@@ -761,7 +768,7 @@ public:
 
     void removeTouching() { _numberOfTouchingEnemies -= 1; };
 
-    void addMeter(float f) {_meter += f; if (_meter > _maxMeter) _meter = _maxMeter; };
+    void addMeter(float f);
 
     float getMeter() { return _meter; };
 
@@ -776,6 +783,14 @@ public:
     float getLastDamageTime() { return _lastDamageTime; };
 
     float getHealthCooldown() { return _healthCooldown; };
+
+    void startDeath();
+
+    float getDeathTimer() { return _deathTimer; };
+
+    bool animate(std::string action_name) override;
+
+    void reset();
 
     void setDidAnimateHurt(bool b) { _didAnimateHurt = b; };
     bool didAnimateHurt() { return _didAnimateHurt; };
@@ -810,9 +825,13 @@ public:
 
     int getFloatyFrames() { return floatyFrames; };
 
+    bool isBuffed() { return _duration > 0.0f; }
+    buff getBuffType() { return _buffType; }
+    bool isDead() { return _deathTimer != 0.0f; }
+
     void setInputWalk(bool b) { _isInputWalk = b; };
 
-    float getAttackBuff() {
+    const float getAttackBuff() {
         if (_duration > 0) {
             return _attackBuff;
         }
@@ -823,7 +842,7 @@ public:
         return DEFAULT_BUFF;
     };
 
-    float getDefenseBuff() {
+    const float getDefenseBuff() {
         if (_duration > 0) {
             return _defenseBuff;
         }
@@ -834,7 +853,7 @@ public:
         return DEFAULT_BUFF;
     }
 
-    float getJumpBuff() {
+    const float getJumpBuff() {
         if (_duration > 0) {
             return _jumpBuff;
         }
@@ -857,7 +876,7 @@ public:
     }
 
     //maybe not needed
-    float getHealthBuff() { return 0.0f; };
+    const float getHealthBuff() { return 0.0f; };
 
     static char* getStrForBuff(buff enumVal)
     {
@@ -873,6 +892,8 @@ public:
             return "defense";
         case buff::health:
             return "health";
+        case buff::none:
+            return "none";
         default:
             return "Not recognized..";
         }

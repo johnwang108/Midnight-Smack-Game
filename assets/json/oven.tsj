@@ -1,0 +1,14 @@
+{ "columns":17,
+ "image":"..\/..\/..\/..\/..\/..\/Downloads\/Tiled Assets-20240516T071104Z-001\/Tiled Assets\/farther\/oven.png",
+ "imageheight":436,
+ "imagewidth":547,
+ "margin":0,
+ "name":"oven",
+ "spacing":0,
+ "tilecount":221,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

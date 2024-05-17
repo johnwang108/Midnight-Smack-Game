@@ -16,23 +16,11 @@ public:
         return (node->initWithSheet(texture, rows, cols, size) ? node : nullptr);
     }
 
-	void changeSheet(std::shared_ptr<cugl::Texture> texture, int rows, int cols, int size) {
-        Vec2 pos = getPosition();
-        _cols = cols;
-        _size = size;
-        Rect oldBounds = _bounds;
-        _bounds.size = texture->getSize();
-        _bounds.size.width /= cols;
-        _bounds.size.height /= rows;
-        setPolygon(_bounds);
-        setTexture(texture);
-        setFrame(0);
-        setPosition(pos);
-	}
+    void changeSheet(std::shared_ptr<cugl::Texture> texture, int rows, int cols, int size);
 
-    void setTransform(cugl::Affine2 transform) {
-		_combined = transform;
-	}
+    void setTransform(cugl::Affine2 transform);
+
+    void setFrame(int frame);
 };
 
 #endif /* __ENTITY_SPRITE_NODE_H__ */

@@ -40,6 +40,7 @@ void PlatformApp::onStartup() {
     Input::activate<Mouse>();
 #endif
    
+    srand(time(0));
 
     _assets->attach<Font>(FontLoader::alloc()->getHook());
     _assets->attach<Texture>(TextureLoader::alloc()->getHook());
@@ -59,7 +60,8 @@ void PlatformApp::onStartup() {
     AudioEngine::start();
     _assets->loadDirectoryAsync("json/assets.json",nullptr);
     _currentScene = "";
-    
+
+    _settingsData = {{"music", 1.0f}, {"sfx", 1.0f}, {"isLeftHanded", 0.0f}};
 
     Application::onStartup(); // YOU MUST END with call to parent
 }
@@ -76,11 +78,8 @@ void PlatformApp::onStartup() {
  * causing the application to be deleted.
  */
 void PlatformApp::onShutdown() {
-    //_gameplay.save();
 
-    if (_currentScene == "night") {
-        _gameplay.save();
-    }
+    _gameplay.save();
 
     _menu.dispose();
     _loading.dispose();
@@ -154,8 +153,15 @@ void PlatformApp::update(float dt) {
         _gameplay.init(_assets, _input);
         _gameplay.setActive(false);
 
+        _levelSelectMenu.init(_assets, "levelSelectMenu");
+        _levelSelectMenu.setActive(false);
+
+        //_settingsMenu.init(_assets, "settingsMenu");
+        //_settingsMenu.setActive(false);
+
         _menu.init(_assets, "menu");
         _menu.setActive(true);
+
         _currentScene = "main_menu";
 
         _loaded = true;
@@ -190,6 +196,9 @@ void PlatformApp::preUpdate(float dt) {
     if (_menu.isActive()) {
         _menu.update(dt);
     }
+    else if (_levelSelectMenu.isActive()) {
+		_levelSelectMenu.update(dt);
+	}
     else if (_gameplay.isActive()) {
         _gameplay.preUpdate(dt);
     }
@@ -222,9 +231,6 @@ void PlatformApp::fixedUpdate() {
     if (_gameplay.isActive()) {
         _gameplay.fixedUpdate(time);
     }
-
-    
-    
 }
 
 /**
@@ -274,6 +280,9 @@ void PlatformApp::draw() {
     }
     if (_menu.isActive()) {
         _menu.render(_batch);
+    } 
+    else if (_levelSelectMenu.isActive()) {
+        _levelSelectMenu.render(_batch);
     }
     else if (_gameplay.isActive()) {
         //_gameplay.renderBG(_batch);
@@ -306,11 +315,40 @@ void PlatformApp::transitionScenes() {
         _menu.setTarget("");
 		if (_currentScene == "night") {
 			_gameplay.setActive(true);
-            
-		}
+        }
+        else if (_currentScene == "levelSelectMenu") {
+            _levelSelectMenu.setActive(true);
+            std::string root = cugl::Application::get()->getSaveDirectory();
+            std::string path = cugl::filetool::join_path({ root,"save.json" });
+            CULog("PATH: %s", path.c_str());
+            auto reader = JsonReader::alloc(path);
+            if (reader != nullptr && reader->ready()) {
+                _levelSelectMenu.setHighestLevel(reader->readJson()->getInt("level"));
+            }
+            else {
+                _levelSelectMenu.setHighestLevel(0);
+            }
+        }
 
         CULog("Transed");
         CULog("From menu");
+    }
+    else if (_levelSelectMenu.didTransition()) {
+        _levelSelectMenu.setActive(false);
+        _levelSelectMenu.setTransition(false);
+
+        _currentScene = _levelSelectMenu.getTarget();
+        _levelSelectMenu.setTarget("");
+
+        if (_currentScene == "night") {
+			_gameplay.setActive(true);
+            _gameplay.setLevel(1, _levelSelectMenu.getSelectedLevel());
+            CULog("Transed");
+            CULog("From levelSelectMenu to night");
+		}
+        else if (_currentScene == "main_menu") {
+			_menu.setActive(true);
+		}
     }
 }
 
@@ -319,10 +357,10 @@ void PlatformApp::loadSave() {
     std::string root = cugl::Application::get()->getSaveDirectory();
     std::string path = cugl::filetool::join_path({ root,"save.json" });
     auto reader = JsonReader::alloc(path);
-    reader->close();
 
     std::shared_ptr<JsonValue> loadedSave = reader->readJson();
-
+    reader->close();
+    reader = nullptr;
     //Todo:: load enemies separately from level.
 
     int chapter = loadedSave->getInt("chapter");

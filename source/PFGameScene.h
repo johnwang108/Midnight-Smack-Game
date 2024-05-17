@@ -41,6 +41,9 @@
 #include "NightLevelObjects/Plate.h"
 #include "NightLevelObjects/Station.h"
 #include "MenuScene.h"
+#include "NightLevelObjects/platform.h"
+#include "Popup.h"
+
 #include "Inventory.h"
 #include "Levels/LevelModel.h"
 #include "Levels/Level3.h"
@@ -72,7 +75,7 @@ protected:
     /** Reference to the lose message label */
     std::shared_ptr<cugl::scene2::Label> _losenode;
 
-    std::shared_ptr<Scene2> _bgScene;
+    //std::shared_ptr<Scene2> _bgScene;
     std::shared_ptr<Scene2> _uiScene;
     std::shared_ptr<Inventory> _inventoryNode;
     std::shared_ptr<MenuScene> _pauseMenu;
@@ -97,6 +100,7 @@ protected:
     // scene height
     int _scene_height;
 
+
     // Physics objects for the game
     /** Reference to the goalDoor (for collision detection) */
     std::shared_ptr<cugl::physics2::BoxObstacle>    _goalDoor;
@@ -109,9 +113,12 @@ protected:
 
     std::vector<std::shared_ptr<scene2::SpriteNode>> _afterimages;
 
-    //temp bad code
+
     std::vector<std::shared_ptr<Attack>>  _attacks;
-    time_t start;
+    
+    float _timer;
+    float _timeLimit;
+    std::deque<float> _respawnTimes;
 
     /** Whether we have completed this "game" */
     bool _complete;
@@ -128,6 +135,7 @@ protected:
     std::shared_ptr<RenderTarget> _r;
 
     /** map from interactable id to orders*/
+    std::unordered_map<IngredientType, int> _pendingAcrossAllPlates;
     std::unordered_map<int, std::vector<std::shared_ptr<scene2::SceneNode>>> _orders;
     std::shared_ptr<scene2::SceneNode> _orderNode;
     int _numOrders;
@@ -141,7 +149,7 @@ protected:
 
     std::vector<std::shared_ptr<Plate>> _plates;
     std::vector<std::shared_ptr<Station>> _stations;
-    
+    std::vector<std::shared_ptr<Platform>> _platforms;
     int _currentInteractableID;
       
     /** Mark set to handle more sophisticated collision callbacks */
@@ -151,13 +159,11 @@ protected:
     int _chapter;
     int _level;
 
+    Vec2 _spawnPoint;
+
     std::shared_ptr<BullModel>			  _Bull;
 
     std::shared_ptr<ShrimpRice>			  _ShrimpRice;
-
-    //std::shared_ptr<Level2> level2 = std::make_shared<Level2>();
-
-    //std::shared_ptr<Level1> level1 = std::make_shared<Level1>();
 
     std::shared_ptr<Level3> level3 = std::make_shared<Level3>();
 
@@ -174,12 +180,17 @@ protected:
 
     std::shared_ptr<cugl::scene2::PolygonNode> _cookBarFill;
     std::shared_ptr<cugl::scene2::PolygonNode> _cookBarOutline;
+    std::shared_ptr<scene2::PolygonNode> _timerIcon;
+    std::shared_ptr<scene2::PolygonNode> _timerFillIcon;
     std::unordered_map<std::string, std::shared_ptr<cugl::scene2::PolygonNode>> _cookBarIcons;
     std::unordered_map<std::string, std::shared_ptr<cugl::scene2::PolygonNode>> _cookBarGlows;
 
     //std::shared_ptr<cugl::scene2::Label> _buffLabel;
 
     std::vector<std::tuple<std::shared_ptr<cugl::scene2::Label>, cugl::Timestamp>> _popups;
+
+    std::vector<std::shared_ptr<Popup>> _interactivePopups;
+    int _popupIndex;
 
     std::shared_ptr<cugl::scene2::ActionManager> _actionManager;
 
@@ -191,8 +202,6 @@ protected:
 
     bool _paused;
 
-    float _flag;
-
     //debug anims for Leon
     std::string _debugAnimTargetName;
     std::shared_ptr<Entity> _debugAnimTarget;
@@ -201,8 +210,6 @@ protected:
     //end debug anims
 
     std::shared_ptr<LevelModel> _level_model = std::make_shared<LevelModel>();
-
-    std::vector<float> _persistentUpgrades;
 
 #pragma mark Internal Object Management
     /**
@@ -607,26 +614,36 @@ public:
     void spawnBeef(Vec2 pos);
     void spawnEgg(Vec2 pos);
     void spawnRice(Vec2 pos, bool isSoldier = true);
+    std::shared_ptr<EnemyModel> spawnRiceSoldier(Vec2 pos, std::shared_ptr<Rice> leader);
     void spawnCarrot(Vec2 pos);
     void spawnStation(Vec2 pos, StationType type);
     void spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map);
+
+    void setSpawn(Vec2 spawn) { _spawnPoint = spawn; };
+
+    void respawnAvatar();
 
     std::vector<std::shared_ptr<Attack>> getattacks() { return _attacks; }
     void setattacks(std::vector<std::shared_ptr<Attack>> attacks) { _attacks = attacks; }
 
     void pogo();
 
-    void createOrder(int id, IngredientType ing, bool isPlate = false);
+    void createOrder(int plateId, IngredientType ing);
+    void removeOrder(int plateId, IngredientType t);
 
     /** toggles visibility of orders*/
     void toggleOrders(bool v);
+
+    std::shared_ptr<Popup> createPopup(std::string name) {
+
+    }
 
     void positionOrders();
 
     void generateOrders();
 
     void animate(std::shared_ptr<Entity> entity, std::string animName, bool clear = false) {
-        entity->animate(animName);
+        if (!entity->animate(animName)) return;
         auto action = entity->getAction(animName);
         if (clear) _actionManager->clearAllActions(entity->getSceneNode());
         _actionManager->activate(animName, action, entity->getSceneNode());
@@ -638,7 +655,14 @@ public:
     ///**Removes ingredient from currently selected slot. Wrapper for orders handling*/
     //std::shared_ptr<Ingredient> popFromInventory(std::shared_ptr<Ingredient>);
 
-    void removeOrder(int id, IngredientType t, bool isPlate = false);
+    /**This respawns a fraction (p) of the enemies that have died, not including spawned rice soldiers. */
+    void respawnEnemies(float p = 1.0);
+
+    void respawnEnemy(std::shared_ptr<EnemyModel> enemy);
+
+    void removeingredient(Vec2 pos, std::string textureName);
+
+    void addingredient(Vec2 pos, std::string textureName);
 
     void setInteractable(int interactableID) {
 		_currentInteractableID = interactableID;
@@ -647,6 +671,10 @@ public:
     int getCurrentInteractableId() {
         return _currentInteractableID;
     }
+    std::vector<std::shared_ptr<Platform>>& getPlatform() {
+		return _platforms;
+	}
+
 
     std::shared_ptr<GestureInteractable> getInteractable(int interactableID) {
         for (auto i : _interactables) {

@@ -49,6 +49,7 @@ public:
 	std::shared_ptr<Ingredient> popIngredientFromSlot(int slotToClear);
 
 	IngredientType getIngredientTypeFromSlot(int slotNumber);
+	std::string getIngredientnameFromSlot(int slotNumber);
 	void removeIngredientFromSlotNode(std::shared_ptr<Ingredient> ing, int slotNumber);
 
 

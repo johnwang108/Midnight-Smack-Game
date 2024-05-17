@@ -60,12 +60,18 @@ public:
 	// Vector because there will be multiple platforms
 	std::vector<std::shared_ptr<cugl::physics2::PolygonObstacle>> _floating_platforms;
 
+	//Vector of the breakable platforms
+	std::vector<std::shared_ptr<Wall>> _breakable_platforms;
+
 	//Reference to the asset manager
 	std::shared_ptr<cugl::AssetManager> _assets;
 
 	std::map<int, std::string> idToImage;
 
 	std::string level_file_path;
+
+
+
 
 	// virtual ~LevelModel() = default;
 
@@ -82,7 +88,7 @@ public:
 	// void loadGoalDoor(const std::shared_ptr<JsonValue>& json);
 
 	/** loads the physical parts of the floating platform*/
-	void loadFloatingBoxPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height);
+	void loadFloatingPlatform(const std::shared_ptr<Texture> image, const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height);
 
 	/** loads the main platform, specifically its physical parts*/
 	std::shared_ptr<physics2::PolygonObstacle> loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height);
@@ -145,6 +151,12 @@ public:
 	int getWidth() { return level_width; };
 	// returns the height (in pixels) of our level
 	int getHeight() { return level_height; };
+
+	std::vector<std::shared_ptr<Wall>> getBreakablePlatforms() {
+		return _breakable_platforms;
+	}
+
+
 
 #pragma mark Drawing Methods
 

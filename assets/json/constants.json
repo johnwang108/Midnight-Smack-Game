@@ -21,7 +21,7 @@
             "duration": 2.0
         },
         "attack": {
-            "sheet": "su_attack_sheet",
+            "sheet": "su_attack",
             "rows": 4,
             "cols": 5,
             "frames": 18,
@@ -83,19 +83,34 @@
             "frames": 3,
             "duration": 0.15
         },
-        "skid": {
-            "sheet": "suSkid",
-            "rows": 4,
-            "cols": 5,
-            "frames": 17,
-            "duration": 1.0
+        "air_recover": {
+            "sheet": "su_air_roll",
+            "rows": 2,
+            "cols": 2,
+            "frames": 3,
+            "duration": 0.25
         },
+        "skid": {
+            "sheet": "suSlide",
+            "rows": 3,
+            "cols": 4,
+            "frames": 11,
+            "duration": 0.5
+        },
+        
         "hurt": {
             "sheet": "suHurt",
             "rows": 3,
             "cols": 3,
             "frames": 7,
-            "duration": 0.15
+            "duration": 0.40
+        },
+        "death": {
+            "sheet": "suDeath",
+            "rows": 6,
+            "cols": 7,
+            "frames": 39,
+            "duration": 3.0
         }
     },
     "rice" : {
@@ -332,7 +347,7 @@
             "rows": 2,
             "cols": 2,
             "frames": 4,
-            "duration": 0.5
+            "duration": 1.0
         }
     },
     "shrimp": {

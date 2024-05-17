@@ -1,0 +1,14 @@
+{ "columns":11,
+ "image":"..\/textures\/well.png",
+ "imageheight":456,
+ "imagewidth":361,
+ "margin":0,
+ "name":"well",
+ "spacing":0,
+ "tilecount":154,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

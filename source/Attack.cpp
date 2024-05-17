@@ -26,6 +26,8 @@ bool Attack::init(cugl::Vec2 pos, const cugl::Size& size) {
         _norotate= false;
 		_speed = DEFAULT_SPEED;
 		_die = true;
+		_uppp = 0;
+		_follow = false;
 
         return true;
     }
@@ -74,8 +76,15 @@ void Attack::fixedUpdate(float dt) {
 			_lifetime = (_lifetime > 0 ? _lifetime - 1 : 0);
 		}
 	}
-
-	if (_shoot) {
+	if (_uppp > 0) {
+		if (_uppp == 1.5) {
+			_body->ApplyLinearImpulseToCenter(b2Vec2((100 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX))-50, 175), true);
+		}
+		_uppp -= dt;
+	}
+	else if (_shoot) {
+		_body->SetLinearVelocity(b2Vec2(0,0));
+		setGravityScale(0);
 		_shoot = false;
 		if (_rand) {
 			_body->ApplyLinearImpulseToCenter(b2Vec2(20 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 5, 45), true);
@@ -90,9 +99,17 @@ void Attack::fixedUpdate(float dt) {
 			_body->ApplyLinearImpulseToCenter(b2Vec2(3 * _direction, 10), true);
 		}
 	}
+	else if (_follow) {
+		if (_straight != Vec2(-87, -87)) {
+			b2Vec2 targetDirection = b2Vec2(_straight.x - getPosition().x, _straight.y - getPosition().y);
+			targetDirection.Normalize();
+			_body->SetLinearVelocity(b2Vec2(targetDirection.x*20, targetDirection.y*20));
+		}
+	}
 
 	float currentAngle = _body->GetAngle();
 	b2Vec2 velocity = _body->GetLinearVelocity();
+
 	if (_straight == Vec2(-87, -87) && !_norotate) {
 		if (velocity.x < 0) {
 			_body->SetTransform(_body->GetPosition(), currentAngle + M_PI * dt);

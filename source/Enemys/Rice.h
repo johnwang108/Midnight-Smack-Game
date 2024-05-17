@@ -12,6 +12,7 @@ protected:
     cugl::Vec2 _targetPosition;
     float _closeEnough;
     std::vector<std::shared_ptr<Rice>> _soldiers;
+    float _force;
 
 private:
 
@@ -52,6 +53,9 @@ public:
             result->loadAnimationsFromConstant("rice", _assets);
         }
 
+        //manually add respawn (death reversed)
+        auto info = result->getInfo("riceDeath");
+        result->addActionAnimation("riceRespawn", _assets->get<Texture>("riceDeath"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 4.0f, true);
         return res ? result : nullptr;
     }
 
@@ -66,14 +70,27 @@ public:
 
     std::string getNextState(std::string state) override;
 
+    /**Adds a soldier to the rice leader's squad*/
+    void addSoldier(std::shared_ptr<Rice> soldier) {
+        assert(soldier->_isSoldier);
+		_soldiers.push_back(soldier);
+	}
+
+    std::vector<std::shared_ptr<Rice>> getSoldiers() {
+		return _soldiers;
+	}
+
     void markForDeletion() override {
         if (_killMeCountdown != 0.0f) return;
         EnemyModel::markForDeletion();
+        for (auto& soldier : _soldiers) {
+			soldier = nullptr;
+		}
+        _soldiers.clear();
         _killMeCountdown = getActionDuration("riceDeath");
     }
 
     void leaderListener(physics2::Obstacle* obs) {
-
         _node->setPosition(obs->getPosition() * _drawScale);
         _node->setAngle(obs->getAngle());
         if (getState() == "pursuing") {

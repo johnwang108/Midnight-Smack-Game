@@ -282,7 +282,7 @@ void PlatformInput::update(float dt) {
     _keyUp = keys->keyDown(KeyCode::W);
     _keyDown = keys->keyDown(KeyCode::S);
 
-    _keyPause = keys->keyPressed(KeyCode::T);
+    _keyPause = keys->keyPressed(KeyCode::P);
 
     _keyMinimap = keys->keyPressed(KeyCode::M);
 

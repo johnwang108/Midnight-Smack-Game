@@ -26,6 +26,9 @@ public:
         if (res) {
             result->loadAnimationsFromConstant("carrot", _assets);
         }
+
+        //todo carrot respawn :)
+
         return res ? result : nullptr;
     }
 
@@ -40,6 +43,8 @@ public:
     void fixedUpdate(float step) override;
 
     void setState(std::string state) override;
+
+    b2Vec2 handleMovement(b2Vec2 velocity) override;
 
     std::string getNextState(std::string state) override;
 
