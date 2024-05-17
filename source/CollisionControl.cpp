@@ -121,11 +121,11 @@ void GameScene::beginContact(b2Contact* contact) {
     
 
     if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1 == _Bull.get() && bd2->getName() == PLATFORM_NAME) {
-        CULog("sdfs");
+        CULog("sing");
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd2)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
-        if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0) {
+        if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0 && _Bull->getturing() <= 0) {
             _Bull->setCAcount(_Bull->getCAcount() + 1);
             _Bull->circleattack(*this);
         }
@@ -140,11 +140,11 @@ void GameScene::beginContact(b2Contact* contact) {
        // popup(std::to_string(5), bullPos * _scale);
     }
     else if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1->getName() == PLATFORM_NAME && bd2 == _Bull.get()) {
-        CULog("sdfs");
+        CULog("sing");
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd1)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
-       if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0) {
+       if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0 && _Bull->getturing()<=0) {
             _Bull->setCAcount(_Bull->getCAcount() + 1);
             _Bull->circleattack(*this);
         }
@@ -187,6 +187,8 @@ void GameScene::beginContact(b2Contact* contact) {
         }
         else if (_Bull->getHealth() == 40.5f) {
             _Bull->setsprintpreparetime(2);
+            _Bull->setact("bullTelegraph", 2.0f);
+            _Bull->setattacktype("none");
             _Bull->setIsChasing(true);
             _Bull->setCAcount(2);
             _Bull->takeDamage(_avatar->getAttack() / 4, direction, false);
@@ -211,6 +213,8 @@ void GameScene::beginContact(b2Contact* contact) {
         }
         else if (_Bull->getHealth() == 40.5f) {
             _Bull->setsprintpreparetime(2);
+            _Bull->setact("bullTelegraph", 2.0f);
+            _Bull->setattacktype("none");
             _Bull->setIsChasing(true);
             _Bull->setCAcount(2);
             _Bull->takeDamage(_avatar->getAttack() / 4, direction, false);

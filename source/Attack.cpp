@@ -84,18 +84,19 @@ void Attack::fixedUpdate(float dt) {
 	}
 	else if (_shoot) {
 		_body->SetLinearVelocity(b2Vec2(0,0));
-		setGravityScale(0);
 		_shoot = false;
 		if (_rand) {
-			_body->ApplyLinearImpulseToCenter(b2Vec2(20 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 5, 45), true);
+			_body->ApplyLinearImpulseToCenter(b2Vec2(20 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 5, 30), true);
 		}
 		else if (_straight != Vec2(-87, -87)) {
+			setGravityScale(0);
 			b2Vec2 targetDirection = b2Vec2(_straight.x - getPosition().x, _straight.y - getPosition().y);
 			targetDirection.Normalize();
 			_body->ApplyLinearImpulseToCenter(b2Vec2(targetDirection.x * _speed, targetDirection.y * _speed), true);
 			_body->SetTransform(_body->GetPosition(), atan2(_straight.y - getPosition().y, _straight.x - getPosition().x) + M_PI);
 		}
 		else {
+			setGravityScale(0);
 			_body->ApplyLinearImpulseToCenter(b2Vec2(3 * _direction, 10), true);
 		}
 	}

@@ -134,6 +134,7 @@ public:
     void setbreaking(float breaking){_breaking=breaking;}
     float getbreaking(){return _breaking;}
     float getrunning(){return _running;}
+    void setattacktype(std::string attacktype) { _attacktype = attacktype; }
 };
 
 #endif /* __BULL_MODEL_H__ */
