@@ -71,6 +71,11 @@ void GameScene::beginContact(b2Contact* contact) {
         _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
     }
 
+    if ((_avatar.get() == bd2 && bd1->getName() == "TutorialSign") ||
+        (_avatar.get() == bd1 && bd2->getName() == "TutorialSign")) {
+        _interactivePopups.at(_popupIndex)->toggle();
+    }
+
     for (auto& _enemy : _enemies) {
         if (!_enemy->isRemoved()) {
             if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1 && bd1->getName().find("attack") == std::string::npos) ||
@@ -452,7 +457,10 @@ void GameScene::endContact(b2Contact* contact) {
         ((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::WHITE);
         setInteractable(-1);
     }
-
+    if ((_avatar.get() == bd2 && bd1->getName() == "TutorialSign") ||
+        (_avatar.get() == bd1 && bd2->getName() == "TutorialSign")) {
+        _interactivePopups.at(_popupIndex)->toggle();
+    }
     //// Check if the player is no longer in contact with any walls
     //bool p1 = (_avatar->getLeftSensorName() == fd1);
     //bool p2 = (_avatar->getRightSensorName() == fd1);

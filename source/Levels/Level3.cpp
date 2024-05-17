@@ -2,7 +2,7 @@
 #include "../PFGameScene.h"
 
 /** The goal door position */
-static float GOAL_POS[] = { 4.0f,14.0f };
+static float GOAL_POS[] = { 4.0f,8.0f };
 // float GOAL_POS[] = { 6.0f, 5.0f };
 
 /** The initial position of the dude */
@@ -170,7 +170,7 @@ void Level3::populate(GameScene& scene) {
 
 	scene.addObstacle(_shrimprice, spritenode);
 
-
+	scene.spawnTutorialSign(GOAL_POS,"1");
 
 
 	scene.setAssets(_assets);

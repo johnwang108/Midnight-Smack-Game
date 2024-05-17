@@ -2343,6 +2343,20 @@ void GameScene::spawnStation(Vec2 pos, StationType type) {
     _stations.push_back(station);
 }
 
+void GameScene::spawnTutorialSign(Vec2 pos, std::string type) {
+    //obstacle has small size, not reflective of intended size
+    Size s = Size(5.0f, 5.0f);
+    std::shared_ptr<Texture> image;
+
+    image = _assets->get<Texture>("knife");
+
+
+    std::shared_ptr<TutorialSign> station = TutorialSign::alloc(image, pos, s, type);
+
+    addObstacle(station, station->getSceneNode());
+    _TutorialSigns.push_back(station);
+}
+
 void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map) {
     //obstacle has small size, not reflective of intended size
     Size s = Size(5.0f, 5.0f);

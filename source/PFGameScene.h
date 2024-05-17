@@ -42,6 +42,7 @@
 #include "NightLevelObjects/Station.h"
 #include "MenuScene.h"
 #include "NightLevelObjects/platform.h"
+#include "NightLevelObjects/TutorialSign.h"
 #include "Popup.h"
 
 #include "Inventory.h"
@@ -145,6 +146,8 @@ protected:
     cugl::Vec3 _velocity = Vec3::ZERO;
 
     std::vector<std::shared_ptr<GestureInteractable>> _interactables;
+
+    std::vector<std::shared_ptr<TutorialSign>> _TutorialSigns;
 
     std::vector<std::shared_ptr<Plate>> _plates;
     std::vector<std::shared_ptr<Station>> _stations;
@@ -617,6 +620,7 @@ public:
     void spawnCarrot(Vec2 pos);
     void spawnStation(Vec2 pos, StationType type);
     void spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map);
+    void spawnTutorialSign(Vec2 pos, std::string type);
 
     void setSpawn(Vec2 spawn) { _spawnPoint = spawn; };
 

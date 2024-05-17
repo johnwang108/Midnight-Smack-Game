@@ -127,9 +127,11 @@ void MenuScene::initMainMenu(Size dimen) {
 		if (bName == "start_button") {
 			butt->addListener([=](const std::string& name, bool down) {
 				CULog("Button %s pressed in Main Menu, down: %d", name.c_str(), down);
-				this->_active = false;
+			//	this->_active = false;
 				this->setTransition(true);
-				this->setTarget("levelSelectMenu");
+			//	this->setTarget("levelSelectMenu");
+				this->setTarget("night");
+				this->setSelectedLevel(1);
 				});
 		}
 		else if (bName == "exit_button") {
