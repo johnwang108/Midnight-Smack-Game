@@ -431,6 +431,7 @@ void LevelModel::populate(GameScene& scene) {
 								scene.spawnCarrot(enemyPos);
 							}
 							else if (pathWeWant.find("shrimp") != std::string::npos) {
+								CULog("shwimp");
 								scene.spawnShrimp(enemyPos);
 							}
 						}
