@@ -160,6 +160,7 @@ _debug(false)
  */
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
     _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/TestLevel1.json");
     // _level_model->setFilePath("json/empanada-platform-level-01.json");
     // _level_model->setFilePath("json/bull-boss-level.json");
     setSceneWidth(_level_model->loadLevelWidth());
@@ -171,6 +172,7 @@ bool GameScene::initWithSave(const std::shared_ptr<cugl::AssetManager>& assets, 
     /*setSceneWidth(400);
     setSceneHeight(30);*/
     _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/TestLevel1.json");
     // _level_model->setFilePath("json/empanada-platform-level-01.json");
     // _level_model->setFilePath("json/bull-boss-level.json");
     setSceneWidth(_level_model->loadLevelWidth());
@@ -229,6 +231,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     setSceneWidth(400);
     setSceneHeight(30);*/
     _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/TestLevel1.json");
     _timer = 0.0f;
     _timeLimit = 200.0f;
     _respawnTimes = std::deque<float>({10.0f, 100.0f, 150.0f, 200.0f});
@@ -400,12 +403,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
 # pragma mark: Background
 
-    //_bgScene = cugl::Scene2::alloc(dimen);
-    //_bgScene->init(dimen);
-    //_bgScene->setActive(true);
-    // _bgScene = cugl::Scene2::alloc(cugl::Size(210, 25));
-    // _bgScene->init(cugl::Size(210, 25));
-    // _bgScene->setActive(true);
+    /*_bgScene = cugl::Scene2::alloc(dimen);
+    _bgScene->init(dimen);
+    _bgScene->setActive(true);
+     _bgScene = cugl::Scene2::alloc(cugl::Size(210, 25));
+     _bgScene->init(cugl::Size(210, 25));
+     _bgScene->setActive(true);*/
 
     cugl::Rect rectB = cugl::Rect(Vec2::ZERO, computeActiveSize());
     // Q: Can we create a background that isn't the whole size of the scene?
@@ -415,7 +418,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     // _bgScene->addChild(_background);
     // _bgScene->addChild(_background);
 
-
+    _background = cugl::scene2::PolygonNode::allocWithTexture(nullptr, rectB);
+    _background->setVisible(true);
+    _background->setColor(Color4::YELLOW);
     // _bgScene->addChild(_background);
     //_bgScene->setColor(Color4::CLEAR);
 
@@ -911,7 +916,7 @@ void GameScene::preUpdate(float dt) {
 
     checkForCooktime();
 
-    _background->setVisible(false);
+   _background->setVisible(true);
 
     for (auto& i : _interactivePopups) {
         if (i->isActive()) i->update(dt);
@@ -2269,8 +2274,8 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
     currentLevel = _level_model;
     if (chapter == 1) {
         if (level == 1) {
-            //_level_model->setFilePath("json/intermediate.json");
-            _level_model->setFilePath("json/TestLevel1.tmj");
+            _level_model->setFilePath("json/intermediate.json");
+            // _level_model->setFilePath("json/TestLevel1.json");
         }
         else if (level == 2) {
             _level_model->setFilePath("json/test_level_v2_experiment.json");
