@@ -6,16 +6,9 @@
  "name":"terrain",
  "spacing":0,
  "tilecount":806,
- "tiledversion":"1.10.2",
+ "tiledversion":"1.10.1",
  "tileheight":32,
  "tilewidth":32,
- "transformations":
-    {
-     "hflip":true,
-     "preferuntransformed":true,
-     "rotate":true,
-     "vflip":true
-    },
  "type":"tileset",
  "version":"1.10"
 }

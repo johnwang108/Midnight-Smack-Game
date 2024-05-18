@@ -309,6 +309,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _losenode->setAnchor(Vec2::ANCHOR_CENTER);
     _losenode->setPosition(1280 / 2, 800 / 2);
     _losenode->setForeground(LOSE_COLOR);
+
+
     setFailure(false);
 
 
@@ -411,6 +413,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _pauseMenu = std::make_shared<MenuScene>();
     _pauseMenu->init(_assets, "pause");
+
+    _loseScreen = std::make_shared<MenuScene>();
+    _loseScreen->init(_assets, "loseScreen");
     
     
 
@@ -627,6 +632,8 @@ void GameScene::reset() {
     _paused = false;
     _pauseMenu->setActive(false);
     _pauseMenu->reset();
+    _loseScreen->setActive(false);
+    _loseScreen->reset();
     _worldnode->removeAllChildren();
     _world->clear();
     _debugnode->removeAllChildren();
@@ -1869,7 +1876,17 @@ void GameScene::postUpdate(float remain) {
             // reset();
         // }
         else if (_failed) {
-            reset();
+            //reset();
+            if (_loseScreen->getReset()) {
+                reset();
+            }
+            else if (_loseScreen->didTransition()) {
+                transition(true);
+                setTarget(_loseScreen->getTarget());
+                _loseScreen->setTarget("");
+                _loseScreen->setTransition(false);
+                _failed = false;
+            }
         }
     }
 
@@ -1991,6 +2008,7 @@ void GameScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
 
     _uiScene->render(batch);
     _pauseMenu->render(batch);
+    _loseScreen->render(batch);
 }
 
 
@@ -2032,6 +2050,7 @@ void GameScene::setFailure(bool value) {
             AudioEngine::get()->getMusicQueue()->play(source, false, MUSIC_VOLUME);
             _losenode->setVisible(true);
             _countdown = EXIT_COUNT;
+            _loseScreen->setActive(true);
         }
     }
     else {

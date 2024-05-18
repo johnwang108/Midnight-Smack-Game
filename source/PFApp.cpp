@@ -156,8 +156,8 @@ void PlatformApp::update(float dt) {
         _levelSelectMenu.init(_assets, "levelSelectMenu");
         _levelSelectMenu.setActive(false);
 
-        //_settingsMenu.init(_assets, "settingsMenu");
-        //_settingsMenu.setActive(false);
+        _settingsMenu.init(_assets, "settingsMenu");
+        _settingsMenu.setActive(false);
 
         _menu.init(_assets, "menu");
         _menu.setActive(true);
@@ -198,7 +198,10 @@ void PlatformApp::preUpdate(float dt) {
     }
     else if (_levelSelectMenu.isActive()) {
 		_levelSelectMenu.update(dt);
-	}
+    }
+    else if (_settingsMenu.isActive()) {
+        _settingsMenu.update(dt);
+    }
     else if (_gameplay.isActive()) {
         _gameplay.preUpdate(dt);
     }
@@ -284,6 +287,9 @@ void PlatformApp::draw() {
     else if (_levelSelectMenu.isActive()) {
         _levelSelectMenu.render(_batch);
     }
+    else if (_settingsMenu.isActive()) {
+        _settingsMenu.render(_batch);
+    }
     else if (_gameplay.isActive()) {
         //_gameplay.renderBG(_batch);
         _gameplay.render(_batch);
@@ -311,7 +317,7 @@ void PlatformApp::transitionScenes() {
         _menu.setActive(false);
         _menu.setTransition(false);
 
-        _currentScene = _menu.getTarget();  
+        _currentScene = _menu.getTarget(); 
         _menu.setTarget("");
 		if (_currentScene == "night") {
 			_gameplay.setActive(true);
@@ -328,6 +334,10 @@ void PlatformApp::transitionScenes() {
             else {
                 _levelSelectMenu.setHighestLevel(0);
             }
+        }
+        else if (_currentScene == "settingsMenu") {
+            CULog("settings active");
+            _settingsMenu.setActive(true);
         }
 
         CULog("Transed");

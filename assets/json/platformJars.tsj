@@ -6,7 +6,7 @@
  "name":"platformJars",
  "spacing":0,
  "tilecount":252,
- "tiledversion":"1.10.2",
+ "tiledversion":"1.10.1",
  "tileheight":32,
  "tilewidth":32,
  "type":"tileset",
