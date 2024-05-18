@@ -594,7 +594,7 @@
  "tilesets":[
         {
          "firstgid":1,
-         "source":"Screen Size.tsj"
+         "source":"empanada_level_3_background.tsj"
         },
         {
          "firstgid":1001,

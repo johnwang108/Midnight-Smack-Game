@@ -422,6 +422,14 @@ void GameScene::beginContact(b2Contact* contact) {
         }
         else CULog("Intangible!");
     }
+    else if (_avatar->getBodySensorName() == fd2 && enemies.find(bd1->getName()) != enemies.end()) {
+		Vec2 enemyPos = _avatar->getPosition();
+		EnemyModel* enemy = (EnemyModel*)bd1;
+		Vec2 attackerPos = enemy->getPosition();
+		int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
+		_avatar->addTouching();
+		_avatar->takeDamage(34, direction);
+	}
     //else if (_avatar->getBodySensorName() == fd2 && enemies.find(bd1->getName()) != enemies.end()) {
     //    Vec2 enemyPos = _avatar->getPosition();
     //    EnemyModel* enemy = (EnemyModel*)bd1;

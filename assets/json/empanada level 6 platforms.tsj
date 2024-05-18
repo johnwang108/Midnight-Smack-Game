@@ -1,14 +1,15 @@
-{ "columns":120,
- "image":"..\/textures\/empanada level 6.png",
- "imageheight":2400,
- "imagewidth":3840,
- "margin":0,
- "name":"empanada level 6",
- "spacing":0,
- "tilecount":9000,
- "tiledversion":"1.10.2",
- "tileheight":32,
- "tilewidth":32,
- "type":"tileset",
- "version":"1.10"
+{
+  "columns": 120,
+  "image": "..\/textures\/empanada_level_6_static_platforms_layers.png",
+  "imageheight": 2400,
+  "imagewidth": 3840,
+  "margin": 0,
+  "name": "empanada level 6",
+  "spacing": 0,
+  "tilecount": 9000,
+  "tiledversion": "1.10.2",
+  "tileheight": 32,
+  "tilewidth": 32,
+  "type": "tileset",
+  "version": "1.10"
 }

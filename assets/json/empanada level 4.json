@@ -27135,7 +27135,7 @@
         {
           "height": 0,
           "id": 4,
-          "name": "Floating_Breakable_Platform",
+          "name": "Floating_Platform",
           "polygon": [
             {
               "x": 0,
@@ -27222,7 +27222,7 @@
           ],
           "properties": [
             {
-              "name": "cutCarrot",
+              "name": "boilRice",
               "type": "string",
               "value": "2"
             }
@@ -45331,7 +45331,7 @@
  "tilesets":[
         {
          "firstgid":1,
-         "source":"Screen Size.tsj"
+         "source":"empanada level 4 background.tsj"
         },
         {
          "firstgid":1001,
