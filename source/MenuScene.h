@@ -4,6 +4,8 @@
 
 #include <cugl/cugl.h>
 
+using namespace cugl;
+
 //This class is the base evel class for all menu scenes, including main menu and level select. It is a subclass of Scene2.
 class MenuScene : public cugl::Scene2 {
 protected:
@@ -22,18 +24,25 @@ protected:
     /* Menu wants to reset the scene */
     bool _reset;
 
+    /* Menu wants to advance to the next level */
+    bool _advance;
+
     bool _transitionScenes;
+
+    std::shared_ptr<scene2::SceneNode> _orderNode;
 
     std::string _targetScene;
 
     std::vector<std::shared_ptr<cugl::scene2::Button>> _buttons;
-
+    std::vector<std::shared_ptr<cugl::scene2::Slider>> _sliders;
     int _selectedLevel;
 
     int _highestLevel;
 
     float _musicVolume;
     float _sfxVolume;
+
+    std::string _transitionedFrom;
 
 private:
 
@@ -46,6 +55,8 @@ private:
     void initSettingsMenu(cugl::Size);
 
     void initLoseMenu(cugl::Size);
+    void initWinMenu(cugl::Size);
+
 
 public:
 
@@ -71,14 +82,24 @@ public:
 
     void setTarget(std::string s) { _targetScene = s; };
 
+    void setOrders(std::shared_ptr<scene2::SceneNode> orderNode);
+
     void setActive(bool b);
     void setReset(bool b) { _reset = b; };
     bool getReset() { return _reset; };
+
+    void setAdvance(bool b) { _advance = b; };
+    bool getAdvance() { return _advance; }
+
 
     void setSelectedLevel(int i) { _selectedLevel = i;}
     int getSelectedLevel() { return _selectedLevel;}
 
     void setHighestLevel(int i);
+
+    void setTransitionedFrom(std::string sceneName) { _transitionedFrom = sceneName; };
+
+    std::string getTransitionedFrom() { return _transitionedFrom; }
 
     void reset();
 };

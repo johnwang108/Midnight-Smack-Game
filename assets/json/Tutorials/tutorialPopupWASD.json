@@ -15,7 +15,7 @@
                 "rows": 3,
                 "cols": 4,
                 "frames": 10,
-                "position": [-100.0, 0.0],
+                "position": [-100.0, 15.0],
                 "scale": 0.2
             },
             "jumpUp": {
@@ -23,7 +23,7 @@
                 "rows": 2,
                 "cols": 2,
                 "frames": 3,
-                "position": [0.0, 0.0],
+                "position": [0.0, 15.0],
                 "scale": 0.2
             },
             "jumpDown": {
@@ -31,7 +31,7 @@
                 "rows": 2,
                 "cols": 2,
                 "frames": 3,
-                "position": [0.0, 60.0],
+                "position": [0.0, 75.0],
                 "scale": 0.2
             }
         },

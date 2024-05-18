@@ -77,16 +77,24 @@ void LevelModel::populate(GameScene& scene) {
 
 	levelReader = cugl::JsonReader::allocWithAsset(getFilePath());
 
+	CULog(getFilePath().c_str());
 	std::shared_ptr<JsonValue> level_json_file = levelReader->readJson();
 
-	if (level_json_file == nullptr) {
-		CUAssertLog(false, "Failed to load level file");
+	if (level_json_file->get("height") == nullptr) {
+		CUAssertLog(false, "No level height");
+	}
+	if (level_json_file->get("width") == nullptr) {
+		CUAssertLog(false, "No level width");
 	}
 
 	int window_height = level_json_file->getInt("height");
 	// std::string window_height_string = json->getString("height");
 	int window_width = level_json_file->getInt("width");
 
+
+	if (level_json_file == nullptr) {
+		CUAssertLog(false, "Failed to load level file");
+	}
 	level_width = window_width;
 	level_height = window_height;
 
@@ -239,7 +247,7 @@ void LevelModel::populate(GameScene& scene) {
 						//means that we have found a key in our unordered map
 						std::string pathWeWant = idToImage.at(tileId);
 						CULog(pathWeWant.c_str());
-//						CULog(_getcwd(NULL, 0));
+						//						CULog(_getcwd(NULL, 0));
 						CULog("----------- ");
 						if (_assets == nullptr) {
 							CULog("you gotta define assets bro");
@@ -450,7 +458,7 @@ void LevelModel::populate(GameScene& scene) {
 							}
 						}
 						// WE COMMENTED OUT ALL THIS FOR NOW BECAUSE JUST TRYING TO TEST MOVING BETWEEN LEVELS
-			
+
 						else if (type == "enemy") {
 							CULog("Enemy layer spotted!");
 							// sprite = scene2::PolygonNode::allocWithTexture(image);
@@ -568,6 +576,17 @@ void LevelModel::populate(GameScene& scene) {
 						}
 						CULog("now, we are going to spawn the plate into the scene");
 						scene.spawnPlate(Vec2(object->getFloat("x") / 32.0f, level_height - (object->getFloat("y") / 32.0f)), map);
+					}
+					else if (object->getString("name") == "Popup") {
+						CULog("we are loading in a popup");
+						std::shared_ptr<JsonValue> propsproperties = object->get("properties");
+						std::string popupName;
+						for (int j = 0; j < propsproperties->size(); j++) {
+							std::shared_ptr<JsonValue> prop = propsproperties->get(j);
+							CULog(prop->getString("value").c_str());
+							popupName = "tutorialPopup" + prop->getString("value");
+						}
+						scene.spawnTutorialSign(Vec2(object->getFloat("x") / 32.0f, level_height - (object->getFloat("y") / 32.0f)), popupName);
 					}
 					else {
 						CULog(object->getString("name").c_str());
@@ -754,7 +773,7 @@ void LevelModel::loadBreakablePlatform(const std::shared_ptr<Texture> image, con
 	// we gotta make sure that a proper image is actually being placed here
 
 	// is this Vec2 pointer rly necessary or are we just creating additional memory
-	Vec2* startingPos = &(Vec2(startingX, startingY));
+	Vec2 startingPos = Vec2(startingX, startingY);
 
 	// we set image to nullptr because we should not have to worry about that when creating the colliders
 
@@ -838,7 +857,7 @@ void LevelModel::loadMovingPlatform(const std::shared_ptr<Texture> image, const 
 	platform.setIndices(triangulator.getTriangulation());
 	triangulator.clear();
 
-	Vec2* startingPos = &(Vec2(startingX, startingY));
+	Vec2 startingPos = Vec2(startingX, startingY);
 
 	std::shared_ptr<physics2::PolygonObstacle> _obj = physics2::PolygonObstacle::alloc(platform);
 
@@ -970,8 +989,7 @@ void LevelModel::loadDamagingPlatform(const std::shared_ptr<Texture> image, cons
 	// we gotta make sure that a proper image is actually being placed here
 
 	// is this Vec2 pointer rly necessary or are we just creating additional memory
-	Vec2* startingPos = &(Vec2(startingX, startingY));
-
+    Vec2 startingPos = Vec2(startingX, startingY);
 	// we set image to nullptr because we should not have to worry about that when creating the colliders
 
 	std::shared_ptr<physics2::PolygonObstacle> _obj = physics2::PolygonObstacle::alloc(platform);

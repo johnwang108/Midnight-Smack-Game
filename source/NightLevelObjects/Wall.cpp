@@ -9,7 +9,7 @@ Wall::Wall() {
 	BASIC_FRICTION = 0.0;
 	BASIC_RESTITUTION = 0.0,
 		DEBUG_COLOR = Color4::YELLOW;
-	WALL_POS = nullptr;
+	WALL_POS = Vec2();
 	WALL_VERTS = 1;
 	name = "";
 	breakableCoolDown = 0;
@@ -25,12 +25,13 @@ Wall::Wall() {
 	breakableCoolDown = -1;
 	respawnTime = -1;
 	breakingClock = -1;
-    
+	activeDisplay = true;
+
 
 }
 
 bool Wall::init(std::shared_ptr<Texture> image, std::shared_ptr<PolygonObstacle> _collisionPoly, float _scale, float BASIC_DENSITY, float BASIC_FRICTION,
-	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, bool doesDamage) {
+	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2 WALL_POS, int WALL_VERTS, std::string name, bool doesDamage) {
 	
 	// this was all being done in Wall init, but instead we will do this within levelmodel
 	//Poly2 _collisionPoly(WALL_POS, WALL_VERTS / 2);
@@ -44,7 +45,7 @@ bool Wall::init(std::shared_ptr<Texture> image, std::shared_ptr<PolygonObstacle>
 	CULog("we are in wall init method right now");
 
 
-	PolygonObstacle::init(_collisionPoly->getPolygon(), Vec2(WALL_POS->x, WALL_POS->y));
+	PolygonObstacle::init(_collisionPoly->getPolygon(), WALL_POS);
 	// we called init of PolygonObstacle
 	_obj = _collisionPoly;
 	// You cannot add constant "".  Must stringify
@@ -94,7 +95,7 @@ bool Wall::init(std::shared_ptr<Texture> image, std::shared_ptr<PolygonObstacle>
 }
 
 std::shared_ptr<Wall> Wall::alloc(std::shared_ptr<Texture> image, std::shared_ptr<physics2::PolygonObstacle> _collisionPoly, float _scale, float BASIC_DENSITY, float BASIC_FRICTION,
-	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, bool doesDamage) {
+	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2 WALL_POS, int WALL_VERTS, std::string name, bool doesDamage) {
 	std::shared_ptr<Wall> result = std::make_shared<Wall>();
 	return (result->init(image, _collisionPoly, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, DEBUG_COLOR, WALL_POS, WALL_VERTS, name, doesDamage) ? result : nullptr);
 }

@@ -51,11 +51,11 @@ using namespace cugl;
 // #define DEFAULT_HEIGHT  25.0f
 #define DEFAULT_HEIGHT 30.0f
 
-#define MINIMAP_ZOOM 0.1f
+#define MINIMAP_ZOOM 0.25f
 
-#define MINIMAP_WIDTH 400
+#define MINIMAP_WIDTH 1280/2
 
-#define MINIMAP_HEIGHT 400
+#define MINIMAP_HEIGHT 800/2
 
 #define TIMER_DIAMETER_SIZE 40.0f
 
@@ -69,7 +69,6 @@ using namespace cugl;
 #define DISCARD_HOLD_TIME 2.0f
 #define MIN_DISCARD_START_TIME 0.25f
 /**desired order width in pixels*/
-#define ORDER_WIDTH 100.0f
 #define INVENTORY_OFFSET 30.0f
 
 
@@ -308,6 +307,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _worldnode = scene2::SceneNode::alloc();
     _worldnode->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
     _worldnode->setPosition(0, 0);
+    _worldnode->setName("worldnode");
 
     _debugnode = scene2::SceneNode::alloc();
     _debugnode->setScale(_scale); // Debug node draws in PHYSICS coordinates
@@ -432,6 +432,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _loseScreen = std::make_shared<MenuScene>();
     _loseScreen->init(_assets, "loseScreen");
     
+    _winScreen = std::make_shared<MenuScene>();
+    _winScreen->init(_assets, "winScreen");
     
 
 
@@ -475,8 +477,15 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _minimapIconNode = scene2::PolygonNode::alloc();
     _minimapIconNode->setVisible(false);
-    _uiScene->addChild(_minimapIconNode);
+    _worldnode->addChild(_minimapIconNode);
     _uiScene->addChild(_minimapNode);
+
+    _minimapIcons = std::unordered_map<std::string, std::shared_ptr<Texture>>();
+    _minimapIcons["su"] = _assets->get<Texture>("suIcon");
+    _minimapIcons["pot"] = _assets->get<Texture>("potIcon");
+    _minimapIcons["pan"] = _assets->get<Texture>("panIcon");
+    _minimapIcons["cut"] = _assets->get<Texture>("knifeIcon");
+    _minimapIcons["plate"] = _assets->get<Texture>("plateIcon");
 
     _timerIcon = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("timer"));
     _timerIcon->setScale(TIMER_DIAMETER_SIZE / _timerIcon->getContentWidth());
@@ -504,6 +513,13 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_worldnode);
     addChild(_debugnode);
     _numOrders = 0;
+
+    _ordersObj = std::make_shared<Orders>();
+    _ordersObj->init(_assets);
+    _ordersObj->setVisible(true);
+    _ordersObj->setPosition(115, 600);
+    _ordersObj->setActive(true);
+    _uiScene->addChild(_ordersObj);
 
     _orders = std::unordered_map<int, std::vector<std::shared_ptr<scene2::SceneNode>>>();
     _orderNode = scene2::SceneNode::alloc();
@@ -657,6 +673,10 @@ void GameScene::reset() {
     _background = nullptr;
     _sensorFixtures.clear();
     _inventoryNode->reset();
+    _winScreen->setActive(false);
+    _winScreen->reset();
+    _complete = false;
+    _failed = false;
     for (auto& enemy : _enemies) {
         enemy = nullptr;
     }
@@ -695,6 +715,7 @@ void GameScene::reset() {
     }
     _orders.clear();
 
+    _ordersObj->reset();
     for (auto& i : _interactivePopups) {
         i->dispose();
         i = nullptr;
@@ -726,34 +747,6 @@ void GameScene::reset() {
     _timer = 0.0f;
     _timeLimit = 200.0f;
     _respawnTimes = std::deque<float>({ 50.0f, 100.0f, 150.0f, 200.0f });
-
-    std::vector<std::string> paths = {
-    "tutorialPopupWASD",
-    "tutorialPopupDash",
-    "tutorialPopupAttack",
-    "tutorialPopupInventory",
-    "tutorialPopupGestures",
-    "tutorialPopupStations",
-    "tutorialPopupPlates",
-    "tutorialPopupTimerDying",
-    "tutorialPopupMinimap"
-    };
-
-    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
-    for (std::string path : paths) {
-        auto reader = JsonReader::alloc("./json/Tutorials/" + path + ".json");
-        std::shared_ptr<JsonValue> popupData = reader->readJson()->get(path);
-        std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
-        p->setActive(false);
-        p->setVisible(false);
-        _interactivePopups.push_back(p);
-        _uiScene->addChild(p);
-        reader->close();
-        reader = nullptr;
-    }
-    _popupIndex = paths.size() - 1;
-    loader->dispose();
-    loader = nullptr;
     // addChild(_gestureFeedback);
 }
 
@@ -866,12 +859,12 @@ void GameScene::preUpdate(float dt) {
     }
     bool flag = false;
     if (_input->didReset() && _paused) {
-        CULog("Stepping one frame");
         flag = true;
         _paused = false;
 	}
 
     _pauseMenu->setActive(_paused);
+    _ordersObj->setActive(_paused);
 
     if (_paused) {
         if (_pauseMenu->getReset()) {
@@ -1286,7 +1279,10 @@ void GameScene::preUpdate(float dt) {
                     _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
                 }
             }
-            if (_Bull->getCAcount()<=0 && _Bull->isChasing() && ((_Bull->getPosition().x > 20 && _Bull->getDirection() == -1) || (_Bull->getPosition().x < 30 && _Bull->getDirection() == 1))) {
+            if (_Bull->getCAcount() <= 0 && _Bull->getbreaking() <= 0 && _Bull->isChasing() && ((_Bull->getPosition().x < 18 && _Bull->getDirection() == -1) || (_Bull->getPosition().x > 58 && _Bull->getDirection() == 1))) {
+                _Bull->setact("bullAttack",2.0);
+            }
+            if (_Bull->getCAcount()<=0 && _Bull->isChasing() && ((_Bull->getPosition().x > 20 && _Bull->getDirection() == -1) || (_Bull->getPosition().x < 56 && _Bull->getDirection() == 1))) {
                 Vec2 BullPos = _Bull->getPosition();
                 int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
                 if (direction != _Bull->getDirection()) {
@@ -1295,57 +1291,6 @@ void GameScene::preUpdate(float dt) {
 			}
             _Bull->update(dt);
         }
-
-        if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
-            Vec2 BullPos = _ShrimpRice->getPosition();
-            if (_ShrimpRice->getHealth() <= 0) {
-                _worldnode->removeChild(_ShrimpRice->getSceneNode());
-                _ShrimpRice->setDebugScene(nullptr);
-                _ShrimpRice->markRemoved(true);
-            }
-            if (_ShrimpRice->getact() == "SFRWave2") {
-                float distance = avatarPos.distance(BullPos);
-                if (distance < 4) {
-                    _ShrimpRice->setact("SFRWave3", 1.125);
-                }
-            }
-            if (_ShrimpRice->gettimetosummon()) {
-                _ShrimpRice->Summon(*this);
-                _ShrimpRice->settimetosummon(false);
-            }
-            if (_ShrimpRice->getcanturn() && _ShrimpRice->getacttime() <= 0) {
-                if (_ShrimpRice->getnextchangetime() < 0) {
-                    int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
-                    _ShrimpRice->setDirection(direction);
-                    _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
-                }
-            }
-            if (_ShrimpRice->getangrytime() > 0 && !_enemies.empty()) {
-                for (auto& enemy : _enemies) {
-                    enemy->setnocoll(true);
-                    Vec2 EnyPos = enemy->getPosition();
-                    int direction = (BullPos.x > EnyPos.x) ? 1 : -1;
-                    enemy->setPosition(enemy->getPosition() + Vec2(direction * 0.3, 0.0f));
-                }
-            }
-            else if (_ShrimpRice->getHealth() <= 35 && _enemies.size() >= 4) {
-                _ShrimpRice->setact("SFRStunState2", 5.0f);
-                _ShrimpRice->setangrytime(5);
-            }
-            if (_ShrimpRice->getparry() && !_ShrimpRice->getparry2()) {
-                CULog("parry");
-                _ShrimpRice->setparry(false);
-                _ShrimpRice->setparry2(false);
-                _ShrimpRice->setact("SFRStunState1", 0.6);
-                _ShrimpRice->parry(*this);
-                _ShrimpRice->setdelay(0.5);
-            }
-
-            _ShrimpRice->update(dt);
-        }
-
-
-
 
 
     if (_Bull != nullptr) {
@@ -1360,16 +1305,6 @@ void GameScene::preUpdate(float dt) {
             }
             if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
                 _Bull->animate("bullStunned");
-            }
-        }
-        else if (_Bull->getCAcount()<=0 && _Bull->getbreaking()<=0 &&_Bull->isChasing() && ((_Bull->getPosition().x < 13 && _Bull->getDirection() == -1) || (_Bull->getPosition().x > 37 && _Bull->getDirection() == 1))) {
-            if (!_BullactionManager->isActive("bullAttack")){
-                _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                auto bullAttack = _Bull->getAction("bullAttack");
-                _BullactionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
-            }
-            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                _Bull->animate("bullAttack");
             }
         }
         else if (_Bull->getacttime() > 0) {
@@ -1403,10 +1338,55 @@ void GameScene::preUpdate(float dt) {
             }
         }
 
-
-        
     }
 
+    if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
+        Vec2 BullPos = _ShrimpRice->getPosition();
+        if (_ShrimpRice->getHealth() <= 0) {
+            _worldnode->removeChild(_ShrimpRice->getSceneNode());
+            _ShrimpRice->setDebugScene(nullptr);
+            _ShrimpRice->markRemoved(true);
+        }
+        if (_ShrimpRice->getact() == "SFRWave2") {
+            float distance = avatarPos.distance(BullPos);
+            if (distance < 4) {
+                _ShrimpRice->setact("SFRWave3", 1.125);
+            }
+        }
+        if (_ShrimpRice->gettimetosummon()) {
+            _ShrimpRice->Summon(*this);
+            _ShrimpRice->settimetosummon(false);
+        }
+        if (_ShrimpRice->getcanturn() && _ShrimpRice->getacttime() <= 0) {
+            if (_ShrimpRice->getnextchangetime() < 0) {
+                int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
+                _ShrimpRice->setDirection(direction);
+                _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+            }
+        }
+        if (_ShrimpRice->getangrytime() > 0 && !_enemies.empty()) {
+            for (auto& enemy : _enemies) {
+                enemy->setnocoll(true);
+                Vec2 EnyPos = enemy->getPosition();
+                int direction = (BullPos.x > EnyPos.x) ? 1 : -1;
+                enemy->setPosition(enemy->getPosition() + Vec2(direction * 0.3, 0.0f));
+            }
+        }
+        else if (_ShrimpRice->getHealth() <= 35 && _enemies.size() >= 4) {
+            _ShrimpRice->setact("SFRStunState2", 5.0f);
+            _ShrimpRice->setangrytime(5);
+        }
+        if (_ShrimpRice->getparry() && !_ShrimpRice->getparry2()) {
+            CULog("parry");
+            _ShrimpRice->setparry(false);
+            _ShrimpRice->setparry2(false);
+            _ShrimpRice->setact("SFRStunState1", 0.6);
+            _ShrimpRice->parry(*this);
+            _ShrimpRice->setdelay(0.5);
+        }
+
+        _ShrimpRice->update(dt);
+    }
     if (_ShrimpRice != nullptr) {
         if (!_paused) {
             _SHRactionManager->update(dt);
@@ -1849,74 +1829,37 @@ void GameScene::postUpdate(float remain) {
     }
 
     //Reset the game if we win or lose.
-    if (_countdown > 0) {
-        _countdown--;
-    }
-    else if (_countdown == 0) {
-        if (_failed == false) {
-
-            //this is where we will change the scene width and heights for everything
+    if (_complete) {
+        if (_winScreen->getAdvance()) {
+            CULog("advanced??? from complete");
             save();
             advanceLevel();
             reset();
-
-            //if (_level_model->getFilePath() == "json/intermediate.json") {
-            //    //_bgScene->setColor(Color4::BLACK);
-            //    _level_model->removeBackgroundImages(*this);
-            //    _level_model->setFilePath("json/empanada-platform-level-01.json");
-            //    currentLevel = _level_model;
-
-            //    CULog("We should switch to our first initial level");
-            //    // currentLevel
-            //    reset();
-            //}
-            //else if (_level_model->getFilePath() == "json/empanada-platform-level-01.json") {
-            //    //_bgScene->setColor(Color4::BLACK);
-            //    _level_model->removeBackgroundImages(*this);
-            //    _level_model->setFilePath("json/test_level_v2_experiment.json");
-            //    currentLevel = _level_model;
-            //    
-            //    CULog("We should switch to our first initial level");
-            //    // currentLevel
-            //    reset();
-            //}
-            //else if (_level_model->getFilePath() == "json/test_level_v2_experiment.json") {
-            //    _bgScene->setColor(Color4::BLACK);
-            //    _level_model->removeBackgroundImages(*this);
-            //    _level_model->setFilePath("json/bull-boss-level.json");
-            //    currentLevel = _level_model;
-
-            //    CULog("We should switch to the bull boss level");
-            //    // currentLevel
-            //    reset();
-            //}
-            //else if (currentLevel == level3) {
-            //    currentLevel = _level_model;
-            //    reset();
-            //}
-            //else {
-            //    currentLevel = _level_model;
-            //    reset();
-            //}
         }
-            // advanceLevel();
-            // reset();
-        // }
-        else if (_failed) {
-            //reset();
-            if (_loseScreen->getReset()) {
-                reset();
-            }
-            else if (_loseScreen->didTransition()) {
-                transition(true);
-                setTarget(_loseScreen->getTarget());
-                _loseScreen->setTarget("");
-                _loseScreen->setTransition(false);
-                _failed = false;
-            }
+        else if (_winScreen->getReset()) {
+            reset();
+        }
+        else if (_winScreen->didTransition()) {
+            transition(true);
+            setTarget(_winScreen->getTarget());
+            _winScreen->setTarget("");
+            _winScreen->setTransition(false);
+            _complete = false;
         }
     }
-
+    else if (_failed) {
+        //reset();
+        if (_loseScreen->getReset()) {
+            reset();
+        }
+        else if (_loseScreen->didTransition()) {
+            transition(true);
+            setTarget(_loseScreen->getTarget());
+            _loseScreen->setTarget("");
+            _loseScreen->setTransition(false);
+            _failed = false;
+        }
+    }
 }
 
 /* Checks input for cooktime or discard 
@@ -2020,10 +1963,40 @@ void GameScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
             if ((*it)->getName() == "background") {
 				(*it)->render(batch, Affine2::IDENTITY, _color);
 			}
-            else if ((*it)->getName() == "dude") {
-                _minimapIconNode->setPosition((*it)->getPosition());
-            }
-            (*it)->render(batch, Affine2::IDENTITY, _color);
+            else (*it)->render(batch, Affine2::IDENTITY, _color);
+    //        for (auto& i : _interactables) {
+    //            if (i->isRemoved()) {
+				//	continue;
+				//}
+    //            if (i->getName() == "interactable_plate") {
+				//	_minimapIconNode->setTexture(_minimapIcons["plate"]);
+				//	_minimapIconNode->setPosition(i->getPosition());
+				//	_minimapIconNode->render(batch, Affine2::IDENTITY, _color);
+    //                CULog("rending");
+				//}
+    //            else if (i->getName() == "interactable_cut") {
+				//	_minimapIconNode->setTexture(_minimapIcons["cut"]);
+				//	_minimapIconNode->setPosition(i->getPosition());
+				//	_minimapIconNode->render(batch, Affine2::IDENTITY, _color);
+				//}
+    //            else if (i->getName() == "interactable_pan") {
+				//	_minimapIconNode->setTexture(_minimapIcons["pan"]);
+				//	_minimapIconNode->setPosition(i->getPosition());
+				//	_minimapIconNode->render(batch, Affine2::IDENTITY, _color);
+				//}
+    //            else if (i->getName() == "interactable_pot") {
+				//	_minimapIconNode->setTexture(_minimapIcons["pot"]);
+				//	_minimapIconNode->setPosition(i->getPosition());
+				//	_minimapIconNode->render(batch, Affine2::IDENTITY, _color);
+				//}
+    //        }
+
+    //        _minimapIconNode->setTexture(_minimapIcons["su"]);
+    //        _minimapIconNode->setPosition(_avatar->getPosition());
+    //        _minimapIconNode->render(batch, Affine2::IDENTITY, _color);
+    //        
+    //        _minimapIconNode->setVisible(false);
+            //(*it)->render(batch, Affine2::IDENTITY, _color);
         }
 
         batch->end();
@@ -2036,6 +2009,7 @@ void GameScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
     _uiScene->render(batch);
     _pauseMenu->render(batch);
     _loseScreen->render(batch);
+    _winScreen->render(batch);
 }
 
 
@@ -2054,12 +2028,13 @@ void GameScene::setComplete(bool value) {
     if (value && change) {
         std::shared_ptr<Sound> source = _assets->get<Sound>(WIN_MUSIC);
         AudioEngine::get()->getMusicQueue()->play(source, false, MUSIC_VOLUME);
-        _winnode->setVisible(true);
-        _countdown = EXIT_COUNT;
+        //_winnode->setVisible(true);
+        _winScreen->setActive(true);
+        //_countdown = EXIT_COUNT;
     }
     else if (!value) {
         _winnode->setVisible(false);
-        _countdown = -1;
+        //_countdown = -1;
     }
 }
 
@@ -2076,13 +2051,13 @@ void GameScene::setFailure(bool value) {
             std::shared_ptr<Sound> source = _assets->get<Sound>(LOSE_MUSIC);
             AudioEngine::get()->getMusicQueue()->play(source, false, MUSIC_VOLUME);
             _losenode->setVisible(true);
-            _countdown = EXIT_COUNT;
+            //_countdown = EXIT_COUNT;
             _loseScreen->setActive(true);
         }
     }
     else {
         _losenode->setVisible(false);
-        _countdown = -1;
+        //_countdown = -1;
     }
     _failed = value;
 }
@@ -2320,6 +2295,15 @@ bool GameScene::loadSave(std::shared_ptr<JsonValue> save) {
 //load level with int specifiers
 void GameScene::loadLevel(int chapter, int level) {
     changeCurrentLevel(chapter, level);
+    AudioEngine::get()->clear();
+    if (level == 4) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("theBull");
+        AudioEngine::get()->play("theBull", source, true, EFFECT_VOLUME, true);
+    }
+    if (level == 5) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("theShrimp");
+        AudioEngine::get()->play("theShrimp", source, true, EFFECT_VOLUME, true);
+    }
     loadLevel(currentLevel);
 }
 
@@ -2415,7 +2399,7 @@ void GameScene::spawnShrimp(Vec2 pos) {
 void GameScene::spawnBeef(Vec2 pos) {
     std::shared_ptr<Texture> image = _assets->get<Texture>("beefIdle");
     std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
-    Size s = cugl::Size(6.0f, 6.0f);
+    Size s = cugl::Size(6.5f, 6.0f);
     std::shared_ptr<EnemyModel> new_enemy = Beef::allocWithConstants(pos, s, getScale(), _assets);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
@@ -2506,6 +2490,34 @@ void GameScene::spawnStation(Vec2 pos, StationType type) {
     CULog("%f", station->getSceneNode()->getScale());
 }
 
+void GameScene::spawnTutorialSign(Vec2 pos, std::string name) {
+    //obstacle has small size, not reflective of intended size
+    Size s = Size(4.0f, 2.0f);
+    std::shared_ptr<Texture> image;
+
+    image = _assets->get<Texture>("sign");
+
+
+    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
+    auto reader = JsonReader::alloc("./json/Tutorials/" + name + ".json");
+    std::shared_ptr<JsonValue> popupData = reader->readJson()->get(name);
+    std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
+    p->setActive(false);
+    p->setVisible(false);
+    _interactivePopups.push_back(p);
+    _uiScene->addChild(p);
+    reader->close();
+    reader = nullptr;
+    loader->dispose();
+    loader = nullptr;
+
+    std::shared_ptr<TutorialSign> station = TutorialSign::alloc(image, pos, s, name);
+    station->setPopup(p);
+
+    addObstacle(station, station->getSceneNode());
+    _TutorialSigns.push_back(station);
+}
+
 void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map) {
     //obstacle has small size, not reflective of intended size
     Size s = Size(5.0f, 5.0f);
@@ -2522,9 +2534,29 @@ void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map
         _pendingAcrossAllPlates[key] += value;
     }
 
+    Color4 c;
+
+    if (_plates.size() == 0) {
+        c = Color4::WHITE;
+    }
+    else if (_plates.size() == 1) {
+        c = Color4::BLUE;
+    }
+    else if (_plates.size() == 2) {
+        c = Color4::RED;
+    }
+    else if (_plates.size() == 3) {
+        c = Color4::BLACK;
+    }
+    else if (_plates.size() == 4) {
+        c = Color4::CYAN;
+    }
+    plate->getSceneNode()->setColor(c);
+
     addObstacle(plate, plate->getSceneNode());
     _interactables.push_back(plate);
     _plates.push_back(plate);
+
 }
 
 void GameScene::pogo() {
@@ -2576,24 +2608,24 @@ void GameScene::createOrder(int plateId, IngredientType ing) {
     }
     }
     std::shared_ptr<scene2::PolygonNode> text = scene2::PolygonNode::allocWithTexture(texture);
-    float scale = ORDER_WIDTH / texture->getWidth();
+    float scale = ORDER_HEIGHT / texture->getHeight();
     text->setPosition(0, 0);
     text->setScale(scale);
     background->setPosition(0,0);
     background->setScale(scale);
     order->addChild(text);
-    order->setScale(scale);
-    order->setContentWidth(ORDER_WIDTH);
+    order->setContentHeight(ORDER_HEIGHT);
     order->setName(Ingredient::getIngredientStringFromType(ing) + "Order");
 
-    _orders[plateId].push_back(order);
-    _orderNode->addChild(_orders[plateId].back());
+    _ordersObj->addOrder(plateId, order);
+    //_orders[plateId].push_back(order);
+    //_orderNode->addChild(_orders[plateId].back());
     _numOrders += 1;
     positionOrders();
 }
 
 void GameScene::removeOrder(int plateId, IngredientType ing) {
-    for (auto it = _orders[plateId].begin(); it != _orders[plateId].end(); it++) {
+    /*for (auto it = _orders[plateId].begin(); it != _orders[plateId].end(); it++) {
         if ((*it) != nullptr && (*it)->getName() == (Ingredient::getIngredientStringFromType(ing) + "Order")) {
             std::shared_ptr<scene2::SceneNode> order = *it;
             _orderNode->removeChild(order);
@@ -2601,10 +2633,11 @@ void GameScene::removeOrder(int plateId, IngredientType ing) {
             order->dispose();
             _numOrders -= 1;
             positionOrders();
+            
             return;
 		}
-	}
-
+	}*/
+    _ordersObj->removeOrder(plateId, ing);
 }
 
 void GameScene::toggleOrders(bool v) {
@@ -2617,19 +2650,23 @@ void GameScene::toggleOrders(bool v) {
 }
 
 void GameScene::positionOrders() {
-    CULog("positioning");
-    float totalWidth = _numOrders * ORDER_WIDTH;
-    float start = 0;
-    for (auto& t : _orders) {
-		int i = 0;
-        for (auto& b : t.second) {
-			b->setPositionX(start);
-            start += ORDER_WIDTH;
-		}
-	}
-    _orderNode->setContentWidth(totalWidth);
-    _orderNode->setAnchor(Vec2::ANCHOR_TOP_CENTER);
-    _orderNode->setPosition(1280 / 2, 800 - 50);
+ //   CULog("positioning");
+ //   float totalHeight = ORDER_HEIGHT * _numOrders;
+ //   float start = 0;
+ //   for (auto& t : _orders) {
+	//	int i = 0;
+ //       for (auto& b : t.second) {
+	//		b->setPositionY(start);
+ //           start += ORDER_HEIGHT;
+	//	}
+	//}
+ //   //_orderNode->setContentHeight(totalHeight);
+ //   _orderNode->setAnchor(Vec2::ANCHOR_TOP_CENTER);
+ //   _orderNode->setPosition(1280 / 2, 800 - 50);
+
+    //std::shared_ptr<scene2::Button> lButton = scene2::Button::alloc();
+    //std::shared_ptr<scene2::Button> rButton = scene2::Button::alloc();
+
 }
 
 void GameScene::generateOrders() {
