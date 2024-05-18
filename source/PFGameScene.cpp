@@ -688,7 +688,6 @@ void GameScene::reset() {
     _orders.clear();
 
     _ordersObj->reset();
-
     for (auto& i : _interactivePopups) {
         i->dispose();
         i = nullptr;
