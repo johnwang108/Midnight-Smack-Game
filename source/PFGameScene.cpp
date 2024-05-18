@@ -168,9 +168,9 @@ _debug(false)
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
     // _level_model->setFilePath("json/intermediate.json");
     // _level_model->setFilePath("json/sfrBoss.json");
-    _level_model->setFilePath("json/empanada_level_3_final.json");
+    // _level_model->setFilePath("json/empanada_level_3_final.json");
     // _level_model->setFilePath("json/TestLevel1.json");
-    // _level_model->setFilePath("json/SFRLevel3.tmj");
+    _level_model->setFilePath("json/SFRLevel3.tmj");
     // _level_model->setFilePath("json/empanada-platform-level-01.json");
     // _level_model->setFilePath("json/bull-boss-level.json");
     setSceneWidth(_level_model->loadLevelWidth());
@@ -183,9 +183,9 @@ bool GameScene::initWithSave(const std::shared_ptr<cugl::AssetManager>& assets, 
     setSceneHeight(30);*/
     // _level_model->setFilePath("json/intermediate.json");
     // _level_model->setFilePath("json/sfrBoss.json");
-    _level_model->setFilePath("json/empanada_level_3_final.json");
+    // _level_model->setFilePath("json/empanada_level_3_final.json");
     // _level_model->setFilePath("json/TestLevel1.json");
-    // _level_model->setFilePath("json/SFRLevel3.tmj");
+    _level_model->setFilePath("json/SFRLevel3.tmj");
     // _level_model->setFilePath("json/empanada-platform-level-01.json");
     // _level_model->setFilePath("json/bull-boss-level.json");
     setSceneWidth(_level_model->loadLevelWidth());
@@ -245,9 +245,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     setSceneHeight(30);*/
     // _level_model->setFilePath("json/intermediate.json");
     // _level_model->setFilePath("json/sfrBoss.json");
-    _level_model->setFilePath("json/empanada_level_3_final.json");
+    // _level_model->setFilePath("json/empanada_level_3_final.json");
     // _level_model->setFilePath("json/TestLevel1.json");
-    // _level_model->setFilePath("json/SFRLevel3.tmj");
+    _level_model->setFilePath("json/SFRLevel3.tmj");
     _timer = 0.0f;
     _timeLimit = 200.0f;
     _respawnTimes = std::deque<float>({10.0f, 100.0f, 150.0f, 200.0f});
@@ -685,7 +685,6 @@ void GameScene::reset() {
         i = nullptr;
     }
     _interactables.clear();
-
     for (auto& i : _orders) {
         for (auto& j : i.second) {
 			j = nullptr;
@@ -1598,8 +1597,17 @@ void GameScene::fixedUpdate(float step) {
     else if (_level_model->getFilePath() == "json/empanada_level_3_final.json") {
         _camera->setZoom(120.0 / 40.0);
     }
-    else if (_level_model->getFilePath() == "json/bull-boss-level.json") {
-        _camera->setZoom(80.0 / 40.0);
+    else if (_level_model->getFilePath() == "json/SFRLevel3.tmj") {
+        _camera->setZoom(120.0 / 40.0);
+    }
+    else if (_level_model->getFilePath() == "json/test_level_v2_experiment.json") {
+        _camera->setZoom(140.0 / 40.0);
+    }
+    else if (_level_model->getFilePath() == "json/empanada-platform-level-01.json") {
+        _camera->setZoom(200.0 / 40.0);
+    }
+    else if (_level_model->getFilePath() == "json/bull-boss-level.json" || _level_model->getFilePath() == "json/sfrBoss.json") {
+        _camera->setZoom(100.0 / 40.0);
     }
 	else if (_level_model->getFilePath() != "") {
 		_camera->setZoom(100.0 / 40.0);
@@ -2311,7 +2319,7 @@ void GameScene::loadLevel(int chapter, int level) {
 
 void GameScene::advanceLevel() {
     _level += 1;
-    _level = _level % 6;
+    _level = _level % 8;
     if (_level == 0) _level = 1;
     changeCurrentLevel(_chapter, _level);
 }
@@ -2345,25 +2353,29 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
         if (level == 1) {
             // _level_model->setFilePath("json/intermediate.json");
             // _level_model->setFilePath("json/sfrBoss.json");
-            _level_model->setFilePath("json/empanada_level_3_final.json");
+            // _level_model->setFilePath("json/empanada_level_3_final.json");
+            _level_model->setFilePath("json/SFRLevel3.tmj");
             // _level_model->setFilePath("json/TestLevel1.json");
         }
         else if (level == 2) {
-            _level_model->setFilePath("json/intermediate.json");
+            _level_model->setFilePath("json/empanada_level_3_final.json");
         }
         else if (level == 3) {
+            _level_model->setFilePath("json/intermediate.json");
+        }
+        else if (level == 4) {
             _level_model->setFilePath("json/test_level_v2_experiment.json");
 		}
-        else if (level == 5) {
+        else if (level == 4) {
             _level_model->setFilePath("json/empanada-platform-level-01.json");
         }
         else if (level == 6) {
             _level_model->setFilePath("json/bull-boss-level.json");
         }
-        else if (level == 5) {
+        else if (level == 7) {
             _level_model->setFilePath("json/sfrBoss.json");
         }
-        else if (level == 6) {
+        else if (level == 8) {
             // currentLevel = level3;
         }
     }
