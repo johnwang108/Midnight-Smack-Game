@@ -905,8 +905,12 @@
                 ],
                 "angle": 0,
                 "position": [
-                    0,
-                    0
+                    150,
+                    50
+                ],
+                "scale": [
+                    0.9,
+                    0.9
                 ],
                 "visible": true
             },

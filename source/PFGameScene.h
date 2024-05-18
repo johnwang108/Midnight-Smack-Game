@@ -43,6 +43,7 @@
 #include "MenuScene.h"
 #include "NightLevelObjects/platform.h"
 #include "Popup.h"
+#include "Orders.h"
 
 #include "Inventory.h"
 #include "Levels/LevelModel.h"
@@ -144,6 +145,9 @@ protected:
     std::unordered_map<IngredientType, int> _pendingAcrossAllPlates;
     std::unordered_map<int, std::vector<std::shared_ptr<scene2::SceneNode>>> _orders;
     std::shared_ptr<scene2::SceneNode> _orderNode;
+
+    std::shared_ptr<Orders> _ordersObj;
+    
     int _numOrders;
 
     //camera
