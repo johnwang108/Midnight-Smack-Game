@@ -13,7 +13,7 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         _direction = -1; 
         _lastDirection = _direction;
         _nextChangeTime = 0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 0.5;
-        _health = 100.0f;
+        _health = 49.0f;
         _healthCooldown = 0.1f;
         _angrytime = 0;
         _sprintPrepareTime = 0;
@@ -53,8 +53,15 @@ void BullModel::update(float dt) {
     velocity.x = BULL_FORCE * _direction;
 
 
+
     if (_knockbackTime > 0) {
         _knockbackTime -= dt;
+        return;
+    }
+
+    if (_angrytime > 0) {
+        _angrytime -= dt;
+        _body->SetLinearVelocity(b2Vec2(0, 0));
         return;
     }
 
@@ -64,7 +71,6 @@ void BullModel::update(float dt) {
         if (_sprintPrepareTime <= 0) {
             if (_attacktype == "bullTelegraph") {
                 _isChasing = true;
-
             }
             else if (_attacktype == "bullStomp") {
                 _shake = true;
@@ -81,7 +87,7 @@ void BullModel::update(float dt) {
     else if (!_isChasing && static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < _bull_attack_chance && _acttime<=0) {
         _sprintPrepareTime = 2;
         float pa = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-      //  pa = 0.5;
+     //   pa = 0.2;
         if (pa < 0.33) {
             _attacktype = "bullTelegraph";
         }
@@ -113,11 +119,6 @@ void BullModel::update(float dt) {
         }
     }
     
-    if (_angrytime > 0) {
-        _angrytime -= dt;
-        _body->SetLinearVelocity(b2Vec2(0, 0));
-        return;
-    }
     
     if (_running>0) {
         _running -= dt;
@@ -174,7 +175,7 @@ void BullModel::update(float dt) {
                 _node->setScale((1 - 0.5 * (_CA/(t/2)))*0.5/4);
             }
 
-            setPosition(getPosition() + Vec2(-_direction * (70) * (dt / t), yyy));
+            setPosition(getPosition() + Vec2(-_direction * (90) * (dt / t), yyy));
 
             if (_CA <= 0) {
                 _running = 1.3;
@@ -185,16 +186,15 @@ void BullModel::update(float dt) {
         }
     }
 
-
-
     if (_direction != _lastDirection) {
-        // If direction changed, flip the image
         setact("bullTurn", 0.75f);
     }
 
     _lastDirection = _direction;
     _lastDamageTime += dt;
     _nextChangeTime -= dt;
+
+
     _body->SetLinearVelocity(velocity);
     _actionM->update(dt);
     if (_node != nullptr) {
@@ -205,7 +205,7 @@ void BullModel::update(float dt) {
 
 void BullModel::takeDamage(float damage, int attackDirection,bool knockback) {
  
-    if (_lastDamageTime >= _healthCooldown) {
+    if (_lastDamageTime >= _healthCooldown && _angrytime<=0) {
         _lastDamageTime = 0;
         _health -= damage;
         if (_health <= 0) {

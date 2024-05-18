@@ -37,7 +37,7 @@ bool Inventory::init(shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformI
     for (int i = 0; i < NUM_SLOTS; i++) {
         shared_ptr<scene2::PolygonNode> invSlot = createInventoryNode(tex, i);
         invSlot->setAnchor(Vec2::ANCHOR_BOTTOM_CENTER);
-        invSlot->setPosition((i * tex->getWidth()), 10);
+        invSlot->setPosition((i * tex->getWidth()), 700);
         addChild(invSlot);
         _slots[i] = invSlot;
     }
