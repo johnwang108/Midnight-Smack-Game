@@ -2358,9 +2358,9 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
         //    currentLevel = level3;
         //}
         if (level == 1) {
-            /*_level_model->setFilePath("json/SFRLevel1.tmj");*/
+            _level_model->setFilePath("json/SFRLevel1.tmj");
             //_level_model->setFilePath("json/empanada level 11.tmj");
-            _level_model->setFilePath("json/johntutorial_raw2.tmj");
+            //_level_model->setFilePath("json/johntutorial_raw2.tmj");
             //_level_model->setFilePath("json/empanada level 9.tmj");
             //_level_model->setFilePath("json/empanada level 12.tmj");
 		}
@@ -2629,18 +2629,6 @@ void GameScene::createOrder(int plateId, IngredientType ing) {
 }
 
 void GameScene::removeOrder(int plateId, IngredientType ing) {
-    /*for (auto it = _orders[plateId].begin(); it != _orders[plateId].end(); it++) {
-        if ((*it) != nullptr && (*it)->getName() == (Ingredient::getIngredientStringFromType(ing) + "Order")) {
-            std::shared_ptr<scene2::SceneNode> order = *it;
-            _orderNode->removeChild(order);
-            _orders[plateId].erase(it);
-            order->dispose();
-            _numOrders -= 1;
-            positionOrders();
-            
-            return;
-		}
-	}*/
     _ordersObj->removeOrder(plateId, ing);
 }
 
@@ -2654,22 +2642,6 @@ void GameScene::toggleOrders(bool v) {
 }
 
 void GameScene::positionOrders() {
- //   CULog("positioning");
- //   float totalHeight = ORDER_HEIGHT * _numOrders;
- //   float start = 0;
- //   for (auto& t : _orders) {
-	//	int i = 0;
- //       for (auto& b : t.second) {
-	//		b->setPositionY(start);
- //           start += ORDER_HEIGHT;
-	//	}
-	//}
- //   //_orderNode->setContentHeight(totalHeight);
- //   _orderNode->setAnchor(Vec2::ANCHOR_TOP_CENTER);
- //   _orderNode->setPosition(1280 / 2, 800 - 50);
-
-    //std::shared_ptr<scene2::Button> lButton = scene2::Button::alloc();
-    //std::shared_ptr<scene2::Button> rButton = scene2::Button::alloc();
 
 }
 

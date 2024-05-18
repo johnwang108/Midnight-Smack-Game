@@ -5,7 +5,7 @@
         "size": [800, 400],
         "anchor": [0.5, 0.5],
         "visible": true,
-        "text": "Enemies drop ingredients when they die! \nLook at your inventory slots with L-R arrows",
+        "text": "Enemies drop ingredients when they die! \nLook at your inventory slots with LR arrows or LR bumpers.",
         "textMaxWidth%age": 0.5,
         "font": "popupFont",
         "background": "popupBackground",
