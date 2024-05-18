@@ -599,7 +599,7 @@
                 {
                  "height":0,
                  "id":17,
-                 "name":"Damageable_Platform",
+                 "name":"Damaging_Platform",
                  "polygon":[
                         {
                          "x":0,
@@ -1021,11 +1021,7 @@
         }, 
         {
          "firstgid":10145,
-         "source":"testBackground.tsj"
-        }, 
-        {
-         "firstgid":10145,
-         "source":"test.tsj"
+         "source":"empanada_level_11_background.tsj"
         }],
  "tilewidth":32,
  "type":"map",
