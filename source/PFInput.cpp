@@ -306,7 +306,7 @@ void PlatformInput::update(float dt) {
     _keyFire = _gameCont->isButtonReleased(GameController::Button::X);
 
 
-    if (_gameCont->isButtonDown(GameController::Button::X)) {
+    if (_gameCont->isButtonDown(GameController::Button::Y)) {
         _slowHeldDuration += dt;
     }
     else {
@@ -314,8 +314,8 @@ void PlatformInput::update(float dt) {
         _slowHeldDuration = 0.0f;
     }
 
-    _keyReset = _gameCont->isButtonPressed(GameController::Button::START);
-    _keyExit = _gameCont->isButtonPressed(GameController::Button::BACK);
+    _keyPause = _gameCont->isButtonPressed(GameController::Button::START);
+    _keyMinimap = _gameCont->isButtonPressed(GameController::Button::BACK);
     _keyInteract = _gameCont->isButtonPressed(GameController::Button::B);
 
 

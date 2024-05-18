@@ -39,10 +39,9 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
 
     if (Entity::init(pos, size)) {
         setDensity(ENEMY_DENSITY);
-        setFriction(0.0f); // Prevent sticking to walls
+        setFriction(1.0f); // Prevent sticking to walls
         setGravityScale(1.2f);
         setFixedRotation(false);
-        setFriction(0.0f);
         _isChasing = false;
         _isGrounded = false;
         _direction = -1;
@@ -53,6 +52,7 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
         _preparetime = 0;
         _shooted = false;
         _vulnerable = false;
+        _randFactor = 1.0f;
         _state = "patrolling";
         setGestureSeq1(seq1);
         setGestureSeq2(seq2);
@@ -72,6 +72,18 @@ bool EnemyModel::init(const cugl::Vec2& pos, const cugl::Size& size, float scale
     }
 
     return false;
+}
+
+void EnemyModel::resetDebug() {
+    Entity::resetDebug();
+    float w = ENEMY_HSHRINK * _dimension.width;
+    float h = SENSOR_HEIGHT;
+    Poly2 poly(Rect(-w / 2.0f, -h / 2.0f, w, h));
+
+    _sensorNode = scene2::WireNode::allocWithTraversal(poly, poly2::Traversal::INTERIOR);
+    _sensorNode->setColor(DEBUG_COLOR);
+    _sensorNode->setPosition(Vec2(_debug->getContentSize().width / 2.0f, 0.0f));
+    _debug->addChild(_sensorNode);
 }
 
 #pragma mark -
@@ -173,6 +185,9 @@ void EnemyModel::update(float dt) {
         }
         _node->setColor(c);
     }
+    else {
+        _node->setColor(Color4::WHITE);
+    }
 }
 
 void EnemyModel::fixedUpdate(float step) {
@@ -192,17 +207,6 @@ void EnemyModel::fixedUpdate(float step) {
     else if (_preparetime > 0) {
         _preparetime -= std::min(_preparetime, step);
     }
-    //else if (_preparetime > 0) {
-    //    if (_preparetime < 1 && _shooted) {
-    //        _attacktime = true;
-    //    }
-    //    _preparetime -= step;
-    //    _body->SetLinearVelocity(b2Vec2(0, 0));
-    //    if (_node != nullptr) {
-    //        _node->setPosition(getPosition() * _drawScale);
-    //        _node->setAngle(getAngle());
-    //    }
-    //}
 
     //set behaviors
     b2Vec2 velocity = _body->GetLinearVelocity();
@@ -216,6 +220,25 @@ void EnemyModel::fixedUpdate(float step) {
         setState(getNextState(_state));
     }
     _lastDamageTime += step;
+
+    //randomly patrol
+    if (_state == "patrolling") {
+        float f = (float)(rand()) / (float)(RAND_MAX);
+        if (f > _randFactor) {
+            if (_moveDirection == 0) {
+                int randomIndex = rand() % 2;
+                _moveDirection = randomIndex == 0 ? -1 : 1;
+                _randFactor = 1.0f;
+            }
+            else {
+                _moveDirection = 0;
+                _randFactor = 1.0f;
+            }
+        }
+        else {
+            _randFactor *= (1 - step * 0.001);
+        }
+    }
 }
 
 /**This function handles movement and behavior that are generic across enemy types. These are independent of dt*/
@@ -236,6 +259,7 @@ b2Vec2 EnemyModel::handleMovement(b2Vec2 velocity) {
     }
 
     if (std::abs(velocity.x) < 0.03) velocity.x = 0;
+
     if (velocity.x != 0 && _type != EnemyType::carrot) {
         if (_state != "patrolling") {
             setDirection(SIGNUM(_distanceToPlayer.x));
@@ -249,7 +273,7 @@ b2Vec2 EnemyModel::handleMovement(b2Vec2 velocity) {
             setDirection(SIGNUM(_distanceToPlayer.x));
         }
         else {
-            setDirection(SIGNUM(velocity.x));
+            if (velocity.x != 0)setDirection(SIGNUM(velocity.x));
         }
     }
     
@@ -329,6 +353,7 @@ void EnemyModel::respawn() {
     setFriction(0.0f);
     setHealth(100.0f);
     markRemoved(false);
+    _node->setVisible(true);
     if (_type == EnemyType::shrimp) {
         setFixedRotation(false);
         setFriction(1.0f);

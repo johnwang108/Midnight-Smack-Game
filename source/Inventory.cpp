@@ -24,6 +24,7 @@ bool Inventory::init(shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformI
     }
     _assets = assets;
     _input = input;
+    _timeSinceLastInteract = 0.0f;
 
     //_childOffset = -1;
     _selectedSlot = 0;
@@ -36,8 +37,8 @@ bool Inventory::init(shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformI
 
     for (int i = 0; i < NUM_SLOTS; i++) {
         shared_ptr<scene2::PolygonNode> invSlot = createInventoryNode(tex, i);
-        invSlot->setAnchor(Vec2::ANCHOR_BOTTOM_CENTER);
-        invSlot->setPosition((i * tex->getWidth()), 700);
+        invSlot->setAnchor(Vec2::ANCHOR_TOP_LEFT);
+        invSlot->setPosition((i * tex->getWidth()), 0);
         addChild(invSlot);
         _slots[i] = invSlot;
     }
@@ -73,8 +74,23 @@ void Inventory::update(float timestep) {
 
 }
 
+void Inventory::fixedUpdate(float dt) {
+    _timeSinceLastInteract += dt;
+    if (_timeSinceLastInteract > 2.0f) {
+        Color4 c = getColor();
+        c.a = std::max(100.0f, c.a - 0.1f);
+        setColor(c);
+    }
+    else {
+        Color4 c = getColor();
+        c.a = 255.0f;
+        setColor(c);
+    }
+}
+
 
 void Inventory::addIngredient(std::shared_ptr<Ingredient> ingredient) {
+    _timeSinceLastInteract = 0.0f;
     if (_currentIngredients.size() == NUM_SLOTS) {
  /*       shared_ptr<Ingredient> oldestIng = _currentIngredients.back();
         removeIngredientFromSlotNode(oldestIng, _currentIngredients.size() - 1);
@@ -118,6 +134,7 @@ void Inventory::shiftAllIngredientsUp(int startInd) {
 */
 
 shared_ptr<Ingredient> Inventory::popIngredientFromSlot(int slotToClear) {
+    _timeSinceLastInteract = 0.0f;
     if (slotToClear >= _currentIngredients.size()) {
         CULog("tried to pop an empty or invalid slot");
         return nullptr;
@@ -132,12 +149,14 @@ shared_ptr<Ingredient> Inventory::popIngredientFromSlot(int slotToClear) {
 }   
 
 void Inventory::removeIngredientFromSlotNode(shared_ptr<Ingredient> ing, int slotNumber) {
+    _timeSinceLastInteract = 0.0f;
     string slotName = "slot" + to_string(slotNumber);
     shared_ptr<scene2::SceneNode> slotNode = getChildByName(slotName);
     slotNode->removeChild(ing->getButton());
 }
 
 std::shared_ptr<Ingredient> Inventory::findAndRemoveHeldIngredient() {
+    _timeSinceLastInteract = 0.0f;
     for (std::shared_ptr<Ingredient> ing : _currentIngredients) {
         if (ing->getBeingHeld() == true) {
             ing->setFalling(false);
@@ -184,6 +203,7 @@ void Inventory::reset() {
     unhighlightSelectedSlot();
     _selectedSlot = 0;
     highlightSelectedSlot();
+    _timeSinceLastInteract = 0.0f;
     _enlarged = false;
 
 }
@@ -199,6 +219,7 @@ shared_ptr<scene2::PolygonNode> Inventory::createInventoryNode(shared_ptr<Textur
 }
 
 void Inventory::selectNextSlot() {
+    _timeSinceLastInteract = 0.0f;
     unhighlightSelectedSlot();
     if (_selectedSlot == NUM_SLOTS - 1) {
         _selectedSlot = 0;
@@ -210,6 +231,7 @@ void Inventory::selectNextSlot() {
 }
 
 void Inventory::selectPreviousSlot() {
+    _timeSinceLastInteract = 0.0f;
     unhighlightSelectedSlot();
     if (_selectedSlot == 0) {
         _selectedSlot = NUM_SLOTS - 1;

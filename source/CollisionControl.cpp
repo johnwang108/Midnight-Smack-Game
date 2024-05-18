@@ -36,26 +36,29 @@ void GameScene::beginContact(b2Contact* contact) {
     b2Body* body1 = fix1->GetBody();
     b2Body* body2 = fix2->GetBody();
 
-
-
-
     std::string* fd1 = reinterpret_cast<std::string*>(fix1->GetUserData().pointer);
     std::string* fd2 = reinterpret_cast<std::string*>(fix2->GetUserData().pointer);
 
     physics2::Obstacle* bd1 = reinterpret_cast<physics2::Obstacle*>(body1->GetUserData().pointer);
     physics2::Obstacle* bd2 = reinterpret_cast<physics2::Obstacle*>(body2->GetUserData().pointer);
 
-
     // points to the wall class specifically
     Wall* bdWall1 = reinterpret_cast<Wall*>(body1->GetUserData().pointer);
     Wall* bdWall2 = reinterpret_cast<Wall*>(body2->GetUserData().pointer);
-
 
     if (bd1->getName() == BACKGROUND_NAME || bd2->getName() == BACKGROUND_NAME) {
         return;
     }
 
-    if (fd1 == _avatar->getLeftSensorName() && (bdWall2->getName() == WALL_NAME)) {
+    if ((enemies.find(bd1->getName()) != enemies.end() && enemies.find(bd2->getName()) != enemies.end())) return;
+
+    if ((enemies.find(bd1->getName()) != enemies.end() && bd2->getName().find("interactable") != std::string::npos)) return;
+    else if ((enemies.find(bd2->getName()) != enemies.end() && bd1->getName().find("interactable") != std::string::npos)) return;
+
+    if ((enemies.find(bd1->getName()) != enemies.end() && bd2->getName().find("TutorialSign") != std::string::npos)) return;
+    else if ((enemies.find(bd2->getName()) != enemies.end() && bd1->getName().find("TutorialSign") != std::string::npos)) return;
+
+    if (fd1 == _avatar->getLeftSensorName() && (bdWall2->getName() == BREAKABLE_PLATFORM_NAME)) {
         // in this condition, body1 is avatar and body2 is wall type
         _avatar->setContactingLeftWall(true);
         _avatar->setVX(0);
@@ -65,7 +68,7 @@ void GameScene::beginContact(b2Contact* contact) {
         // bdWall2->applyBreaking();
     }
 
-    if (fd2 == _avatar->getLeftSensorName() && (bdWall1->getName() == WALL_NAME)) {
+    if (fd2 == _avatar->getLeftSensorName() && (bdWall1->getName() == BREAKABLE_PLATFORM_NAME)) {
         // in this condition, body1 is avatar and body2 is wall type
         _avatar->setContactingLeftWall(true);
         _avatar->setVX(0);
@@ -75,7 +78,7 @@ void GameScene::beginContact(b2Contact* contact) {
         // bdWall1->applyBreaking();
     }
 
-    if (fd1 == _avatar->getRightSensorName() && (bdWall2->getName() == WALL_NAME)) {
+    if (fd1 == _avatar->getRightSensorName() && (bdWall2->getName() == BREAKABLE_PLATFORM_NAME)) {
         // in this condition, body1 is avatar and body2 is wall type
         _avatar->setContactingRightWall(true);
         _avatar->setVX(0);
@@ -85,7 +88,7 @@ void GameScene::beginContact(b2Contact* contact) {
         // bdWall2->applyBreaking();
     }
 
-    if (fd2 == _avatar->getRightSensorName() && (bdWall1->getName() == WALL_NAME)) {
+    if (fd2 == _avatar->getRightSensorName() && (bdWall1->getName() == BREAKABLE_PLATFORM_NAME)) {
         // in this condition, body1 is avatar and body2 is wall type
         _avatar->setContactingRightWall(true);
         _avatar->setVX(0);
@@ -118,21 +121,21 @@ void GameScene::beginContact(b2Contact* contact) {
 
 
     // Check if the player hits a wall NOT PLATFORM (not implemented for that atm)
-    if (fd1 == _avatar->getLeftSensorName() && (bd2->getName() == PLATFORM_NAME) ||
-        (fd2 == _avatar->getLeftSensorName() && (bd1->getName() == PLATFORM_NAME))) {
+    if (fd1 == _avatar->getLeftSensorName() && (bd2->getName() == PLATFORM_NAME || bd2->getName() == DAMAGING_PLATFORM_NAME) ||
+        (fd2 == _avatar->getLeftSensorName() && (bd1->getName() == PLATFORM_NAME || bd1->getName() == DAMAGING_PLATFORM_NAME))) {
         _avatar->setContactingLeftWall(true);
         _avatar->setVX(0);
     } 
         
-    if (fd1 == _avatar->getRightSensorName() && (bd2->getName() == PLATFORM_NAME) ||
-        (fd2 == _avatar->getRightSensorName() && (bd1->getName() == PLATFORM_NAME))) {
+    if (fd1 == _avatar->getRightSensorName() && (bd2->getName() == PLATFORM_NAME || bd2->getName() == DAMAGING_PLATFORM_NAME) ||
+        (fd2 == _avatar->getRightSensorName() && (bd1->getName() == PLATFORM_NAME || bd1->getName() == DAMAGING_PLATFORM_NAME))) {
         _avatar->setContactingRightWall(true);
         _avatar->setVX(0);
     }
 
     // See if we have landed on a breakable platform.
-    if ((_avatar->getSensorName() == fd2 && bdWall1->getName() == WALL_NAME) ||
-        (_avatar->getSensorName() == fd1 && bdWall2->getName() == WALL_NAME)) {
+    if ((_avatar->getSensorName() == fd2 && bdWall1->getName() == BREAKABLE_PLATFORM_NAME) ||
+        (_avatar->getSensorName() == fd1 && bdWall2->getName() == BREAKABLE_PLATFORM_NAME)) {
         _avatar->setGrounded(true);
         CULog("collision with the ground of breakable platform");
         // Could have more than one ground
@@ -146,6 +149,12 @@ void GameScene::beginContact(b2Contact* contact) {
 
         _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
     }
+    // See if we landed on a damageable platform
+    if ((_avatar->getSensorName() == fd2 && bdWall1->getName() == DAMAGING_PLATFORM_NAME) ||
+        (_avatar->getSensorName() == fd1 && bdWall2->getName() == DAMAGING_PLATFORM_NAME)) {
+        CULog("collision with damaging platform");
+        _avatar->takePlatformDamage(20, 1);
+    }
 
     // See if we have landed on the ground.
     if ((_avatar->getSensorName() == fd2 && bd1->getName() == PLATFORM_NAME) ||
@@ -154,6 +163,14 @@ void GameScene::beginContact(b2Contact* contact) {
 
         // Could have more than one ground
         _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
+    }
+
+    if ((_avatar.get() == bd2 && bd1->getName() == "TutorialSign")) {
+        ((TutorialSign*)bd1)->setPopupActive(true);
+    }
+    else if ((_avatar.get() == bd1 && bd2->getName() == "TutorialSign")) {
+        //_interactivePopups.at(_popupIndex)->toggle();
+        ((TutorialSign*)bd2)->setPopupActive(true);
     }
 
     for (auto& _enemy : _enemies) {
@@ -200,11 +217,12 @@ void GameScene::beginContact(b2Contact* contact) {
     }
     
 
-    if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1 == _Bull.get() && bd2->getName() == WALL_NAME) {
+    if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1 == _Bull.get() && bd2->getName() == PLATFORM_NAME) {
+        CULog("sing");
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd2)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
-        if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0) {
+        if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0 && _Bull->getturing() <= 0) {
             _Bull->setCAcount(_Bull->getCAcount() + 1);
             _Bull->circleattack(*this);
         }
@@ -218,11 +236,12 @@ void GameScene::beginContact(b2Contact* contact) {
         }
        // popup(std::to_string(5), bullPos * _scale);
     }
-    else if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1->getName() == WALL_NAME && bd2 == _Bull.get()) {
+    else if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1->getName() == PLATFORM_NAME && bd2 == _Bull.get()) {
+        CULog("sing");
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd1)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
-       if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0) {
+       if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0 && _Bull->getturing()<=0) {
             _Bull->setCAcount(_Bull->getCAcount() + 1);
             _Bull->circleattack(*this);
         }
@@ -265,6 +284,8 @@ void GameScene::beginContact(b2Contact* contact) {
         }
         else if (_Bull->getHealth() == 40.5f) {
             _Bull->setsprintpreparetime(2);
+            _Bull->setact("bullTelegraph", 2.0f);
+            _Bull->setattacktype("none");
             _Bull->setIsChasing(true);
             _Bull->setCAcount(2);
             _Bull->takeDamage(_avatar->getAttack() / 4, direction, false);
@@ -289,6 +310,8 @@ void GameScene::beginContact(b2Contact* contact) {
         }
         else if (_Bull->getHealth() == 40.5f) {
             _Bull->setsprintpreparetime(2);
+            _Bull->setact("bullTelegraph", 2.0f);
+            _Bull->setattacktype("none");
             _Bull->setIsChasing(true);
             _Bull->setCAcount(2);
             _Bull->takeDamage(_avatar->getAttack() / 4, direction, false);
@@ -329,17 +352,17 @@ void GameScene::beginContact(b2Contact* contact) {
     //}
 
     //interactable 
-    if (bd1->getName() == "interactable" && bd2 == _avatar.get()) {
-        ((GestureInteractable*)bd1)->getSceneNode()->setColor(Color4::BLUE);
+    if (bd1->getName().find("interactable") != std::string::npos && bd2 == _avatar.get()) {
+        //((GestureInteractable*)bd1)->getSceneNode()->setColor(Color4::BLUE);
         setInteractable(((GestureInteractable*)bd1)->getId());
 	}
-    if (bd2->getName() == "interactable" && bd1 == _avatar.get()) {
-        ((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::BLUE);
+    if (bd2->getName().find("interactable") != std::string::npos && bd1 == _avatar.get()) {
+        //((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::BLUE);
         setInteractable(((GestureInteractable*)bd2)->getId());
     }
 
     //station hit it to remove 
-    if (bd1->getName() == "interactable" && bd2->getName() == ATTACK_NAME) {
+    if (bd1->getName().find("interactable") != std::string::npos && bd2->getName() == ATTACK_NAME) {
         ((GestureInteractable*)bd1)->hit();
     }
 
@@ -509,8 +532,8 @@ void GameScene::endContact(b2Contact* contact) {
     physics2::Obstacle* bd1 = reinterpret_cast<physics2::Obstacle*>(body1->GetUserData().pointer);
     physics2::Obstacle* bd2 = reinterpret_cast<physics2::Obstacle*>(body2->GetUserData().pointer);
 
-    if ((_avatar->getSensorName() == fd2 && (bd1->getName() == WALL_NAME || bd1->getName() == PLATFORM_NAME)) ||
-        (_avatar->getSensorName() == fd1 && (bd2->getName() == WALL_NAME || bd2->getName() == PLATFORM_NAME))) {
+    if ((_avatar->getSensorName() == fd2 && (bd1->getName() == BREAKABLE_PLATFORM_NAME || bd1->getName() == PLATFORM_NAME)) ||
+        (_avatar->getSensorName() == fd1 && (bd2->getName() == BREAKABLE_PLATFORM_NAME || bd2->getName() == PLATFORM_NAME))) {
         _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
         if (_sensorFixtures.empty()) {
             _avatar->setGrounded(false);
@@ -529,15 +552,22 @@ void GameScene::endContact(b2Contact* contact) {
     }
 
     //interactable 
-    if (bd1->getName() == "interactable" && bd2 == _avatar.get()) {
-        ((GestureInteractable*)bd1)->getSceneNode()->setColor(Color4::WHITE);
+    if (bd1->getName().find("interactable") != std::string::npos && bd2 == _avatar.get()) {
+        //((GestureInteractable*)bd1)->getSceneNode()->setColor(Color4::WHITE);
         setInteractable(-1);
     }
-    if (bd2->getName() == "interactable" && bd1 == _avatar.get()) {
-        ((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::WHITE);
+    if (bd2->getName().find("interactable") != std::string::npos && bd1 == _avatar.get()) {
+        //((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::WHITE);
         setInteractable(-1);
     }
 
+    if ((_avatar.get() == bd2 && bd1->getName() == "TutorialSign")) {
+        ((TutorialSign*)bd1)->setPopupActive(false);
+    }
+    else if ((_avatar.get() == bd1 && bd2->getName() == "TutorialSign")) {
+        //_interactivePopups.at(_popupIndex)->toggle();
+        ((TutorialSign*)bd2)->setPopupActive(false);
+    }
     //// Check if the player is no longer in contact with any walls
     //bool p1 = (_avatar->getLeftSensorName() == fd1);
     //bool p2 = (_avatar->getRightSensorName() == fd1);
@@ -548,13 +578,13 @@ void GameScene::endContact(b2Contact* contact) {
     //    _avatar->setContactingWall(false);
     //}
 
-    if (fd1 == _avatar->getLeftSensorName() && (bd2->getName() == WALL_NAME || bd2->getName() == PLATFORM_NAME) || 
-        (fd2 == _avatar->getLeftSensorName() && (bd1->getName() == WALL_NAME || bd1->getName() == PLATFORM_NAME))) {
+    if (fd1 == _avatar->getLeftSensorName() && (bd2->getName() == BREAKABLE_PLATFORM_NAME || bd2->getName() == PLATFORM_NAME || bd2->getName() == DAMAGING_PLATFORM_NAME) ||
+        (fd2 == _avatar->getLeftSensorName() && (bd1->getName() == BREAKABLE_PLATFORM_NAME || bd1->getName() == PLATFORM_NAME || bd1->getName() == DAMAGING_PLATFORM_NAME))) {
         _avatar->setContactingLeftWall(false);
     }
 
-    if (fd1 == _avatar->getRightSensorName() && (bd2->getName() == WALL_NAME || bd2->getName() == PLATFORM_NAME) || 
-        (fd2 == _avatar->getRightSensorName() && (bd1->getName() == WALL_NAME || bd1->getName() == PLATFORM_NAME))) {
+    if (fd1 == _avatar->getRightSensorName() && (bd2->getName() == BREAKABLE_PLATFORM_NAME || bd2->getName() == PLATFORM_NAME || bd2->getName() == DAMAGING_PLATFORM_NAME) ||
+        (fd2 == _avatar->getRightSensorName() && (bd1->getName() == BREAKABLE_PLATFORM_NAME || bd1->getName() == PLATFORM_NAME || bd1->getName() == DAMAGING_PLATFORM_NAME))) {
         _avatar->setContactingRightWall(false);
     }
 

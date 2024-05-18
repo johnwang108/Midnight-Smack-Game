@@ -1,0 +1,14 @@
+{ "columns":119,
+ "image":"..\/textures\/platform_far_test.png",
+ "imageheight":2400,
+ "imagewidth":3838,
+ "margin":0,
+ "name":"platform_far_test",
+ "spacing":0,
+ "tilecount":8925,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

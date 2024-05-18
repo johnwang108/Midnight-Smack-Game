@@ -1,0 +1,14 @@
+{ "columns":124,
+ "image":"..\/textures\/sky_test.png",
+ "imageheight":2400,
+ "imagewidth":3982,
+ "margin":0,
+ "name":"sky_test",
+ "spacing":0,
+ "tilecount":9300,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

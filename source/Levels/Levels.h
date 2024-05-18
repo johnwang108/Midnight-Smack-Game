@@ -58,6 +58,12 @@
 #define ATTACK_NAME     "attack"
 /** The name of a wall (for object identification) */
 #define WALL_NAME       "wall"
+/** The name of a breakable platform */
+#define BREAKABLE_PLATFORM_NAME "breakable_platform"
+/** The name of a damaging platform */
+#define DAMAGING_PLATFORM_NAME "destructable_platform"
+/** The name of a moving platform */
+#define MOVING_PLATFORM_NAME "moving_platform"
 /** The name of an enemy for object id */
 #define ENEMY_NAME	    "enemy"
 
@@ -68,7 +74,7 @@
 /** The font for victory/failure messages */
 #define MESSAGE_FONT    "retro"
 
-#define SMALL_MSG "retrosmall"  
+#define SMALL_MSG "midnightSmack"  
 /** The message for winning the game */
 #define WIN_MESSAGE     "VICTORY!"
 /** The color of the win message */

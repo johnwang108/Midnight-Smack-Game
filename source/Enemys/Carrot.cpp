@@ -10,6 +10,7 @@ bool Carrot::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, st
         setName("carrot");
         _health = 100.0f;
         setFixedRotation(true);
+        setFriction(1.0f);
         return true;
     }
     return false;
@@ -33,19 +34,16 @@ void Carrot::fixedUpdate(float step) {
         velocity.x = 0;
     }
     else if (_state == "jumping") {
-        if (isGrounded()) {
-            Vec2 vec = _distanceToPlayer.normalize() * 20;
-            velocity.y = std::max(10.0f, vec.y);
-            velocity.x = vec.x;
-        }
+
     }
     else if (_state == "midair") {
-        if (isGrounded()) {
+        if (isGrounded() || velocity.x == 0) {
             velocity.x = 0;
+            setState("windup");
         }
     }
     else if (_state == "stunned") {
-        velocity.x = 0;
+
     }
     else if (_state == "patrolling") {
         velocity.x = 0;
@@ -59,7 +57,7 @@ void Carrot::fixedUpdate(float step) {
         CULog(_state.c_str());
     }
 
-    _body->SetLinearVelocity(EnemyModel::handleMovement(velocity));
+    _body->SetLinearVelocity(handleMovement(velocity));
 }
 
 b2Vec2 Carrot::handleMovement(b2Vec2 velocity) {
@@ -74,7 +72,7 @@ void Carrot::setState(std::string state) {
         _behaviorCounter = 0;
     }
     else if (state == "stunned") {
-        _behaviorCounter = -1;
+        _behaviorCounter = 1.0f;
     }
     else if (state == "patrollling") {
         _behaviorCounter = -1;
@@ -83,7 +81,12 @@ void Carrot::setState(std::string state) {
         _behaviorCounter = 1.0f;
     }
     else if (state == "jumping") {
-        _behaviorCounter = -1;
+        b2Vec2 velocity = _body->GetLinearVelocity();
+        Vec2 vec = _distanceToPlayer.normalize() * 20;
+        velocity.y = std::max(15.0f, vec.y);
+        velocity.x = vec.x;
+        _body->SetLinearVelocity(velocity);
+        _behaviorCounter = 0;
     }
     else if (state == "midair") {
         _behaviorCounter = -1;

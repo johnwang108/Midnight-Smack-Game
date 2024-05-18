@@ -40,6 +40,29 @@ public:
 
 	void setType(StationType type) {
 		_type = type;
+		std::string s;
+		switch (type) {
+			case StationType::CUT:
+			{
+				s = "cut";
+				break;
+			}
+			case StationType::FRY:
+			{
+				s = "pan";
+				break;
+			}
+			case StationType::BOIL:
+			{
+				s = "pot";
+				break;
+			}
+			default: {
+				s = "";
+				break;
+			}
+		}
+		setName(getName() + "_" + s);
 	}
 
 	void setIngredientPtr(std::shared_ptr<Ingredient>);

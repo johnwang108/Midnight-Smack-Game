@@ -1,0 +1,14 @@
+{ "columns":2,
+ "image":"..\/textures\/riceLevelDesign.png",
+ "imageheight":97,
+ "imagewidth":72,
+ "margin":0,
+ "name":"riceLevelDesign",
+ "spacing":0,
+ "tilecount":6,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

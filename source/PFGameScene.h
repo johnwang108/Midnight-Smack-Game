@@ -42,7 +42,9 @@
 #include "NightLevelObjects/Station.h"
 #include "MenuScene.h"
 #include "NightLevelObjects/platform.h"
+#include "NightLevelObjects/TutorialSign.h"
 #include "Popup.h"
+#include "Orders.h"
 
 #include "Inventory.h"
 #include "Levels/LevelModel.h"
@@ -85,6 +87,7 @@ protected:
     std::shared_ptr<Inventory> _inventoryNode;
     std::shared_ptr<MenuScene> _pauseMenu;
     std::shared_ptr<MenuScene> _loseScreen;
+    std::shared_ptr<MenuScene> _winScreen;
     std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
 
 
@@ -132,8 +135,8 @@ protected:
     bool _debug;
     /** Whether we have failed at this world (and need a reset) */
     bool _failed;
-    /** Countdown active for winning or losing */
-    int _countdown;
+    ///** Countdown active for winning or losing */
+    //int _countdown;
 
     std::shared_ptr<OrthographicCamera> _minimapCamera;
     std::shared_ptr<cugl::scene2::PolygonNode> _minimapNode;
@@ -144,6 +147,9 @@ protected:
     std::unordered_map<IngredientType, int> _pendingAcrossAllPlates;
     std::unordered_map<int, std::vector<std::shared_ptr<scene2::SceneNode>>> _orders;
     std::shared_ptr<scene2::SceneNode> _orderNode;
+
+    std::shared_ptr<Orders> _ordersObj;
+    
     int _numOrders;
 
     //camera
@@ -152,6 +158,8 @@ protected:
     cugl::Vec3 _velocity = Vec3::ZERO;
 
     std::vector<std::shared_ptr<GestureInteractable>> _interactables;
+
+    std::vector<std::shared_ptr<TutorialSign>> _TutorialSigns;
 
     std::vector<std::shared_ptr<Plate>> _plates;
     std::vector<std::shared_ptr<Station>> _stations;
@@ -205,6 +213,8 @@ protected:
     std::shared_ptr<cugl::scene2::ActionManager> _SHRactionManager;
 
     std::shared_ptr<cugl::scene2::Button> _pauseButton;
+
+    std::unordered_map < std::string, std::shared_ptr<Texture>> _minimapIcons;
 
     bool _paused;
 
@@ -625,6 +635,7 @@ public:
     void spawnCarrot(Vec2 pos);
     void spawnStation(Vec2 pos, StationType type);
     void spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map);
+    void spawnTutorialSign(Vec2 pos, std::string type);
 
     void setSpawn(Vec2 spawn) { _spawnPoint = spawn; };
 
