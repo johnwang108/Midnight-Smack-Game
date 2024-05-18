@@ -9,6 +9,9 @@
         "playButton": {
             "file": "textures/UI/playButton.png"
         },
+        "quitButton": {
+            "file": "textures/UI/quitButton.png"
+        },
         "loseBackground": {
             "file": "textures/UI/loseBackground.png"
         },
@@ -992,6 +995,65 @@
                         "y_offset": -0.07
                     }
                 },
+                "quit": {
+                    "type": "Button",
+                    "format": {
+                        "type": "Anchored"
+                    },
+                    "data": {
+                        "anchor": [
+                            0,
+                            1
+                        ],
+                        "size": [
+                            79,
+                            79.9
+                        ],
+                        "angle": 0,
+                        "position": [
+                            869,
+                            393.1
+                        ],
+                        "visible": true,
+                        "upnode": "quitButton"
+                    },
+                    "children": {
+                        "quitButton": {
+                            "type": "Image",
+                            "data": {
+                                "texture": "quitButton",
+                                "anchor": [
+                                    0,
+                                    1
+                                ],
+                                "size": [
+                                    79,
+                                    79.9
+                                ],
+                                "angle": 0,
+                                "position": [
+                                    0,
+                                    0
+                                ],
+                                "visible": true
+                            },
+                            "layout": {
+                                "x_anchor": "left",
+                                "y_anchor": "top",
+                                "absolute": false,
+                                "x_offset": 0,
+                                "y_offset": 0
+                            }
+                        }
+                    },
+                    "layout": {
+                        "x_anchor": "left",
+                        "y_anchor": "top",
+                        "absolute": false,
+                        "x_offset": 0.68,
+                        "y_offset": -0.41
+                    }
+                },
                 "settings": {
                     "type": "Button",
                     "format": {
@@ -1008,8 +1070,8 @@
                         ],
                         "angle": 0,
                         "position": [
-                            820,
-                            400
+                            773,
+                            390
                         ],
                         "visible": true,
                         "upnode": "settingsButton"
@@ -1047,8 +1109,8 @@
                         "x_anchor": "left",
                         "y_anchor": "top",
                         "absolute": false,
-                        "x_offset": 0.64,
-                        "y_offset": -0.4
+                        "x_offset": 0.6,
+                        "y_offset": -0.41
                     }
                 },
                 "play": {
@@ -1062,13 +1124,13 @@
                             1
                         ],
                         "size": [
-                            236.09,
-                            122.57
+                            206.96,
+                            101.69
                         ],
                         "angle": 0,
                         "position": [
-                            569,
-                            370.43
+                            551,
+                            379.31
                         ],
                         "visible": true,
                         "upnode": "playButton"
@@ -1083,13 +1145,13 @@
                                     0.5
                                 ],
                                 "size": [
-                                    232,
-                                    114
+                                    206.96,
+                                    101.69
                                 ],
-                                "angle": 2.1369512970328604,
+                                "angle": 4.969616985999e-17,
                                 "position": [
                                     0,
-                                    -0.08
+                                    0
                                 ],
                                 "visible": true
                             },
@@ -1106,8 +1168,8 @@
                         "x_anchor": "left",
                         "y_anchor": "top",
                         "absolute": false,
-                        "x_offset": 0.44,
-                        "y_offset": -0.38
+                        "x_offset": 0.43,
+                        "y_offset": -0.4
                     }
                 }
             }

@@ -145,10 +145,10 @@ void MenuScene::initMainMenu(Size dimen) {
 
 			CULog("butt pos: %f %f", butt->getPosition().x, butt->getPosition().y);
 		}
-		/*else if (nodeName == "exit_button") {
-		* std::shared_ptr<scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(*it);
-		_buttons.push_back(butt);
-		std::string bName = butt->getName();
+		else if (nodeName == "quit") {
+			std::shared_ptr<scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(*it);
+			_buttons.push_back(butt);
+			std::string bName = butt->getName();
 
 			butt->addListener([=](const std::string& name, bool down) {
 				CULog("Button %s pressed in Main Menu, down: %d", name.c_str(), down);
@@ -156,7 +156,7 @@ void MenuScene::initMainMenu(Size dimen) {
 					Application::get()->quit();
 				}
 			});
-		}*/
+		}
 		else if (nodeName == "settings") {
 			std::shared_ptr<scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(*it);
 			_buttons.push_back(butt);
