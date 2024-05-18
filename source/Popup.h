@@ -82,7 +82,7 @@ public:
 		node->setActionManager(actionManager);
 
 		if (data->has("text")) {
-			std::shared_ptr<scene2::Label> text = scene2::Label::allocWithText(data->getString("text"), assets->get<Font>(data->getString("font")));
+			std::shared_ptr<scene2::Label> text = scene2::Label::allocWithText(data->getString("text").c_str(), assets->get<Font>(data->getString("font")));
 			std::string txt = node->processText(text->getText());
 			text->setContentWidth(data->getFloat("textMaxWidth%age"));
 			text->setText(txt);

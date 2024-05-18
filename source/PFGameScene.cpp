@@ -2337,7 +2337,9 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
         //    currentLevel = level3;
         //}
         if (level == 1) {
-            _level_model->setFilePath("json/SFRLevel1.tmj");
+            /*_level_model->setFilePath("json/SFRLevel1.tmj");*/
+            //_level_model->setFilePath("json/empanada level 11.tmj");
+            _level_model->setFilePath("json/johntutorial_colored.tmj");
 		}
         else if (level == 2) {
             _level_model->setFilePath("json/SFRLevel3.tmj");
@@ -2346,13 +2348,14 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
             _level_model->setFilePath("json/intermediate.json");
 		}
         else if (level == 4) {
-            _level_model->setFilePath("json/test_level_v2_experiment.json");
+            //_level_model->setFilePath("json/test_level_v2_experiment.json");
+            _level_model->setFilePath("json/empanada_level_11.json");
 		}
         else if (level == 5) {
-            _level_model->setFilePath("json/empanada-platform-level-01.json");
+            //_level_model->setFilePath("json/empanada-platform-level-01.json");
         }
         else if (level == 6) {
-            _level_model->setFilePath("json/bull-boss-level.json");
+            //_level_model->setFilePath("json/bull-boss-level.json");
         }
         else if (level == 7) {
             currentLevel = level3;

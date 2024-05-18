@@ -1,0 +1,14 @@
+{ "columns":40,
+ "image":"..\/textures\/Screen Size.png",
+ "imageheight":800,
+ "imagewidth":1280,
+ "margin":0,
+ "name":"Asset 4",
+ "spacing":0,
+ "tilecount":1000,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}
