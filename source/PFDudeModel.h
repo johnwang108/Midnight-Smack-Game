@@ -743,6 +743,9 @@ public:
     void dash(Vec2 dir);
 
     void takeDamage(float damage, const int attackDirection);
+
+    void takePlatformDamage(float damage, const int attackDirection);
+
 	
     void setFallMultiplier(float f) { _fallMultiplier = f; };
 

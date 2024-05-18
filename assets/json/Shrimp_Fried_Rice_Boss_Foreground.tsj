@@ -1,0 +1,14 @@
+{ "columns":80,
+ "image":"..\/textures\/Shrimp_Fried_Rice_Boss_Foreground.png",
+ "imageheight":1600,
+ "imagewidth":2560,
+ "margin":0,
+ "name":"Shrimp_Fried_Rice_Boss_Foreground",
+ "spacing":0,
+ "tilecount":4000,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

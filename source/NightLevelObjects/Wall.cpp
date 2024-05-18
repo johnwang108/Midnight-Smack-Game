@@ -9,7 +9,7 @@ Wall::Wall() {
 	BASIC_FRICTION = 0.0;
 	BASIC_RESTITUTION = 0.0,
 		DEBUG_COLOR = Color4::YELLOW;
-	WALL_POS = nullptr;
+	WALL_POS = Vec2();
 	WALL_VERTS = 1;
 	name = "";
 	breakableCoolDown = 0;
@@ -31,7 +31,7 @@ Wall::Wall() {
 }
 
 bool Wall::init(std::shared_ptr<Texture> image, std::shared_ptr<PolygonObstacle> _collisionPoly, float _scale, float BASIC_DENSITY, float BASIC_FRICTION,
-	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, bool doesDamage) {
+	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2 WALL_POS, int WALL_VERTS, std::string name, bool doesDamage) {
 	
 	// this was all being done in Wall init, but instead we will do this within levelmodel
 	//Poly2 _collisionPoly(WALL_POS, WALL_VERTS / 2);
@@ -45,7 +45,7 @@ bool Wall::init(std::shared_ptr<Texture> image, std::shared_ptr<PolygonObstacle>
 	CULog("we are in wall init method right now");
 
 
-	PolygonObstacle::init(_collisionPoly->getPolygon(), Vec2(WALL_POS->x, WALL_POS->y));
+	PolygonObstacle::init(_collisionPoly->getPolygon(), WALL_POS);
 	// we called init of PolygonObstacle
 	_obj = _collisionPoly;
 	// You cannot add constant "".  Must stringify
@@ -95,7 +95,7 @@ bool Wall::init(std::shared_ptr<Texture> image, std::shared_ptr<PolygonObstacle>
 }
 
 std::shared_ptr<Wall> Wall::alloc(std::shared_ptr<Texture> image, std::shared_ptr<physics2::PolygonObstacle> _collisionPoly, float _scale, float BASIC_DENSITY, float BASIC_FRICTION,
-	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, bool doesDamage) {
+	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2 WALL_POS, int WALL_VERTS, std::string name, bool doesDamage) {
 	std::shared_ptr<Wall> result = std::make_shared<Wall>();
 	return (result->init(image, _collisionPoly, _scale, BASIC_DENSITY, BASIC_FRICTION, BASIC_RESTITUTION, DEBUG_COLOR, WALL_POS, WALL_VERTS, name, doesDamage) ? result : nullptr);
 }
@@ -124,11 +124,39 @@ void Wall::initBreakable(int duration, int respawnTime)
 	this->_obj->setName(name);
 }
 
+void Wall::initDamage(int duration, int respawnTime)
+{
+	this->damageCoolDown = duration;
+	this->damageRespawnTime = respawnTime;
+	this->damageClock = this->damageCoolDown;
+	name = name + "damage";
+	this->_obj->setName(name);
+}
+
 void Wall::applyBreaking() {
 	this->breakingClock--;
 	//CULog("%f", breakingClock);
 	CULog("we in applyBreaking");
 	CULog(std::to_string(this->breakingClock).c_str());
+	if (activeDisplay) {
+		if (this->breakingClock == 0) {
+			this->breakingClock = this->respawnTime;
+			this->setActive(false);
+		}
+	}
+	else {
+		if (this->breakingClock == 0) {
+			this->breakingClock = this->breakableCoolDown;
+			this->setActive(true);
+		}
+	}
+}
+
+void Wall::applyDamage() {
+	this->damageClock--;
+	//CULog("%f", breakingClock);
+	CULog("we in applyDamage");
+	CULog(std::to_string(this->damageClock).c_str());
 	if (activeDisplay) {
 		if (this->breakingClock == 0) {
 			this->breakingClock = this->respawnTime;
@@ -170,11 +198,11 @@ void Wall::setActive(bool state) {
 	}
 }
 
-void Wall::initPath(std::vector<Vec3> paath, int movementForce)
+void Wall::initPath(std::vector<Vec3> path, int movementForce)
 {
 	pathNodeCoolDown = -1;
 	std::vector<Vec3> temp;
-	for (Vec3 pathNode : paath) {
+	for (Vec3 pathNode : path) {
 		pathNode.set(pathNode.x / _scale + getOGX(), pathNode.y / _scale + getOGY(), pathNode.z);
 		temp.push_back(pathNode);
 	}

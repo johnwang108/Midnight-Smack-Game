@@ -36,26 +36,21 @@ void GameScene::beginContact(b2Contact* contact) {
     b2Body* body1 = fix1->GetBody();
     b2Body* body2 = fix2->GetBody();
 
-
-
-
     std::string* fd1 = reinterpret_cast<std::string*>(fix1->GetUserData().pointer);
     std::string* fd2 = reinterpret_cast<std::string*>(fix2->GetUserData().pointer);
 
     physics2::Obstacle* bd1 = reinterpret_cast<physics2::Obstacle*>(body1->GetUserData().pointer);
     physics2::Obstacle* bd2 = reinterpret_cast<physics2::Obstacle*>(body2->GetUserData().pointer);
 
-
     // points to the wall class specifically
     Wall* bdWall1 = reinterpret_cast<Wall*>(body1->GetUserData().pointer);
     Wall* bdWall2 = reinterpret_cast<Wall*>(body2->GetUserData().pointer);
-
 
     if (bd1->getName() == BACKGROUND_NAME || bd2->getName() == BACKGROUND_NAME) {
         return;
     }
 
-    if (fd1 == _avatar->getLeftSensorName() && (bdWall2->getName() == WALL_NAME)) {
+    if (fd1 == _avatar->getLeftSensorName() && (bdWall2->getName() == BREAKABLE_PLATFORM_NAME)) {
         // in this condition, body1 is avatar and body2 is wall type
         _avatar->setContactingLeftWall(true);
         _avatar->setVX(0);
@@ -65,7 +60,7 @@ void GameScene::beginContact(b2Contact* contact) {
         // bdWall2->applyBreaking();
     }
 
-    if (fd2 == _avatar->getLeftSensorName() && (bdWall1->getName() == WALL_NAME)) {
+    if (fd2 == _avatar->getLeftSensorName() && (bdWall1->getName() == BREAKABLE_PLATFORM_NAME)) {
         // in this condition, body1 is avatar and body2 is wall type
         _avatar->setContactingLeftWall(true);
         _avatar->setVX(0);
@@ -75,7 +70,7 @@ void GameScene::beginContact(b2Contact* contact) {
         // bdWall1->applyBreaking();
     }
 
-    if (fd1 == _avatar->getRightSensorName() && (bdWall2->getName() == WALL_NAME)) {
+    if (fd1 == _avatar->getRightSensorName() && (bdWall2->getName() == BREAKABLE_PLATFORM_NAME)) {
         // in this condition, body1 is avatar and body2 is wall type
         _avatar->setContactingRightWall(true);
         _avatar->setVX(0);
@@ -85,7 +80,7 @@ void GameScene::beginContact(b2Contact* contact) {
         // bdWall2->applyBreaking();
     }
 
-    if (fd2 == _avatar->getRightSensorName() && (bdWall1->getName() == WALL_NAME)) {
+    if (fd2 == _avatar->getRightSensorName() && (bdWall1->getName() == BREAKABLE_PLATFORM_NAME)) {
         // in this condition, body1 is avatar and body2 is wall type
         _avatar->setContactingRightWall(true);
         _avatar->setVX(0);
@@ -118,21 +113,21 @@ void GameScene::beginContact(b2Contact* contact) {
 
 
     // Check if the player hits a wall NOT PLATFORM (not implemented for that atm)
-    if (fd1 == _avatar->getLeftSensorName() && (bd2->getName() == PLATFORM_NAME) ||
-        (fd2 == _avatar->getLeftSensorName() && (bd1->getName() == PLATFORM_NAME))) {
+    if (fd1 == _avatar->getLeftSensorName() && (bd2->getName() == PLATFORM_NAME || bd2->getName() == DAMAGING_PLATFORM_NAME) ||
+        (fd2 == _avatar->getLeftSensorName() && (bd1->getName() == PLATFORM_NAME || bd1->getName() == DAMAGING_PLATFORM_NAME))) {
         _avatar->setContactingLeftWall(true);
         _avatar->setVX(0);
     } 
         
-    if (fd1 == _avatar->getRightSensorName() && (bd2->getName() == PLATFORM_NAME) ||
-        (fd2 == _avatar->getRightSensorName() && (bd1->getName() == PLATFORM_NAME))) {
+    if (fd1 == _avatar->getRightSensorName() && (bd2->getName() == PLATFORM_NAME || bd2->getName() == DAMAGING_PLATFORM_NAME) ||
+        (fd2 == _avatar->getRightSensorName() && (bd1->getName() == PLATFORM_NAME || bd1->getName() == DAMAGING_PLATFORM_NAME))) {
         _avatar->setContactingRightWall(true);
         _avatar->setVX(0);
     }
 
     // See if we have landed on a breakable platform.
-    if ((_avatar->getSensorName() == fd2 && bdWall1->getName() == WALL_NAME) ||
-        (_avatar->getSensorName() == fd1 && bdWall2->getName() == WALL_NAME)) {
+    if ((_avatar->getSensorName() == fd2 && bdWall1->getName() == BREAKABLE_PLATFORM_NAME) ||
+        (_avatar->getSensorName() == fd1 && bdWall2->getName() == BREAKABLE_PLATFORM_NAME)) {
         _avatar->setGrounded(true);
         CULog("collision with the ground of breakable platform");
         // Could have more than one ground
@@ -145,6 +140,12 @@ void GameScene::beginContact(b2Contact* contact) {
         }
 
         _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
+    }
+    // See if we landed on a damageable platform
+    if ((_avatar->getSensorName() == fd2 && bdWall1->getName() == DAMAGING_PLATFORM_NAME) ||
+        (_avatar->getSensorName() == fd1 && bdWall2->getName() == DAMAGING_PLATFORM_NAME)) {
+        CULog("collision with damaging platform");
+        _avatar->takePlatformDamage(20, 1);
     }
 
     // See if we have landed on the ground.
@@ -520,8 +521,8 @@ void GameScene::endContact(b2Contact* contact) {
     physics2::Obstacle* bd1 = reinterpret_cast<physics2::Obstacle*>(body1->GetUserData().pointer);
     physics2::Obstacle* bd2 = reinterpret_cast<physics2::Obstacle*>(body2->GetUserData().pointer);
 
-    if ((_avatar->getSensorName() == fd2 && (bd1->getName() == WALL_NAME || bd1->getName() == PLATFORM_NAME)) ||
-        (_avatar->getSensorName() == fd1 && (bd2->getName() == WALL_NAME || bd2->getName() == PLATFORM_NAME))) {
+    if ((_avatar->getSensorName() == fd2 && (bd1->getName() == BREAKABLE_PLATFORM_NAME || bd1->getName() == PLATFORM_NAME)) ||
+        (_avatar->getSensorName() == fd1 && (bd2->getName() == BREAKABLE_PLATFORM_NAME || bd2->getName() == PLATFORM_NAME))) {
         _sensorFixtures.erase(_avatar.get() == bd1 ? fix2 : fix1);
         if (_sensorFixtures.empty()) {
             _avatar->setGrounded(false);
@@ -562,13 +563,13 @@ void GameScene::endContact(b2Contact* contact) {
     //    _avatar->setContactingWall(false);
     //}
 
-    if (fd1 == _avatar->getLeftSensorName() && (bd2->getName() == WALL_NAME || bd2->getName() == PLATFORM_NAME) || 
-        (fd2 == _avatar->getLeftSensorName() && (bd1->getName() == WALL_NAME || bd1->getName() == PLATFORM_NAME))) {
+    if (fd1 == _avatar->getLeftSensorName() && (bd2->getName() == BREAKABLE_PLATFORM_NAME || bd2->getName() == PLATFORM_NAME || bd2->getName() == DAMAGING_PLATFORM_NAME) ||
+        (fd2 == _avatar->getLeftSensorName() && (bd1->getName() == BREAKABLE_PLATFORM_NAME || bd1->getName() == PLATFORM_NAME || bd1->getName() == DAMAGING_PLATFORM_NAME))) {
         _avatar->setContactingLeftWall(false);
     }
 
-    if (fd1 == _avatar->getRightSensorName() && (bd2->getName() == WALL_NAME || bd2->getName() == PLATFORM_NAME) || 
-        (fd2 == _avatar->getRightSensorName() && (bd1->getName() == WALL_NAME || bd1->getName() == PLATFORM_NAME))) {
+    if (fd1 == _avatar->getRightSensorName() && (bd2->getName() == BREAKABLE_PLATFORM_NAME || bd2->getName() == PLATFORM_NAME || bd2->getName() == DAMAGING_PLATFORM_NAME) ||
+        (fd2 == _avatar->getRightSensorName() && (bd1->getName() == BREAKABLE_PLATFORM_NAME || bd1->getName() == PLATFORM_NAME || bd1->getName() == DAMAGING_PLATFORM_NAME))) {
         _avatar->setContactingRightWall(false);
     }
 

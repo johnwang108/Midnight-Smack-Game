@@ -63,6 +63,9 @@ public:
 	//Vector of the breakable platforms
 	std::vector<std::shared_ptr<Wall>> _breakable_platforms;
 
+	//Vector of the moving platforms
+	std::vector<std::shared_ptr<Wall>> _moving_platforms;
+
 	//Reference to the asset manager
 	std::shared_ptr<cugl::AssetManager> _assets;
 
@@ -87,8 +90,14 @@ public:
 	/** loads the goal door, this will load the physical parts of the goal door */
 	// void loadGoalDoor(const std::shared_ptr<JsonValue>& json);
 
-	/** loads the physical parts of the floating platform*/
-	void loadFloatingPlatform(const std::shared_ptr<Texture> image, const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height);
+	/** loads the physical parts of a breakable platform*/
+	void loadBreakablePlatform(const std::shared_ptr<Texture> image, const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height);
+
+	/** loads the physical parts of a moving platform*/
+	void loadMovingPlatform(const std::shared_ptr<Texture> image, const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height);
+
+	/** loads damaging platform */
+	void loadDamagingPlatform(const std::shared_ptr<Texture> image, const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height);
 
 	/** loads the main platform, specifically its physical parts*/
 	std::shared_ptr<physics2::PolygonObstacle> loadMainPlatform(const std::shared_ptr<JsonValue>& json, GameScene& scene, std::shared_ptr<scene2::PolygonNode> sprite, float level_height);
@@ -154,6 +163,10 @@ public:
 
 	std::vector<std::shared_ptr<Wall>> getBreakablePlatforms() {
 		return _breakable_platforms;
+	}
+
+	std::vector<std::shared_ptr<Wall>> getMovingPlatforms() {
+		return _moving_platforms;
 	}
 
 
