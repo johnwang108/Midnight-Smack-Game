@@ -29,9 +29,7 @@ public:
 
         //manually add respawn (death reversed)
         auto info = result->getInfo("carrotDeath");
-        result->addActionAnimation("carrotRespawn", _assets->get<Texture>("carrotRespawn"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 8.0f, true);
-        return res ? result : nullptr;
-
+        result->addActionAnimation("carrotRespawn", _assets->get<Texture>("carrotDeath"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 8.0f, true);
         return res ? result : nullptr;
     }
 

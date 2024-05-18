@@ -1,6 +1,6 @@
 {
-    "entity" : "su",
-    "animation" : "air_attack",
+    "entity": "su",
+    "animation": "air_attack",
     "tap_jump_height": 80.0,
     "full_jump_height": 100.0,
     "jump_boost": 1.0,
@@ -97,7 +97,6 @@
             "frames": 11,
             "duration": 0.5
         },
-        
         "hurt": {
             "sheet": "suHurt",
             "rows": 3,
@@ -113,92 +112,92 @@
             "duration": 3.0
         }
     },
-    "rice" : {
-        "riceAttack":{
+    "rice": {
+        "riceAttack": {
             "sheet": "riceAttack",
             "rows": 3,
             "cols": 4,
             "frames": 11,
             "duration": 0.71428
         },
-        "riceEndWalk":{
+        "riceEndWalk": {
             "sheet": "riceEndWalk",
             "rows": 2,
             "cols": 2,
             "frames": 4,
             "duration": 0.5
         },
-        "riceFall":{
+        "riceFall": {
             "sheet": "riceFall",
             "rows": 2,
             "cols": 2,
             "frames": 3,
             "duration": 0.25
         },
-        "riceIdle":{
+        "riceIdle": {
             "sheet": "riceIdle",
             "rows": 2,
             "cols": 3,
             "frames": 5,
             "duration": 0.41667
         },
-        "riceJump":{
+        "riceJump": {
             "sheet": "riceJump",
             "rows": 2,
             "cols": 2,
             "frames": 4,
             "duration": 0.25
         },
-        "riceLand":{
+        "riceLand": {
             "sheet": "riceLand",
             "rows": 3,
             "cols": 4,
             "frames": 10,
             "duration": 0.8333
         },
-        "riceStartJump":{
+        "riceStartJump": {
             "sheet": "riceStartJump",
             "rows": 2,
             "cols": 3,
             "frames": 6,
             "duration": 0.5
         },
-        "riceStartWalk":{
+        "riceStartWalk": {
             "sheet": "riceStartWalk",
             "rows": 2,
             "cols": 2,
             "frames": 4,
             "duration": 0.333
         },
-        "riceWalk":{
+        "riceWalk": {
             "sheet": "riceWalk",
             "rows": 3,
             "cols": 3,
             "frames": 8,
             "duration": 0.667
         },
-        "riceHurt":{
+        "riceHurt": {
             "sheet": "riceHurt",
             "rows": 2,
             "cols": 2,
             "frames": 4,
             "duration": 0.333
-        }, 
-        "riceDeath":{
+        },
+        "riceDeath": {
             "sheet": "riceDeath",
             "rows": 3,
             "cols": 4,
             "frames": 9,
             "duration": 1.25
         },
-        "riceAcknowledge":{
+        "riceAcknowledge": {
             "sheet": "riceSoldier",
             "rows": 4,
             "cols": 4,
             "frames": 15,
             "duration": 1.5
         },
-        "riceYell":{
+        "riceYell": {
             "sheet": "riceLeader",
             "rows": 3,
             "cols": 4,
@@ -207,91 +206,91 @@
         }
     },
     "rice_soldier": {
-        "riceAttack":{
+        "riceAttack": {
             "sheet": "riceAttack",
             "rows": 3,
             "cols": 4,
             "frames": 11,
             "duration": 0.71428
         },
-        "riceEndWalk":{
+        "riceEndWalk": {
             "sheet": "riceEndWalk",
             "rows": 2,
             "cols": 2,
             "frames": 4,
             "duration": 0.5
         },
-        "riceFall":{
+        "riceFall": {
             "sheet": "riceFall",
             "rows": 2,
             "cols": 2,
             "frames": 3,
             "duration": 0.25
         },
-        "riceIdle":{
+        "riceIdle": {
             "sheet": "riceIdle",
             "rows": 2,
             "cols": 3,
             "frames": 5,
             "duration": 0.41667
         },
-        "riceJump":{
+        "riceJump": {
             "sheet": "riceJump",
             "rows": 2,
             "cols": 2,
             "frames": 4,
             "duration": 0.25
         },
-        "riceLand":{
+        "riceLand": {
             "sheet": "riceLand",
             "rows": 3,
             "cols": 4,
             "frames": 10,
             "duration": 0.8333
         },
-        "riceStartJump":{
+        "riceStartJump": {
             "sheet": "riceStartJump",
             "rows": 2,
             "cols": 3,
             "frames": 6,
             "duration": 0.5
         },
-        "riceStartWalk":{
+        "riceStartWalk": {
             "sheet": "riceStartWalk",
             "rows": 2,
             "cols": 2,
             "frames": 4,
             "duration": 0.333
         },
-        "riceWalk":{
+        "riceWalk": {
             "sheet": "riceWalk",
             "rows": 3,
             "cols": 3,
             "frames": 8,
             "duration": 0.667
         },
-        "riceHurt":{
+        "riceHurt": {
             "sheet": "riceHurt",
             "rows": 2,
             "cols": 2,
             "frames": 4,
             "duration": 0.333
-        }, 
-        "riceDeath":{
+        },
+        "riceDeath": {
             "sheet": "riceDeath",
             "rows": 3,
             "cols": 4,
             "frames": 9,
             "duration": 1.25
         },
-        "riceAcknowledge":{
+        "riceAcknowledge": {
             "sheet": "riceSoldier",
             "rows": 4,
             "cols": 4,
             "frames": 15,
             "duration": 1.5
         },
-        "riceYell":{
+        "riceYell": {
             "sheet": "riceLeader",
             "rows": 3,
             "cols": 4,
@@ -300,49 +299,49 @@
         }
     },
     "egg": {
-        "eggDeath":{
+        "eggDeath": {
             "sheet": "eggDeath",
             "rows": 4,
             "cols": 4,
             "frames": 15,
             "duration": 1.25
         },
-        "eggAttack":{
+        "eggAttack": {
             "sheet": "eggAttackSecond",
             "rows": 3,
             "cols": 3,
             "frames": 9,
             "duration": 0.7481
         },
-        "eggWindup":{
+        "eggWindup": {
             "sheet": "eggAttackFirst",
             "rows": 3,
             "cols": 3,
             "frames": 7,
             "duration": 1
         },
-        "eggWindupQuick":{
+        "eggWindupQuick": {
             "sheet": "eggAttackFirst",
             "rows": 3,
             "cols": 3,
             "frames": 7,
             "duration": 0.33
         },
-        "eggWalk":{
+        "eggWalk": {
             "sheet": "eggWalk",
             "rows": 5,
             "cols": 6,
             "frames": 26,
             "duration": 1.857
         },
-        "eggIdle":{
+        "eggIdle": {
             "sheet": "eggIdle",
             "rows": 3,
             "cols": 3,
             "frames": 7,
             "duration": 0.875
         },
-        "eggHurt":{
+        "eggHurt": {
             "sheet": "eggHurt",
             "rows": 2,
             "cols": 2,
@@ -351,49 +350,49 @@
         }
     },
     "shrimp": {
-        "shrimpAlarm":{
+        "shrimpAlarm": {
             "sheet": "shrimpAlarm",
             "rows": 3,
             "cols": 3,
             "frames": 7,
             "duration": 1
         },
-        "shrimpStand":{
+        "shrimpStand": {
             "sheet": "shrimpAlarmToStand",
             "rows": 3,
             "cols": 3,
             "frames": 8,
             "duration": 1
         },
-        "shrimpIdle":{
+        "shrimpIdle": {
             "sheet": "shrimpIdle",
             "rows": 3,
             "cols": 4,
             "frames": 11,
             "duration": 1
         },
-        "shrimpRun":{
+        "shrimpRun": {
             "sheet": "shrimpRun",
             "rows": 3,
             "cols": 3,
             "frames": 9,
             "duration": 1
         },
-        "shrimpCurl":{
+        "shrimpCurl": {
             "sheet": "shrimpStandToRoll",
             "rows": 3,
-            "cols": 4,  
+            "cols": 4,
             "frames": 11,
             "duration": 1
         },
-        "shrimpWalkStart":{
+        "shrimpWalkStart": {
             "sheet": "shrimpWalkState1",
             "rows": 2,
             "cols": 2,
             "frames": 3,
             "duration": 1
         },
-        "shrimpWalk":{
+        "shrimpWalk": {
             "sheet": "shrimpWalkState2",
             "rows": 3,
             "cols": 3,
@@ -501,16 +500,22 @@
             "duration": 3.0
         }
     },
-    "carrot" : {
+    "carrot": {
         "carrotDeath": {
             "sheet": "carrotDeath",
-            "rows": 6,
-            "cols": 7,
-            "frames": 39,
+            "rows": 3,
+            "cols": 3,
+            "frames": 8,
             "duration": 3.0
+        },
+        "carrotIdle": {
+            "sheet": "carrotEnemy",
+            "rows": 1,
+            "cols": 1,
+            "frames": 1,
+            "duration": 1.0
         }
     },
-
     "environment": {
         "1": {
             "background": "empanadaBackground",

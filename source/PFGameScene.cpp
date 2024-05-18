@@ -752,8 +752,8 @@ void GameScene::reset() {
 
     generateOrders();
     _timer = 0.0f;
-    _timeLimit = 200.0f;
-    _respawnTimes = std::deque<float>({ 50.0f, 100.0f, 150.0f, 200.0f });
+    _timeLimit = 240.0f;
+    _respawnTimes = std::deque<float>({ 60.0f, 120.0f, 180.0f, 240.0f, 300.0f, 360.0f, 420.0f, 480.0f, 540.0f, 600.0f });
     // addChild(_gestureFeedback);
 }
 

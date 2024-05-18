@@ -27,7 +27,23 @@ void Carrot::fixedUpdate(float step) {
     EnemyModel::fixedUpdate(step);
     b2Vec2 velocity = _body->GetLinearVelocity();
 
-    if (_state == "chasing") {
+    if (_state == "respawning") {
+        setTangible(false);
+        velocity.x = 0;
+        setRequestedActionAndPrio("carrotRespawn", 1000);
+    }
+    else {
+        _node->setColor(Color4::WHITE);
+        setTangible(true);
+        setRequestedActionAndPrio("carrotIdle", 1);
+    }
+
+    if (_killMeCountdown != 0.0f) {
+        setRequestedActionAndPrio("carrotDeath", 1000);
+        velocity = b2Vec2(0, 0);
+        _killMeCountdown -= step;
+    }
+    else if (_state == "chasing") {
         velocity.x = ENEMY_FORCE * _direction * 2;
     }
     else if (_state == "windup") {
@@ -48,10 +64,6 @@ void Carrot::fixedUpdate(float step) {
 
     }
     else if (_state == "patrolling") {
-        velocity.x = 0;
-    }
-    else if (_state == "respawning") {
-        setTangible(false);
         velocity.x = 0;
     }
     else {
