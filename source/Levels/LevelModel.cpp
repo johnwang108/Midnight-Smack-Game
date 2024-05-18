@@ -519,6 +519,17 @@ void LevelModel::populate(GameScene& scene) {
 						CULog("now, we are going to spawn the plate into the scene");
 						scene.spawnPlate(Vec2(object->getFloat("x")/32.0f, level_height - (object->getFloat("y")/32.0f)), map);
 					}
+					else if (object->getString("name") == "Popup") {
+						CULog("we are loading in a popup");
+						std::shared_ptr<JsonValue> propsproperties = object->get("properties");
+						std::string popupName;
+						for (int j = 0; j < propsproperties->size(); j++) {
+							std::shared_ptr<JsonValue> prop = propsproperties->get(j);
+							CULog(prop->getString("value").c_str());
+							popupName = "tutorialPopup" + prop->getString("value");
+						}
+						scene.spawnTutorialSign(Vec2(object->getFloat("x") / 32.0f, level_height - (object->getFloat("y") / 32.0f)), popupName);
+					}
 					else {
 						CULog(object->getString("name").c_str());
 						CULog("We not doing anything right now");

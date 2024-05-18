@@ -86,16 +86,17 @@ public:
 			std::string txt = node->processText(text->getText());
 			text->setContentWidth(data->getFloat("textMaxWidth%age"));
 			text->setText(txt);
-			text->setBackground(Color4::GREEN);
+			text->setBackground(Color4::CLEAR);
 			node->setText(text);
 		}
 
 		if (data->has("background")) {
-			std::shared_ptr<scene2::PolygonNode> background = scene2::PolygonNode::allocWithPoly(Poly2(Rect(node->getPosition(), node->getSize())));
-			background->setTexture(assets->get<Texture>(data->getString("background")));
-			background->setContentSize(node->getSize());
-			background->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
-			background->setPosition(0, 0);
+			/*std::shared_ptr<scene2::PolygonNode> background = scene2::PolygonNode::allocWithPoly(Poly2(Rect(node->getPosition(), node->getSize())));
+			background->setTexture(assets->get<Texture>(data->getString("background")));*/
+			std::shared_ptr<scene2::PolygonNode> background = scene2::PolygonNode::allocWithTexture(assets->get<Texture>(data->getString("background")));
+			//background->setPosition(node->getPosition());
+			//background->setContentSize(node->getSize());
+			//background->setPosition(node->getWidth()/2, node->getHeight()/2);
 			node->setBackground(background);
 		}
 

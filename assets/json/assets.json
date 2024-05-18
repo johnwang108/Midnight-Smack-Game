@@ -114,9 +114,12 @@
             "wrapT": "repeat"
         },
         "popupBackground": {
-            "file": "textures/testPopupBack.png",
+            "file": "textures/popupBackground.png",
             "wrapS": "repeat",
             "wrapT": "repeat"
+        },
+        "popupBackgroundText": {
+            "file": "textures/popupBackgroundText.png"
         },
         "dude": {
             "file": "textures/dude.png"
@@ -585,7 +588,9 @@
         "knife": {
             "file": "textures/day/knife.png"
         },
-        
+        "sign": {
+            "file": "textures/sign.png"
+        },
         "potIcon": {
             "file": "textures/UI/potIcon.png"
         },

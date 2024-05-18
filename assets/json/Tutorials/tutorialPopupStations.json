@@ -5,7 +5,7 @@
         "size": [800, 400],
         "anchor": [0.5, 0.5],
         "visible": true,
-        "text": "When at a station, press [E] to insert \nthe currently selected ingredient.\nPress [E] again to cook the ingredient.",
+        "text": "When at a station, press [E] to insert the currently selected ingredient.\nPress [E] again to cook the ingredient.",
         "textMaxWidth%age": 0.5,
         "font": "popupFont",
         "background": "popupBackground",

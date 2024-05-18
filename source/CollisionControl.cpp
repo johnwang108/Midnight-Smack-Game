@@ -60,6 +60,9 @@ void GameScene::beginContact(b2Contact* contact) {
     if ((enemies.find(bd1->getName()) != enemies.end() && bd2->getName().find("interactable") != std::string::npos)) return;
     else if ((enemies.find(bd2->getName()) != enemies.end() && bd1->getName().find("interactable") != std::string::npos)) return;
 
+    if ((enemies.find(bd1->getName()) != enemies.end() && bd2->getName().find("TutorialSign") != std::string::npos)) return;
+    else if ((enemies.find(bd2->getName()) != enemies.end() && bd1->getName().find("TutorialSign") != std::string::npos)) return;
+
     if (fd1 == _avatar->getLeftSensorName() && (bdWall2->getName() == WALL_NAME)) {
         // in this condition, body1 is avatar and body2 is wall type
         _avatar->setContactingLeftWall(true);
@@ -161,9 +164,12 @@ void GameScene::beginContact(b2Contact* contact) {
         _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
     }
 
-    if ((_avatar.get() == bd2 && bd1->getName() == "TutorialSign") ||
-        (_avatar.get() == bd1 && bd2->getName() == "TutorialSign")) {
-        _interactivePopups.at(_popupIndex)->toggle();
+    if ((_avatar.get() == bd2 && bd1->getName() == "TutorialSign")) {
+        ((TutorialSign*)bd1)->setPopupActive(true);
+    }
+    else if ((_avatar.get() == bd1 && bd2->getName() == "TutorialSign")) {
+        //_interactivePopups.at(_popupIndex)->toggle();
+        ((TutorialSign*)bd2)->setPopupActive(true);
     }
 
     for (auto& _enemy : _enemies) {
@@ -553,9 +559,13 @@ void GameScene::endContact(b2Contact* contact) {
         //((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::WHITE);
         setInteractable(-1);
     }
-    if ((_avatar.get() == bd2 && bd1->getName() == "TutorialSign") ||
-        (_avatar.get() == bd1 && bd2->getName() == "TutorialSign")) {
-        _interactivePopups.at(_popupIndex)->toggle();
+
+    if ((_avatar.get() == bd2 && bd1->getName() == "TutorialSign")) {
+        ((TutorialSign*)bd1)->setPopupActive(false);
+    }
+    else if ((_avatar.get() == bd1 && bd2->getName() == "TutorialSign")) {
+        //_interactivePopups.at(_popupIndex)->toggle();
+        ((TutorialSign*)bd2)->setPopupActive(false);
     }
     //// Check if the player is no longer in contact with any walls
     //bool p1 = (_avatar->getLeftSensorName() == fd1);

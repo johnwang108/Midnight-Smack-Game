@@ -727,34 +727,6 @@ void GameScene::reset() {
     _timer = 0.0f;
     _timeLimit = 200.0f;
     _respawnTimes = std::deque<float>({ 50.0f, 100.0f, 150.0f, 200.0f });
-
-    std::vector<std::string> paths = {
-    "tutorialPopupWASD",
-    "tutorialPopupDash",
-    "tutorialPopupAttack",
-    "tutorialPopupInventory",
-    "tutorialPopupGestures",
-    "tutorialPopupStations",
-    "tutorialPopupPlates",
-    "tutorialPopupTimerDying",
-    "tutorialPopupMinimap"
-    };
-
-    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
-    for (std::string path : paths) {
-        auto reader = JsonReader::alloc("./json/Tutorials/" + path + ".json");
-        std::shared_ptr<JsonValue> popupData = reader->readJson()->get(path);
-        std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
-        p->setActive(false);
-        p->setVisible(false);
-        _interactivePopups.push_back(p);
-        _uiScene->addChild(p);
-        reader->close();
-        reader = nullptr;
-    }
-    _popupIndex = paths.size() - 1;
-    loader->dispose();
-    loader = nullptr;
     // addChild(_gestureFeedback);
 }
 
@@ -2373,7 +2345,8 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
         if (level == 1) {
             /*_level_model->setFilePath("json/SFRLevel1.tmj");*/
             //_level_model->setFilePath("json/empanada level 11.tmj");
-            _level_model->setFilePath("json/johntutorial_colored.tmj");
+            //_level_model->setFilePath("json/johntutorial_colored.tmj");
+            _level_model->setFilePath("json/empanada level 9.tmj");
 		}
         else if (level == 2) {
             _level_model->setFilePath("json/SFRLevel3.tmj");
@@ -2410,7 +2383,7 @@ void GameScene::spawnShrimp(Vec2 pos) {
 void GameScene::spawnBeef(Vec2 pos) {
     std::shared_ptr<Texture> image = _assets->get<Texture>("beefIdle");
     std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
-    Size s = cugl::Size(6.0f, 6.0f);
+    Size s = cugl::Size(6.5f, 6.0f);
     std::shared_ptr<EnemyModel> new_enemy = Beef::allocWithConstants(pos, s, getScale(), _assets);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
@@ -2501,15 +2474,29 @@ void GameScene::spawnStation(Vec2 pos, StationType type) {
     CULog("%f", station->getSceneNode()->getScale());
 }
 
-void GameScene::spawnTutorialSign(Vec2 pos, std::string type) {
+void GameScene::spawnTutorialSign(Vec2 pos, std::string name) {
     //obstacle has small size, not reflective of intended size
-    Size s = Size(5.0f, 5.0f);
+    Size s = Size(4.0f, 2.0f);
     std::shared_ptr<Texture> image;
 
-    image = _assets->get<Texture>("knife");
+    image = _assets->get<Texture>("sign");
 
 
-    std::shared_ptr<TutorialSign> station = TutorialSign::alloc(image, pos, s, type);
+    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
+    auto reader = JsonReader::alloc("./json/Tutorials/" + name + ".json");
+    std::shared_ptr<JsonValue> popupData = reader->readJson()->get(name);
+    std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
+    p->setActive(false);
+    p->setVisible(false);
+    _interactivePopups.push_back(p);
+    _uiScene->addChild(p);
+    reader->close();
+    reader = nullptr;
+    loader->dispose();
+    loader = nullptr;
+
+    std::shared_ptr<TutorialSign> station = TutorialSign::alloc(image, pos, s, name);
+    station->setPopup(p);
 
     addObstacle(station, station->getSceneNode());
     _TutorialSigns.push_back(station);

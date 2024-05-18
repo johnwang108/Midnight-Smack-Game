@@ -15,7 +15,7 @@
                 "rows": 3,
                 "cols": 4,
                 "frames": 10,
-                "position": [-100.0, 0.0],
+                "position": [-100.0, 15.0],
                 "scale": 0.2
             },
             "attack": {
@@ -23,7 +23,7 @@
                 "rows": 4,
                 "cols": 5,
                 "frames": 18,
-                "position": [0.0, 0.0],
+                "position": [0.0, 15.0],
                 "scale": 0.2
             },
             "attack_recover": {
@@ -31,7 +31,7 @@
                 "rows": 3,
                 "cols": 4,
                 "frames": 10,
-                "position": [0.0, 0.0],
+                "position": [0.0, 15.0],
                 "scale": 0.2
             },
             "riceIdle": {
@@ -39,7 +39,7 @@
                 "rows": 2,
                 "cols": 3,
                 "frames": 5,
-                "position": [45.0, 0.0],
+                "position": [45.0, 15.0],
                 "scale": 0.15
             },
             "riceDeath": {
@@ -47,7 +47,7 @@
                 "rows": 3,
                 "cols": 4,
                 "frames": 9,
-                "position": [45.0, 0.0],
+                "position": [45.0, 15.0],
                 "scale": 0.15
             }
         },
