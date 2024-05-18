@@ -663,6 +663,22 @@ void DudeModel::resetDebug() {
     _debug->addChild(_rightSensorNode);
 }
 
+void DudeModel::takePlatformDamage(float damage, const int attackDirection) {
+    if (_lastDamageTime >= _healthCooldown) {
+        _lastDamageTime = 0;
+        _health -= damage * getDefenseBuff();
+        if (_health <= 0) {
+            _health = 0;
+            startDeath();
+        }
+        else {
+            b2Vec2 impulse = b2Vec2(-20, attackDirection * 25);
+            /*_body->ApplyLinearImpulseToCenter(impulse, true);*/
+            _body->SetLinearVelocity(impulse);
+            _knockbackTime = 0.5f;
+        }
+    }
+}
 
 void DudeModel::takeDamage(float damage, const int attackDirection) {
     if (_lastDamageTime >= _healthCooldown) {

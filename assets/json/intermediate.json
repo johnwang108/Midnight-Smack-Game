@@ -20695,7 +20695,7 @@
                 {
                  "height":0,
                  "id":3,
-                 "name":"Floating_Breakable_Platform",
+                 "name":"Damaging_Platform",
                  "polygon":[
                         {
                          "x":0,
@@ -20740,6 +20740,33 @@
               {
                 "x": 147.5,
                 "y": -2
+              }
+            ],
+            "properties": [
+              {
+                "name": "0",
+                "type": "string",
+                "value": "0,0,1"
+              },
+              {
+                "name": "1",
+                "type": "string",
+                "value": "2,2,1"
+              },
+              {
+                "name": "2",
+                "type": "string",
+                "value": "3,4,1"
+              },
+              {
+                "name": "3",
+                "type": "string",
+                "value": "2,2,1"
+              },
+              {
+                "name": "4",
+                "type": "string",
+                "value": "0,1,1"
               }
             ],
             "rotation": 0,

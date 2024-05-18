@@ -25,7 +25,6 @@ Wall::Wall() {
 	breakableCoolDown = -1;
 	respawnTime = -1;
 	breakingClock = -1;
-	activeDisplay = true;
     
 
 }
@@ -124,11 +123,39 @@ void Wall::initBreakable(int duration, int respawnTime)
 	this->_obj->setName(name);
 }
 
+void Wall::initDamage(int duration, int respawnTime)
+{
+	this->damageCoolDown = duration;
+	this->damageRespawnTime = respawnTime;
+	this->damageClock = this->damageCoolDown;
+	name = name + "damage";
+	this->_obj->setName(name);
+}
+
 void Wall::applyBreaking() {
 	this->breakingClock--;
 	//CULog("%f", breakingClock);
 	CULog("we in applyBreaking");
 	CULog(std::to_string(this->breakingClock).c_str());
+	if (activeDisplay) {
+		if (this->breakingClock == 0) {
+			this->breakingClock = this->respawnTime;
+			this->setActive(false);
+		}
+	}
+	else {
+		if (this->breakingClock == 0) {
+			this->breakingClock = this->breakableCoolDown;
+			this->setActive(true);
+		}
+	}
+}
+
+void Wall::applyDamage() {
+	this->damageClock--;
+	//CULog("%f", breakingClock);
+	CULog("we in applyDamage");
+	CULog(std::to_string(this->damageClock).c_str());
 	if (activeDisplay) {
 		if (this->breakingClock == 0) {
 			this->breakingClock = this->respawnTime;
@@ -170,11 +197,11 @@ void Wall::setActive(bool state) {
 	}
 }
 
-void Wall::initPath(std::vector<Vec3> paath, int movementForce)
+void Wall::initPath(std::vector<Vec3> path, int movementForce)
 {
 	pathNodeCoolDown = -1;
 	std::vector<Vec3> temp;
-	for (Vec3 pathNode : paath) {
+	for (Vec3 pathNode : path) {
 		pathNode.set(pathNode.x / _scale + getOGX(), pathNode.y / _scale + getOGY(), pathNode.z);
 		temp.push_back(pathNode);
 	}

@@ -22,6 +22,10 @@ private:
     int breakingClock;
     bool activeDisplay;
 
+    int damageCoolDown;
+    int damageRespawnTime;
+    int damageClock;
+
     bool doesDamage;
     bool flag;
     bool readyToBeReset;
@@ -50,11 +54,13 @@ public:
 
     void initPath(std::vector<Vec3> path, int movementForce);
     void initBreakable(int duration, int respawnTime);
+    void initDamage(int duration, int respawnTime);
     void update(float dt);
     void fixedUpdate(float step);
     Vec3 queryPath(int temp);
     void applyPathMovement(float step);
     void applyBreaking();
+    void applyDamage();
     float getOGX();
     float getOGY();
     void resetBreaking();
@@ -62,6 +68,10 @@ public:
 
     bool isFlagged() {
         return flag;
+    }
+
+    bool isDamage() {
+        return doesDamage;
     }
 
     void setFlag(bool f) {

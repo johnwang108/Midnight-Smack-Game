@@ -159,7 +159,9 @@ _debug(false)
  * @return true if the controller is initialized properly, false otherwise.
  */
 bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_ptr<PlatformInput> input) {
-    _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/sfrBoss.json");
+    _level_model->setFilePath("json/empanada_level_3_final.json");
     // _level_model->setFilePath("json/TestLevel1.json");
     // _level_model->setFilePath("json/empanada-platform-level-01.json");
     // _level_model->setFilePath("json/bull-boss-level.json");
@@ -171,7 +173,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets, std::shared_pt
 bool GameScene::initWithSave(const std::shared_ptr<cugl::AssetManager>& assets, std::shared_ptr<PlatformInput> input, std::shared_ptr<JsonValue> save) {
     /*setSceneWidth(400);
     setSceneHeight(30);*/
-    _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/sfrBoss.json");
+    _level_model->setFilePath("json/empanada_level_3_final.json");
     // _level_model->setFilePath("json/TestLevel1.json");
     // _level_model->setFilePath("json/empanada-platform-level-01.json");
     // _level_model->setFilePath("json/bull-boss-level.json");
@@ -230,7 +234,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _scene_height = 30;
     setSceneWidth(400);
     setSceneHeight(30);*/
-    _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/intermediate.json");
+    // _level_model->setFilePath("json/sfrBoss.json");
+    _level_model->setFilePath("json/empanada_level_3_final.json");
     // _level_model->setFilePath("json/TestLevel1.json");
     _timer = 0.0f;
     _timeLimit = 200.0f;
@@ -1566,6 +1572,15 @@ void GameScene::fixedUpdate(float step) {
 	if (_level_model->getFilePath() == "json/intermediate.json") {
 		_camera->setZoom(155.0 / 40.0);
 	}
+    else if (_level_model->getFilePath() == "json/sfrBoss.json") {
+        _camera->setZoom(80.0 / 40.0);
+    }
+    else if (_level_model->getFilePath() == "json/empanada_level_3_final.json") {
+        _camera->setZoom(120.0 / 40.0);
+    }
+    else if (_level_model->getFilePath() == "json/bull-boss-level.json") {
+        _camera->setZoom(80.0 / 40.0);
+    }
 	else if (_level_model->getFilePath() != "") {
 		_camera->setZoom(155.0 / 40.0);
 	}
@@ -1578,7 +1593,7 @@ void GameScene::fixedUpdate(float step) {
 	float cameraWidth = invZoom * (_camera->getViewport().getMaxX() - _camera->getViewport().getMinX()) / 2;
 	float cameraHeight = invZoom * (_camera->getViewport().getMaxY() - _camera->getViewport().getMinY()) / 2;
 
-	if (_level == 1 || _level == 2 || _level == 3 || _level == 4) {
+	if (_level == 1 || _level == 2 || _level == 3 || _level == 4 || _level == 5) {
 
 		float backgroundWidth = _background->getBoundingRect().getMaxX() - _background->getBoundingRect().getMinX();
 		float backgroundHeight = _background->getBoundingRect().getMaxY() - _background->getBoundingRect().getMinY();
@@ -1603,7 +1618,7 @@ void GameScene::fixedUpdate(float step) {
 	_camera->setPosition(pos);
 	_camera->update();
 
-	if (_level == 1 || _level == 2 || _level == 3 || _level == 4) {
+	if (_level == 1 || _level == 2 || _level == 3 || _level == 4 || _level == 5) {
 
 		invZoom = 1 / _minimapCamera->getZoom();
 		cameraWidth = invZoom * (_minimapCamera->getViewport().getMaxX() - _minimapCamera->getViewport().getMinX()) / 2;
@@ -1739,21 +1754,13 @@ void GameScene::fixedUpdate(float step) {
         }
     }
 
-    //for (std::shared_ptr<Wall> bp : _level_model->getBreakablePlatforms()) {
-    //    if (bp->isReadyToReset()) {
-    //        bp->setFlag(false);
-    //        // bp->setSensor(false);
-    //        bp->setReadyToBeReset(false);
-    //    }
-    //}
-
-    //for (std::shared_ptr<Wall> bPlatform : _level_model->getBreakablePlatforms()) {
-    //    // conditional where we know that our avatar has collided with the wall
-    //    if (bPlatform->isFlagged()) {
-    //        bPlatform->setSensor(false);
-    //        bPlatform->setFlag(false);
-    //    }
-    //}
+    CULog("Size of moving platforms array");
+    CULog(std::to_string(_level_model->getMovingPlatforms().size()).c_str());
+    CULog("------------------");
+    CULog("updating path movements of moving platform");
+    for (std::shared_ptr<Wall> mPlatform : _level_model->getMovingPlatforms()) {
+        mPlatform->applyPathMovement(step);
+    }
     _world->update(step);
 }
 
@@ -2274,8 +2281,13 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
     currentLevel = _level_model;
     if (chapter == 1) {
         if (level == 1) {
-            _level_model->setFilePath("json/intermediate.json");
+            // _level_model->setFilePath("json/intermediate.json");
+            // _level_model->setFilePath("json/sfrBoss.json");
+            _level_model->setFilePath("json/empanada_level_3_final.json");
             // _level_model->setFilePath("json/TestLevel1.json");
+        }
+        else if (level == 2) {
+            _level_model->setFilePath("json/intermediate.json");
         }
         else if (level == 2) {
             _level_model->setFilePath("json/test_level_v2_experiment.json");
@@ -2288,7 +2300,10 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
             _level_model->setFilePath("json/bull-boss-level.json"); 
         }
         else if (level == 5) {
-            currentLevel = level3;
+            _level_model->setFilePath("json/sfrBoss.json");
+        }
+        else if (level == 6) {
+            // currentLevel = level3;
         }
     }
 }
@@ -2400,7 +2415,7 @@ void GameScene::spawnStation(Vec2 pos, StationType type) {
 void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map) {
     //obstacle has small size, not reflective of intended size
     Size s = Size(5.0f, 5.0f);
-    std::shared_ptr<Texture> image = _assets->get<Texture>("sink");
+    std::shared_ptr<Texture> image = _assets->get<Texture>("plate");
     std::shared_ptr<Plate> plate = Plate::alloc(image, pos, s, map);
 
     for (const auto& [key, value] : map) {
