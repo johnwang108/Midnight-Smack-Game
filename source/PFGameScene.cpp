@@ -2346,7 +2346,8 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
             /*_level_model->setFilePath("json/SFRLevel1.tmj");*/
             //_level_model->setFilePath("json/empanada level 11.tmj");
             //_level_model->setFilePath("json/johntutorial_colored.tmj");
-            _level_model->setFilePath("json/empanada level 9.tmj");
+            //_level_model->setFilePath("json/empanada level 9.tmj");
+            _level_model->setFilePath("json/empanada level 12.tmj");
 		}
         else if (level == 2) {
             _level_model->setFilePath("json/SFRLevel3.tmj");
