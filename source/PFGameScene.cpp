@@ -2364,7 +2364,6 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
         }
         else if (level == 4) {
             _level_model->setFilePath("json/empanada_level_3_final.json");
->>>>>>>>> Temporary merge branch 2
         }
         else if (level == 5) {
             _level_model->setFilePath("json/intermediate.json");
