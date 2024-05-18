@@ -8,6 +8,7 @@ using namespace cugl;
 void MenuScene::dispose() {
 	_assets = nullptr;
 	_buttons.clear();
+	_sliders.clear();
 	Scene2::dispose();
 }
 
@@ -89,7 +90,7 @@ bool MenuScene::init(const std::shared_ptr<cugl::AssetManager>& assets, std::str
 	
 
 	_buttons = std::vector<std::shared_ptr<scene2::Button>>();
-	
+	_sliders = std::vector<std::shared_ptr<scene2::Slider>>();
 
     switch (strToMenuType(id)) {
         case MenuType::MAIN_MENU:
@@ -255,6 +256,7 @@ void MenuScene::initPauseMenu(Size dimen) {
 }
 
 void MenuScene::initSettingsMenu(Size dimen) {
+
 	auto kids = _rootNode->getChildren();
 	for (auto it = kids.begin(); it != kids.end(); ++it) {
 		std::shared_ptr<scene2::SceneNode> node = *it;
@@ -283,10 +285,27 @@ void MenuScene::initSettingsMenu(Size dimen) {
 				});
 		}
 		else if (nodeName == "slider1") {
-
+			std::shared_ptr<scene2::Slider> slid = std::dynamic_pointer_cast<scene2::Slider>(node);
+			_sliders.push_back(slid);
+			_musicVolume = slid->getValue();
+			
+			slid->addListener([this](const std::string& name, float value) {
+				if (value != _musicVolume) {
+					_musicVolume = value;
+					//_label->setText("Slider value is " + cugl::strtool::to_string(_musicVolume, 1));
+				}
+			});
 		}
 		else if (nodeName == "slider2") {
-
+			std::shared_ptr<scene2::Slider> slid = std::dynamic_pointer_cast<scene2::Slider>(node);
+			_sliders.push_back(slid);
+			_sfxVolume = slid->getValue();
+			slid->addListener([this](const std::string& name, float value) {
+				if (value != _sfxVolume) {
+					_sfxVolume = value;
+					//_label->setText("Slider value is " + cugl::strtool::to_string(_musicVolume, 1));
+				}
+			});
 		}
 	}
 	this->setActive(false);
@@ -339,11 +358,23 @@ void MenuScene::setActive(bool b) {
 			button->deactivate();
 		}
 	}
+	for (auto it = _sliders.begin(); it != _sliders.end(); ++it) {
+		auto slider = *it;
+		if (b && !slider->isActive()) {
+			slider->activate();
+		}
+		else if (!b && slider->isActive()) {
+			slider->deactivate();
+		}
+	}
+
 	_rootNode->setVisible(b);
 }
 
 void MenuScene::update(float dt) {
-
+	//if (_active && _sliders.size() != 0) {
+	//	CULog("%f", _musicVolume);
+	//}
 }
 
 void MenuScene::setHighestLevel(int i) { 

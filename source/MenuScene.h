@@ -27,7 +27,7 @@ protected:
     std::string _targetScene;
 
     std::vector<std::shared_ptr<cugl::scene2::Button>> _buttons;
-
+    std::vector<std::shared_ptr<cugl::scene2::Slider>> _sliders;
     int _selectedLevel;
 
     int _highestLevel;
