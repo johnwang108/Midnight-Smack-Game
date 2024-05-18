@@ -87,6 +87,7 @@ protected:
     std::shared_ptr<Inventory> _inventoryNode;
     std::shared_ptr<MenuScene> _pauseMenu;
     std::shared_ptr<MenuScene> _loseScreen;
+    std::shared_ptr<MenuScene> _winScreen;
     std::string _feedbackMessages[3] = { "Bad", "Good", "Perfect" };
 
 
@@ -134,8 +135,8 @@ protected:
     bool _debug;
     /** Whether we have failed at this world (and need a reset) */
     bool _failed;
-    /** Countdown active for winning or losing */
-    int _countdown;
+    ///** Countdown active for winning or losing */
+    //int _countdown;
 
     std::shared_ptr<OrthographicCamera> _minimapCamera;
     std::shared_ptr<cugl::scene2::PolygonNode> _minimapNode;

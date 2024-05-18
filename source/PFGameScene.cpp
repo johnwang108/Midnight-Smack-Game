@@ -432,6 +432,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _loseScreen = std::make_shared<MenuScene>();
     _loseScreen->init(_assets, "loseScreen");
     
+    _winScreen = std::make_shared<MenuScene>();
+    _winScreen->init(_assets, "winScreen");
     
 
 
@@ -671,6 +673,10 @@ void GameScene::reset() {
     _background = nullptr;
     _sensorFixtures.clear();
     _inventoryNode->reset();
+    _winScreen->setActive(false);
+    _winScreen->reset();
+    _complete = false;
+    _failed = false;
     for (auto& enemy : _enemies) {
         enemy = nullptr;
     }
@@ -1820,74 +1826,37 @@ void GameScene::postUpdate(float remain) {
     }
 
     //Reset the game if we win or lose.
-    if (_countdown > 0) {
-        _countdown--;
-    }
-    else if (_countdown == 0) {
-        if (_failed == false) {
-
-            //this is where we will change the scene width and heights for everything
+    if (_complete) {
+        if (_winScreen->getAdvance()) {
+            CULog("advanced??? from complete");
             save();
             advanceLevel();
             reset();
-
-            //if (_level_model->getFilePath() == "json/intermediate.json") {
-            //    //_bgScene->setColor(Color4::BLACK);
-            //    _level_model->removeBackgroundImages(*this);
-            //    _level_model->setFilePath("json/empanada-platform-level-01.json");
-            //    currentLevel = _level_model;
-
-            //    CULog("We should switch to our first initial level");
-            //    // currentLevel
-            //    reset();
-            //}
-            //else if (_level_model->getFilePath() == "json/empanada-platform-level-01.json") {
-            //    //_bgScene->setColor(Color4::BLACK);
-            //    _level_model->removeBackgroundImages(*this);
-            //    _level_model->setFilePath("json/test_level_v2_experiment.json");
-            //    currentLevel = _level_model;
-            //    
-            //    CULog("We should switch to our first initial level");
-            //    // currentLevel
-            //    reset();
-            //}
-            //else if (_level_model->getFilePath() == "json/test_level_v2_experiment.json") {
-            //    _bgScene->setColor(Color4::BLACK);
-            //    _level_model->removeBackgroundImages(*this);
-            //    _level_model->setFilePath("json/bull-boss-level.json");
-            //    currentLevel = _level_model;
-
-            //    CULog("We should switch to the bull boss level");
-            //    // currentLevel
-            //    reset();
-            //}
-            //else if (currentLevel == level3) {
-            //    currentLevel = _level_model;
-            //    reset();
-            //}
-            //else {
-            //    currentLevel = _level_model;
-            //    reset();
-            //}
         }
-            // advanceLevel();
-            // reset();
-        // }
-        else if (_failed) {
-            //reset();
-            if (_loseScreen->getReset()) {
-                reset();
-            }
-            else if (_loseScreen->didTransition()) {
-                transition(true);
-                setTarget(_loseScreen->getTarget());
-                _loseScreen->setTarget("");
-                _loseScreen->setTransition(false);
-                _failed = false;
-            }
+        else if (_winScreen->getReset()) {
+            reset();
+        }
+        else if (_winScreen->didTransition()) {
+            transition(true);
+            setTarget(_winScreen->getTarget());
+            _winScreen->setTarget("");
+            _winScreen->setTransition(false);
+            _complete = false;
         }
     }
-
+    else if (_failed) {
+        //reset();
+        if (_loseScreen->getReset()) {
+            reset();
+        }
+        else if (_loseScreen->didTransition()) {
+            transition(true);
+            setTarget(_loseScreen->getTarget());
+            _loseScreen->setTarget("");
+            _loseScreen->setTransition(false);
+            _failed = false;
+        }
+    }
 }
 
 /* Checks input for cooktime or discard 
@@ -2037,6 +2006,7 @@ void GameScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
     _uiScene->render(batch);
     _pauseMenu->render(batch);
     _loseScreen->render(batch);
+    _winScreen->render(batch);
 }
 
 
@@ -2055,12 +2025,13 @@ void GameScene::setComplete(bool value) {
     if (value && change) {
         std::shared_ptr<Sound> source = _assets->get<Sound>(WIN_MUSIC);
         AudioEngine::get()->getMusicQueue()->play(source, false, MUSIC_VOLUME);
-        _winnode->setVisible(true);
-        _countdown = EXIT_COUNT;
+        //_winnode->setVisible(true);
+        _winScreen->setActive(true);
+        //_countdown = EXIT_COUNT;
     }
     else if (!value) {
         _winnode->setVisible(false);
-        _countdown = -1;
+        //_countdown = -1;
     }
 }
 
@@ -2077,13 +2048,13 @@ void GameScene::setFailure(bool value) {
             std::shared_ptr<Sound> source = _assets->get<Sound>(LOSE_MUSIC);
             AudioEngine::get()->getMusicQueue()->play(source, false, MUSIC_VOLUME);
             _losenode->setVisible(true);
-            _countdown = EXIT_COUNT;
+            //_countdown = EXIT_COUNT;
             _loseScreen->setActive(true);
         }
     }
     else {
         _losenode->setVisible(false);
-        _countdown = -1;
+        //_countdown = -1;
     }
     _failed = value;
 }

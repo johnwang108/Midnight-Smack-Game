@@ -17,7 +17,8 @@ enum class MenuType {
 	LEVEL_SELECT,
 	OPTIONS,
 	PAUSE,
-	LOSE
+	LOSE,
+	WIN
 };
 
 std::unordered_map<std::string, int> nameToLevel =
@@ -61,6 +62,9 @@ MenuType strToMenuType(std::string str) {
 	}
 	else if (str == "loseScreen") {
 		return MenuType::LOSE;
+	}
+	else if (str == "winScreen") {
+		return MenuType::WIN;
 	} else {
 		return MenuType::MAIN_MENU;
 	}
@@ -87,6 +91,7 @@ bool MenuScene::init(const std::shared_ptr<cugl::AssetManager>& assets, std::str
 	_rootNode = _assets->get<scene2::SceneNode>(id);
 	_started = false;
 	_reset = false;
+	_advance = false;
 	
 
 	_buttons = std::vector<std::shared_ptr<scene2::Button>>();
@@ -107,6 +112,9 @@ bool MenuScene::init(const std::shared_ptr<cugl::AssetManager>& assets, std::str
 			break;
 		case MenuType::LOSE:
 			initLoseMenu(dimen);
+			break;
+		case MenuType::WIN:
+			initWinMenu(dimen);
 			break;
 		default:
 			CULog("ERROR INVALID MENU");
@@ -349,6 +357,47 @@ void MenuScene::initLoseMenu(Size dimen) {
 	this->setActive(false);
 }
 
+void MenuScene::initWinMenu(Size dimen) {
+	auto kids = _rootNode->getChildren();
+	for (auto it = kids.begin(); it != kids.end(); ++it) {
+		std::shared_ptr<scene2::SceneNode> node = *it;
+		std::string nodeName = node->getName();
+		if (nodeName == "pauseretry") {
+			std::shared_ptr<scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(node);
+			_buttons.push_back(butt);
+			butt->addListener([=](const std::string& name, bool down) {
+				CULog("reset button pressed");
+				this->_reset = true;
+			});
+		}
+		else if (nodeName == "home") {
+			std::shared_ptr<scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(node);
+			_buttons.push_back(butt);
+			butt->addListener([=](const std::string& name, bool down) {
+				CULog("main menu button pressed");
+				this->setTransition(true);
+				this->setTarget("main_menu");
+			});
+		} else if (nodeName == "next") {
+			std::shared_ptr<scene2::Button> butt = std::dynamic_pointer_cast<scene2::Button>(node);
+			_buttons.push_back(butt);
+			butt->addListener([=](const std::string& name, bool down) {
+				CULog("next button pressed");
+				this->_advance = true;
+			});
+		}
+	}
+	//std::shared_ptr<scene2::Button> b = std::dynamic_pointer_cast<scene2::Button>(_rootNode->getChildByName("pauseretry"));
+	//b->addListener([=](const std::string& name, bool down) {
+	//	CULog("Button %s pressed in Pause Menu, down: %d", name.c_str(), down);
+	//	});
+	//b->activate();
+	//_buttons.push_back(b);
+
+	//_rootNode->setPosition(-90, -20);
+	this->setActive(false);
+}
+
 void MenuScene::setActive(bool b) {
 	_active = b;
 	for (auto it = _buttons.begin(); it != _buttons.end(); ++it) {
@@ -418,6 +467,7 @@ void MenuScene::reset() {
 	_targetScene = "";
 	_started = false;
 	_transitionedFrom = "";
+	_advance = false;
 	//for (auto it = _buttons.begin(); it != _buttons.end(); ++it) {
 	//	auto button = *it;
 	//	button->setDown(false);	
