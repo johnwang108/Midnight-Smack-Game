@@ -51,11 +51,11 @@ using namespace cugl;
 // #define DEFAULT_HEIGHT  25.0f
 #define DEFAULT_HEIGHT 30.0f
 
-#define MINIMAP_ZOOM 0.1f
+#define MINIMAP_ZOOM 0.25f
 
-#define MINIMAP_WIDTH 400
+#define MINIMAP_WIDTH 1280/2
 
-#define MINIMAP_HEIGHT 400
+#define MINIMAP_HEIGHT 800/2
 
 #define TIMER_DIAMETER_SIZE 40.0f
 
@@ -308,6 +308,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _worldnode = scene2::SceneNode::alloc();
     _worldnode->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
     _worldnode->setPosition(0, 0);
+    _worldnode->setName("worldnode");
 
     _debugnode = scene2::SceneNode::alloc();
     _debugnode->setScale(_scale); // Debug node draws in PHYSICS coordinates
@@ -475,8 +476,15 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _minimapIconNode = scene2::PolygonNode::alloc();
     _minimapIconNode->setVisible(false);
-    _uiScene->addChild(_minimapIconNode);
+    _worldnode->addChild(_minimapIconNode);
     _uiScene->addChild(_minimapNode);
+
+    _minimapIcons = std::unordered_map<std::string, std::shared_ptr<Texture>>();
+    _minimapIcons["su"] = _assets->get<Texture>("suIcon");
+    _minimapIcons["pot"] = _assets->get<Texture>("potIcon");
+    _minimapIcons["pan"] = _assets->get<Texture>("panIcon");
+    _minimapIcons["cut"] = _assets->get<Texture>("knifeIcon");
+    _minimapIcons["plate"] = _assets->get<Texture>("plateIcon");
 
     _timerIcon = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("timer"));
     _timerIcon->setScale(TIMER_DIAMETER_SIZE / _timerIcon->getContentWidth());
@@ -726,34 +734,6 @@ void GameScene::reset() {
     _timer = 0.0f;
     _timeLimit = 200.0f;
     _respawnTimes = std::deque<float>({ 50.0f, 100.0f, 150.0f, 200.0f });
-
-    std::vector<std::string> paths = {
-    "tutorialPopupWASD",
-    "tutorialPopupDash",
-    "tutorialPopupAttack",
-    "tutorialPopupInventory",
-    "tutorialPopupGestures",
-    "tutorialPopupStations",
-    "tutorialPopupPlates",
-    "tutorialPopupTimerDying",
-    "tutorialPopupMinimap"
-    };
-
-    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
-    for (std::string path : paths) {
-        auto reader = JsonReader::alloc("./json/Tutorials/" + path + ".json");
-        std::shared_ptr<JsonValue> popupData = reader->readJson()->get(path);
-        std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
-        p->setActive(false);
-        p->setVisible(false);
-        _interactivePopups.push_back(p);
-        _uiScene->addChild(p);
-        reader->close();
-        reader = nullptr;
-    }
-    _popupIndex = paths.size() - 1;
-    loader->dispose();
-    loader = nullptr;
     // addChild(_gestureFeedback);
 }
 
@@ -866,7 +846,6 @@ void GameScene::preUpdate(float dt) {
     }
     bool flag = false;
     if (_input->didReset() && _paused) {
-        CULog("Stepping one frame");
         flag = true;
         _paused = false;
 	}
@@ -1268,6 +1247,8 @@ void GameScene::preUpdate(float dt) {
                 if (int(_Bull->getangrytime() * 10) % 2 < 1) {
                     _Bull->createAttack(*this);
                 }
+                std::shared_ptr<Sound> source = _assets->get<Sound>("bullAngry");
+                AudioEngine::get()->play("bullAngry", source, false, 0.8f, false);
             }
             if (_Bull->getshake() && _Bull->getknockbacktime() <= 0) {
                 _Bull->setshake(false);
@@ -1333,8 +1314,14 @@ void GameScene::preUpdate(float dt) {
             if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
                 _Bull->animate("bullRun");
             }
+            if (_Bull->isChasing()) {
+                std::shared_ptr<Sound> source = _assets->get<Sound>("bullCharge");
+                AudioEngine::get()->play("bullCharge", source, false, 0.8f, false);
+            }
         }
         else if ( _Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0 &&_Bull->getattacktype()!="none") {
+            std::shared_ptr<Sound> source = _assets->get<Sound>("bullPuff");
+            AudioEngine::get()->play("bullPuff", source, false, 0.8f, false);
             if (!_BullactionManager->isActive(_Bull->getattacktype())) {
                 _BullactionManager->clearAllActions(_Bull->getSceneNode());
                 auto bullTelegraph = _Bull->getAction(_Bull->getattacktype());
@@ -1384,6 +1371,8 @@ void GameScene::preUpdate(float dt) {
             _ShrimpRice->setangrytime(5);
         }
         if (_ShrimpRice->getparry() && !_ShrimpRice->getparry2()) {
+            std::shared_ptr<Sound> source = _assets->get<Sound>("sfrAttack");
+            AudioEngine::get()->play("sfrAttack", source, false, EFFECT_VOLUME, true);
             CULog("parry");
             _ShrimpRice->setparry(false);
             _ShrimpRice->setparry2(false);
@@ -2026,10 +2015,40 @@ void GameScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
             if ((*it)->getName() == "background") {
 				(*it)->render(batch, Affine2::IDENTITY, _color);
 			}
-            else if ((*it)->getName() == "dude") {
-                _minimapIconNode->setPosition((*it)->getPosition());
-            }
-            (*it)->render(batch, Affine2::IDENTITY, _color);
+            else (*it)->render(batch, Affine2::IDENTITY, _color);
+    //        for (auto& i : _interactables) {
+    //            if (i->isRemoved()) {
+				//	continue;
+				//}
+    //            if (i->getName() == "interactable_plate") {
+				//	_minimapIconNode->setTexture(_minimapIcons["plate"]);
+				//	_minimapIconNode->setPosition(i->getPosition());
+				//	_minimapIconNode->render(batch, Affine2::IDENTITY, _color);
+    //                CULog("rending");
+				//}
+    //            else if (i->getName() == "interactable_cut") {
+				//	_minimapIconNode->setTexture(_minimapIcons["cut"]);
+				//	_minimapIconNode->setPosition(i->getPosition());
+				//	_minimapIconNode->render(batch, Affine2::IDENTITY, _color);
+				//}
+    //            else if (i->getName() == "interactable_pan") {
+				//	_minimapIconNode->setTexture(_minimapIcons["pan"]);
+				//	_minimapIconNode->setPosition(i->getPosition());
+				//	_minimapIconNode->render(batch, Affine2::IDENTITY, _color);
+				//}
+    //            else if (i->getName() == "interactable_pot") {
+				//	_minimapIconNode->setTexture(_minimapIcons["pot"]);
+				//	_minimapIconNode->setPosition(i->getPosition());
+				//	_minimapIconNode->render(batch, Affine2::IDENTITY, _color);
+				//}
+    //        }
+
+    //        _minimapIconNode->setTexture(_minimapIcons["su"]);
+    //        _minimapIconNode->setPosition(_avatar->getPosition());
+    //        _minimapIconNode->render(batch, Affine2::IDENTITY, _color);
+    //        
+    //        _minimapIconNode->setVisible(false);
+            //(*it)->render(batch, Affine2::IDENTITY, _color);
         }
 
         batch->end();
@@ -2058,7 +2077,6 @@ void GameScene::setComplete(bool value) {
     bool change = _complete != value;
     _complete = value;
     if (value && change) {
-        AudioEngine::get()->clear();
         std::shared_ptr<Sound> source = _assets->get<Sound>(WIN_MUSIC);
         AudioEngine::get()->getMusicQueue()->play(source, false, MUSIC_VOLUME);
         _winnode->setVisible(true);
@@ -2112,8 +2130,8 @@ void GameScene::removeAttack(T* attack) {
     attack->markRemoved(true);
     //attack->dispose();
 
-    std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
-    AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
+    std::shared_ptr<Sound> source = _assets->get<Sound>("slashNoImpact");
+    AudioEngine::get()->play("slashNoImpact", source, false, EFFECT_VOLUME, true);
 }
 
 void GameScene::respawnAvatar() {
@@ -2326,16 +2344,25 @@ bool GameScene::loadSave(std::shared_ptr<JsonValue> save) {
 void GameScene::loadLevel(int chapter, int level) {
     changeCurrentLevel(chapter, level);
     AudioEngine::get()->clear();
-    if (level == 4) {
+    
+    if (level == 1 || level == 2) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("tutorial");
+        AudioEngine::get()->getMusicQueue()->play(source, true, 0.1f);
+    }
+    if (level > 2 && level < 13) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("orderUp");
+        AudioEngine::get()->getMusicQueue()->play(source, true, 0.1f);
+    }
+    if (level == 13) {
         std::shared_ptr<Sound> source = _assets->get<Sound>("theBull");
-      //  AudioEngine::get()->play("theBull", source, true, EFFECT_VOLUME, true);
-        AudioEngine::get()->getMusicQueue()->play(source, true, 0.8f);
+        AudioEngine::get()->getMusicQueue()->play(source, true, 0.1f);
     }
-    if (level == 5) {
+    
+    if (level == 22) {
         std::shared_ptr<Sound> source = _assets->get<Sound>("theShrimp");
-   //     AudioEngine::get()->play("theShrimp", source, true, EFFECT_VOLUME, true);
-        AudioEngine::get()->getMusicQueue()->play(source, true, 0.8f);
+        AudioEngine::get()->getMusicQueue()->play(source, true, 0.1f);
     }
+    
     loadLevel(currentLevel);
 }
 
@@ -2373,8 +2400,12 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
         //    currentLevel = level3;
         //}
         if (level == 1) {
-            _level_model->setFilePath("json/empanada level 4.json");
-        }
+            /*_level_model->setFilePath("json/SFRLevel1.tmj");*/
+            //_level_model->setFilePath("json/empanada level 11.tmj");
+            //_level_model->setFilePath("json/johntutorial_colored.tmj");
+            //_level_model->setFilePath("json/empanada level 9.tmj");
+            _level_model->setFilePath("json/empanada level 12.tmj");
+		}
         else if (level == 2) {
             _level_model->setFilePath("json/empanada level 5.json");
         }
@@ -2390,14 +2421,17 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
         }
         else if (level == 5) {
             _level_model->setFilePath("json/intermediate.json");
+		}
+        else if (level == 4) {
+            _level_model->setFilePath("json/bull-boss-level.json");
+            //_level_model->setFilePath("json/test_level_v2_experiment.json");
+          //  _level_model->setFilePath("json/empanada_level_11.json");
+		}
+        else if (level == 5) {
+            _level_model->setFilePath("json/sfrBoss.json");
+            //_level_model->setFilePath("json/empanada-platform-level-01.json");
         }
         else if (level == 6) {
-            _level_model->setFilePath("json/test_level_v2_experiment.json");
-		}
-        else if (level == 7) {
-            _level_model->setFilePath("json/empanada-platform-level-01.json");
-        }
-        else if (level == 8) {
             _level_model->setFilePath("json/bull-boss-level.json");
         }
         else if (level == 9) {
@@ -2416,16 +2450,18 @@ void GameScene::spawnShrimp(Vec2 pos) {
     std::shared_ptr<EnemyModel> new_enemy = Shrimp::allocWithConstants(pos,s, getScale(), _assets);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
+    new_enemy->setasset(_assets);
     addObstacle(new_enemy, spritenode);
     _enemies.push_back(new_enemy);
 }
 void GameScene::spawnBeef(Vec2 pos) {
     std::shared_ptr<Texture> image = _assets->get<Texture>("beefIdle");
     std::shared_ptr<EntitySpriteNode> spritenode = EntitySpriteNode::allocWithSheet(image, 3, 3, 7);
-    Size s = cugl::Size(6.0f, 6.0f);
+    Size s = cugl::Size(6.5f, 6.0f);
     std::shared_ptr<EnemyModel> new_enemy = Beef::allocWithConstants(pos, s, getScale(), _assets);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
+    new_enemy->setasset(_assets);
     addObstacle(new_enemy, spritenode);
     _enemies.push_back(new_enemy);
 }
@@ -2480,6 +2516,7 @@ void GameScene::spawnCarrot(Vec2 pos) {
     std::shared_ptr<EnemyModel> new_enemy = Carrot::allocWithConstants(pos, s, getScale(), _assets);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
+    new_enemy->setasset(_assets);
     spritenode->setScale(0.2);
     spritenode->setAnchor(0.5, 0.35);
     addObstacle(new_enemy, spritenode);
@@ -2515,15 +2552,29 @@ void GameScene::spawnStation(Vec2 pos, StationType type) {
     CULog("%f", station->getSceneNode()->getScale());
 }
 
-void GameScene::spawnTutorialSign(Vec2 pos, std::string type) {
+void GameScene::spawnTutorialSign(Vec2 pos, std::string name) {
     //obstacle has small size, not reflective of intended size
-    Size s = Size(5.0f, 5.0f);
+    Size s = Size(4.0f, 2.0f);
     std::shared_ptr<Texture> image;
 
-    image = _assets->get<Texture>("knife");
+    image = _assets->get<Texture>("sign");
 
 
-    std::shared_ptr<TutorialSign> station = TutorialSign::alloc(image, pos, s, type);
+    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
+    auto reader = JsonReader::alloc("./json/Tutorials/" + name + ".json");
+    std::shared_ptr<JsonValue> popupData = reader->readJson()->get(name);
+    std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
+    p->setActive(false);
+    p->setVisible(false);
+    _interactivePopups.push_back(p);
+    _uiScene->addChild(p);
+    reader->close();
+    reader = nullptr;
+    loader->dispose();
+    loader = nullptr;
+
+    std::shared_ptr<TutorialSign> station = TutorialSign::alloc(image, pos, s, name);
+    station->setPopup(p);
 
     addObstacle(station, station->getSceneNode());
     _TutorialSigns.push_back(station);
@@ -2545,9 +2596,29 @@ void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map
         _pendingAcrossAllPlates[key] += value;
     }
 
+    Color4 c;
+
+    if (_plates.size() == 0) {
+        c = Color4::WHITE;
+    }
+    else if (_plates.size() == 1) {
+        c = Color4::BLUE;
+    }
+    else if (_plates.size() == 2) {
+        c = Color4::RED;
+    }
+    else if (_plates.size() == 3) {
+        c = Color4::BLACK;
+    }
+    else if (_plates.size() == 4) {
+        c = Color4::CYAN;
+    }
+    plate->getSceneNode()->setColor(c);
+
     addObstacle(plate, plate->getSceneNode());
     _interactables.push_back(plate);
     _plates.push_back(plate);
+
 }
 
 void GameScene::pogo() {

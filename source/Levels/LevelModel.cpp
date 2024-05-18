@@ -77,16 +77,24 @@ void LevelModel::populate(GameScene& scene) {
 
 	levelReader = cugl::JsonReader::allocWithAsset(getFilePath());
 
+	CULog(getFilePath().c_str());
 	std::shared_ptr<JsonValue> level_json_file = levelReader->readJson();
 
-	if (level_json_file == nullptr) {
-		CUAssertLog(false, "Failed to load level file");
+	if (level_json_file->get("height") == nullptr) {
+		CUAssertLog(false, "No level height");
+	}
+	if (level_json_file->get("width") == nullptr) {
+		CUAssertLog(false, "No level width");
 	}
 
 	int window_height = level_json_file->getInt("height");
 	// std::string window_height_string = json->getString("height");
 	int window_width = level_json_file->getInt("width");
 
+
+	if (level_json_file == nullptr) {
+		CUAssertLog(false, "Failed to load level file");
+	}
 	level_width = window_width;
 	level_height = window_height;
 
@@ -568,6 +576,17 @@ void LevelModel::populate(GameScene& scene) {
 						}
 						CULog("now, we are going to spawn the plate into the scene");
 						scene.spawnPlate(Vec2(object->getFloat("x") / 32.0f, level_height - (object->getFloat("y") / 32.0f)), map);
+					}
+					else if (object->getString("name") == "Popup") {
+						CULog("we are loading in a popup");
+						std::shared_ptr<JsonValue> propsproperties = object->get("properties");
+						std::string popupName;
+						for (int j = 0; j < propsproperties->size(); j++) {
+							std::shared_ptr<JsonValue> prop = propsproperties->get(j);
+							CULog(prop->getString("value").c_str());
+							popupName = "tutorialPopup" + prop->getString("value");
+						}
+						scene.spawnTutorialSign(Vec2(object->getFloat("x") / 32.0f, level_height - (object->getFloat("y") / 32.0f)), popupName);
 					}
 					else {
 						CULog(object->getString("name").c_str());

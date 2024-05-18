@@ -173,7 +173,7 @@ void MenuScene::initMainMenu(Size dimen) {
 	}
 
 	std::shared_ptr<Sound> source = _assets->get<Sound>("menu");
-	AudioEngine::get()->play("menu", source, true, 0.8f, true);
+	AudioEngine::get()->getMusicQueue()->play(source, true, 0.1f);
 
 	setName("main_menu");
 	this->setActive(false);

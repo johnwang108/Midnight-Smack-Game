@@ -99,9 +99,8 @@ void Rice::fixedUpdate(float step) {
                 velocity.x = 0;
             }
             std::shared_ptr<Sound> source = _assets->get<Sound>("riceRun");
-            if (!AudioEngine::get()->isActive("riceRun")) {
-                AudioEngine::get()->play("riceRun", source, false, 0.8f, false);
-            }
+            AudioEngine::get()->play("riceRun", source, false, 0.8f, false);
+
         
         }
         else if (_state == "attacking") {

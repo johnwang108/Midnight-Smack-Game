@@ -209,6 +209,8 @@ protected:
 
     std::shared_ptr<cugl::scene2::Button> _pauseButton;
 
+    std::unordered_map < std::string, std::shared_ptr<Texture>> _minimapIcons;
+
     bool _paused;
 
     //debug anims for Leon

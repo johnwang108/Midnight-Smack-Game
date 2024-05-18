@@ -52,8 +52,11 @@ void GameScene::beginContact(b2Contact* contact) {
 
     if ((enemies.find(bd1->getName()) != enemies.end() && enemies.find(bd2->getName()) != enemies.end())) return;
 
-    if ((enemies.find(bd1->getName()) != enemies.end() && bd2->getName() == "interactable")) return;
-    else if ((enemies.find(bd2->getName()) != enemies.end() && bd1->getName() == "interactable")) return;
+    if ((enemies.find(bd1->getName()) != enemies.end() && bd2->getName().find("interactable") != std::string::npos)) return;
+    else if ((enemies.find(bd2->getName()) != enemies.end() && bd1->getName().find("interactable") != std::string::npos)) return;
+
+    if ((enemies.find(bd1->getName()) != enemies.end() && bd2->getName().find("TutorialSign") != std::string::npos)) return;
+    else if ((enemies.find(bd2->getName()) != enemies.end() && bd1->getName().find("TutorialSign") != std::string::npos)) return;
 
     if (fd1 == _avatar->getLeftSensorName() && (bdWall2->getName() == BREAKABLE_PLATFORM_NAME)) {
         // in this condition, body1 is avatar and body2 is wall type
@@ -162,9 +165,12 @@ void GameScene::beginContact(b2Contact* contact) {
         _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
     }
 
-    if ((_avatar.get() == bd2 && bd1->getName() == "TutorialSign") ||
-        (_avatar.get() == bd1 && bd2->getName() == "TutorialSign")) {
-        _interactivePopups.at(_popupIndex)->toggle();
+    if ((_avatar.get() == bd2 && bd1->getName() == "TutorialSign")) {
+        ((TutorialSign*)bd1)->setPopupActive(true);
+    }
+    else if ((_avatar.get() == bd1 && bd2->getName() == "TutorialSign")) {
+        //_interactivePopups.at(_popupIndex)->toggle();
+        ((TutorialSign*)bd2)->setPopupActive(true);
     }
 
     for (auto& _enemy : _enemies) {
@@ -188,13 +194,38 @@ void GameScene::beginContact(b2Contact* contact) {
             if (((Attack*)bd2)->getUp() <= 0) {
                 ((Attack*)bd2)->setLifetime(20);
                 ((Attack*)bd2)->setDie(true);
+                if (s->getType() == StationType::CUT) {
+                    std::shared_ptr<Sound> source = _assets->get<Sound>("drawer");
+                    AudioEngine::get()->play("drawer", source, false, EFFECT_VOLUME, true);
+                }
+                else if (s->getType() == StationType::FRY) {
+					std::shared_ptr<Sound> source = _assets->get<Sound>("frying");
+					AudioEngine::get()->play("frying", source, false, EFFECT_VOLUME, true);
+				}
+                else if (s->getType() == StationType::BOIL) {
+					std::shared_ptr<Sound> source = _assets->get<Sound>("sink");
+					AudioEngine::get()->play("sink", source, false, EFFECT_VOLUME, true);
+				}   
             }
         }
         else if (s.get() == bd2 && bd1->getName() == "ingredient") {
             if (((Attack*)bd1)->getUp() <= 0) {
                 ((Attack*)bd1)->setLifetime(20);
                 ((Attack*)bd1)->setDie(true);
+                if (s->getType() == StationType::CUT) {
+                    std::shared_ptr<Sound> source = _assets->get<Sound>("drawer");
+                    AudioEngine::get()->play("drawer", source, false, EFFECT_VOLUME, true);
+                }
+                else if (s->getType() == StationType::FRY) {
+                    std::shared_ptr<Sound> source = _assets->get<Sound>("frying");
+                    AudioEngine::get()->play("frying", source, false, EFFECT_VOLUME, true);
+                }
+                else if (s->getType() == StationType::BOIL) {
+                    std::shared_ptr<Sound> source = _assets->get<Sound>("sink");
+                    AudioEngine::get()->play("sink", source, false, EFFECT_VOLUME, true);
+                }
             }
+
         }
     }
     if (bd1->getName() == "ingredient2" && bd2 == _avatar.get()) {
@@ -263,6 +294,10 @@ void GameScene::beginContact(b2Contact* contact) {
 
 
     if (_Bull != nullptr && bd1->getName() == ATTACK_NAME && bd2->getName() == BULL_TEXTURE && _Bull->getknockbacktime() <= 0) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("slice");
+        AudioEngine::get()->play("slice", source, false, EFFECT_VOLUME, true);
+         source = _assets->get<Sound>("bullHit");
+        AudioEngine::get()->play("bullHit", source, false, EFFECT_VOLUME, true);
         Vec2 enemyPos = _Bull->getPosition();
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
@@ -271,51 +306,55 @@ void GameScene::beginContact(b2Contact* contact) {
         float damage = _Bull->getHealth();
         pogo();
 
-        if (_Bull->getHealth() == 74.5f) {
-            _Bull->takeDamage(_avatar->getAttack() / 4, direction, true);
+        if (_Bull->getHealth() == 72.8f) {
+            _Bull->takeDamage(_avatar->getAttack() / 5, direction, true);
             _Bull->setsummoned(true);
             _Bull->setangrytime(4);
         }
-        else if (_Bull->getHealth() == 40.5f) {
+        else if (_Bull->getHealth() == 38.8f) {
             _Bull->setsprintpreparetime(2);
             _Bull->setact("bullTelegraph", 2.0f);
             _Bull->setattacktype("none");
             _Bull->setIsChasing(true);
             _Bull->setCAcount(2);
-            _Bull->takeDamage(_avatar->getAttack() / 4, direction, false);
+            _Bull->takeDamage(_avatar->getAttack() / 5, direction, false);
         }
         else
         {
-            _Bull->takeDamage(_avatar->getAttack() / 4, direction, false);
+            _Bull->takeDamage(_avatar->getAttack() / 5, direction, false);
         }
 
         damage -= _Bull->getHealth();
         popup(std::to_string((int)damage), enemyPos * _scale);
         CULog("Bull Health: %f", _Bull->getHealth());
     }else if (_Bull != nullptr && bd2->getName() == ATTACK_NAME && bd1->getName() == BULL_TEXTURE && _Bull->getknockbacktime()<=0) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("slice");
+        AudioEngine::get()->play("slice", source, false, EFFECT_VOLUME, true);
+        source = _assets->get<Sound>("bullHit");
+        AudioEngine::get()->play("bullHit", source, false, EFFECT_VOLUME, true);
         Vec2 enemyPos = _Bull->getPosition();
         Vec2 attackerPos = ((Attack*)bd2)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         pogo();
-        if (_Bull->getHealth() == 74.5f) {
-            _Bull->takeDamage(_avatar->getAttack() / 4, direction, true);
+        if (_Bull->getHealth() == 72.8f) {
+            _Bull->takeDamage(_avatar->getAttack() / 5, direction, true);
             _Bull->setsummoned(true);
             _Bull->setangrytime(4);
         }
-        else if (_Bull->getHealth() == 40.5f) {
+        else if (_Bull->getHealth() == 38.8f) {
             _Bull->setsprintpreparetime(2);
             _Bull->setact("bullTelegraph", 2.0f);
             _Bull->setattacktype("none");
             _Bull->setIsChasing(true);
             _Bull->setCAcount(2);
-            _Bull->takeDamage(_avatar->getAttack() / 4, direction, false);
+            _Bull->takeDamage(_avatar->getAttack() / 5, direction, false);
         }
         else
         {
-            _Bull->takeDamage(_avatar->getAttack() / 4, direction, false);
+            _Bull->takeDamage(_avatar->getAttack() / 5, direction, false);
         }
    
-        popup(std::to_string((int)_avatar->getAttack() / 4), enemyPos * _scale);
+        popup(std::to_string((int)_avatar->getAttack() / 5), enemyPos * _scale);
         CULog("Bull Health: %f", _Bull->getHealth());
     }
     if (bd1->getName() == "shake" && bd2 == _avatar.get()) {
@@ -346,22 +385,24 @@ void GameScene::beginContact(b2Contact* contact) {
     //}
 
     //interactable 
-    if (bd1->getName() == "interactable" && bd2 == _avatar.get()) {
-        ((GestureInteractable*)bd1)->getSceneNode()->setColor(Color4::BLUE);
+    if (bd1->getName().find("interactable") != std::string::npos && bd2 == _avatar.get()) {
+        //((GestureInteractable*)bd1)->getSceneNode()->setColor(Color4::BLUE);
         setInteractable(((GestureInteractable*)bd1)->getId());
 	}
-    if (bd2->getName() == "interactable" && bd1 == _avatar.get()) {
-        ((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::BLUE);
+    if (bd2->getName().find("interactable") != std::string::npos && bd1 == _avatar.get()) {
+        //((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::BLUE);
         setInteractable(((GestureInteractable*)bd2)->getId());
     }
 
     //station hit it to remove 
-    if (bd1->getName() == "interactable" && bd2->getName() == ATTACK_NAME) {
+    if (bd1->getName().find("interactable") != std::string::npos && bd2->getName() == ATTACK_NAME) {
         ((GestureInteractable*)bd1)->hit();
     }
 
     // Test bullet collision with enemy
     if (bd1->getName() == ATTACK_NAME && enemies.find(bd2->getName()) != enemies.end()) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("slice");
+        AudioEngine::get()->play("slice", source, false, EFFECT_VOLUME, true);
         if (((EnemyModel*)bd2)->isTangible()) {
             Vec2 enemyPos = ((EnemyModel*)bd2)->getPosition();
             Vec2 attackerPos = ((Attack*)bd1)->getPosition();
@@ -451,6 +492,8 @@ void GameScene::beginContact(b2Contact* contact) {
         _avatar->takeDamage(34, direction);
     }
     if (_ShrimpRice != nullptr && bd1->getName() == ATTACK_NAME && bd2->getName() == "shrimpBoss" && _ShrimpRice->getknockbacktime() <= 0) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("slice");
+        AudioEngine::get()->play("slice", source, false, EFFECT_VOLUME, true);
         if (_ShrimpRice->getact() == "SFRJoustState2") {
             _ShrimpRice->setparry(true);
 			_ShrimpRice->setparry2(false);
@@ -470,6 +513,8 @@ void GameScene::beginContact(b2Contact* contact) {
     }
 
     else if (_ShrimpRice != nullptr && bd2->getName() == ATTACK_NAME && bd1->getName() == "shrimpBoss" && _ShrimpRice->getknockbacktime() <= 0) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("slice");
+        AudioEngine::get()->play("slice", source, false, EFFECT_VOLUME, true);
         if (_ShrimpRice->getact() == "SFRJoustState2") {
             _ShrimpRice->setparry(true);
             _ShrimpRice->setparry2(false);
@@ -546,17 +591,21 @@ void GameScene::endContact(b2Contact* contact) {
     }
 
     //interactable 
-    if (bd1->getName() == "interactable" && bd2 == _avatar.get()) {
-        ((GestureInteractable*)bd1)->getSceneNode()->setColor(Color4::WHITE);
+    if (bd1->getName().find("interactable") != std::string::npos && bd2 == _avatar.get()) {
+        //((GestureInteractable*)bd1)->getSceneNode()->setColor(Color4::WHITE);
         setInteractable(-1);
     }
-    if (bd2->getName() == "interactable" && bd1 == _avatar.get()) {
-        ((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::WHITE);
+    if (bd2->getName().find("interactable") != std::string::npos && bd1 == _avatar.get()) {
+        //((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::WHITE);
         setInteractable(-1);
     }
-    if ((_avatar.get() == bd2 && bd1->getName() == "TutorialSign") ||
-        (_avatar.get() == bd1 && bd2->getName() == "TutorialSign")) {
-        _interactivePopups.at(_popupIndex)->toggle();
+
+    if ((_avatar.get() == bd2 && bd1->getName() == "TutorialSign")) {
+        ((TutorialSign*)bd1)->setPopupActive(false);
+    }
+    else if ((_avatar.get() == bd1 && bd2->getName() == "TutorialSign")) {
+        //_interactivePopups.at(_popupIndex)->toggle();
+        ((TutorialSign*)bd2)->setPopupActive(false);
     }
     //// Check if the player is no longer in contact with any walls
     //bool p1 = (_avatar->getLeftSensorName() == fd1);

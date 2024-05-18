@@ -21,6 +21,8 @@ private:
     int _capacity;
 
     int _interactableId;
+
+    std::shared_ptr<Popup> _popup;
 protected:
 
 public:
@@ -51,6 +53,7 @@ public:
 
     virtual void hit() {};
 
+    void setPopupActive(bool b) { _popup->setActive(b); }
 
     int getCapacity();
 
@@ -58,7 +61,11 @@ public:
 
     void setCapacity(int capacity);
 
-    void setPopupType(std::string type) { _popuptype = type; }
+    void setPopupType(std::string type) { 
+        _popuptype = type; 
+    }
+
+    void setPopup(std::shared_ptr<Popup> p) { _popup = p; }
 
     std::string getPopupType() { return _popuptype; }
 

@@ -233,7 +233,7 @@ void ShrimpRice::takeDamage(float damage, int attackDirection, bool knockback) {
 void ShrimpRice::Summon(GameScene& scene) {
 
     Vec2 enemyPos = getPosition()-Vec2(-_direction*2,2);
-    scene.spawnRice(enemyPos,false);
+    scene.spawnRice(enemyPos,true);
     
 
 }

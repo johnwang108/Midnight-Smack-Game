@@ -493,6 +493,40 @@
                  "width":0,
                  "x":3808,
                  "y":1856
+                }, 
+                {
+                 "height":0,
+                 "id":7,
+                 "name":"Plate",
+                 "polygon":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":-3.030303030303,
+                         "y":103.030303030303
+                        }, 
+                        {
+                         "x":181.818181818182,
+                         "y":109.090909090909
+                        }, 
+                        {
+                         "x":203.030303030303,
+                         "y":3.030303030303
+                        }],
+                 "properties":[
+                        {
+                         "name":"boilEgg",
+                         "type":"string",
+                         "value":"2"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":2612.12121212121,
+                 "y":2106.06060606061
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -869,7 +903,7 @@
          "y":0
         }],
  "nextlayerid":14,
- "nextobjectid":7,
+ "nextobjectid":8,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.10.2",

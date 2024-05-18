@@ -99,6 +99,8 @@ void Shrimp::fixedUpdate(float step) {
     }
     else if (_state == "standing") {
         velocity.x = 0;
+        std::shared_ptr<Sound> source = _assets->get<Sound>("shrimpStand");
+        AudioEngine::get()->play("shrimpStand", source, false, 0.8f, false);
     }
     else if (_state == "standingRunning") {
         velocity.x = ENEMY_FORCE * _moveDirection * 2;
@@ -121,6 +123,9 @@ void Shrimp::fixedUpdate(float step) {
         }
         velocity.x = velocity.x + spd;
         _body->ApplyAngularImpulse((_direction * -0.05f), true);
+
+        std::shared_ptr<Sound> source = _assets->get<Sound>("shrimpRoll");
+        AudioEngine::get()->play("shrimpRoll", source, false, 0.8f, false);
     }
     else if (_state == "uncurling") {
         velocity.x = 0;

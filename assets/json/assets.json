@@ -114,9 +114,12 @@
             "wrapT": "repeat"
         },
         "popupBackground": {
-            "file": "textures/testPopupBack.png",
+            "file": "textures/popupBackground.png",
             "wrapS": "repeat",
             "wrapT": "repeat"
+        },
+        "popupBackgroundText": {
+            "file": "textures/popupBackgroundText.png"
         },
         "dude": {
             "file": "textures/dude.png"
@@ -585,6 +588,24 @@
         "knife": {
             "file": "textures/day/knife.png"
         },
+        "sign": {
+            "file": "textures/sign.png"
+        },
+        "potIcon": {
+            "file": "textures/UI/potIcon.png"
+        },
+        "panIcon": {
+            "file": "textures/UI/panIcon.png"
+        },
+        "suIcon": {
+            "file": "textures/UI/suIcon.png"
+        },
+        "plateIcon": {
+            "file": "textures/UI/plateIcon.png"
+        },
+        "knifeIcon": {
+            "file": "textures/UI/knifeIcon.png"
+        },
         "orderBackground": {
             "file": "textures/UI/Orders/orderBackground.png"
         },
@@ -662,22 +683,27 @@
         "menu": {
             "type": "sample",
             "file": "sounds/menu.ogg",
-            "volume": 0.5
+            "volume": 0.2
         },
         "theBull": {
             "type": "sample",
             "file": "sounds/theBull.ogg",
-            "volume": 0.5
+            "volume": 0.2
         },
         "theShrimp": {
             "type": "sample",
             "file": "sounds/theShrimp.ogg",
-            "volume": 0.5
+            "volume": 0.2
         },
         "tutorial": {
             "type": "sample",
             "file": "sounds/tutorial.ogg",
-            "volume": 0.5
+            "volume": 0.2
+        },
+        "orderUp": {
+            "type": "sample",
+            "file": "sounds/orderUp.ogg",
+            "volume": 0.2
         },
         "hand": {
             "type": "sample",
@@ -707,6 +733,71 @@
         "staffSpin": {
             "type": "sample",
             "file": "sounds/riceEnemy/staffSpin.wav",
+            "volume": 0.5
+        },
+        "slashNoImpact": {
+            "type": "sample",
+            "file": "sounds/slashNoImpact.wav",
+            "volume": 0.5
+        },
+        "slice": {
+            "type": "sample",
+            "file": "sounds/slice.wav",
+            "volume": 0.5
+        },
+        "sfrAttack": {
+            "type": "sample",
+            "file": "sounds/shrimpFriedRice/sfrAttack.wav",
+            "volume": 0.5
+        },
+        "burrow": {
+            "type": "sample",
+            "file": "sounds/moleEnemy/burrow.wav",
+            "volume": 0.5
+        },
+        "mole": {
+            "type": "sample",
+            "file": "sounds/moleEnemy/mole.wav",
+            "volume": 0.5
+        },
+        "shake": {
+            "type": "sample",
+            "file": "sounds/moleEnemy/shake.wav",
+            "volume": 0.5
+        },
+        "bullAngry": {
+            "type": "sample",
+            "file": "sounds/empanadaBull/bullAngry.wav",
+            "volume": 0.5
+        },
+        "bullCharge": {
+            "type": "sample",
+            "file": "sounds/empanadaBull/bullCharge.wav",
+            "volume": 0.5
+        },
+        "bullHit": {
+            "type": "sample",
+            "file": "sounds/empanadaBull/bullHit.wav",
+            "volume": 0.5
+        },
+        "bullPuff": {
+            "type": "sample",
+            "file": "sounds/empanadaBull/bullPuff.wav",
+            "volume": 0.5
+        },
+        "drawer": {
+            "type": "sample",
+            "file": "sounds/drawer.wav",
+            "volume": 0.5
+        },
+        "frying": {
+            "type": "sample",
+            "file": "sounds/frying.wav",
+            "volume": 0.5
+        },
+        "sink": {
+            "type": "sample",
+            "file": "sounds/sink.wav",
             "volume": 0.5
         }
     },

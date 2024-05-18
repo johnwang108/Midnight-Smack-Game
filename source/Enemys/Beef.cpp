@@ -67,10 +67,14 @@ void Beef::fixedUpdate(float step) {
     else if (_state == "burrowing") {
         setTangible(false);
         velocity.x = 0;
+        std::shared_ptr<Sound> source = _assets->get<Sound>("burrow");
+        AudioEngine::get()->play("burrow", source, false, 0.8f, false);
     }
     else if (_state == "tracking") {
         setTangible(false);
-        velocity.x = 0 * BEEF_SPEED;
+        velocity.x = _direction * BEEF_SPEED;
+        std::shared_ptr<Sound> source = _assets->get<Sound>("mole");
+        AudioEngine::get()->play("mole", source, false, 0.8f, false);
     }
     else if (_state == "unburrowing") {
         setTangible(false);
@@ -93,7 +97,7 @@ void Beef::fixedUpdate(float step) {
     }
     else if (_state == "patrolling") {
         setTangible(true);
-        velocity.x = _moveDirection * BEEF_SPEED;;
+        velocity.x = 0;
         _attacked = false;
     }
     else if (_state == "respawning") {
