@@ -604,9 +604,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
  */
 void GameScene::dispose() {
     if (_active) {
-        _input->dispose();
         _assets = nullptr;
-        _input = nullptr;
         _worldnode = nullptr;
         _debugnode = nullptr;
         _winnode = nullptr;
@@ -646,6 +644,8 @@ void GameScene::dispose() {
         _pauseButton = nullptr;
         _debugAnimTarget = nullptr;
         _level_model = nullptr;
+        _input->dispose();
+        _input = nullptr;
         Scene2::dispose();
     }
 }
@@ -2506,6 +2506,8 @@ void GameScene::spawnTutorialSign(Vec2 pos, std::string name) {
 
     image = _assets->get<Texture>("sign");
 
+    CULog(name.c_str());
+
 
     std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
     auto reader = JsonReader::alloc("./json/Tutorials/" + name + ".json");
@@ -2522,6 +2524,8 @@ void GameScene::spawnTutorialSign(Vec2 pos, std::string name) {
 
     std::shared_ptr<TutorialSign> station = TutorialSign::alloc(image, pos, s, name);
     station->setPopup(p);
+
+    CULog("position: %f %f", pos.x, pos.y);
 
     addObstacle(station, station->getSceneNode());
     _TutorialSigns.push_back(station);

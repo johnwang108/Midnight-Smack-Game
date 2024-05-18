@@ -112,7 +112,7 @@
             "file": "textures/day/food/rawBeef.png"
         },
         "cookedBeef": {
-            "file": "textures/day/food/rawBeef.png"
+            "file": "textures/day/food/cookedBeef.png"
         },
         "earth": {
             "file": "textures/placeholder_block.png",
@@ -357,6 +357,9 @@
         "suFallingImage": {
             "file": "textures/suFallingImage.png"
         },
+        "suFlame": {
+            "file": "textures/Sheets/Su/flameIdle.png"
+        },
         "MYmenuboard": {
             "file": "textures/UI/MYmenu.png"
         },
@@ -371,6 +374,9 @@
         },
         "GameTitle": {
             "file": "textures/UI/GameTitle.png"
+        },
+        "carrotDeath": {
+            "file": "textures/Sheets/Enemies/Carrot/carrotDeath.png"
         },
         "knifeoutline": {
             "file": "textures/UI/Meters/knifeoutline.png"
