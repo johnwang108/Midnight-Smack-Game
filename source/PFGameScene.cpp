@@ -58,6 +58,8 @@ using namespace cugl;
 #define MINIMAP_HEIGHT 800/2
 
 #define TIMER_DIAMETER_SIZE 40.0f
+#define TIMER_FILL_DIAMETER 30.0f
+#define TIMER_VERTICAL_SHIFT 80.0f
 
 #define CAMERA_FOLLOWS_PLAYER true
 
@@ -488,13 +490,15 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _minimapIcons["plate"] = _assets->get<Texture>("plateIcon");
 
     _timerIcon = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("timer"));
-    _timerIcon->setScale(TIMER_DIAMETER_SIZE / _timerIcon->getContentWidth());
-    _timerIcon->setPosition(1280/2.0f, 800 - TIMER_DIAMETER_SIZE - 10);
+    //_timerIcon->setScale(TIMER_DIAMETER_SIZE / _timerIcon->getContentWidth());
+    _timerIcon->setAnchor(Vec2::ANCHOR_CENTER);
+    _timerIcon->setPosition(1280/2.0f, 800 - TIMER_VERTICAL_SHIFT);
     _uiScene->addChild(_timerIcon);
     
     _timerFillIcon = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("timerFill"));
-    _timerFillIcon->setScale(TIMER_DIAMETER_SIZE / _timerFillIcon->getContentWidth());
-    _timerFillIcon->setPosition(1280/2.0f, 800 - TIMER_DIAMETER_SIZE - 10);
+    _timerFillIcon->setAnchor(Vec2::ANCHOR_CENTER);
+    //_timerFillIcon->setScale(TIMER_FILL_DIAMETER / _timerFillIcon->getContentWidth());
+    _timerFillIcon->setPosition(1280/2.0f, 800 - TIMER_VERTICAL_SHIFT - 5);
     _uiScene->addChild(_timerFillIcon);
 
     _actionManager = cugl::scene2::ActionManager::alloc();
@@ -1480,8 +1484,8 @@ void GameScene::fixedUpdate(float step) {
     }
     if (_timerFillIcon != nullptr) {
         float timePercentage = 1.0f - (_timer / _timeLimit);
-        float width = _timerFillIcon->getWidth() * 2;
-        float height = _timerFillIcon->getHeight()* 2;
+        float width = _timerFillIcon->getWidth();
+        float height = _timerFillIcon->getHeight();
         std::shared_ptr<Scissor> scissor = Scissor::alloc(Rect(0, 0, width, height * timePercentage));
         _timerFillIcon->setScissor(scissor);
     }

@@ -269,10 +269,10 @@
             "file": "textures/bosshealth.png"
         },
         "timer": {
-            "file": "textures/timer.png"
+            "file": "textures/UI/timer.png"
         },
         "timerFill": {
-            "file": "textures/timerFill.png"
+            "file": "textures/UI/timerFill.png"
         },
         "cooktime": {
             "file": "textures/UI/cuttingBoard.png",
