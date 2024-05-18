@@ -1651,7 +1651,7 @@ void GameScene::fixedUpdate(float step) {
 	float cameraWidth = invZoom * (_camera->getViewport().getMaxX() - _camera->getViewport().getMinX()) / 2;
 	float cameraHeight = invZoom * (_camera->getViewport().getMaxY() - _camera->getViewport().getMinY()) / 2;
 
-	if ((_level == 1 || _level == 2 || _level == 3 || _level == 4 || _level == 5 || _level == 6 || _level == 7 || _level == 8 || _level == 9 || _level == 10 || _level == 11 || _level == 12) && _background != nullptr) {
+	if (/*(_level == 1 || _level == 2 || _level == 3 || _level == 4 || _level == 5 || _level == 6 || _level == 7 || _level == 8 || _level == 9 || _level == 10 || _level == 11 || _level == 12) && */_background != nullptr) {
 
 		float backgroundWidth = _background->getBoundingRect().getMaxX() - _background->getBoundingRect().getMinX();
 		float backgroundHeight = _background->getBoundingRect().getMaxY() - _background->getBoundingRect().getMinY();
@@ -1676,7 +1676,7 @@ void GameScene::fixedUpdate(float step) {
 	_camera->setPosition(pos);
 	_camera->update();
 
-	if (_level == 1 || _level == 2 || _level == 3 || _level == 4 || _level == 5) {
+	if (_background != nullptr) {
 
 		invZoom = 1 / _minimapCamera->getZoom();
 		cameraWidth = invZoom * (_minimapCamera->getViewport().getMaxX() - _minimapCamera->getViewport().getMinX()) / 2;
