@@ -585,6 +585,22 @@
         "knife": {
             "file": "textures/day/knife.png"
         },
+        
+        "potIcon": {
+            "file": "textures/UI/potIcon.png"
+        },
+        "panIcon": {
+            "file": "textures/UI/panIcon.png"
+        },
+        "suIcon": {
+            "file": "textures/UI/suIcon.png"
+        },
+        "plateIcon": {
+            "file": "textures/UI/plateIcon.png"
+        },
+        "knifeIcon": {
+            "file": "textures/UI/knifeIcon.png"
+        },
         "orderBackground": {
             "file": "textures/UI/Orders/orderBackground.png"
         },

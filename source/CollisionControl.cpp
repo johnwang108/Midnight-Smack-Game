@@ -57,8 +57,8 @@ void GameScene::beginContact(b2Contact* contact) {
 
     if ((enemies.find(bd1->getName()) != enemies.end() && enemies.find(bd2->getName()) != enemies.end())) return;
 
-    if ((enemies.find(bd1->getName()) != enemies.end() && bd2->getName() == "interactable")) return;
-    else if ((enemies.find(bd2->getName()) != enemies.end() && bd1->getName() == "interactable")) return;
+    if ((enemies.find(bd1->getName()) != enemies.end() && bd2->getName().find("interactable") != std::string::npos)) return;
+    else if ((enemies.find(bd2->getName()) != enemies.end() && bd1->getName().find("interactable") != std::string::npos)) return;
 
     if (fd1 == _avatar->getLeftSensorName() && (bdWall2->getName() == WALL_NAME)) {
         // in this condition, body1 is avatar and body2 is wall type
@@ -334,17 +334,17 @@ void GameScene::beginContact(b2Contact* contact) {
     //}
 
     //interactable 
-    if (bd1->getName() == "interactable" && bd2 == _avatar.get()) {
+    if (bd1->getName().find("interactable") != std::string::npos && bd2 == _avatar.get()) {
         //((GestureInteractable*)bd1)->getSceneNode()->setColor(Color4::BLUE);
         setInteractable(((GestureInteractable*)bd1)->getId());
 	}
-    if (bd2->getName() == "interactable" && bd1 == _avatar.get()) {
+    if (bd2->getName().find("interactable") != std::string::npos && bd1 == _avatar.get()) {
         //((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::BLUE);
         setInteractable(((GestureInteractable*)bd2)->getId());
     }
 
     //station hit it to remove 
-    if (bd1->getName() == "interactable" && bd2->getName() == ATTACK_NAME) {
+    if (bd1->getName().find("interactable") != std::string::npos && bd2->getName() == ATTACK_NAME) {
         ((GestureInteractable*)bd1)->hit();
     }
 
@@ -534,11 +534,11 @@ void GameScene::endContact(b2Contact* contact) {
     }
 
     //interactable 
-    if (bd1->getName() == "interactable" && bd2 == _avatar.get()) {
+    if (bd1->getName().find("interactable") != std::string::npos && bd2 == _avatar.get()) {
         //((GestureInteractable*)bd1)->getSceneNode()->setColor(Color4::WHITE);
         setInteractable(-1);
     }
-    if (bd2->getName() == "interactable" && bd1 == _avatar.get()) {
+    if (bd2->getName().find("interactable") != std::string::npos && bd1 == _avatar.get()) {
         //((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::WHITE);
         setInteractable(-1);
     }

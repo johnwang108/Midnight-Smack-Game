@@ -51,11 +51,11 @@ using namespace cugl;
 // #define DEFAULT_HEIGHT  25.0f
 #define DEFAULT_HEIGHT 30.0f
 
-#define MINIMAP_ZOOM 0.1f
+#define MINIMAP_ZOOM 0.25f
 
-#define MINIMAP_WIDTH 400
+#define MINIMAP_WIDTH 1280/2
 
-#define MINIMAP_HEIGHT 400
+#define MINIMAP_HEIGHT 800/2
 
 #define TIMER_DIAMETER_SIZE 40.0f
 
@@ -292,6 +292,7 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _worldnode = scene2::SceneNode::alloc();
     _worldnode->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
     _worldnode->setPosition(0, 0);
+    _worldnode->setName("worldnode");
 
     _debugnode = scene2::SceneNode::alloc();
     _debugnode->setScale(_scale); // Debug node draws in PHYSICS coordinates
@@ -459,8 +460,15 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _minimapIconNode = scene2::PolygonNode::alloc();
     _minimapIconNode->setVisible(false);
-    _uiScene->addChild(_minimapIconNode);
+    _worldnode->addChild(_minimapIconNode);
     _uiScene->addChild(_minimapNode);
+
+    _minimapIcons = std::unordered_map<std::string, std::shared_ptr<Texture>>();
+    _minimapIcons["su"] = _assets->get<Texture>("suIcon");
+    _minimapIcons["pot"] = _assets->get<Texture>("potIcon");
+    _minimapIcons["pan"] = _assets->get<Texture>("panIcon");
+    _minimapIcons["cut"] = _assets->get<Texture>("knifeIcon");
+    _minimapIcons["plate"] = _assets->get<Texture>("plateIcon");
 
     _timerIcon = scene2::PolygonNode::allocWithTexture(_assets->get<Texture>("timer"));
     _timerIcon->setScale(TIMER_DIAMETER_SIZE / _timerIcon->getContentWidth());
@@ -2000,10 +2008,40 @@ void GameScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
             if ((*it)->getName() == "background") {
 				(*it)->render(batch, Affine2::IDENTITY, _color);
 			}
-            else if ((*it)->getName() == "dude") {
-                _minimapIconNode->setPosition((*it)->getPosition());
-            }
-            (*it)->render(batch, Affine2::IDENTITY, _color);
+            else (*it)->render(batch, Affine2::IDENTITY, _color);
+    //        for (auto& i : _interactables) {
+    //            if (i->isRemoved()) {
+				//	continue;
+				//}
+    //            if (i->getName() == "interactable_plate") {
+				//	_minimapIconNode->setTexture(_minimapIcons["plate"]);
+				//	_minimapIconNode->setPosition(i->getPosition());
+				//	_minimapIconNode->render(batch, Affine2::IDENTITY, _color);
+    //                CULog("rending");
+				//}
+    //            else if (i->getName() == "interactable_cut") {
+				//	_minimapIconNode->setTexture(_minimapIcons["cut"]);
+				//	_minimapIconNode->setPosition(i->getPosition());
+				//	_minimapIconNode->render(batch, Affine2::IDENTITY, _color);
+				//}
+    //            else if (i->getName() == "interactable_pan") {
+				//	_minimapIconNode->setTexture(_minimapIcons["pan"]);
+				//	_minimapIconNode->setPosition(i->getPosition());
+				//	_minimapIconNode->render(batch, Affine2::IDENTITY, _color);
+				//}
+    //            else if (i->getName() == "interactable_pot") {
+				//	_minimapIconNode->setTexture(_minimapIcons["pot"]);
+				//	_minimapIconNode->setPosition(i->getPosition());
+				//	_minimapIconNode->render(batch, Affine2::IDENTITY, _color);
+				//}
+    //        }
+
+    //        _minimapIconNode->setTexture(_minimapIcons["su"]);
+    //        _minimapIconNode->setPosition(_avatar->getPosition());
+    //        _minimapIconNode->render(batch, Affine2::IDENTITY, _color);
+    //        
+    //        _minimapIconNode->setVisible(false);
+            //(*it)->render(batch, Affine2::IDENTITY, _color);
         }
 
         batch->end();
