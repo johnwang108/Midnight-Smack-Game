@@ -2377,7 +2377,7 @@ void GameScene::loadLevel(int chapter, int level) {
 
 void GameScene::advanceLevel() {
     _level += 1;
-    _level = _level % 18;
+    _level = _level % 15;
     if (_level == 0) _level = 1;
     changeCurrentLevel(_chapter, _level);
 }
@@ -2452,7 +2452,7 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
         else if (level == 13) {
             _level_model->setFilePath("json/SFRLevel3.tmj");
         }
-        else if (level == 14) {
+        /*else if (level == 14) {
             _level_model->setFilePath("json/intermediate.json");
         }
         else if (level == 15) {
@@ -2460,11 +2460,11 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
 		}
         else if (level == 16) {
             _level_model->setFilePath("json/empanada-platform-level-01.json");
-        }
-        else if (level == 17) {
+        }*/
+        else if (level == 14) {
             _level_model->setFilePath("json/sfrBoss.json");
         }
-        else if (level == 18) {
+        else if (level == 15) {
             // currentLevel = level3;
         }
     }
