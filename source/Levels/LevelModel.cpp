@@ -288,18 +288,18 @@ void LevelModel::populate(GameScene& scene) {
 							// knife, pan, plate, pot, sink
 
 							if (pathWeWant.find("knife") != std::string::npos) {
-								interactablePos = Vec2(colNum + ((169.0 / 32.0) / 2), rowPos - ((108.0 / 32.0) * 2));
+								interactablePos = Vec2(colNum + ((169.0 / 32.0) / 2), rowPos - ((108.0 / 32.0)));
 
 								scene.spawnStation(interactablePos, StationType::CUT);								
 							}
 							else if (pathWeWant.find("pan") != std::string::npos) {
-								interactablePos = Vec2(colNum + ((148.0 / 32.0) / 2), rowPos - ((120.0 / 32.0) * 2));
+								interactablePos = Vec2(colNum + ((148.0 / 32.0) / 2), rowPos - ((120.0 / 32.0)));
 
 								scene.spawnStation(interactablePos, StationType::FRY);
 
 							}
 							else if (pathWeWant.find("pot") != std::string::npos) {
-								interactablePos = Vec2(colNum + ((132.0 / 32.0) / 2), rowPos - ((105.0 / 32.0) * 2));
+								interactablePos = Vec2(colNum + ((132.0 / 32.0) / 2), rowPos - ((105.0 / 32.0)));
 
 								scene.spawnStation(interactablePos, StationType::BOIL);
 							}
@@ -341,7 +341,7 @@ void LevelModel::populate(GameScene& scene) {
 							//WE WILL HAVE TO CHANGE THIS
 
 							// Vec2 dudePos = Vec2(colNum + (3 * scale_refactor), rowPos + (3 * scale_refactor));
-							Vec2 dudePos = Vec2(colNum, rowPos);
+							Vec2 dudePos = Vec2(colNum + ((80.0 / 32.0) / 2), rowPos - ((160.0 / 32.0) / 2));
 
 							p = dudePos;
 
@@ -472,7 +472,6 @@ void LevelModel::populate(GameScene& scene) {
 							}
 
 							else if (pathWeWant.find("beef") != std::string::npos) {
-
 								scene.spawnBeef(enemyPos);
 							}
 							else if (pathWeWant.find("egg") != std::string::npos) {
@@ -542,6 +541,9 @@ void LevelModel::populate(GameScene& scene) {
 						if (plateProperties != nullptr && plateProperties->isArray()) {
 							for (int j = 0; j < plateProperties->size(); j++) {
 								std::shared_ptr<JsonValue> ingredientSpec = plateProperties->get(j);
+								for (auto& child : ingredientSpec->children()) {
+									CULog(child->asString().c_str());
+								}
 								// egg, rice, carrot, beef, shrimp
 								if (ingredientSpec->getString("name") == "cutCarrot") {
 									map.emplace(IngredientType::cutCarrot, std::stoi(ingredientSpec->getString("value")));

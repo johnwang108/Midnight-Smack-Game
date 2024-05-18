@@ -137,7 +137,6 @@ void MenuScene::initMainMenu(Size dimen) {
 			_buttons.push_back(butt);
 			butt->addListener([=](const std::string& name, bool down) {
 				CULog("Button %s pressed in Main Menu, down: %d", name.c_str(), down);
-				this->_active = false;
 				this->setTransition(true);
 				this->setTarget("levelSelectMenu");
 			//	this->setTarget("night");

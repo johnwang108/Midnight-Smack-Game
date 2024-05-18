@@ -50,6 +50,11 @@ void GameScene::beginContact(b2Contact* contact) {
         return;
     }
 
+    if ((enemies.find(bd1->getName()) != enemies.end() && enemies.find(bd2->getName()) != enemies.end())) return;
+
+    if ((enemies.find(bd1->getName()) != enemies.end() && bd2->getName() == "interactable")) return;
+    else if ((enemies.find(bd2->getName()) != enemies.end() && bd1->getName() == "interactable")) return;
+
     if (fd1 == _avatar->getLeftSensorName() && (bdWall2->getName() == BREAKABLE_PLATFORM_NAME)) {
         // in this condition, body1 is avatar and body2 is wall type
         _avatar->setContactingLeftWall(true);

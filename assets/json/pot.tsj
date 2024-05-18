@@ -1,0 +1,14 @@
+{ "columns":4,
+ "image":"..\/textures\/day\/pot.png",
+ "imageheight":105,
+ "imagewidth":132,
+ "margin":0,
+ "name":"pot",
+ "spacing":0,
+ "tilecount":12,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

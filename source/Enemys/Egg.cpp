@@ -37,7 +37,7 @@ void Egg::update(float dt) {
     }
     else if (_state == "patrolling") {
         if (velocity.x == 0) setRequestedActionAndPrio("eggIdle", 1);
-	    setRequestedActionAndPrio("eggWalk", 2);
+        else setRequestedActionAndPrio("eggWalk", 2);
     }
     else if (_state == "short_windup") {
         int prio = 50;
@@ -58,7 +58,7 @@ void Egg::fixedUpdate(float step) {
 	b2Vec2 velocity = _body->GetLinearVelocity();
 
     if (_state == "chasing") {
-        velocity.x = ENEMY_FORCE * _direction * 1.2;
+        velocity.x = ENEMY_FORCE * _moveDirection * 1.2;
     }
     else if (_state == "stunned") {
         
@@ -70,7 +70,7 @@ void Egg::fixedUpdate(float step) {
         velocity.x = 0;
     }
     else if (_state == "patrolling") {
-        velocity.x = ENEMY_FORCE * _direction * 0.75;
+        velocity.x = ENEMY_FORCE * _moveDirection * 0.75;
     }
     else if (_state == "short_windup") {
         velocity.x = 0;

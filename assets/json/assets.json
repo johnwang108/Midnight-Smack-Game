@@ -591,6 +591,9 @@
         "boilEggOrder": {
             "file": "textures/UI/Orders/boilEgg.png"
         },
+        "fryEggOrder": {
+            "file": "textures/UI/Orders/fryEgg.png"
+        },
         "boilRiceOrder": {
             "file": "textures/UI/Orders/boilRice.png"
         },
