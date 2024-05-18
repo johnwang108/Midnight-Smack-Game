@@ -72,7 +72,7 @@ void Carrot::setState(std::string state) {
         _behaviorCounter = 0;
     }
     else if (state == "stunned") {
-        _behaviorCounter = -1;
+        _behaviorCounter = 1.0f;
     }
     else if (state == "patrollling") {
         _behaviorCounter = -1;

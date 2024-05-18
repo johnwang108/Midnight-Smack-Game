@@ -69,7 +69,6 @@ using namespace cugl;
 #define DISCARD_HOLD_TIME 2.0f
 #define MIN_DISCARD_START_TIME 0.25f
 /**desired order width in pixels*/
-#define ORDER_WIDTH 100.0f
 #define INVENTORY_OFFSET 30.0f
 
 
@@ -505,6 +504,13 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_debugnode);
     _numOrders = 0;
 
+    _ordersObj = std::make_shared<Orders>();
+    _ordersObj->init(_assets);
+    _ordersObj->setVisible(true);
+    _ordersObj->setPosition(115, 600);
+    _ordersObj->setActive(true);
+    _uiScene->addChild(_ordersObj);
+
     _orders = std::unordered_map<int, std::vector<std::shared_ptr<scene2::SceneNode>>>();
     _orderNode = scene2::SceneNode::alloc();
     generateOrders();
@@ -695,6 +701,7 @@ void GameScene::reset() {
     }
     _orders.clear();
 
+    _ordersObj->reset();
     for (auto& i : _interactivePopups) {
         i->dispose();
         i = nullptr;
@@ -872,6 +879,7 @@ void GameScene::preUpdate(float dt) {
 	}
 
     _pauseMenu->setActive(_paused);
+    _ordersObj->setActive(_paused);
 
     if (_paused) {
         if (_pauseMenu->getReset()) {
@@ -2574,24 +2582,24 @@ void GameScene::createOrder(int plateId, IngredientType ing) {
     }
     }
     std::shared_ptr<scene2::PolygonNode> text = scene2::PolygonNode::allocWithTexture(texture);
-    float scale = ORDER_WIDTH / texture->getWidth();
+    float scale = ORDER_HEIGHT / texture->getHeight();
     text->setPosition(0, 0);
     text->setScale(scale);
     background->setPosition(0,0);
     background->setScale(scale);
     order->addChild(text);
-    order->setScale(scale);
-    order->setContentWidth(ORDER_WIDTH);
+    order->setContentHeight(ORDER_HEIGHT);
     order->setName(Ingredient::getIngredientStringFromType(ing) + "Order");
 
-    _orders[plateId].push_back(order);
-    _orderNode->addChild(_orders[plateId].back());
+    _ordersObj->addOrder(plateId, order);
+    //_orders[plateId].push_back(order);
+    //_orderNode->addChild(_orders[plateId].back());
     _numOrders += 1;
     positionOrders();
 }
 
 void GameScene::removeOrder(int plateId, IngredientType ing) {
-    for (auto it = _orders[plateId].begin(); it != _orders[plateId].end(); it++) {
+    /*for (auto it = _orders[plateId].begin(); it != _orders[plateId].end(); it++) {
         if ((*it) != nullptr && (*it)->getName() == (Ingredient::getIngredientStringFromType(ing) + "Order")) {
             std::shared_ptr<scene2::SceneNode> order = *it;
             _orderNode->removeChild(order);
@@ -2599,10 +2607,11 @@ void GameScene::removeOrder(int plateId, IngredientType ing) {
             order->dispose();
             _numOrders -= 1;
             positionOrders();
+            
             return;
 		}
-	}
-
+	}*/
+    _ordersObj->removeOrder(plateId, ing);
 }
 
 void GameScene::toggleOrders(bool v) {
@@ -2615,19 +2624,23 @@ void GameScene::toggleOrders(bool v) {
 }
 
 void GameScene::positionOrders() {
-    CULog("positioning");
-    float totalWidth = _numOrders * ORDER_WIDTH;
-    float start = 0;
-    for (auto& t : _orders) {
-		int i = 0;
-        for (auto& b : t.second) {
-			b->setPositionX(start);
-            start += ORDER_WIDTH;
-		}
-	}
-    _orderNode->setContentWidth(totalWidth);
-    _orderNode->setAnchor(Vec2::ANCHOR_TOP_CENTER);
-    _orderNode->setPosition(1280 / 2, 800 - 50);
+ //   CULog("positioning");
+ //   float totalHeight = ORDER_HEIGHT * _numOrders;
+ //   float start = 0;
+ //   for (auto& t : _orders) {
+	//	int i = 0;
+ //       for (auto& b : t.second) {
+	//		b->setPositionY(start);
+ //           start += ORDER_HEIGHT;
+	//	}
+	//}
+ //   //_orderNode->setContentHeight(totalHeight);
+ //   _orderNode->setAnchor(Vec2::ANCHOR_TOP_CENTER);
+ //   _orderNode->setPosition(1280 / 2, 800 - 50);
+
+    //std::shared_ptr<scene2::Button> lButton = scene2::Button::alloc();
+    //std::shared_ptr<scene2::Button> rButton = scene2::Button::alloc();
+
 }
 
 void GameScene::generateOrders() {

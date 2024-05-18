@@ -85,7 +85,6 @@ void Inventory::fixedUpdate(float dt) {
         Color4 c = getColor();
         c.a = 255.0f;
         setColor(c);
-        CULog("Time since last interact: %f", _timeSinceLastInteract);
     }
 }
 
