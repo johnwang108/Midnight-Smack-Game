@@ -499,7 +499,7 @@ void LevelModel::populate(GameScene& scene) {
 					/*if (object->getString("name") == "avatar") {
 						loadAvatar(object);
 					}*/
-					if (object->getString("name") == "Floating_Platform") {
+					if (object->getString("name") == "Floating_Platform" || object->getString("name") == "Wall") {
 						CULog("We are in loadFloatingBox!");
 						CULog(object->getString("id").c_str());
 						loadMainPlatform(object, scene, sprite, window_height * 32.0f);
