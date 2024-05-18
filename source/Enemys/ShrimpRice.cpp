@@ -33,6 +33,7 @@ bool ShrimpRice::init(const Vec2& pos, const Size& size, float scale) {
         _W3att = 0;
         _parry=false;
         _parry2 = false;
+        DIE = false;
         return true;
     }
     return false;
@@ -139,6 +140,9 @@ void ShrimpRice::update(float dt) {
         if (_act == "SFRWave3") {
             velocity.x = 0;
         }
+        if (_act == "SFR_D") {
+            velocity.x = 0;
+        }
         if (_acttime <= 0) {
             if (_act == "SFRTurn") {
                 if (_W3att > 0) {
@@ -178,6 +182,10 @@ void ShrimpRice::update(float dt) {
             }
             if (_act == "SFRStunState1") {
                 setact("SFRStunState2", 1.84);
+            }
+            if (_act == "SFR_Death") {
+                setact("SFR_D", 10.0f);
+                _knockbackTime = 10;
             }
             _movestate1 = 0.7;
 		}
@@ -233,7 +241,13 @@ void ShrimpRice::takeDamage(float damage, int attackDirection, bool knockback) {
 void ShrimpRice::Summon(GameScene& scene) {
 
     Vec2 enemyPos = getPosition()-Vec2(-_direction*2,2);
-    scene.spawnRice(enemyPos,true);
+    if (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < 0.33f) {
+        scene.spawnRice(enemyPos, false);
+    }
+    else {
+        scene.spawnRice(enemyPos, true);
+    }
+    
     
 
 }

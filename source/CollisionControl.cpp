@@ -294,9 +294,7 @@ void GameScene::beginContact(b2Contact* contact) {
 
 
     if (_Bull != nullptr && bd1->getName() == ATTACK_NAME && bd2->getName() == BULL_TEXTURE && _Bull->getknockbacktime() <= 0) {
-        std::shared_ptr<Sound> source = _assets->get<Sound>("slice");
-        AudioEngine::get()->play("slice", source, false, EFFECT_VOLUME, true);
-         source = _assets->get<Sound>("bullHit");
+        std::shared_ptr<Sound> source = _assets->get<Sound>("bullHit");
         AudioEngine::get()->play("bullHit", source, false, EFFECT_VOLUME, true);
         Vec2 enemyPos = _Bull->getPosition();
         Vec2 attackerPos = ((Attack*)bd1)->getPosition();
@@ -306,12 +304,12 @@ void GameScene::beginContact(b2Contact* contact) {
         float damage = _Bull->getHealth();
         pogo();
 
-        if (_Bull->getHealth() == 72.8f) {
+        if (_Bull->getHealth() == 72.799987f) {
             _Bull->takeDamage(_avatar->getAttack() / 5, direction, true);
             _Bull->setsummoned(true);
             _Bull->setangrytime(4);
         }
-        else if (_Bull->getHealth() == 38.8f) {
+        else if (_Bull->getHealth() == 38.799987f) {
             _Bull->setsprintpreparetime(2);
             _Bull->setact("bullTelegraph", 2.0f);
             _Bull->setattacktype("none");
@@ -328,20 +326,18 @@ void GameScene::beginContact(b2Contact* contact) {
         popup(std::to_string((int)damage), enemyPos * _scale);
         CULog("Bull Health: %f", _Bull->getHealth());
     }else if (_Bull != nullptr && bd2->getName() == ATTACK_NAME && bd1->getName() == BULL_TEXTURE && _Bull->getknockbacktime()<=0) {
-        std::shared_ptr<Sound> source = _assets->get<Sound>("slice");
-        AudioEngine::get()->play("slice", source, false, EFFECT_VOLUME, true);
-        source = _assets->get<Sound>("bullHit");
+        std::shared_ptr<Sound> source = _assets->get<Sound>("bullHit");
         AudioEngine::get()->play("bullHit", source, false, EFFECT_VOLUME, true);
         Vec2 enemyPos = _Bull->getPosition();
         Vec2 attackerPos = ((Attack*)bd2)->getPosition();
         int direction = (attackerPos.x > enemyPos.x) ? 1 : -1;
         pogo();
-        if (_Bull->getHealth() == 72.8f) {
+        if (_Bull->getHealth() == 72.799987f) {
             _Bull->takeDamage(_avatar->getAttack() / 5, direction, true);
             _Bull->setsummoned(true);
             _Bull->setangrytime(4);
         }
-        else if (_Bull->getHealth() == 38.8f) {
+        else if (_Bull->getHealth() == 38.799987f) {
             _Bull->setsprintpreparetime(2);
             _Bull->setact("bullTelegraph", 2.0f);
             _Bull->setattacktype("none");

@@ -55,6 +55,7 @@ protected:
     int n;
     std::string _act;
     float _acttime;
+    bool DIE;
     b2Filter filter;
 
 
@@ -135,6 +136,8 @@ public:
     float getbreaking(){return _breaking;}
     float getrunning(){return _running;}
     void setattacktype(std::string attacktype) { _attacktype = attacktype; }
+    bool getDIE(){return DIE;}
+    void setDIE(bool die){DIE=die;}
 };
 
 #endif /* __BULL_MODEL_H__ */

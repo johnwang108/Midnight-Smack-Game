@@ -38,6 +38,7 @@ bool BullModel::init(const Vec2& pos, const Size& size, float scale) {
         n=0;
         _act="none";
         _acttime=0;
+        DIE=false;
 
         return true;
     }
@@ -114,6 +115,10 @@ void BullModel::update(float dt) {
             }
             if(_act=="bullCrash"){
                 setact("bullStunned", 3.0f);
+            }
+            if (_act == "bullDeath") {
+                setact("bullD", 10.0f);
+                _knockbackTime = 10;
             }
 
         }

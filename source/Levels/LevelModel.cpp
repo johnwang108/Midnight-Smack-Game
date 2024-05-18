@@ -404,6 +404,8 @@ void LevelModel::populate(GameScene& scene) {
 								_bull->addActionAnimation("bullDazedtoIdle", _assets->get<Texture>("bullDazedtoIdle"), 2, 2, 4, 2.0f);
 								_bull->addActionAnimation("bullCrash", _assets->get<Texture>("bullCrash"), 4, 4, 15, 3.0f);
 								_bull->addActionAnimation("bullTurn", _assets->get<Texture>("bullTurn"), 4, 4, 16, 0.75f);
+								_bull->addActionAnimation("bullDeath", _assets->get<Texture>("bullDeath"), 5, 5, 22, 1.0f);
+								_bull->addActionAnimation("bullD", _assets->get<Texture>("bullD"), 1, 1, 1, 1.0f);
 
 								scene.addObstacle(_bull, spritenode);
 
@@ -443,6 +445,8 @@ void LevelModel::populate(GameScene& scene) {
 								_shrimprice->addActionAnimation("SFRTurn", _assets->get<Texture>("SFRTurn"), 3, 4, 11, 0.61f);
 								_shrimprice->addActionAnimation("SFRStunState2", _assets->get<Texture>("SFRStunState2"), 3, 3, 7, 0.46f);
 								_shrimprice->addActionAnimation("SFRStunState1", _assets->get<Texture>("SFRStunState1"), 3, 3, 7, 0.6f);
+								_shrimprice->addActionAnimation("SFR_Death", _assets->get<Texture>("SFR_Death"), 5, 6, 27, 1.5f);
+								_shrimprice->addActionAnimation("SFR_D", _assets->get<Texture>("SFR_D"), 1, 1, 1, 1.0f);
 
 								scene.addObstacle(_shrimprice, spritenode);
 

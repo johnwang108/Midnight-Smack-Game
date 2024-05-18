@@ -656,6 +656,18 @@
         },
         "plateShrimpOrder": {
             "file": "textures/UI/Orders/plateShrimp.png"
+        },
+        "SFR_Death": {
+            "file": "textures/SFR_Death.png"
+        },
+        "bullDeath": {
+            "file": "textures/bullDeath.png"
+        },
+        "bullD": {
+            "file": "textures/bullD.png"
+        },
+        "SFR_D": {
+            "file": "textures/SFR_D.png"
         }
     },
     "sounds": {
