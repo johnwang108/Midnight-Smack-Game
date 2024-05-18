@@ -106,7 +106,7 @@
             "file": "textures/day/food/rawBeef.png"
         },
         "cookedBeef": {
-            "file": "textures/day/food/rawBeef.png"
+            "file": "textures/day/food/cookedBeef.png"
         },
         "earth": {
             "file": "textures/placeholder_block.png",
