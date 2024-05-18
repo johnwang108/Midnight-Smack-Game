@@ -5,7 +5,7 @@
         "size": [800, 500],
         "anchor": [0.5, 0.5],
         "visible": true,
-        "text": "When your meter is full, press [TAB] to initiate cooking! Draw a gesture to get a temporary buff.\n Consult the recipe book with [P] to learn which gestures correspond to which buffs!",
+        "text": "When your meter is full, press TAB or Y to initiate cooking! Draw a gesture to get a temporary buff.\n Pause with P or View (controller) to learn which gestures correspond to which buffs!",
         "textMaxWidth%age": 0.5,
         "font": "popupFont",
         "background": "popupBackground",

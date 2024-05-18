@@ -5,7 +5,7 @@
         "size": [800, 400],
         "anchor": [0.5, 0.5],
         "visible": true,
-        "text": "Press Space to jump off walls",
+        "text": "Press Space or A (controller) to jump off walls",
         "textMaxWidth%age": 0.5,
         "font": "popupFont",
         "background": "popupBackground",

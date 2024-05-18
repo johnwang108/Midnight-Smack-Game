@@ -5,7 +5,7 @@
         "size": [800, 400],
         "anchor": [0.5, 0.5],
         "visible": true,
-        "text": "<- Press [O] to attack ->",
+        "text": "Press O or X to attack",
         "textMaxWidth%age": 0.5,
         "font": "popupFont",
         "background": "popupBackground",

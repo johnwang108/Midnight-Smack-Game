@@ -5,7 +5,7 @@
         "size": [800, 400],
         "anchor": [0.5, 0.5],
         "visible": true,
-        "text": "Press [M] to open a minimap to help find stations and plates",
+        "text": "Press M or = (controller) to open a minimap to help find stations and plates",
         "textMaxWidth%age": 0.5,
         "font": "popupFont",
         "background": "popupBackground",
