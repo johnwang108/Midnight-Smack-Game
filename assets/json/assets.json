@@ -799,6 +799,36 @@
             "type": "sample",
             "file": "sounds/sink.wav",
             "volume": 0.5
+        },
+        "grind": {
+            "type": "sample",
+            "file": "sounds/shrimpEnemy/grind.wav",
+            "volume": 0.5
+        },
+        "shrimpRoll": {
+            "type": "sample",
+            "file": "sounds/shrimpEnemy/shrimpRoll.wav",
+            "volume": 0.5
+        },
+        "shrimpStand": {
+            "type": "sample",
+            "file": "sounds/shrimpEnemy/shrimpStand.wav",
+            "volume": 0.5
+        },
+        "ding": {
+            "type": "sample",
+            "file": "sounds/ding.wav",
+            "volume": 0.5
+        },
+        "clockTick": {
+            "type": "sample",
+            "file": "sounds/clockTick.wav",
+            "volume": 0.5
+        },
+        "plateOne": {
+            "type": "sample",
+            "file": "sounds/plateOne.wav",
+            "volume": 0.5
         }
     },
     "fonts": {

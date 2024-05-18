@@ -1355,7 +1355,6 @@ void GameScene::preUpdate(float dt) {
             if (_ShrimpRice->getnextchangetime() < 0) {
                 int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
                 _ShrimpRice->setDirection(direction);
-                _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
             }
         }
         if (_ShrimpRice->getangrytime() > 0 && !_enemies.empty()) {
@@ -1660,6 +1659,10 @@ void GameScene::fixedUpdate(float step) {
     if (_timer > _timeLimit) {
         setFailure(true);
     }
+    if (_timer > _timeLimit-15) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("clockTick");
+        AudioEngine::get()->play("clockTick", source, false, 0.8f, false);
+    }
  
     _inventoryNode->fixedUpdate(step);
     //su
@@ -1752,6 +1755,8 @@ void GameScene::fixedUpdate(float step) {
 	}
     if (allPlatesDone) {
         setComplete(true);
+        std::shared_ptr<Sound> source = _assets->get<Sound>("ding");
+        AudioEngine::get()->play("ding", source, false, 0.8f, false);
     }
 
 
