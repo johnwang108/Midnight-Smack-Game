@@ -1,0 +1,14 @@
+{ "columns":8,
+ "image":"..\/textures\/shrimp_standing.png",
+ "imageheight":123,
+ "imagewidth":267,
+ "margin":0,
+ "name":"shrimp_standing",
+ "spacing":0,
+ "tilecount":24,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

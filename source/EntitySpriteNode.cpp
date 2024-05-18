@@ -2,9 +2,9 @@
 
 void EntitySpriteNode::changeSheet(std::shared_ptr<cugl::Texture> texture, int rows, int cols, int size) {
     Vec2 pos = getPosition();
-    _cols = cols;
-    _size = size;
-    Rect oldBounds = _bounds;
+    this->_cols = cols;
+    this->_size = size;
+    //Rect oldBounds = _bounds;
     _bounds.size = texture->getSize();
     _bounds.size.width /= cols;
     _bounds.size.height /= rows;
@@ -22,7 +22,9 @@ void EntitySpriteNode::setFrame(int frame) {
 	int row = frame / _cols;
 	int col = frame % _cols;
 	_frame = frame;
-	_bounds.origin.x = col * _size;
-	_bounds.origin.y = row * _size;
-	setPolygon(_bounds);
+    _bounds.origin.x = (_frame % _cols) * _bounds.size.width;
+    _bounds.origin.y = _texture->getSize().height - (1 + _frame / _cols) * _bounds.size.height;
+    Vec2 coord = getPosition();
+    setPolygon(_bounds);
+    setPosition(coord);
 }

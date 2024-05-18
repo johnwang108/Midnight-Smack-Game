@@ -1,0 +1,14 @@
+{ "columns":2,
+ "image":"..\/textures\/eggEnemy.png",
+ "imageheight":213,
+ "imagewidth":67,
+ "margin":0,
+ "name":"eggEnemy",
+ "spacing":0,
+ "tilecount":12,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

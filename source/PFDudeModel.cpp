@@ -922,4 +922,5 @@ void DudeModel::reset() {
 	_movement = 0;
 	_vertical = 0;
     _buffType = buff::none;
+    setGravityScale(1.3f);
 }

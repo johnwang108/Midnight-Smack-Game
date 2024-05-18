@@ -47,7 +47,7 @@ void Beef::update(float dt) {
         setRequestedActionAndPrio("beefIdle", 34);
     }
     else if (_state == "patrolling") {
-        setRequestedActionAndPrio("beefIdle", 1);
+        setRequestedActionAndPrio("beefDig", 1);
     }
     else if (_state == "respawning") {
 		setRequestedActionAndPrio("beefRespawn", 1000);
@@ -70,7 +70,7 @@ void Beef::fixedUpdate(float step) {
     }
     else if (_state == "tracking") {
         setTangible(false);
-        velocity.x = _direction * BEEF_SPEED;
+        velocity.x = 0 * BEEF_SPEED;
     }
     else if (_state == "unburrowing") {
         setTangible(false);
@@ -93,7 +93,7 @@ void Beef::fixedUpdate(float step) {
     }
     else if (_state == "patrolling") {
         setTangible(true);
-        velocity.x = 0;
+        velocity.x = _moveDirection * BEEF_SPEED;;
         _attacked = false;
     }
     else if (_state == "respawning") {

@@ -74,7 +74,7 @@
 /** The font for victory/failure messages */
 #define MESSAGE_FONT    "retro"
 
-#define SMALL_MSG "retrosmall"  
+#define SMALL_MSG "midnightSmack"  
 /** The message for winning the game */
 #define WIN_MESSAGE     "VICTORY!"
 /** The color of the win message */
