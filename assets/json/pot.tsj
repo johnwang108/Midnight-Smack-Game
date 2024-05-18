@@ -1,7 +1,7 @@
 { "columns":4,
  "image":"..\/textures\/day\/pot.png",
  "imageheight":105,
- "imagewidth":132,
+ "imagewidth":135,
  "margin":0,
  "name":"pot",
  "spacing":0,

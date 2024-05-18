@@ -75,12 +75,12 @@
                 "scale": 0.2
             },
             "plate": {
-                "texture": "sink",
+                "texture": "plate",
                 "rows": 1,
                 "cols": 1,
                 "frames": 1,
                 "position": [0.0, 0.0],
-                "scale": 0.2
+                "scale": 0.05
             },
             "run": {
                 "texture": "su_run",

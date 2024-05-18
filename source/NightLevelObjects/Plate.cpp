@@ -6,6 +6,7 @@ bool Plate::init(const std::shared_ptr<Texture>& texture, const cugl::Vec2& pos,
 		setCapacity(-1);
 		setBodyType(b2_staticBody);
 		setSensor(true);
+		setName(getName() + "_plate");
 		return true;
 	}
 	return false;

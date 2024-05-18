@@ -1,0 +1,14 @@
+{ "columns":120,
+ "image":"..\/textures\/wellLayer.png",
+ "imageheight":2400,
+ "imagewidth":3840,
+ "margin":0,
+ "name":"wellLayer",
+ "spacing":0,
+ "tilecount":9000,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

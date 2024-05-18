@@ -44,6 +44,7 @@
 #include "NightLevelObjects/platform.h"
 #include "NightLevelObjects/TutorialSign.h"
 #include "Popup.h"
+#include "Orders.h"
 
 #include "Inventory.h"
 #include "Levels/LevelModel.h"
@@ -145,6 +146,9 @@ protected:
     std::unordered_map<IngredientType, int> _pendingAcrossAllPlates;
     std::unordered_map<int, std::vector<std::shared_ptr<scene2::SceneNode>>> _orders;
     std::shared_ptr<scene2::SceneNode> _orderNode;
+
+    std::shared_ptr<Orders> _ordersObj;
+    
     int _numOrders;
 
     //camera
@@ -208,6 +212,8 @@ protected:
     std::shared_ptr<cugl::scene2::ActionManager> _SHRactionManager;
 
     std::shared_ptr<cugl::scene2::Button> _pauseButton;
+
+    std::unordered_map < std::string, std::shared_ptr<Texture>> _minimapIcons;
 
     bool _paused;
 

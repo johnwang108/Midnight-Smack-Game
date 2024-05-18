@@ -18,6 +18,7 @@ bool TutorialSign::init(const std::shared_ptr<Texture>& texture, const cugl::Vec
 		setFilterData(filter);
 		setName("TutorialSign");
 		setSensor(true);
+
 		return true;
 	}
     return false;

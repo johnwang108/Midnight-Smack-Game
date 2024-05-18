@@ -114,9 +114,12 @@
             "wrapT": "repeat"
         },
         "popupBackground": {
-            "file": "textures/testPopupBack.png",
+            "file": "textures/popupBackground.png",
             "wrapS": "repeat",
             "wrapT": "repeat"
+        },
+        "popupBackgroundText": {
+            "file": "textures/popupBackgroundText.png"
         },
         "dude": {
             "file": "textures/dude.png"
@@ -584,6 +587,24 @@
         },
         "knife": {
             "file": "textures/day/knife.png"
+        },
+        "sign": {
+            "file": "textures/sign.png"
+        },
+        "potIcon": {
+            "file": "textures/UI/potIcon.png"
+        },
+        "panIcon": {
+            "file": "textures/UI/panIcon.png"
+        },
+        "suIcon": {
+            "file": "textures/UI/suIcon.png"
+        },
+        "plateIcon": {
+            "file": "textures/UI/plateIcon.png"
+        },
+        "knifeIcon": {
+            "file": "textures/UI/knifeIcon.png"
         },
         "orderBackground": {
             "file": "textures/UI/Orders/orderBackground.png"
@@ -1213,8 +1234,12 @@
                 ],
                 "angle": 0,
                 "position": [
-                    0,
-                    0
+                    150,
+                    50
+                ],
+                "scale": [
+                    0.9,
+                    0.9
                 ],
                 "visible": true
             },
