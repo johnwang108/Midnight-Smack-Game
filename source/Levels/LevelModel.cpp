@@ -288,7 +288,7 @@ void LevelModel::populate(GameScene& scene) {
 							// knife, pan, plate, pot, sink
 
 							if (pathWeWant.find("knife") != std::string::npos) {
-								scene.spawnStation(interactablePos, StationType::CUT);
+								scene.spawnStation(interactablePos, StationType::CUT);								
 							}
 							else if (pathWeWant.find("pan") != std::string::npos) {
 								scene.spawnStation(interactablePos, StationType::FRY);
@@ -431,6 +431,7 @@ void LevelModel::populate(GameScene& scene) {
 								scene.spawnCarrot(enemyPos);
 							}
 							else if (pathWeWant.find("shrimp") != std::string::npos) {
+								CULog("shwimp");
 								scene.spawnShrimp(enemyPos);
 							}
 						}
@@ -711,7 +712,7 @@ void LevelModel::loadFloatingPlatform(const std::shared_ptr<Texture> image, cons
 		DEBUG_COLOR, startingPos, numOfVerts, PLATFORM_NAME, false);
 	platobj->setAnchor(Vec2::ANCHOR_BOTTOM_LEFT);
 
-	platobj->initBreakable(50, 25);
+	platobj->initBreakable(50,25);
 
 	// CULog(std::to_string(platobj->isRemoved()).c_str());
 	platobj->setName(std::string(WALL_NAME));

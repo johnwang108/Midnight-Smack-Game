@@ -27,13 +27,15 @@ protected:
     std::string _targetScene;
 
     std::vector<std::shared_ptr<cugl::scene2::Button>> _buttons;
-
+    std::vector<std::shared_ptr<cugl::scene2::Slider>> _sliders;
     int _selectedLevel;
 
     int _highestLevel;
 
     float _musicVolume;
     float _sfxVolume;
+
+    std::string _transitionedFrom;
 
 private:
 
@@ -44,6 +46,8 @@ private:
     void initLevelSelectMenu(cugl::Size);
 
     void initSettingsMenu(cugl::Size);
+
+    void initLoseMenu(cugl::Size);
 
 public:
 
@@ -77,6 +81,10 @@ public:
     int getSelectedLevel() { return _selectedLevel;}
 
     void setHighestLevel(int i);
+
+    void setTransitionedFrom(std::string sceneName) { _transitionedFrom = sceneName; };
+
+    std::string getTransitionedFrom() { return _transitionedFrom; }
 
     void reset();
 };

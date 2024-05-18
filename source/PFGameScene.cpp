@@ -71,10 +71,7 @@ using namespace cugl;
 /**desired order width in pixels*/
 #define ORDER_WIDTH 100.0f
 
-struct IngredientProperties {
-    std::string name;
-    std::vector<std::string> gestures;
-};
+
 
 
 std::map<EnemyType, IngredientProperties> enemyToIngredientMap = {
@@ -84,6 +81,15 @@ std::map<EnemyType, IngredientProperties> enemyToIngredientMap = {
     {EnemyType::rice, {"rice", EnemyModel::defaultSeq(EnemyType::rice)}},
     {EnemyType::rice_soldier, {"rice", EnemyModel::defaultSeq(EnemyType::rice_soldier)}},
     {EnemyType::shrimp, {"shrimp", EnemyModel::defaultSeq(EnemyType::shrimp)}}
+};
+
+std::map<std::string, IngredientProperties> ingredientNameToIngredientProperties = {
+    {"beef", {"beef", EnemyModel::defaultSeq(EnemyType::beef)}},
+    {"carrot", {"carrot", EnemyModel::defaultSeq(EnemyType::carrot)}},
+    {"egg", {"egg", EnemyModel::defaultSeq(EnemyType::egg)}},
+    {"rice", {"rice", EnemyModel::defaultSeq(EnemyType::rice)}},
+    {"rice_soldier", {"rice", EnemyModel::defaultSeq(EnemyType::rice_soldier)}},
+    {"shrimp", {"shrimp", EnemyModel::defaultSeq(EnemyType::shrimp)}}
 };
 
 //TODO FIX
@@ -229,9 +235,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     setSceneWidth(400);
     setSceneHeight(30);*/
     _level_model->setFilePath("json/intermediate.json");
-    _timer = 0.0f;
-    _timeLimit = 200.0f;
-    _respawnTimes = std::deque<float>({10.0f, 100.0f, 150.0f, 200.0f});
+    // _level_model->setFilePath("json/empanada-platform-level-01.json");
+    // _level_model->setFilePath("json/bull-boss-level.json");
     setSceneWidth(_level_model->loadLevelWidth());
     setSceneHeight(_level_model->loadLevelHeight());
 
@@ -302,6 +307,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     _losenode->setAnchor(Vec2::ANCHOR_CENTER);
     _losenode->setPosition(1280 / 2, 800 / 2);
     _losenode->setForeground(LOSE_COLOR);
+
+
     setFailure(false);
 
 
@@ -394,18 +401,21 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _pauseMenu = std::make_shared<MenuScene>();
     _pauseMenu->init(_assets, "pause");
+
+    _loseScreen = std::make_shared<MenuScene>();
+    _loseScreen->init(_assets, "loseScreen");
     
     
 
 
 # pragma mark: Background
 
-    //_bgScene = cugl::Scene2::alloc(dimen);
-    //_bgScene->init(dimen);
-    //_bgScene->setActive(true);
-    // _bgScene = cugl::Scene2::alloc(cugl::Size(210, 25));
-    // _bgScene->init(cugl::Size(210, 25));
-    // _bgScene->setActive(true);
+    /*_bgScene = cugl::Scene2::alloc(dimen);
+    _bgScene->init(dimen);
+    _bgScene->setActive(true);
+     _bgScene = cugl::Scene2::alloc(cugl::Size(210, 25));
+     _bgScene->init(cugl::Size(210, 25));
+     _bgScene->setActive(true);*/
 
     cugl::Rect rectB = cugl::Rect(Vec2::ZERO, computeActiveSize());
     // Q: Can we create a background that isn't the whole size of the scene?
@@ -415,7 +425,9 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     // _bgScene->addChild(_background);
     // _bgScene->addChild(_background);
 
-
+    _background = cugl::scene2::PolygonNode::allocWithTexture(nullptr, rectB);
+    _background->setVisible(true);
+    _background->setColor(Color4::YELLOW);
     // _bgScene->addChild(_background);
     //_bgScene->setColor(Color4::CLEAR);
 
@@ -608,6 +620,8 @@ void GameScene::reset() {
     _paused = false;
     _pauseMenu->setActive(false);
     _pauseMenu->reset();
+    _loseScreen->setActive(false);
+    _loseScreen->reset();
     _worldnode->removeAllChildren();
     _world->clear();
     _debugnode->removeAllChildren();
@@ -684,7 +698,7 @@ void GameScene::reset() {
 
     generateOrders();
     _timer = 0.0f;
-    _timeLimit = 200.0f;
+    _timeLimit = 20.0f;
     _respawnTimes = std::deque<float>({ 50.0f, 100.0f, 150.0f, 200.0f });
 
     std::vector<std::string> paths = {
@@ -1650,6 +1664,10 @@ void GameScene::fixedUpdate(float step) {
             (*it)->fixedUpdate(step);
         }
         if ((*it)->killMe()) {
+            if ((*it)->getName() == "ingredient2" || (*it)->getName() == "ingredient2") {
+                addIngredientToInventory(ingredientNameToIngredientProperties[(*it)->getSceneNode()->getName()]);
+            }
+            
             removeAttack((*it).get());
             it = _attacks.erase(it);
         }
@@ -1687,6 +1705,54 @@ void GameScene::fixedUpdate(float step) {
     }
 
 
+
+    int timer = 0;
+    int altTimer = 0;
+    CULog("Size of breakable platforms array");
+    CULog(std::to_string(_level_model->getBreakablePlatforms().size()).c_str());
+    CULog("-----------------");
+    for (std::shared_ptr<Wall> bPlatform : _level_model->getBreakablePlatforms()) {
+        // conditional where we know that our avatar has collided with the wall
+        if (bPlatform->isFlagged()) {
+
+            bPlatform->applyBreaking();
+
+            /*while (timer < 10000000) {
+                timer++;
+            }
+
+            CULog("we are about to change bPlatform's physical properties");
+            bPlatform->setSensor(true);
+            bPlatform->setReadyToBeReset(true);
+            timer = 0;*/
+        }
+        else {
+            /*if (bPlatform->isSensor()) {
+                while (altTimer < 1000000) {
+                    altTimer++;
+                }
+                bPlatform->setSensor(false);
+                bPlatform->setReadyToBeReset(false);
+                altTimer = 0;
+            }*/
+        }
+    }
+
+    //for (std::shared_ptr<Wall> bp : _level_model->getBreakablePlatforms()) {
+    //    if (bp->isReadyToReset()) {
+    //        bp->setFlag(false);
+    //        // bp->setSensor(false);
+    //        bp->setReadyToBeReset(false);
+    //    }
+    //}
+
+    //for (std::shared_ptr<Wall> bPlatform : _level_model->getBreakablePlatforms()) {
+    //    // conditional where we know that our avatar has collided with the wall
+    //    if (bPlatform->isFlagged()) {
+    //        bPlatform->setSensor(false);
+    //        bPlatform->setFlag(false);
+    //    }
+    //}
     _world->update(step);
 }
 
@@ -1793,7 +1859,17 @@ void GameScene::postUpdate(float remain) {
             // reset();
         // }
         else if (_failed) {
-            reset();
+            //reset();
+            if (_loseScreen->getReset()) {
+                reset();
+            }
+            else if (_loseScreen->didTransition()) {
+                transition(true);
+                setTarget(_loseScreen->getTarget());
+                _loseScreen->setTarget("");
+                _loseScreen->setTransition(false);
+                _failed = false;
+            }
         }
     }
 
@@ -1915,6 +1991,7 @@ void GameScene::renderUI(std::shared_ptr<cugl::SpriteBatch> batch) {
 
     _uiScene->render(batch);
     _pauseMenu->render(batch);
+    _loseScreen->render(batch);
 }
 
 
@@ -1956,6 +2033,7 @@ void GameScene::setFailure(bool value) {
             AudioEngine::get()->getMusicQueue()->play(source, false, MUSIC_VOLUME);
             _losenode->setVisible(true);
             _countdown = EXIT_COUNT;
+            _loseScreen->setActive(true);
         }
     }
     else {
@@ -2000,7 +2078,7 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
         return;
     }
 
-    addEnemyToInventory(enemy->getType());
+    //addEnemyToInventory(enemy->getType());
     addingredient(enemy->getPosition(), enemyToIngredientMap[enemy->getType()].name);
 
     _worldnode->removeChild(enemy->getSceneNode());
@@ -2032,6 +2110,16 @@ void GameScene::addEnemyToInventory(EnemyType enemyType) {
 
     _inventoryNode->addIngredient(ing);
 }
+void GameScene::addIngredientToInventory(IngredientProperties ingProp) {
+    std::shared_ptr<Ingredient> ing = std::make_shared<Ingredient>("", ingProp.gestures, 0.0f);
+    ing->setName(ingProp.name);
+    std::shared_ptr<Texture> tex = _assets->get<Texture>(ing->getName());
+    ing->init(tex);
+
+    _inventoryNode->addIngredient(ing);
+}
+
+
 
 
 /**
@@ -2217,7 +2305,6 @@ void GameScene::changeCurrentLevel(int chapter, int level) {
     if (chapter == 1) {
         if (level == 1) {
             _level_model->setFilePath("json/intermediate.json");
-            //_level_model->setFilePath("json/TestLevel1.tmj");
         }
         else if (level == 2) {
             _level_model->setFilePath("json/test_level_v2_experiment.json");
@@ -2499,7 +2586,7 @@ void GameScene::removeingredient(Vec2 pos, std::string textureName) {
     std::shared_ptr<Texture> image = _assets->get<Texture>(textureName);
 
     std::shared_ptr<Attack> attack = Attack::alloc(_avatar->getPosition(),
-        cugl::Size(image->getSize().width*0.2/ _scale, image->getSize().height*0.2/ _scale));
+        cugl::Size(image->getSize().width*0.15/ _scale, image->getSize().height*0.15/ _scale));
 
 
     attack->setName("ingredient");
@@ -2517,7 +2604,7 @@ void GameScene::removeingredient(Vec2 pos, std::string textureName) {
     std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
     attack->setSceneNode(sprite);
     sprite->setPosition(_avatar->getPosition());
-    sprite->setScale(0.2);
+    sprite->setScale(0.15);
 
     addObstacle(attack, sprite, true);
     _attacks.push_back(attack);
@@ -2528,7 +2615,7 @@ void GameScene::addingredient(Vec2 pos, std::string textureName) {
     std::shared_ptr<Texture> image = _assets->get<Texture>(textureName);
 
     std::shared_ptr<Attack> attack = Attack::alloc(pos,
-        cugl::Size(image->getSize().width * 0.2 / _scale, image->getSize().height * 0.2 / _scale));
+        cugl::Size(image->getSize().width * 0.15 / _scale, image->getSize().height * 0.15 / _scale));
 
 
     attack->setName("ingredient2");
@@ -2547,7 +2634,8 @@ void GameScene::addingredient(Vec2 pos, std::string textureName) {
     std::shared_ptr<scene2::PolygonNode> sprite = scene2::PolygonNode::allocWithTexture(image);
     attack->setSceneNode(sprite);
     sprite->setPosition(pos);
-    sprite->setScale(0.2);
+    sprite->setScale(0.15);
+    sprite->setName(textureName);
 
     addObstacle(attack, sprite, true);
     _attacks.push_back(attack);

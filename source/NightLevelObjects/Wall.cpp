@@ -32,7 +32,7 @@ Wall::Wall() {
 
 bool Wall::init(std::shared_ptr<Texture> image, std::shared_ptr<PolygonObstacle> _collisionPoly, float _scale, float BASIC_DENSITY, float BASIC_FRICTION,
 	float BASIC_RESTITUTION, Color4 DEBUG_COLOR, Vec2* WALL_POS, int WALL_VERTS, std::string name, bool doesDamage) {
-
+	
 	// this was all being done in Wall init, but instead we will do this within levelmodel
 	//Poly2 _collisionPoly(WALL_POS, WALL_VERTS / 2);
 	//// Call this on a polygon to get a solid shape
