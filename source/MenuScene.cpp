@@ -380,20 +380,6 @@ void MenuScene::update(float dt) {
 	//}
 }
 
-void MenuScene::setOrders(std::shared_ptr<scene2::SceneNode> orderNode) {
-	if (_orderNode == nullptr) {
-		//reposition pause
-		std::vector<std::shared_ptr<scene2::SceneNode>> kids = _rootNode->getChildren();
-		for (auto it = kids.begin(); it != kids.end(); ++it) {
-			(*it)->setPositionX((*it)->getPositionX() + _orderNode->getWidth());
-		}
-	}
-	_orderNode = orderNode;
-	_orderNode->setPositionX(0);
-	_orderNode->setPositionY(800 - 100);
-	_rootNode->addChild(_orderNode);
-}
-
 void MenuScene::setHighestLevel(int i) { 
 	if (!isActive()) return;
 	_highestLevel = i; 

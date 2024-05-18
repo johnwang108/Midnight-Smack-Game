@@ -47,7 +47,7 @@ void Beef::update(float dt) {
         setRequestedActionAndPrio("beefIdle", 34);
     }
     else if (_state == "patrolling") {
-        setRequestedActionAndPrio("beefIdle", 1);
+        setRequestedActionAndPrio("beefDig", 1);
     }
     else if (_state == "respawning") {
 		setRequestedActionAndPrio("beefRespawn", 1000);
