@@ -995,7 +995,7 @@
                         "y_offset": -0.07
                     }
                 },
-                "quit": {
+                "play": {
                     "type": "Button",
                     "format": {
                         "type": "Anchored"
@@ -1006,29 +1006,29 @@
                             1
                         ],
                         "size": [
-                            79,
-                            79.9
+                            206.96,
+                            101.69
                         ],
                         "angle": 0,
                         "position": [
-                            869,
-                            393.1
+                            551,
+                            379.31
                         ],
                         "visible": true,
-                        "upnode": "quitButton"
+                        "upnode": "playButton"
                     },
                     "children": {
-                        "quitButton": {
+                        "playButton": {
                             "type": "Image",
                             "data": {
-                                "texture": "quitButton",
+                                "texture": "playButton",
                                 "anchor": [
-                                    0,
-                                    1
+                                    0.5,
+                                    0.5
                                 ],
                                 "size": [
-                                    79,
-                                    79.9
+                                    206.96,
+                                    101.69
                                 ],
                                 "angle": 0,
                                 "position": [
@@ -1041,8 +1041,8 @@
                                 "x_anchor": "left",
                                 "y_anchor": "top",
                                 "absolute": false,
-                                "x_offset": 0,
-                                "y_offset": 0
+                                "x_offset": 0.5,
+                                "y_offset": -0.5
                             }
                         }
                     },
@@ -1050,8 +1050,8 @@
                         "x_anchor": "left",
                         "y_anchor": "top",
                         "absolute": false,
-                        "x_offset": 0.68,
-                        "y_offset": -0.41
+                        "x_offset": 0.43,
+                        "y_offset": -0.4
                     }
                 },
                 "settings": {
@@ -1113,7 +1113,7 @@
                         "y_offset": -0.41
                     }
                 },
-                "play": {
+                "quit": {
                     "type": "Button",
                     "format": {
                         "type": "Anchored"
@@ -1124,31 +1124,31 @@
                             1
                         ],
                         "size": [
-                            206.96,
-                            101.69
+                            79,
+                            79.9
                         ],
                         "angle": 0,
                         "position": [
-                            551,
-                            379.31
+                            869,
+                            393.1
                         ],
                         "visible": true,
-                        "upnode": "playButton"
+                        "upnode": "quitButton"
                     },
                     "children": {
-                        "playButton": {
+                        "quitButton": {
                             "type": "Image",
                             "data": {
-                                "texture": "playButton",
+                                "texture": "quitButton",
                                 "anchor": [
-                                    0.5,
-                                    0.5
+                                    0,
+                                    1
                                 ],
                                 "size": [
-                                    206.96,
-                                    101.69
+                                    79,
+                                    79.9
                                 ],
-                                "angle": 4.969616985999e-17,
+                                "angle": 0,
                                 "position": [
                                     0,
                                     0
@@ -1159,8 +1159,8 @@
                                 "x_anchor": "left",
                                 "y_anchor": "top",
                                 "absolute": false,
-                                "x_offset": 0.5,
-                                "y_offset": -0.5
+                                "x_offset": 0,
+                                "y_offset": 0
                             }
                         }
                     },
@@ -1168,8 +1168,8 @@
                         "x_anchor": "left",
                         "y_anchor": "top",
                         "absolute": false,
-                        "x_offset": 0.43,
-                        "y_offset": -0.4
+                        "x_offset": 0.68,
+                        "y_offset": -0.41
                     }
                 }
             }
