@@ -247,7 +247,7 @@ void LevelModel::populate(GameScene& scene) {
 						//means that we have found a key in our unordered map
 						std::string pathWeWant = idToImage.at(tileId);
 						CULog(pathWeWant.c_str());
-//						CULog(_getcwd(NULL, 0));
+						//						CULog(_getcwd(NULL, 0));
 						CULog("----------- ");
 						if (_assets == nullptr) {
 							CULog("you gotta define assets bro");
@@ -411,7 +411,7 @@ void LevelModel::populate(GameScene& scene) {
 							}
 						}
 						// WE COMMENTED OUT ALL THIS FOR NOW BECAUSE JUST TRYING TO TEST MOVING BETWEEN LEVELS
-			
+
 						else if (type == "enemy") {
 							CULog("Enemy layer spotted!");
 							// sprite = scene2::PolygonNode::allocWithTexture(image);

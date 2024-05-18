@@ -161,6 +161,11 @@ void GameScene::beginContact(b2Contact* contact) {
         _sensorFixtures.emplace(_avatar.get() == bd1 ? fix2 : fix1);
     }
 
+    if ((_avatar.get() == bd2 && bd1->getName() == "TutorialSign") ||
+        (_avatar.get() == bd1 && bd2->getName() == "TutorialSign")) {
+        _interactivePopups.at(_popupIndex)->toggle();
+    }
+
     for (auto& _enemy : _enemies) {
         if (!_enemy->isRemoved()) {
             if ((_enemy->getSensorName() == fd2 && _enemy.get() != bd1 && bd1->getName().find("attack") == std::string::npos) ||
@@ -205,11 +210,12 @@ void GameScene::beginContact(b2Contact* contact) {
     }
     
 
-    if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1 == _Bull.get() && bd2->getName() == WALL_NAME) {
+    if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1 == _Bull.get() && bd2->getName() == PLATFORM_NAME) {
+        CULog("sing");
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd2)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
-        if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0) {
+        if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0 && _Bull->getturing() <= 0) {
             _Bull->setCAcount(_Bull->getCAcount() + 1);
             _Bull->circleattack(*this);
         }
@@ -223,11 +229,12 @@ void GameScene::beginContact(b2Contact* contact) {
         }
        // popup(std::to_string(5), bullPos * _scale);
     }
-    else if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1->getName() == WALL_NAME && bd2 == _Bull.get()) {
+    else if (_Bull != nullptr && _Bull->getrunning()<=0 && _Bull->isChasing() && bd1->getName() == PLATFORM_NAME && bd2 == _Bull.get()) {
+        CULog("sing");
         Vec2 wallPos = ((physics2::PolygonObstacle*)bd1)->getPosition();
         Vec2 bullPos = _Bull->getPosition();
         int direction = (wallPos.x > bullPos.x) ? 1 : -1;
-       if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0) {
+       if (_Bull->getCAcount() > 0 && _Bull->getCA() <= 0 && _Bull->getturing()<=0) {
             _Bull->setCAcount(_Bull->getCAcount() + 1);
             _Bull->circleattack(*this);
         }
@@ -270,6 +277,8 @@ void GameScene::beginContact(b2Contact* contact) {
         }
         else if (_Bull->getHealth() == 40.5f) {
             _Bull->setsprintpreparetime(2);
+            _Bull->setact("bullTelegraph", 2.0f);
+            _Bull->setattacktype("none");
             _Bull->setIsChasing(true);
             _Bull->setCAcount(2);
             _Bull->takeDamage(_avatar->getAttack() / 4, direction, false);
@@ -294,6 +303,8 @@ void GameScene::beginContact(b2Contact* contact) {
         }
         else if (_Bull->getHealth() == 40.5f) {
             _Bull->setsprintpreparetime(2);
+            _Bull->setact("bullTelegraph", 2.0f);
+            _Bull->setattacktype("none");
             _Bull->setIsChasing(true);
             _Bull->setCAcount(2);
             _Bull->takeDamage(_avatar->getAttack() / 4, direction, false);
@@ -542,7 +553,10 @@ void GameScene::endContact(b2Contact* contact) {
         //((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::WHITE);
         setInteractable(-1);
     }
-
+    if ((_avatar.get() == bd2 && bd1->getName() == "TutorialSign") ||
+        (_avatar.get() == bd1 && bd2->getName() == "TutorialSign")) {
+        _interactivePopups.at(_popupIndex)->toggle();
+    }
     //// Check if the player is no longer in contact with any walls
     //bool p1 = (_avatar->getLeftSensorName() == fd1);
     //bool p2 = (_avatar->getRightSensorName() == fd1);

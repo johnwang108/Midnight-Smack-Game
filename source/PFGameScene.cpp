@@ -1287,7 +1287,10 @@ void GameScene::preUpdate(float dt) {
                     _Bull->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
                 }
             }
-            if (_Bull->getCAcount()<=0 && _Bull->isChasing() && ((_Bull->getPosition().x > 20 && _Bull->getDirection() == -1) || (_Bull->getPosition().x < 30 && _Bull->getDirection() == 1))) {
+            if (_Bull->getCAcount() <= 0 && _Bull->getbreaking() <= 0 && _Bull->isChasing() && ((_Bull->getPosition().x < 18 && _Bull->getDirection() == -1) || (_Bull->getPosition().x > 58 && _Bull->getDirection() == 1))) {
+                _Bull->setact("bullAttack",2.0);
+            }
+            if (_Bull->getCAcount()<=0 && _Bull->isChasing() && ((_Bull->getPosition().x > 20 && _Bull->getDirection() == -1) || (_Bull->getPosition().x < 56 && _Bull->getDirection() == 1))) {
                 Vec2 BullPos = _Bull->getPosition();
                 int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
                 if (direction != _Bull->getDirection()) {
@@ -1296,57 +1299,6 @@ void GameScene::preUpdate(float dt) {
 			}
             _Bull->update(dt);
         }
-
-        if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
-            Vec2 BullPos = _ShrimpRice->getPosition();
-            if (_ShrimpRice->getHealth() <= 0) {
-                _worldnode->removeChild(_ShrimpRice->getSceneNode());
-                _ShrimpRice->setDebugScene(nullptr);
-                _ShrimpRice->markRemoved(true);
-            }
-            if (_ShrimpRice->getact() == "SFRWave2") {
-                float distance = avatarPos.distance(BullPos);
-                if (distance < 4) {
-                    _ShrimpRice->setact("SFRWave3", 1.125);
-                }
-            }
-            if (_ShrimpRice->gettimetosummon()) {
-                _ShrimpRice->Summon(*this);
-                _ShrimpRice->settimetosummon(false);
-            }
-            if (_ShrimpRice->getcanturn() && _ShrimpRice->getacttime() <= 0) {
-                if (_ShrimpRice->getnextchangetime() < 0) {
-                    int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
-                    _ShrimpRice->setDirection(direction);
-                    _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
-                }
-            }
-            if (_ShrimpRice->getangrytime() > 0 && !_enemies.empty()) {
-                for (auto& enemy : _enemies) {
-                    enemy->setnocoll(true);
-                    Vec2 EnyPos = enemy->getPosition();
-                    int direction = (BullPos.x > EnyPos.x) ? 1 : -1;
-                    enemy->setPosition(enemy->getPosition() + Vec2(direction * 0.3, 0.0f));
-                }
-            }
-            else if (_ShrimpRice->getHealth() <= 35 && _enemies.size() >= 4) {
-                _ShrimpRice->setact("SFRStunState2", 5.0f);
-                _ShrimpRice->setangrytime(5);
-            }
-            if (_ShrimpRice->getparry() && !_ShrimpRice->getparry2()) {
-                CULog("parry");
-                _ShrimpRice->setparry(false);
-                _ShrimpRice->setparry2(false);
-                _ShrimpRice->setact("SFRStunState1", 0.6);
-                _ShrimpRice->parry(*this);
-                _ShrimpRice->setdelay(0.5);
-            }
-
-            _ShrimpRice->update(dt);
-        }
-
-
-
 
 
     if (_Bull != nullptr) {
@@ -1361,16 +1313,6 @@ void GameScene::preUpdate(float dt) {
             }
             if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
                 _Bull->animate("bullStunned");
-            }
-        }
-        else if (_Bull->getCAcount()<=0 && _Bull->getbreaking()<=0 &&_Bull->isChasing() && ((_Bull->getPosition().x < 13 && _Bull->getDirection() == -1) || (_Bull->getPosition().x > 37 && _Bull->getDirection() == 1))) {
-            if (!_BullactionManager->isActive("bullAttack")){
-                _BullactionManager->clearAllActions(_Bull->getSceneNode());
-                auto bullAttack = _Bull->getAction("bullAttack");
-                _BullactionManager->activate("bullAttack", bullAttack, _Bull->getSceneNode());
-            }
-            if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
-                _Bull->animate("bullAttack");
             }
         }
         else if (_Bull->getacttime() > 0) {
@@ -1404,10 +1346,55 @@ void GameScene::preUpdate(float dt) {
             }
         }
 
-
-        
     }
 
+    if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
+        Vec2 BullPos = _ShrimpRice->getPosition();
+        if (_ShrimpRice->getHealth() <= 0) {
+            _worldnode->removeChild(_ShrimpRice->getSceneNode());
+            _ShrimpRice->setDebugScene(nullptr);
+            _ShrimpRice->markRemoved(true);
+        }
+        if (_ShrimpRice->getact() == "SFRWave2") {
+            float distance = avatarPos.distance(BullPos);
+            if (distance < 4) {
+                _ShrimpRice->setact("SFRWave3", 1.125);
+            }
+        }
+        if (_ShrimpRice->gettimetosummon()) {
+            _ShrimpRice->Summon(*this);
+            _ShrimpRice->settimetosummon(false);
+        }
+        if (_ShrimpRice->getcanturn() && _ShrimpRice->getacttime() <= 0) {
+            if (_ShrimpRice->getnextchangetime() < 0) {
+                int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
+                _ShrimpRice->setDirection(direction);
+                _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
+            }
+        }
+        if (_ShrimpRice->getangrytime() > 0 && !_enemies.empty()) {
+            for (auto& enemy : _enemies) {
+                enemy->setnocoll(true);
+                Vec2 EnyPos = enemy->getPosition();
+                int direction = (BullPos.x > EnyPos.x) ? 1 : -1;
+                enemy->setPosition(enemy->getPosition() + Vec2(direction * 0.3, 0.0f));
+            }
+        }
+        else if (_ShrimpRice->getHealth() <= 35 && _enemies.size() >= 4) {
+            _ShrimpRice->setact("SFRStunState2", 5.0f);
+            _ShrimpRice->setangrytime(5);
+        }
+        if (_ShrimpRice->getparry() && !_ShrimpRice->getparry2()) {
+            CULog("parry");
+            _ShrimpRice->setparry(false);
+            _ShrimpRice->setparry2(false);
+            _ShrimpRice->setact("SFRStunState1", 0.6);
+            _ShrimpRice->parry(*this);
+            _ShrimpRice->setdelay(0.5);
+        }
+
+        _ShrimpRice->update(dt);
+    }
     if (_ShrimpRice != nullptr) {
         if (!_paused) {
             _SHRactionManager->update(dt);
@@ -2338,6 +2325,15 @@ bool GameScene::loadSave(std::shared_ptr<JsonValue> save) {
 //load level with int specifiers
 void GameScene::loadLevel(int chapter, int level) {
     changeCurrentLevel(chapter, level);
+    AudioEngine::get()->clear();
+    if (level == 4) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("theBull");
+        AudioEngine::get()->play("theBull", source, true, EFFECT_VOLUME, true);
+    }
+    if (level == 5) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("theShrimp");
+        AudioEngine::get()->play("theShrimp", source, true, EFFECT_VOLUME, true);
+    }
     loadLevel(currentLevel);
 }
 
@@ -2503,6 +2499,20 @@ void GameScene::spawnStation(Vec2 pos, StationType type) {
     _interactables.push_back(station);
     _stations.push_back(station);
     CULog("%f", station->getSceneNode()->getScale());
+}
+
+void GameScene::spawnTutorialSign(Vec2 pos, std::string type) {
+    //obstacle has small size, not reflective of intended size
+    Size s = Size(5.0f, 5.0f);
+    std::shared_ptr<Texture> image;
+
+    image = _assets->get<Texture>("knife");
+
+
+    std::shared_ptr<TutorialSign> station = TutorialSign::alloc(image, pos, s, type);
+
+    addObstacle(station, station->getSceneNode());
+    _TutorialSigns.push_back(station);
 }
 
 void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map) {

@@ -2,7 +2,7 @@
 #include "../PFGameScene.h"
 
 /** The goal door position */
-static float GOAL_POS[] = { 4.0f,14.0f };
+static float GOAL_POS[] = { 4.0f,8.0f };
 // float GOAL_POS[] = { 6.0f, 5.0f };
 
 /** The initial position of the dude */
@@ -59,29 +59,6 @@ void Level3::populate(GameScene& scene) {
 	//scene.addObstacle(_background, sprite);
 
 
-#pragma mark : Goal door
-	image = _assets->get<Texture>(GOAL_TEXTURE);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	std::shared_ptr<scene2::WireNode> draw;
-
-	// Create obstacle
-	Vec2 goalPos = GOAL_POS;
-	Size goalSize(image->getSize().width / _scale,
-		image->getSize().height / _scale);
-	_goalDoor = physics2::BoxObstacle::alloc(goalPos, goalSize);
-
-	// Set the physics attributes
-	_goalDoor->setBodyType(b2_staticBody);
-	_goalDoor->setDensity(0.0f);
-	_goalDoor->setFriction(0.0f);
-	_goalDoor->setRestitution(0.0f);
-	_goalDoor->setSensor(true);
-	// _goalDoor->setEnabled
-
-	// Add the scene graph nodes to this object
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_goalDoor->setDebugColor(DEBUG_COLOR);
-	scene.addObstacle(_goalDoor, sprite);
 
 #pragma mark : Walls
 	// All walls and platforms share the same texture
@@ -160,9 +137,6 @@ void Level3::populate(GameScene& scene) {
 
 	scene.addObstacle(_avatar, spritenode); // Put this at the very front
 
-	// Play the background music on a loop.
-	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
-	AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
 	Vec2 shrimp_pos = SHRIMP_POS;
 	image = _assets->get<Texture>("SFR_Idle");
@@ -193,7 +167,7 @@ void Level3::populate(GameScene& scene) {
 
 	scene.addObstacle(_shrimprice, spritenode);
 
-
+	scene.spawnTutorialSign(GOAL_POS,"1");
 
 
 	scene.setAssets(_assets);

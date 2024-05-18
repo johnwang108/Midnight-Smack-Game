@@ -139,6 +139,8 @@ void MenuScene::initMainMenu(Size dimen) {
 				CULog("Button %s pressed in Main Menu, down: %d", name.c_str(), down);
 				this->setTransition(true);
 				this->setTarget("levelSelectMenu");
+			//	this->setTarget("night");
+			//	this->setSelectedLevel(1);
 				});
 			butt->setDown(true);
 
@@ -170,7 +172,9 @@ void MenuScene::initMainMenu(Size dimen) {
 		}
 	}
 
-	
+	std::shared_ptr<Sound> source = _assets->get<Sound>("menu");
+	AudioEngine::get()->play("menu", source, true, 0.8f, true);
+
 	setName("main_menu");
 	this->setActive(false);
 }

@@ -26,7 +26,7 @@ Wall::Wall() {
 	respawnTime = -1;
 	breakingClock = -1;
 	activeDisplay = true;
-    
+
 
 }
 

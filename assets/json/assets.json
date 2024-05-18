@@ -674,6 +674,26 @@
             "type": "sample",
             "file": "sounds/plop.wav",
             "volume": 0.5
+        },
+        "menu": {
+            "type": "sample",
+            "file": "sounds/menu.ogg",
+            "volume": 0.5
+        },
+        "theBull": {
+            "type": "sample",
+            "file": "sounds/theBull.ogg",
+            "volume": 0.5
+        },
+        "theShrimp": {
+            "type": "sample",
+            "file": "sounds/theShrimp.ogg",
+            "volume": 0.5
+        },
+        "tutorial": {
+            "type": "sample",
+            "file": "sounds/tutorial.ogg",
+            "volume": 0.5
         }
     },
     "fonts": {
