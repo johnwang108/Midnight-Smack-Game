@@ -26,7 +26,7 @@ bool Rice::init(const cugl::Vec2& pos, const cugl::Size& size, float scale, std:
         setName(name);
         _health = 100.0f;
         setFixedRotation(true);
-        setFriction(1.0f);
+        setFriction(0.0f);
         return true;
     }
     return false;
@@ -86,8 +86,6 @@ void Rice::fixedUpdate(float step) {
                 velocity.x = _force * SIGNUM(_distanceToPlayer.x) * 2;
             }
             else {
-                //float dir = SIGNUM(_targetPosition.x - getPosition().x);
-                //velocity.x = _force * dir * 5;
                 velocity.x = _force * SIGNUM(_distanceToPlayer.x) * 2;
                 CULog("Resulting v: %f", velocity.x);
             }

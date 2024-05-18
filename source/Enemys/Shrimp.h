@@ -33,7 +33,7 @@ public:
         //result->setAction("shrimpRoll", { 1 }, 0.1f);
 
         auto info = result->getInfo("shrimpIdleDeath");
-        result->addActionAnimation("shrimpRespawn", _assets->get<Texture>("shrimpIdleDeath"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 4.0f, true);
+        result->addActionAnimation("shrimpRespawn", _assets->get<Texture>("shrimpIdleDeath"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 8.0f, true);
         return res ? result : nullptr;
     }
 

@@ -236,8 +236,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     setSceneHeight(30);*/
     _level_model->setFilePath("json/SFRLevel3.tmj");
     _timer = 0.0f;
-    _timeLimit = 200.0f;
-    _respawnTimes = std::deque<float>({10.0f, 100.0f, 150.0f, 200.0f});
+    _timeLimit = 240.0f;
+    _respawnTimes = std::deque<float>({60.0f, 120.0f, 180.0f, 240.0f, 300.0f, 360.0f, 420.0f, 480.0f, 540.0f, 600.0f});
     setSceneWidth(_level_model->loadLevelWidth());
     setSceneHeight(_level_model->loadLevelHeight());
 
@@ -861,10 +861,21 @@ void GameScene::preUpdate(float dt) {
  
 
     if (_input->getInventoryLeftPressed()) {
-        _inventoryNode->selectPreviousSlot();
+        if (!_paused) {
+            _inventoryNode->selectPreviousSlot();
+        }
+        else {
+            _ordersObj->decIndex();
+        }
     }
     else if (_input->getInventoryRightPressed()) {
-        _inventoryNode->selectNextSlot();
+        if (!_paused) {
+            _inventoryNode->selectNextSlot();
+        }
+        else {
+            _ordersObj->incIndex();
+        }
+
     }
 
 
@@ -936,6 +947,10 @@ void GameScene::preUpdate(float dt) {
         _avatar->getBody()->SetFixedRotation(true);
     }
     //if (isFailure() && _avatar->getActiveAction() != "death") {
+    if (_avatar->getFlameNode()->isVisible() && !_actionManager->isActive("suFlame")) {
+        auto action = _avatar->getFlameAction();
+        _actionManager->activate("suFlame", action, _avatar->getFlameNode());
+    }
     if (_avatar->isDead()){
         animate(_avatar, "death", true);
     }
@@ -945,7 +960,8 @@ void GameScene::preUpdate(float dt) {
         }
         //cancel run animation if stopped running
         else if (_actionManager->isActive("run") && _input->getHorizontal() == 0) {
-            animate(_avatar, "skid", true);
+            //animate(_avatar, "skid", true);
+            animate(_avatar, "idle", true);
         }
 
         else if (_avatar->isJumping() && _avatar->isGrounded()) {
@@ -1058,35 +1074,35 @@ void GameScene::preUpdate(float dt) {
     }
 
 
-    if (_input->didLevel1()) {
-        ////setLevel(1, 1);
-        //_interactivePopups.back()->toggle();
-        _interactivePopups.at(_popupIndex)->toggle();
-    }
-    else if (_input->didLevel2()) {
-        /*setLevel(1, 2);*/
-        bool b = _interactivePopups.at(_popupIndex)->isActive();
-        if (b) {
-            _interactivePopups.at(_popupIndex)->toggle();
-            _popupIndex--;
-            if (_popupIndex < 0) {
-                _popupIndex = _interactivePopups.size() - 1;
-            }
-            _interactivePopups.at(_popupIndex)->toggle();
-        }
-    }
-    else if (_input->didLevel3()) {
-        /*setLevel(1, 3);*/
-        bool b = _interactivePopups.at(_popupIndex)->isActive();
-        if (b) {
-            _interactivePopups.at(_popupIndex)->toggle();
-            _popupIndex++;
-            if (_popupIndex == _interactivePopups.size()) {
-                _popupIndex = 0;
-            }
-            _interactivePopups.at(_popupIndex)->toggle();
-        }
-    }
+    //if (_input->didLevel1()) {
+    //    ////setLevel(1, 1);
+    //    //_interactivePopups.back()->toggle();
+    //    _interactivePopups.at(_popupIndex)->toggle();
+    //}
+    //else if (_input->didLevel2()) {
+    //    /*setLevel(1, 2);*/
+    //    bool b = _interactivePopups.at(_popupIndex)->isActive();
+    //    if (b) {
+    //        _interactivePopups.at(_popupIndex)->toggle();
+    //        _popupIndex--;
+    //        if (_popupIndex < 0) {
+    //            _popupIndex = _interactivePopups.size() - 1;
+    //        }
+    //        _interactivePopups.at(_popupIndex)->toggle();
+    //    }
+    //}
+    //else if (_input->didLevel3()) {
+    //    /*setLevel(1, 3);*/
+    //    bool b = _interactivePopups.at(_popupIndex)->isActive();
+    //    if (b) {
+    //        _interactivePopups.at(_popupIndex)->toggle();
+    //        _popupIndex++;
+    //        if (_popupIndex == _interactivePopups.size()) {
+    //            _popupIndex = 0;
+    //        }
+    //        _interactivePopups.at(_popupIndex)->toggle();
+    //    }
+    //}
 
     //advance level for debug
     if (_input->didAnimate()) {
@@ -2116,9 +2132,8 @@ void GameScene::respawnEnemy(std::shared_ptr<EnemyModel> enemy) {
         return;
     }
     else {
-        CULog(("Respawned " + enemy->getName()).c_str());
-        addObstacle(enemy, enemy->getSceneNode());
         enemy->respawn();
+        addObstacle(enemy, enemy->getSceneNode());
     }
 }
 

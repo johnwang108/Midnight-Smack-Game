@@ -186,6 +186,8 @@ protected:
     /** Reference to the sensor name (since a constant cannot have a pointer) */
     std::string _leftSensorName;
 
+    std::shared_ptr<EntitySpriteNode> _flameNode;
+
     /** Left sensor to represent left */
     b2Fixture* _rightSensorFixture;
     /** Reference to the sensor name (since a constant cannot have a pointer) */
@@ -234,6 +236,7 @@ protected:
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
 
     //float _attack;
+    std::shared_ptr<scene2::Animate> _flameAction;
 
     float _deathTimer;
 
@@ -568,6 +571,19 @@ public:
      * @param value left/right movement of this character.
      */
     void setMovement(float h);
+
+    void setFlameNode(std::shared_ptr<EntitySpriteNode> node) { 
+        _flameNode = node; 
+        Color4 c = Color4::WHITE;
+        c.a = 100.0f;
+        _flameNode->setColor(c);
+        _node->addChild(_flameNode);
+        _flameAction = scene2::Animate::alloc(0, 14, 1.0f);
+    }
+
+    std::shared_ptr<EntitySpriteNode> getFlameNode() { return _flameNode; }
+
+    std::shared_ptr<scene2::Animate> getFlameAction() { return _flameAction; }
 
     void setAllMovement(float h, float v);
 

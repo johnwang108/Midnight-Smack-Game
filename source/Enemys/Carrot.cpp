@@ -68,7 +68,10 @@ b2Vec2 Carrot::handleMovement(b2Vec2 velocity) {
 
 void Carrot::setState(std::string state) {
     EnemyModel::setState(state);
-    if (state == "chasing") {
+    if (_killMeCountdown != 0.0f) {
+        setRequestedActionAndPrio("carrotDeath", 1000);
+    }
+    else if (state == "chasing") {
         _behaviorCounter = 0;
     }
     else if (state == "stunned") {

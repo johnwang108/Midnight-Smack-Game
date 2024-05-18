@@ -365,8 +365,8 @@ void DudeModel::dispose() {
     _core = nullptr;
     _node = nullptr;
     _healthBarForeground = nullptr;
-    //_sensorNode = nullptr;
-    //_bodySensorNode = nullptr;
+    _flameAction = nullptr;
+    _flameNode = nullptr;
 }
 
 /**
@@ -538,13 +538,19 @@ void DudeModel::fixedUpdate(float step) {
         //reset buff state if duration is over
         if (_duration == 0) {
             resetBuff();
-            _node->setColor(Color4::WHITE);
-        }
-        else {
-            _node->setColor(Color4::BLACK);
         }
     }
-    else if (_hasSuper) {
+
+    if (_duration == 0.0f) {
+        _flameNode->setVisible(false);
+    }
+    else {
+        _flameNode->setVisible(true);
+        //_flameNode->setScale(0.2);
+        //_flameNode->setPosition(_node->getPosition());
+    }
+
+    if (_hasSuper) {
         _node->setColor(Color4::RED);
     }
     else {

@@ -5,7 +5,7 @@
         "size": [800, 400],
         "anchor": [0.5, 0.5],
         "visible": true,
-        "text": "Complete all plates before the timer runs out. \nDying will lose you time and meter!",
+        "text": "Complete all plates before the timer runs out. Dying will lose you time and meter! \nIf you run out of ingredients, enemies will respawn every 60 seconds.",
         "textMaxWidth%age": 0.5,
         "font": "popupFont",
         "background": "popupBackground",
