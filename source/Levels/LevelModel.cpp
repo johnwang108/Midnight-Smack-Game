@@ -288,18 +288,18 @@ void LevelModel::populate(GameScene& scene) {
 							// knife, pan, plate, pot, sink
 
 							if (pathWeWant.find("knife") != std::string::npos) {
-								interactablePos = Vec2(colNum + ((169.0 / 32.0) / 2), rowPos - ((108.0 / 32.0) * 2));
+								interactablePos = Vec2(colNum + ((169.0 / 32.0) / 2), rowPos - ((108.0 / 32.0)));
 
 								scene.spawnStation(interactablePos, StationType::CUT);								
 							}
 							else if (pathWeWant.find("pan") != std::string::npos) {
-								interactablePos = Vec2(colNum + ((148.0 / 32.0) / 2), rowPos - ((120.0 / 32.0) * 2));
+								interactablePos = Vec2(colNum + ((148.0 / 32.0) / 2), rowPos - ((120.0 / 32.0)));
 
 								scene.spawnStation(interactablePos, StationType::FRY);
 
 							}
 							else if (pathWeWant.find("pot") != std::string::npos) {
-								interactablePos = Vec2(colNum + ((132.0 / 32.0) / 2), rowPos - ((105.0 / 32.0) * 2));
+								interactablePos = Vec2(colNum + ((132.0 / 32.0) / 2), rowPos - ((105.0 / 32.0)));
 
 								scene.spawnStation(interactablePos, StationType::BOIL);
 							}
