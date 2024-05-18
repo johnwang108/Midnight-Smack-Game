@@ -1684,12 +1684,34 @@ void GameScene::fixedUpdate(float step) {
             enemy->fixedUpdate(step);
         }
         if (enemy->getHealth() <= 0) {
+            
+            if (enemy->getType() == EnemyType::egg && !enemy->getkillMe()) {
+                std::shared_ptr<Sound> source = _assets->get<Sound>("eggDeath");
+                AudioEngine::get()->play("eggDeath", source, false, EFFECT_VOLUME, true);
+
+            }
+            if (enemy->getType() == EnemyType::rice && !enemy->getkillMe()) {
+                std::shared_ptr<Sound> source = _assets->get<Sound>("riceLeader");
+                AudioEngine::get()->play("riceLeader", source, false, EFFECT_VOLUME, true);
+            }
+            if (enemy->getType() == EnemyType::rice_soldier && !enemy->getkillMe()) {
+                std::shared_ptr<Sound> source = _assets->get<Sound>("riceSoldier");
+                AudioEngine::get()->play("riceSoldier", source, false, EFFECT_VOLUME, true);
+            }
             enemy->markForDeletion();
         }
         if (enemy->shouldDelete()) {
             removeEnemy(enemy.get());
         }
     }
+
+    _enemies.erase(
+        std::remove_if(_enemies.begin(), _enemies.end(),
+            [](const std::shared_ptr<EnemyModel>& enemy) {
+                return enemy->shouldDelete();
+            }),
+        _enemies.end()
+    );
     //attacks
     for (auto it = _attacks.begin(); it != _attacks.end();) {
         if ((*it) == nullptr || (*it)->isRemoved()) {
@@ -2036,6 +2058,7 @@ void GameScene::setComplete(bool value) {
     bool change = _complete != value;
     _complete = value;
     if (value && change) {
+        AudioEngine::get()->clear();
         std::shared_ptr<Sound> source = _assets->get<Sound>(WIN_MUSIC);
         AudioEngine::get()->getMusicQueue()->play(source, false, MUSIC_VOLUME);
         _winnode->setVisible(true);
@@ -2114,8 +2137,6 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
     enemy->setDebugScene(nullptr);
     enemy->markRemoved(true);
 
-    std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
-    AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
 }
 
 void GameScene::respawnEnemy(std::shared_ptr<EnemyModel> enemy) {
@@ -2307,11 +2328,13 @@ void GameScene::loadLevel(int chapter, int level) {
     AudioEngine::get()->clear();
     if (level == 4) {
         std::shared_ptr<Sound> source = _assets->get<Sound>("theBull");
-        AudioEngine::get()->play("theBull", source, true, EFFECT_VOLUME, true);
+      //  AudioEngine::get()->play("theBull", source, true, EFFECT_VOLUME, true);
+        AudioEngine::get()->getMusicQueue()->play(source, true, 0.8f);
     }
     if (level == 5) {
         std::shared_ptr<Sound> source = _assets->get<Sound>("theShrimp");
-        AudioEngine::get()->play("theShrimp", source, true, EFFECT_VOLUME, true);
+   //     AudioEngine::get()->play("theShrimp", source, true, EFFECT_VOLUME, true);
+        AudioEngine::get()->getMusicQueue()->play(source, true, 0.8f);
     }
     loadLevel(currentLevel);
 }
@@ -2426,6 +2449,7 @@ void GameScene::spawnRice(Vec2 pos, bool isSoldier) {
     spritenode->setScale(0.35 / 1.75);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
+    new_enemy->setasset(_assets);
     addObstacle(new_enemy, spritenode);
     _enemies.push_back(new_enemy);
 }
@@ -2440,6 +2464,7 @@ std::shared_ptr<EnemyModel> GameScene::spawnRiceSoldier(Vec2 pos, std::shared_pt
     spritenode->setScale(0.35 / 1.75);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
+    new_enemy->setasset(_assets);
     addObstacle(new_enemy, spritenode);
     //DONT PUSH BACK INTO _enemies, just add to leader
     //_enemies.push_back(new_enemy);

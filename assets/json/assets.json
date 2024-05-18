@@ -678,6 +678,36 @@
             "type": "sample",
             "file": "sounds/tutorial.ogg",
             "volume": 0.5
+        },
+        "hand": {
+            "type": "sample",
+            "file": "sounds/carrotEnemy/hand.wav",
+            "volume": 0.5
+        },
+        "eggDeath": {
+            "type": "sample",
+            "file": "sounds/eggEnemy/eggDeath.wav",
+            "volume": 0.5
+        },
+        "riceLeader": {
+            "type": "sample",
+            "file": "sounds/riceEnemy/riceLeader.wav",
+            "volume": 0.5
+        },
+        "riceRun": {
+            "type": "sample",
+            "file": "sounds/riceEnemy/riceRun.wav",
+            "volume": 0.5
+        },
+        "riceSoldier": {
+            "type": "sample",
+            "file": "sounds/riceEnemy/riceSoldier.wav",
+            "volume": 0.5
+        },
+        "staffSpin": {
+            "type": "sample",
+            "file": "sounds/riceEnemy/staffSpin.wav",
+            "volume": 0.5
         }
     },
     "fonts": {
