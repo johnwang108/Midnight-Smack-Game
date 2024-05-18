@@ -1238,10 +1238,16 @@ void GameScene::preUpdate(float dt) {
     spawns.clear();
 
         if (_Bull != nullptr && !_Bull->isRemoved()) {
-            if (_Bull->getHealth() <= 0) {
-                _worldnode->removeChild(_Bull->getSceneNode());
-                _Bull->setDebugScene(nullptr);
+            if (_Bull->getHealth() <= 0 && !_Bull->getDIE()) {
+                _Bull->setact("bullDeath", 1.0);
+                _Bull->setDIE(true);
+            //    _worldnode->removeChild(_Bull->getSceneNode());
+            //    _Bull->setDebugScene(nullptr);
+            //    _Bull->markRemoved(true);
+            }
+            if (_Bull->getact() == "bullD") {
                 _Bull->markRemoved(true);
+                setComplete(true);
             }
             if (_Bull->getangrytime() > 0 && _Bull->getknockbacktime() <= 0) {
                 if (int(_Bull->getangrytime() * 10) % 2 < 1) {
@@ -1336,10 +1342,16 @@ void GameScene::preUpdate(float dt) {
 
     if (_ShrimpRice != nullptr && !_ShrimpRice->isRemoved()) {
         Vec2 BullPos = _ShrimpRice->getPosition();
-        if (_ShrimpRice->getHealth() <= 0) {
-            _worldnode->removeChild(_ShrimpRice->getSceneNode());
-            _ShrimpRice->setDebugScene(nullptr);
+        if (_ShrimpRice->getHealth() <= 0 && !_ShrimpRice->getDIE()) {
+            _ShrimpRice->setact("SFR_Death", 1.5);
+            _ShrimpRice->setDIE(true);
+        //    _worldnode->removeChild(_ShrimpRice->getSceneNode());
+        //    _ShrimpRice->setDebugScene(nullptr);
+        //    _ShrimpRice->markRemoved(true);
+        }       
+        if (_ShrimpRice->getact() == "SFR_D") {
             _ShrimpRice->markRemoved(true);
+            setComplete(true);
         }
         if (_ShrimpRice->getact() == "SFRWave2") {
             float distance = avatarPos.distance(BullPos);
@@ -1651,9 +1663,6 @@ void GameScene::fixedUpdate(float step) {
 		pos.clamp(mapMin, mapMax);
 		_minimapCamera->setPosition(pos);
 		_minimapCamera->update();
-    }
-    if (_Bull != nullptr && _Bull->getHealth() <= 0) {
-        setComplete(true);
     }
 
     if (_timer > _timeLimit) {

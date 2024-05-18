@@ -48,6 +48,7 @@ protected:
     bool _parry;
     bool _parry2;
     float _delay;
+    bool DIE;
     std::vector<std::shared_ptr<Attack>> _attacks;
 
 
@@ -108,6 +109,8 @@ public:
     float getdelay(){return _delay;}
     void setdelay(float time){_delay=time;}
     bool getangry(){return _angry;}
+    bool getDIE() { return DIE; }
+    void setDIE(bool die) { DIE = die; }
 };
 
 #endif /* __SHRIMPRICE_H__ */
