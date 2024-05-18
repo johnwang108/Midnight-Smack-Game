@@ -501,7 +501,15 @@
             "duration": 3.0
         }
     },
-    "carrot" : {},
+    "carrot" : {
+        "carrotDeath": {
+            "sheet": "carrotDeath",
+            "rows": 6,
+            "cols": 7,
+            "frames": 39,
+            "duration": 3.0
+        }
+    },
 
     "environment": {
         "1": {

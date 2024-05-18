@@ -44,6 +44,7 @@ bool Orders::init(const std::shared_ptr<AssetManager>& assets) {
 	_rootNode->setContentSize(1280, 800);
 	addChild(_rootNode);
 	setActive(false);
+	return true;
 }
 
 void Orders::changeIndex(int i) {

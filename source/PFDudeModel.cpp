@@ -256,13 +256,13 @@ void DudeModel::createFixtures() {
         CULog("Corner: %f, %f", v.x, v.y);
     }
 
-    corners[0].x = (-getWidth() - SENSOR_HEIGHT*3) / 2.0f;
+    corners[0].x = (-getWidth() - SENSOR_HEIGHT * 5) / 2.0f;
     corners[0].y = DUDE_SSHRINK * getHeight() / 2.0f;
-    corners[1].x = (-getWidth() - SENSOR_HEIGHT * 3) / 2.0f;
+    corners[1].x = (-getWidth() - SENSOR_HEIGHT * 5) / 2.0f;
     corners[1].y = -DUDE_SSHRINK * getHeight() / 2.0f;
-    corners[2].x = (-getWidth() + SENSOR_HEIGHT * 3) / 2.0f;
+    corners[2].x = (-getWidth() + SENSOR_HEIGHT * 5) / 2.0f;
     corners[2].y = -DUDE_SSHRINK * getHeight() / 2.0f;
-    corners[3].x = (-getWidth() + SENSOR_HEIGHT *3) / 2.0f;
+    corners[3].x = (-getWidth() + SENSOR_HEIGHT * 5) / 2.0f;
     corners[3].y = DUDE_SSHRINK * getHeight() / 2.0f;
 
     sensorShape.Set(corners, 4);
@@ -280,13 +280,13 @@ void DudeModel::createFixtures() {
     }
 
 
-    corners[0].x = (getWidth() - SENSOR_HEIGHT * 3) / 2.0f;
+    corners[0].x = (getWidth() - SENSOR_HEIGHT * 5) / 2.0f;
     corners[0].y = DUDE_SSHRINK * getHeight() / 2.0f;
-    corners[1].x = (getWidth() - SENSOR_HEIGHT * 3) / 2.0f;
+    corners[1].x = (getWidth() - SENSOR_HEIGHT * 5) / 2.0f;
     corners[1].y = -DUDE_SSHRINK * getHeight() / 2.0f;
-    corners[2].x = (getWidth() + SENSOR_HEIGHT * 3) / 2.0f;
+    corners[2].x = (getWidth() + SENSOR_HEIGHT * 5) / 2.0f;
     corners[2].y = -DUDE_SSHRINK * getHeight() / 2.0f;
-    corners[3].x = (getWidth() + SENSOR_HEIGHT * 3) / 2.0f;
+    corners[3].x = (getWidth() + SENSOR_HEIGHT * 5) / 2.0f;
     corners[3].y = DUDE_SSHRINK * getHeight() / 2.0f;
 
     sensorShape.Set(corners, 4);
@@ -518,6 +518,9 @@ void DudeModel::fixedUpdate(float step) {
     if (_deathTimer != 0.0f) {
         _deathTimer -= step;
     }
+
+    CULog("isTouchingRightWall: %s", contactingRightWall() ? "true" : "false");
+    CULog("isTouchingLeftWall: %s", contactingLeftWall() ? "true" : "false");
 
     if (isBuffed()) {
         useMeter(METER_COST * step / BASE_DURATION);
