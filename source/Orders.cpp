@@ -16,24 +16,34 @@ bool Orders::init(const std::shared_ptr<AssetManager>& assets) {
 	_r->addChild(p);
 	_leftButton = scene2::Button::alloc(_l);
 	_rightButton = scene2::Button::alloc(_r);
+	_leftButton->setName("leftButton");
+	_leftButton->setContentSize(p->getContentSize());
+	_rightButton->setName("rightButton");
+	_rightButton->setContentSize(p->getContentSize());
 	_leftButton->addListener([=](const std::string& name, bool down) {
 		if (down) {
-			this->changeIndex(_orderPlateIndex - 1);
+			this->changeIndex(this->_orderPlateIndex - 1);
+			CULog("left button!");
 		}
 		});
 
 	_rightButton->addListener([=](const std::string& name, bool down) {
 		if (down) {
-			this->changeIndex(_orderPlateIndex+ 1);
+			this->changeIndex(this->_orderPlateIndex+ 1);
+			CULog("right button!");
 		}
 	});
 	_leftButton->setAnchor(Vec2::ANCHOR_CENTER);
 	_rightButton->setAnchor(Vec2::ANCHOR_CENTER);
-	_leftButton->setPosition(-50.0, 25.0);
-	_rightButton->setPosition(50.0, 25.0);
+	_plateNode = scene2::PolygonNode::allocWithTexture(assets->get<Texture>("plate"));
+	_plateNode->setPosition(5.0, 25.0);
+	_plateNode->setScale(0.6f);
 	_rootNode->addChild(_leftButton);
 	_rootNode->addChild(_rightButton);
+	_rootNode->addChild(_plateNode);
+	_rootNode->setContentSize(1280, 800);
 	addChild(_rootNode);
+	setActive(false);
 }
 
 void Orders::changeIndex(int i) {
@@ -76,17 +86,32 @@ void Orders::layoutOrders() {
 	_leftButton->setAnchor(Vec2::ANCHOR_CENTER);
 	_rightButton->setAnchor(Vec2::ANCHOR_CENTER);
 	_leftButton->setPosition(-80.0, 25.0);
-	_leftButton->setScale(0.8);
 	_rightButton->setPosition(80.0, 25.0);
-	_rightButton->setScale(0.8);
+	_plateNode->setColor(_colors[_orderPlateIndex]);
 	CULog("laid out %i orders", orders.size());
 }
 
 void Orders::addOrder(int index, std::shared_ptr<scene2::SceneNode> order) {
 	if (std::find(_plateIds.begin(), _plateIds.end(), index) == _plateIds.end()) {
 		_orderList.push_back(std::vector<std::shared_ptr<scene2::SceneNode>>());
+		Color4 c;
+		if (_plateIds.size() == 0) {
+			c = Color4::WHITE;
+		}
+		else if (_plateIds.size() == 1) {
+			c = Color4::BLUE;
+		}
+		else if (_plateIds.size() == 2) {
+			c = Color4::RED;
+		}
+		else if (_plateIds.size() == 3) {
+			c = Color4::BLACK;
+		}
+		else if (_plateIds.size() == 4) {
+			c = Color4::CYAN;
+		}
 		_plateIds.push_back(index);
-		_colors.push_back(Color4::BLACK);
+		_colors.push_back(c);
 	}
 	order->setVisible(false);
 	_orderList.back().push_back(order);
@@ -95,15 +120,22 @@ void Orders::addOrder(int index, std::shared_ptr<scene2::SceneNode> order) {
 }
 
 void Orders::setActive(bool b) {
+	if (b == _isActive) return;
+	_isActive = b;
 	if (b) {
+		_leftButton->setDown(false);
+		_rightButton->setDown(false);
 		_leftButton->activate();
 		_rightButton->activate();
 	}
 	else {
+		_leftButton->setDown(false);
+		_rightButton->setDown(false);
 		_leftButton->deactivate();
 		_rightButton->deactivate();
 	}
 	_rootNode->setVisible(b);
+	
 }
 
 void Orders::removeOrder(int index, IngredientType t) {

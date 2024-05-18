@@ -19,6 +19,8 @@ protected:
 
     std::shared_ptr<scene2::Button> _leftButton;
     std::shared_ptr<scene2::Button> _rightButton;
+    std::shared_ptr<scene2::PolygonNode> _plateNode;
+    bool _isActive;
 
 private:
 

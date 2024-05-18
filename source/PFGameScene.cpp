@@ -859,7 +859,6 @@ void GameScene::preUpdate(float dt) {
     }
     bool flag = false;
     if (_input->didReset() && _paused) {
-        CULog("Stepping one frame");
         flag = true;
         _paused = false;
 	}
@@ -2481,9 +2480,29 @@ void GameScene::spawnPlate(Vec2 pos, std::unordered_map<IngredientType, int> map
         _pendingAcrossAllPlates[key] += value;
     }
 
+    Color4 c;
+
+    if (_plates.size() == 0) {
+        c = Color4::WHITE;
+    }
+    else if (_plates.size() == 1) {
+        c = Color4::BLUE;
+    }
+    else if (_plates.size() == 2) {
+        c = Color4::RED;
+    }
+    else if (_plates.size() == 3) {
+        c = Color4::BLACK;
+    }
+    else if (_plates.size() == 4) {
+        c = Color4::CYAN;
+    }
+    plate->getSceneNode()->setColor(c);
+
     addObstacle(plate, plate->getSceneNode());
     _interactables.push_back(plate);
     _plates.push_back(plate);
+
 }
 
 void GameScene::pogo() {

@@ -335,11 +335,11 @@ void GameScene::beginContact(b2Contact* contact) {
 
     //interactable 
     if (bd1->getName() == "interactable" && bd2 == _avatar.get()) {
-        ((GestureInteractable*)bd1)->getSceneNode()->setColor(Color4::BLUE);
+        //((GestureInteractable*)bd1)->getSceneNode()->setColor(Color4::BLUE);
         setInteractable(((GestureInteractable*)bd1)->getId());
 	}
     if (bd2->getName() == "interactable" && bd1 == _avatar.get()) {
-        ((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::BLUE);
+        //((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::BLUE);
         setInteractable(((GestureInteractable*)bd2)->getId());
     }
 
@@ -535,11 +535,11 @@ void GameScene::endContact(b2Contact* contact) {
 
     //interactable 
     if (bd1->getName() == "interactable" && bd2 == _avatar.get()) {
-        ((GestureInteractable*)bd1)->getSceneNode()->setColor(Color4::WHITE);
+        //((GestureInteractable*)bd1)->getSceneNode()->setColor(Color4::WHITE);
         setInteractable(-1);
     }
     if (bd2->getName() == "interactable" && bd1 == _avatar.get()) {
-        ((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::WHITE);
+        //((GestureInteractable*)bd2)->getSceneNode()->setColor(Color4::WHITE);
         setInteractable(-1);
     }
 
