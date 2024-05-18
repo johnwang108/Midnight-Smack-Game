@@ -33,6 +33,10 @@ public:
 
     void changeIndex(int i);
 
+    void decIndex() { changeIndex(_orderPlateIndex - 1); }
+
+    void incIndex() { changeIndex(_orderPlateIndex + 1); }
+
     void layoutOrders();
 
     void addOrder(int index, std::shared_ptr<scene2::SceneNode> order);

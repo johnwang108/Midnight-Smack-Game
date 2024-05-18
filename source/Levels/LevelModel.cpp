@@ -370,6 +370,7 @@ void LevelModel::populate(GameScene& scene) {
 								spritenode->setAnchor(Vec2(0.5, 0.35));
 								_avatar->setSceneNode(spritenode);
 								_avatar->setDebugColor(DEBUG_COLOR);
+								_avatar->setFlameNode(EntitySpriteNode::allocWithSheet(_assets->get<Texture>("suFlame"), 4, 4, 15));
 								scene.addObstacle(_avatar, spritenode);
 							}
 							else {

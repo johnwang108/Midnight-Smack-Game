@@ -257,8 +257,8 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     // _level_model->setFilePath("json/SFRLevel3.tmj");
     // _level_model->setFilePath("json/empanada level 4.json");
     _timer = 0.0f;
-    _timeLimit = 200.0f;
-    _respawnTimes = std::deque<float>({10.0f, 100.0f, 150.0f, 200.0f});
+    _timeLimit = 240.0f;
+    _respawnTimes = std::deque<float>({60.0f, 120.0f, 180.0f, 240.0f, 300.0f, 360.0f, 420.0f, 480.0f, 540.0f, 600.0f});
     setSceneWidth(_level_model->loadLevelWidth());
     setSceneHeight(_level_model->loadLevelHeight());
 
@@ -524,6 +524,12 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
 
     _orders = std::unordered_map<int, std::vector<std::shared_ptr<scene2::SceneNode>>>();
     _orderNode = scene2::SceneNode::alloc();
+    _ordersObj = std::make_shared<Orders>();
+    _ordersObj->init(_assets);
+    _ordersObj->setVisible(true);
+    _ordersObj->setPosition(115, 600);
+    _ordersObj->setActive(true);
+    _uiScene->addChild(_ordersObj);
     generateOrders();
     _orderNode->setAnchor(Vec2::ANCHOR_TOP_CENTER);
     _orderNode->setPosition(1280 / 2, 800 - 50);
@@ -581,21 +587,21 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
         "tutorialPopupMinimap"
     };
 
-    std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
-    for (std::string path : paths) {
-		auto reader = JsonReader::alloc("./json/Tutorials/" + path + ".json");
-        std::shared_ptr<JsonValue> popupData = reader->readJson()->get(path);
-        std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
-        p->setActive(false);
-        p->setVisible(false);
-        _interactivePopups.push_back(p);
-        _uiScene->addChild(p);
-        reader->close();
-        reader = nullptr;
-    }
-    _popupIndex = 0;
-    loader->dispose();
-    loader = nullptr;
+  //  std::shared_ptr<Scene2Loader> loader = Scene2Loader::alloc();
+  //  for (std::string path : paths) {
+		//auto reader = JsonReader::alloc("./json/Tutorials/" + path + ".json");
+  //      std::shared_ptr<JsonValue> popupData = reader->readJson()->get(path);
+  //      std::shared_ptr<Popup> p = Popup::allocWithData(_assets, _actionManager, loader.get(), popupData);
+  //      p->setActive(false);
+  //      p->setVisible(false);
+  //      _interactivePopups.push_back(p);
+  //      _uiScene->addChild(p);
+  //      reader->close();
+  //      reader = nullptr;
+  //  }
+  //  _popupIndex = 0;
+  //  loader->dispose();
+  //  loader = nullptr;
 
     return true;
 }
@@ -645,6 +651,7 @@ void GameScene::dispose() {
         _pauseButton = nullptr;
         _debugAnimTarget = nullptr;
         _level_model = nullptr;
+        _ordersObj->dispose();
         _input->dispose();
         _input = nullptr;
         Scene2::dispose();
@@ -715,7 +722,7 @@ void GameScene::reset() {
 		}
     }
     _orders.clear();
-
+    _ordersObj->reset();
     for (auto& i : _interactivePopups) {
         i->dispose();
         i = nullptr;
@@ -864,6 +871,7 @@ void GameScene::preUpdate(float dt) {
 	}
 
     _pauseMenu->setActive(_paused);
+    _ordersObj->setActive(_paused);
 
     if (_paused) {
         if (_pauseMenu->getReset()) {
@@ -880,10 +888,21 @@ void GameScene::preUpdate(float dt) {
  
 
     if (_input->getInventoryLeftPressed()) {
-        _inventoryNode->selectPreviousSlot();
+        if (!_paused) {
+            _inventoryNode->selectPreviousSlot();
+        }
+        else {
+            _ordersObj->decIndex();
+        }
     }
     else if (_input->getInventoryRightPressed()) {
-        _inventoryNode->selectNextSlot();
+        if (!_paused) {
+            _inventoryNode->selectNextSlot();
+        }
+        else {
+            _ordersObj->incIndex();
+        }
+
     }
 
 
@@ -955,6 +974,10 @@ void GameScene::preUpdate(float dt) {
         _avatar->getBody()->SetFixedRotation(true);
     }
     //if (isFailure() && _avatar->getActiveAction() != "death") {
+    if (_avatar->getFlameNode()->isVisible() && !_actionManager->isActive("suFlame")) {
+        auto action = _avatar->getFlameAction();
+        _actionManager->activate("suFlame", action, _avatar->getFlameNode());
+    }
     if (_avatar->isDead()){
         animate(_avatar, "death", true);
     }
@@ -964,7 +987,8 @@ void GameScene::preUpdate(float dt) {
         }
         //cancel run animation if stopped running
         else if (_actionManager->isActive("run") && _input->getHorizontal() == 0) {
-            animate(_avatar, "skid", true);
+            //animate(_avatar, "skid", true);
+            animate(_avatar, "idle", true);
         }
 
         else if (_avatar->isJumping() && _avatar->isGrounded()) {
@@ -1077,35 +1101,35 @@ void GameScene::preUpdate(float dt) {
     }
 
 
-    if (_input->didLevel1()) {
-        ////setLevel(1, 1);
-        //_interactivePopups.back()->toggle();
-        _interactivePopups.at(_popupIndex)->toggle();
-    }
-    else if (_input->didLevel2()) {
-        /*setLevel(1, 2);*/
-        bool b = _interactivePopups.at(_popupIndex)->isActive();
-        if (b) {
-            _interactivePopups.at(_popupIndex)->toggle();
-            _popupIndex--;
-            if (_popupIndex < 0) {
-                _popupIndex = _interactivePopups.size() - 1;
-            }
-            _interactivePopups.at(_popupIndex)->toggle();
-        }
-    }
-    else if (_input->didLevel3()) {
-        /*setLevel(1, 3);*/
-        bool b = _interactivePopups.at(_popupIndex)->isActive();
-        if (b) {
-            _interactivePopups.at(_popupIndex)->toggle();
-            _popupIndex++;
-            if (_popupIndex == _interactivePopups.size()) {
-                _popupIndex = 0;
-            }
-            _interactivePopups.at(_popupIndex)->toggle();
-        }
-    }
+    //if (_input->didLevel1()) {
+    //    ////setLevel(1, 1);
+    //    //_interactivePopups.back()->toggle();
+    //    _interactivePopups.at(_popupIndex)->toggle();
+    //}
+    //else if (_input->didLevel2()) {
+    //    /*setLevel(1, 2);*/
+    //    bool b = _interactivePopups.at(_popupIndex)->isActive();
+    //    if (b) {
+    //        _interactivePopups.at(_popupIndex)->toggle();
+    //        _popupIndex--;
+    //        if (_popupIndex < 0) {
+    //            _popupIndex = _interactivePopups.size() - 1;
+    //        }
+    //        _interactivePopups.at(_popupIndex)->toggle();
+    //    }
+    //}
+    //else if (_input->didLevel3()) {
+    //    /*setLevel(1, 3);*/
+    //    bool b = _interactivePopups.at(_popupIndex)->isActive();
+    //    if (b) {
+    //        _interactivePopups.at(_popupIndex)->toggle();
+    //        _popupIndex++;
+    //        if (_popupIndex == _interactivePopups.size()) {
+    //            _popupIndex = 0;
+    //        }
+    //        _interactivePopups.at(_popupIndex)->toggle();
+    //    }
+    //}
 
     //advance level for debug
     if (_input->didAnimate()) {
@@ -2148,9 +2172,8 @@ void GameScene::respawnEnemy(std::shared_ptr<EnemyModel> enemy) {
         return;
     }
     else {
-        CULog(("Respawned " + enemy->getName()).c_str());
-        addObstacle(enemy, enemy->getSceneNode());
         enemy->respawn();
+        addObstacle(enemy, enemy->getSceneNode());
     }
 }
 
@@ -2678,35 +2701,26 @@ void GameScene::createOrder(int plateId, IngredientType ing) {
     }
     }
     std::shared_ptr<scene2::PolygonNode> text = scene2::PolygonNode::allocWithTexture(texture);
-    float scale = ORDER_WIDTH / texture->getWidth();
+    float scale = ORDER_HEIGHT / texture->getHeight();
     text->setPosition(0, 0);
     text->setScale(scale);
-    background->setPosition(0,0);
+    background->setPosition(0, 0);
     background->setScale(scale);
     order->addChild(text);
-    order->setScale(scale);
-    order->setContentWidth(ORDER_WIDTH);
+    order->setContentHeight(ORDER_HEIGHT);
     order->setName(Ingredient::getIngredientStringFromType(ing) + "Order");
 
-    _orders[plateId].push_back(order);
-    _orderNode->addChild(_orders[plateId].back());
+
+    CULog("%s", _ordersObj == nullptr ? "true1111" : "false1111");
+    _ordersObj->addOrder(plateId, order);
+    //_orders[plateId].push_back(order);
+    //_orderNode->addChild(_orders[plateId].back());
     _numOrders += 1;
     positionOrders();
 }
 
 void GameScene::removeOrder(int plateId, IngredientType ing) {
-    for (auto it = _orders[plateId].begin(); it != _orders[plateId].end(); it++) {
-        if ((*it) != nullptr && (*it)->getName() == (Ingredient::getIngredientStringFromType(ing) + "Order")) {
-            std::shared_ptr<scene2::SceneNode> order = *it;
-            _orderNode->removeChild(order);
-            _orders[plateId].erase(it);
-            order->dispose();
-            _numOrders -= 1;
-            positionOrders();
-            return;
-		}
-	}
-
+    _ordersObj->removeOrder(plateId, ing);
 }
 
 void GameScene::toggleOrders(bool v) {

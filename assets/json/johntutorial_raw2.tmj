@@ -1,4 +1,12 @@
 { "compressionlevel":-1,
+ "editorsettings":
+    {
+     "export":
+        {
+         "format":"json",
+         "target":"johntutorial_raw2.tmj"
+        }
+    },
  "height":75,
  "infinite":false,
   "layers": [

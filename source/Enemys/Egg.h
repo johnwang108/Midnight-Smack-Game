@@ -29,7 +29,7 @@ public:
 
         //manually add respawn 
         auto info = result->getInfo("eggDeath");
-        result->addActionAnimation("eggRespawn", _assets->get<Texture>("eggDeath"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 4.0f, true);
+        result->addActionAnimation("eggRespawn", _assets->get<Texture>("eggDeath"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 8.0f, true);
         return res ? result : nullptr;
     }
 

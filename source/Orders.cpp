@@ -3,7 +3,9 @@
 bool Orders::init(const std::shared_ptr<AssetManager>& assets) {
 	//_orders = std::map<int, std::vector<std::shared_ptr<scene2::SceneNode>>>();
 	if (scene2::SceneNode::init()) {
+		CULog("INITED ORDERS");
 		_plateIds = std::vector<int>();
+		CULog("%i", _plateIds.size());
 		_orderList = std::vector<std::vector<std::shared_ptr<scene2::SceneNode>>>();
 		_colors = std::vector<Color4>();
 		_rootNode = scene2::SceneNode::alloc();
@@ -96,6 +98,7 @@ void Orders::layoutOrders() {
 }
 
 void Orders::addOrder(int index, std::shared_ptr<scene2::SceneNode> order) {
+	CULog("tried to add order");
 	if (std::find(_plateIds.begin(), _plateIds.end(), index) == _plateIds.end()) {
 		_orderList.push_back(std::vector<std::shared_ptr<scene2::SceneNode>>());
 		Color4 c;

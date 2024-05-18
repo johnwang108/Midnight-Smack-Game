@@ -42,7 +42,7 @@ public:
 
         //manually add respawn (death reversed)
         info = result->getInfo("beefDeath");
-        result->addActionAnimation("beefRespawn", _assets->get<Texture>("beefDeath"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 4.0f, true);
+        result->addActionAnimation("beefRespawn", _assets->get<Texture>("beefDeath"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 8.0f, true);
         return res ? result : nullptr;
     }
 

@@ -5,7 +5,7 @@
         "size": [800, 400],
         "anchor": [0.5, 0.5],
         "visible": true,
-        "text": "To complete each level, press [E] \nto fill each plate's orders!",
+        "text": "To complete each level, select the correct ingredient and press [E] to fill each plate's orders!",
         "textMaxWidth%age": 0.5,
         "font": "popupFont",
         "background": "popupBackground",

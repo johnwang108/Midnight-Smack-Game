@@ -55,7 +55,7 @@ public:
 
         //manually add respawn (death reversed)
         auto info = result->getInfo("riceDeath");
-        result->addActionAnimation("riceRespawn", _assets->get<Texture>("riceDeath"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 4.0f, true);
+        result->addActionAnimation("riceRespawn", _assets->get<Texture>("riceDeath"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 8.0f, true);
         return res ? result : nullptr;
     }
 
