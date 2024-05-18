@@ -47,7 +47,7 @@ void Beef::update(float dt) {
         setRequestedActionAndPrio("beefIdle", 34);
     }
     else if (_state == "patrolling") {
-        setRequestedActionAndPrio("beefIdle", 1);
+        setRequestedActionAndPrio("beefDig", 1);
     }
     else if (_state == "respawning") {
 		setRequestedActionAndPrio("beefRespawn", 1000);
@@ -67,10 +67,14 @@ void Beef::fixedUpdate(float step) {
     else if (_state == "burrowing") {
         setTangible(false);
         velocity.x = 0;
+        std::shared_ptr<Sound> source = _assets->get<Sound>("burrow");
+        AudioEngine::get()->play("burrow", source, false, 0.8f, false);
     }
     else if (_state == "tracking") {
         setTangible(false);
         velocity.x = _direction * BEEF_SPEED;
+        std::shared_ptr<Sound> source = _assets->get<Sound>("mole");
+        AudioEngine::get()->play("mole", source, false, 0.8f, false);
     }
     else if (_state == "unburrowing") {
         setTangible(false);

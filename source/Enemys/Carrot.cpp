@@ -34,6 +34,8 @@ void Carrot::fixedUpdate(float step) {
         velocity.x = 0;
     }
     else if (_state == "jumping") {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("hand");
+        AudioEngine::get()->play("hand", source, false, 0.8f, false);
 
     }
     else if (_state == "midair") {
@@ -72,7 +74,7 @@ void Carrot::setState(std::string state) {
         _behaviorCounter = 0;
     }
     else if (state == "stunned") {
-        _behaviorCounter = 1.0f;
+        _behaviorCounter = -1;
     }
     else if (state == "patrollling") {
         _behaviorCounter = -1;

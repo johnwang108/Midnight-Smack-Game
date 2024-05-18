@@ -4,8 +4,6 @@
 
 #include <cugl/cugl.h>
 
-using namespace cugl;
-
 //This class is the base evel class for all menu scenes, including main menu and level select. It is a subclass of Scene2.
 class MenuScene : public cugl::Scene2 {
 protected:
@@ -28,8 +26,6 @@ protected:
     bool _advance;
 
     bool _transitionScenes;
-
-    std::shared_ptr<scene2::SceneNode> _orderNode;
 
     std::string _targetScene;
 
@@ -81,8 +77,6 @@ public:
     std::string getTarget() { return _targetScene; };
 
     void setTarget(std::string s) { _targetScene = s; };
-
-    void setOrders(std::shared_ptr<scene2::SceneNode> orderNode);
 
     void setActive(bool b);
     void setReset(bool b) { _reset = b; };

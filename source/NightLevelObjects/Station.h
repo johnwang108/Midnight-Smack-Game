@@ -74,6 +74,10 @@ public:
 	IngredientType getCookedType(IngredientType t);
 
 	void hit() override;
+
+	StationType getType() {
+		return _type;
+	}
 };
 
 #endif /* __STATION_H__ */

@@ -98,9 +98,15 @@ void Rice::fixedUpdate(float step) {
             else */if (abs(_distanceToPlayer.x) < 0.001) {
                 velocity.x = 0;
             }
+            std::shared_ptr<Sound> source = _assets->get<Sound>("riceRun");
+            AudioEngine::get()->play("riceRun", source, false, 0.8f, false);
+
+        
         }
         else if (_state == "attacking") {
             velocity.x = 0;
+            std::shared_ptr<Sound> source = _assets->get<Sound>("staffSpin");
+            AudioEngine::get()->play("staffSpin", source, false, 0.8f, false);
             setRequestedActionAndPrio("riceAttack", 80);
         }
         else if (_state == "stunned") {

@@ -71,6 +71,7 @@ using namespace cugl;
 #define DISCARD_HOLD_TIME 2.0f
 #define MIN_DISCARD_START_TIME 0.25f
 /**desired order width in pixels*/
+#define ORDER_WIDTH 100.0f
 #define INVENTORY_OFFSET 30.0f
 
 
@@ -521,13 +522,6 @@ bool GameScene::init(const std::shared_ptr<AssetManager>& assets,
     addChild(_debugnode);
     _numOrders = 0;
 
-    _ordersObj = std::make_shared<Orders>();
-    _ordersObj->init(_assets);
-    _ordersObj->setVisible(true);
-    _ordersObj->setPosition(115, 600);
-    _ordersObj->setActive(true);
-    _uiScene->addChild(_ordersObj);
-
     _orders = std::unordered_map<int, std::vector<std::shared_ptr<scene2::SceneNode>>>();
     _orderNode = scene2::SceneNode::alloc();
     generateOrders();
@@ -722,7 +716,6 @@ void GameScene::reset() {
     }
     _orders.clear();
 
-    _ordersObj->reset();
     for (auto& i : _interactivePopups) {
         i->dispose();
         i = nullptr;
@@ -871,7 +864,6 @@ void GameScene::preUpdate(float dt) {
 	}
 
     _pauseMenu->setActive(_paused);
-    _ordersObj->setActive(_paused);
 
     if (_paused) {
         if (_pauseMenu->getReset()) {
@@ -1268,6 +1260,8 @@ void GameScene::preUpdate(float dt) {
                 if (int(_Bull->getangrytime() * 10) % 2 < 1) {
                     _Bull->createAttack(*this);
                 }
+                std::shared_ptr<Sound> source = _assets->get<Sound>("bullAngry");
+                AudioEngine::get()->play("bullAngry", source, false, 0.8f, false);
             }
             if (_Bull->getshake() && _Bull->getknockbacktime() <= 0) {
                 _Bull->setshake(false);
@@ -1333,8 +1327,14 @@ void GameScene::preUpdate(float dt) {
             if (!_BullactionManager->isActive(_Bull->getActiveAction())) {
                 _Bull->animate("bullRun");
             }
+            if (_Bull->isChasing()) {
+                std::shared_ptr<Sound> source = _assets->get<Sound>("bullCharge");
+                AudioEngine::get()->play("bullCharge", source, false, 0.8f, false);
+            }
         }
         else if ( _Bull->getsprintpreparetime() > 0 && _Bull->getknockbacktime() <= 0 &&_Bull->getattacktype()!="none") {
+            std::shared_ptr<Sound> source = _assets->get<Sound>("bullPuff");
+            AudioEngine::get()->play("bullPuff", source, false, 0.8f, false);
             if (!_BullactionManager->isActive(_Bull->getattacktype())) {
                 _BullactionManager->clearAllActions(_Bull->getSceneNode());
                 auto bullTelegraph = _Bull->getAction(_Bull->getattacktype());
@@ -1368,7 +1368,6 @@ void GameScene::preUpdate(float dt) {
             if (_ShrimpRice->getnextchangetime() < 0) {
                 int direction = (avatarPos.x > BullPos.x) ? 1 : -1;
                 _ShrimpRice->setDirection(direction);
-                _ShrimpRice->setnextchangetime(0.5 + static_cast<float>(rand()) / static_cast<float>(RAND_MAX));
             }
         }
         if (_ShrimpRice->getangrytime() > 0 && !_enemies.empty()) {
@@ -1384,6 +1383,8 @@ void GameScene::preUpdate(float dt) {
             _ShrimpRice->setangrytime(5);
         }
         if (_ShrimpRice->getparry() && !_ShrimpRice->getparry2()) {
+            std::shared_ptr<Sound> source = _assets->get<Sound>("sfrAttack");
+            AudioEngine::get()->play("sfrAttack", source, false, EFFECT_VOLUME, true);
             CULog("parry");
             _ShrimpRice->setparry(false);
             _ShrimpRice->setparry2(false);
@@ -1674,6 +1675,10 @@ void GameScene::fixedUpdate(float step) {
     if (_timer > _timeLimit) {
         setFailure(true);
     }
+    if (_timer > _timeLimit-15) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("clockTick");
+        AudioEngine::get()->play("clockTick", source, false, 0.8f, false);
+    }
  
     _inventoryNode->fixedUpdate(step);
     //su
@@ -1687,12 +1692,34 @@ void GameScene::fixedUpdate(float step) {
             enemy->fixedUpdate(step);
         }
         if (enemy->getHealth() <= 0) {
+            
+            if (enemy->getType() == EnemyType::egg && !enemy->getkillMe()) {
+                std::shared_ptr<Sound> source = _assets->get<Sound>("eggDeath");
+                AudioEngine::get()->play("eggDeath", source, false, EFFECT_VOLUME, true);
+
+            }
+            if (enemy->getType() == EnemyType::rice && !enemy->getkillMe()) {
+                std::shared_ptr<Sound> source = _assets->get<Sound>("riceLeader");
+                AudioEngine::get()->play("riceLeader", source, false, EFFECT_VOLUME, true);
+            }
+            if (enemy->getType() == EnemyType::rice_soldier && !enemy->getkillMe()) {
+                std::shared_ptr<Sound> source = _assets->get<Sound>("riceSoldier");
+                AudioEngine::get()->play("riceSoldier", source, false, EFFECT_VOLUME, true);
+            }
             enemy->markForDeletion();
         }
         if (enemy->shouldDelete()) {
             removeEnemy(enemy.get());
         }
     }
+
+    _enemies.erase(
+        std::remove_if(_enemies.begin(), _enemies.end(),
+            [](const std::shared_ptr<EnemyModel>& enemy) {
+                return enemy->shouldDelete();
+            }),
+        _enemies.end()
+    );
     //attacks
     for (auto it = _attacks.begin(); it != _attacks.end();) {
         if ((*it) == nullptr || (*it)->isRemoved()) {
@@ -1744,6 +1771,8 @@ void GameScene::fixedUpdate(float step) {
 	}
     if (allPlatesDone) {
         setComplete(true);
+        std::shared_ptr<Sound> source = _assets->get<Sound>("ding");
+        AudioEngine::get()->play("ding", source, false, 0.8f, false);
     }
 
 
@@ -2087,8 +2116,8 @@ void GameScene::removeAttack(T* attack) {
     attack->markRemoved(true);
     //attack->dispose();
 
-    std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
-    AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
+    std::shared_ptr<Sound> source = _assets->get<Sound>("slashNoImpact");
+    AudioEngine::get()->play("slashNoImpact", source, false, EFFECT_VOLUME, true);
 }
 
 void GameScene::respawnAvatar() {
@@ -2112,8 +2141,6 @@ void GameScene::removeEnemy(EnemyModel* enemy) {
     enemy->setDebugScene(nullptr);
     enemy->markRemoved(true);
 
-    std::shared_ptr<Sound> source = _assets->get<Sound>(POP_EFFECT);
-    AudioEngine::get()->play(POP_EFFECT, source, false, EFFECT_VOLUME, true);
 }
 
 void GameScene::respawnEnemy(std::shared_ptr<EnemyModel> enemy) {
@@ -2303,14 +2330,25 @@ bool GameScene::loadSave(std::shared_ptr<JsonValue> save) {
 void GameScene::loadLevel(int chapter, int level) {
     changeCurrentLevel(chapter, level);
     AudioEngine::get()->clear();
-    if (level == 4) {
+    
+    if (level == 1 || level == 2) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("tutorial");
+        AudioEngine::get()->getMusicQueue()->play(source, true, 0.1f);
+    }
+    if (level > 2 && level < 13) {
+        std::shared_ptr<Sound> source = _assets->get<Sound>("orderUp");
+        AudioEngine::get()->getMusicQueue()->play(source, true, 0.1f);
+    }
+    if (level == 13) {
         std::shared_ptr<Sound> source = _assets->get<Sound>("theBull");
-        AudioEngine::get()->play("theBull", source, true, EFFECT_VOLUME, true);
+        AudioEngine::get()->getMusicQueue()->play(source, true, 0.1f);
     }
-    if (level == 5) {
+    
+    if (level == 22) {
         std::shared_ptr<Sound> source = _assets->get<Sound>("theShrimp");
-        AudioEngine::get()->play("theShrimp", source, true, EFFECT_VOLUME, true);
+        AudioEngine::get()->getMusicQueue()->play(source, true, 0.1f);
     }
+    
     loadLevel(currentLevel);
 }
 
@@ -2416,6 +2454,7 @@ void GameScene::spawnShrimp(Vec2 pos) {
     std::shared_ptr<EnemyModel> new_enemy = Shrimp::allocWithConstants(pos,s, getScale(), _assets);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
+    new_enemy->setasset(_assets);
     addObstacle(new_enemy, spritenode);
     _enemies.push_back(new_enemy);
 }
@@ -2426,6 +2465,7 @@ void GameScene::spawnBeef(Vec2 pos) {
     std::shared_ptr<EnemyModel> new_enemy = Beef::allocWithConstants(pos, s, getScale(), _assets);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
+    new_enemy->setasset(_assets);
     addObstacle(new_enemy, spritenode);
     _enemies.push_back(new_enemy);
 }
@@ -2449,6 +2489,7 @@ void GameScene::spawnRice(Vec2 pos, bool isSoldier) {
     spritenode->setScale(0.35 / 1.75);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
+    new_enemy->setasset(_assets);
     addObstacle(new_enemy, spritenode);
     _enemies.push_back(new_enemy);
 }
@@ -2463,6 +2504,7 @@ std::shared_ptr<EnemyModel> GameScene::spawnRiceSoldier(Vec2 pos, std::shared_pt
     spritenode->setScale(0.35 / 1.75);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
+    new_enemy->setasset(_assets);
     addObstacle(new_enemy, spritenode);
     //DONT PUSH BACK INTO _enemies, just add to leader
     //_enemies.push_back(new_enemy);
@@ -2478,6 +2520,7 @@ void GameScene::spawnCarrot(Vec2 pos) {
     std::shared_ptr<EnemyModel> new_enemy = Carrot::allocWithConstants(pos, s, getScale(), _assets);
     new_enemy->setSceneNode(spritenode);
     new_enemy->setDebugColor(DEBUG_COLOR);
+    new_enemy->setasset(_assets);
     spritenode->setScale(0.2);
     spritenode->setAnchor(0.5, 0.35);
     addObstacle(new_enemy, spritenode);
@@ -2635,24 +2678,24 @@ void GameScene::createOrder(int plateId, IngredientType ing) {
     }
     }
     std::shared_ptr<scene2::PolygonNode> text = scene2::PolygonNode::allocWithTexture(texture);
-    float scale = ORDER_HEIGHT / texture->getHeight();
+    float scale = ORDER_WIDTH / texture->getWidth();
     text->setPosition(0, 0);
     text->setScale(scale);
     background->setPosition(0,0);
     background->setScale(scale);
     order->addChild(text);
-    order->setContentHeight(ORDER_HEIGHT);
+    order->setScale(scale);
+    order->setContentWidth(ORDER_WIDTH);
     order->setName(Ingredient::getIngredientStringFromType(ing) + "Order");
 
-    _ordersObj->addOrder(plateId, order);
-    //_orders[plateId].push_back(order);
-    //_orderNode->addChild(_orders[plateId].back());
+    _orders[plateId].push_back(order);
+    _orderNode->addChild(_orders[plateId].back());
     _numOrders += 1;
     positionOrders();
 }
 
 void GameScene::removeOrder(int plateId, IngredientType ing) {
-    /*for (auto it = _orders[plateId].begin(); it != _orders[plateId].end(); it++) {
+    for (auto it = _orders[plateId].begin(); it != _orders[plateId].end(); it++) {
         if ((*it) != nullptr && (*it)->getName() == (Ingredient::getIngredientStringFromType(ing) + "Order")) {
             std::shared_ptr<scene2::SceneNode> order = *it;
             _orderNode->removeChild(order);
@@ -2660,11 +2703,10 @@ void GameScene::removeOrder(int plateId, IngredientType ing) {
             order->dispose();
             _numOrders -= 1;
             positionOrders();
-            
             return;
 		}
-	}*/
-    _ordersObj->removeOrder(plateId, ing);
+	}
+
 }
 
 void GameScene::toggleOrders(bool v) {
@@ -2677,23 +2719,19 @@ void GameScene::toggleOrders(bool v) {
 }
 
 void GameScene::positionOrders() {
- //   CULog("positioning");
- //   float totalHeight = ORDER_HEIGHT * _numOrders;
- //   float start = 0;
- //   for (auto& t : _orders) {
-	//	int i = 0;
- //       for (auto& b : t.second) {
-	//		b->setPositionY(start);
- //           start += ORDER_HEIGHT;
-	//	}
-	//}
- //   //_orderNode->setContentHeight(totalHeight);
- //   _orderNode->setAnchor(Vec2::ANCHOR_TOP_CENTER);
- //   _orderNode->setPosition(1280 / 2, 800 - 50);
-
-    //std::shared_ptr<scene2::Button> lButton = scene2::Button::alloc();
-    //std::shared_ptr<scene2::Button> rButton = scene2::Button::alloc();
-
+    CULog("positioning");
+    float totalWidth = _numOrders * ORDER_WIDTH;
+    float start = 0;
+    for (auto& t : _orders) {
+		int i = 0;
+        for (auto& b : t.second) {
+			b->setPositionX(start);
+            start += ORDER_WIDTH;
+		}
+	}
+    _orderNode->setContentWidth(totalWidth);
+    _orderNode->setAnchor(Vec2::ANCHOR_TOP_CENTER);
+    _orderNode->setPosition(1280 / 2, 800 - 50);
 }
 
 void GameScene::generateOrders() {

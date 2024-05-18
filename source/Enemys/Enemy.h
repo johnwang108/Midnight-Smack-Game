@@ -130,6 +130,9 @@ protected:
 
     Vec2 _spawnPoint;
 
+    std::shared_ptr<cugl::AssetManager> _assets;
+
+
 
 public:
     EnemyModel() : Entity(), _sensorName(ENEMY_SENSOR_NAME) { }
@@ -210,7 +213,7 @@ public:
     bool getattacktime() { return _attacktime; }
     void setattacktime(bool attacktime) { _attacktime = attacktime; }
     void setshooted(bool shooted) { _shooted = shooted; }
-
+    void setasset(std::shared_ptr<cugl::AssetManager> assets) { _assets = assets; }
 
 #pragma mark -
 #pragma mark Physics Methods
@@ -306,7 +309,7 @@ public:
         _killMe = true;
         _isTangible = false;
     }
-
+    bool getkillMe() { return _killMe; }
     bool shouldDelete() {
 		return _killMe && _killMeCountdown < 0;
 	}
