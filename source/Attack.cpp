@@ -17,7 +17,7 @@ bool Attack::init(cugl::Vec2 pos, const cugl::Size& size) {
     if (BoxObstacle::init(pos, size)) {
 		setDensity(1);
 		_killme = false;
-		_lifetime = ATTACK_LIFETIME;
+        _lifetime = ATTACK_LIFETIME;
 		_faceright = false;
 		_direction = -1;
 		_shoot = true;
@@ -25,6 +25,9 @@ bool Attack::init(cugl::Vec2 pos, const cugl::Size& size) {
 		_go = false;
         _norotate= false;
 		_speed = DEFAULT_SPEED;
+		_die = true;
+		_uppp = 0;
+		_follow = false;
 
         return true;
     }
@@ -49,11 +52,23 @@ void Attack::update(float dt) {
         _direction = 1;
         _faceright = false;
     }
-    
-	if (_go) {
-        _body->SetLinearVelocity(b2Vec2(8*_direction, 0));
+
+
+	if (_node != nullptr) {
+		_node->setPosition(getPosition()*_drawScale);
+        _node->setAngle(getAngle());
 	}
-	else {
+}
+
+void Attack::fixedUpdate(float dt) {
+	if (_body == nullptr) {
+		return;
+	}
+
+	if (_go) {
+		_body->SetLinearVelocity(b2Vec2(8 * _direction, 0));
+	}
+	if(_die) {
 		if (_lifetime == 0) {
 			_killme = true;
 		}
@@ -61,27 +76,42 @@ void Attack::update(float dt) {
 			_lifetime = (_lifetime > 0 ? _lifetime - 1 : 0);
 		}
 	}
-
-
-	if (_shoot) {
+	if (_uppp > 0) {
+		if (_uppp == 1.5) {
+			_body->ApplyLinearImpulseToCenter(b2Vec2((60 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX))-50, 100), true);
+		}
+		_uppp -= dt;
+	}
+	else if (_shoot) {
+		_body->SetLinearVelocity(b2Vec2(0,0));
 		_shoot = false;
 		if (_rand) {
-			_body->ApplyLinearImpulseToCenter(b2Vec2(20*static_cast<float>(rand()) / static_cast<float>(RAND_MAX)-5, 45), true);
+			_body->ApplyLinearImpulseToCenter(b2Vec2(20 * static_cast<float>(rand()) / static_cast<float>(RAND_MAX) - 5, 30), true);
 		}
 		else if (_straight != Vec2(-87, -87)) {
+			setGravityScale(0);
 			b2Vec2 targetDirection = b2Vec2(_straight.x - getPosition().x, _straight.y - getPosition().y);
 			targetDirection.Normalize();
 			_body->ApplyLinearImpulseToCenter(b2Vec2(targetDirection.x * _speed, targetDirection.y * _speed), true);
-            _body->SetTransform(_body->GetPosition(), atan2(_straight.y - getPosition().y, _straight.x - getPosition().x) + M_PI);
+			_body->SetTransform(_body->GetPosition(), atan2(_straight.y - getPosition().y, _straight.x - getPosition().x) + M_PI);
 		}
 		else {
+			setGravityScale(0);
 			_body->ApplyLinearImpulseToCenter(b2Vec2(3 * _direction, 10), true);
+		}
+	}
+	else if (_follow) {
+		if (_straight != Vec2(-87, -87)) {
+			b2Vec2 targetDirection = b2Vec2(_straight.x - getPosition().x, _straight.y - getPosition().y);
+			targetDirection.Normalize();
+			_body->SetLinearVelocity(b2Vec2(targetDirection.x*15, targetDirection.y*15));
 		}
 	}
 
 	float currentAngle = _body->GetAngle();
 	b2Vec2 velocity = _body->GetLinearVelocity();
-	if (_straight== Vec2(-87, -87)&& !_norotate) {
+
+	if (_straight == Vec2(-87, -87) && !_norotate) {
 		if (velocity.x < 0) {
 			_body->SetTransform(_body->GetPosition(), currentAngle + M_PI * dt);
 		}
@@ -89,14 +119,8 @@ void Attack::update(float dt) {
 			_body->SetTransform(_body->GetPosition(), currentAngle - M_PI * dt);
 		}
 	}
-	else if(!_norotate) {
+	else if (!_norotate) {
 		_body->SetTransform(_body->GetPosition(), currentAngle);
-	}
-
-
-	if (_node != nullptr) {
-		_node->setPosition(getPosition()*_drawScale);
-        _node->setAngle(getAngle());
 	}
 }
 

@@ -60,23 +60,46 @@
 
 #define BODY_SENSOR_NAME "dudebodysensor"
 
+#define LEFT_SENSOR_NAME "dudeleftsensor"
+
+#define RIGHT_SENSOR_NAME "duderightsensor"
 
 #pragma mark -
 #pragma mark Physics Constants
-/** The factor to multiply by the input */
-#define DUDE_FORCE      sqrt(2 * (9.8) * getHeight() * 30 ) * getMass()
+//:)
+#define LEVELS_H_GRAVITY -34.8f
+/** The factor to multiply by the input. Used for walking */
+#define DUDE_FORCE      10.0f
+
+#define DUDE_JUMP       17.5f //* getJumpBuff()
+//sqrt(2 * (9.8) * getHeight() * 100 ) * getMass()
+#define FALL_MULTIPLIER 1.5f
+#define FALL_MULTIPLIER_LOW 1.4f
+#define DUDE_DAMPING_BASE 0.0f
+
+/** The impulse for the character dash */
+#define DUDE_DASH       65.0f
+
 /** The amount to slow the character down */
 #define DUDE_DAMPING    10.0f
 /** The maximum character speed */
-#define DUDE_MANUEL_MAXSPEED   5.0f
+#define DUDE_MANUEL_MAXSPEED   7.0f
 
 #define MAX_METER 100.0f
+#define MAX_HEALTH 100.0f
 
-#define METER_COST 60.0f
+#define METER_COST 99.0f
 #define floatyFrames   10
 
-/** Cooldown (in animation frames) for shooting */
-#define DASH_COOLDOWN  20
+#define DEATH_COOLDOWN 5.0f
+
+/** Cooldown (in animation frames) for dashing */
+#define DASH_COOLDOWN  floatyFrames + 5
+
+#define WALL_JUMP_LERP 0.05f
+
+//lerp timer in seconds
+#define WALL_JUMP_LERP_TIMER 0.75f
 
 
 #pragma mark -
@@ -107,7 +130,7 @@ enum class modifier {
 #define DEFAULT_BUFF 1.0f
 
 #define BASE_ATTACK_BUFF 1.5f
-#define BASE_HEALTH_BUFF 5.0f
+#define BASE_HEALTH_BUFF 0.05f
 #define BASE_JUMP_BUFF 1.5f
 //defense <1 because damage multiplied by defense
 #define BASE_DEFENSE_BUFF 0.5f
@@ -115,7 +138,7 @@ enum class modifier {
 
 #define SUPER_ATTACK_BUFF 3.0f
 #define SUPER_HEALTH_BUFF 5.0f
-#define SUPER_JUMP_BUFF 3.0f
+#define SUPER_JUMP_BUFF 2.0f
 #define SUPER_DEFENSE_BUFF 0.0f
 #define SUPER_SPEED_BUFF 5.0f
 
@@ -137,12 +160,16 @@ private:
 protected:
 	/** The current horizontal movement of the character */
 	float _movement;
+
+    float _vertical;
 	/** Which direction is the character facing */
 	bool _faceRight;
 	/** How long until we can jump again */
 	int  _jumpCooldown;
 	/** Whether we are actively jumping */
 	bool _isJumping;
+
+    bool _jumpPressed;
 	/** How long until we can shoot again */
 	int  _shootCooldown;
 	/** Whether our feet are on the ground */
@@ -154,6 +181,18 @@ protected:
 	/** Reference to the sensor name (since a constant cannot have a pointer) */
 	std::string _sensorName;
 
+    /** Left sensor to represent left */
+    b2Fixture* _leftSensorFixture;
+    /** Reference to the sensor name (since a constant cannot have a pointer) */
+    std::string _leftSensorName;
+
+    std::shared_ptr<EntitySpriteNode> _flameNode;
+
+    /** Left sensor to represent left */
+    b2Fixture* _rightSensorFixture;
+    /** Reference to the sensor name (since a constant cannot have a pointer) */
+    std::string _rightSensorName;
+
     b2Fixture* _bodySensorFixture;
 
     std::string _bodySensorName;
@@ -162,16 +201,30 @@ protected:
 
     std::shared_ptr<cugl::scene2::WireNode> _bodySensorNode;
 
+    std::shared_ptr<cugl::scene2::WireNode> _leftSensorNode;
+
+    std::shared_ptr<cugl::scene2::WireNode> _rightSensorNode;
+
 	///** The scene graph node for the Dude. */
 	//std::shared_ptr<EntitySpriteNode> _node;
 	///** The scale between the physics world and the screen (MUST BE UNIFORM) */
 	//float _drawScale;
 
+    float _wallJumpTimer;
     bool _dash;
     int _dashNum;
     float _dashCooldown;
-    bool _contactingWall;
+    bool _contactingLeftWall;
+    bool _contactingRightWall;
     bool _isOnDangerousGround;
+    bool _isInputWalk;
+    bool _isAttacking;
+    float _fallMultiplier;
+    float _dashDamping;
+    float _dashForce;
+    float _jumpForce;
+    float _walkForce;
+    bool _didAnimateHurt;
 
     //float _health;
 
@@ -183,6 +236,11 @@ protected:
     std::shared_ptr<cugl::scene2::PolygonNode> _healthBarForeground;
 
     //float _attack;
+    std::shared_ptr<scene2::Animate> _flameAction;
+
+    float _deathTimer;
+
+    buff _buffType;
 
     //attack damage buff
     float _attackBuff;
@@ -222,8 +280,10 @@ protected:
     float _healthUpgrade;
     float _dashUpgrade;
     float _meterGainUpgrade;
-    float _hitStunUpgrade;
+    float _attackUpgrade;
+    float _speedUpgrade;
 
+    bool _rechargingDash;
 	/**
 	* Redraws the outline of the physics fixtures to the debug node
 	*
@@ -242,7 +302,7 @@ public:
      * This constructor does not initialize any of the dude values beyond
      * the defaults.  To use a DudeModel, you must call init().
      */
-    DudeModel() : Entity(), _sensorName(SENSOR_NAME), _bodySensorName(BODY_SENSOR_NAME) { }
+    DudeModel() : Entity(), _sensorName(SENSOR_NAME), _bodySensorName(BODY_SENSOR_NAME), _leftSensorName(LEFT_SENSOR_NAME), _rightSensorName(RIGHT_SENSOR_NAME) { }
     
     /**
      * Destroys this DudeModel, releasing all resources.
@@ -435,6 +495,35 @@ public:
             result->loadAnimationsFromConstant("su", _assets);
 			}
 
+        //auto reader = JsonReader::alloc("./json/constants.json");
+
+        //std::shared_ptr<JsonValue> js = reader->readJson();
+
+
+        ////pixels to meters
+        //float tapJumpHeight = js->get("tap_jump_height")->asFloat() / scale;
+
+        //float fullJumpHeight = js->get("full_jump_height")->asFloat() / scale;
+
+        //assert(tapJumpHeight < fullJumpHeight);
+
+        //float dashDistance = js->get("dash_distance")->asFloat() / scale;
+
+        //float jumpBoost = js->get("jump_boost")->asFloat();
+
+        //float jumpForce = std::sqrt(fullJumpHeight * 2 * LEVELS_H_GRAVITY);
+        //result->setJumpForce(jumpForce);
+
+        ////float fallMultiplier = (-1 * LEVELS_H_GRAVITY) + (result->getJumpForce() * result->getJumpForce()) / (2 * (tapJumpHeight - fullJumpHeight + ((result->getJumpForce() * result->getJumpForce()) / (2 * LEVELS_H_GRAVITY))));
+
+        //float dashDamping = result->getDashForce()/dashDistance;
+
+        //result->setJumpForce(jumpForce);
+        //result->setDashForce(DUDE_DASH);
+        //result->setFallMultiplier(1.5);
+
+        //result->setDashDamping(dashDamping);
+
         return res ? result : nullptr;
     }
     
@@ -461,19 +550,6 @@ public:
      * @param node  The scene graph node representing this DudeModel, which has been added to the world node already.
      */
 
-    //void addActionAnimation(std::string action_name, std::shared_ptr<cugl::Texture> sheet, int rows, int cols, int size, float duration, bool isPassive = true);
-
-    //void animate(std::string action_name);
-
-    //void changeSheet(std::string action_name);
-
-    //std::shared_ptr<cugl::scene2::Animate> getAction(std::string action_name) { return _actions[action_name]; };
-
-    //void getInfo(std::string action_name) {};
-
-    //std::string getActiveAction() { return _activeAction; };
-
-    
 #pragma mark -
 #pragma mark Attribute Properties
     /**
@@ -484,7 +560,9 @@ public:
      * @return left/right movement of this character.
      */
     float getMovement() const { return _movement; }
-    
+
+    float getVertical() const { return _vertical; }
+
     /**
      * Sets left/right movement of this character.
      *
@@ -492,7 +570,22 @@ public:
      *
      * @param value left/right movement of this character.
      */
-    void setMovement(float value);
+    void setMovement(float h);
+
+    void setFlameNode(std::shared_ptr<EntitySpriteNode> node) { 
+        _flameNode = node; 
+        Color4 c = Color4::WHITE;
+        c.a = 100.0f;
+        _flameNode->setColor(c);
+        _node->addChild(_flameNode);
+        _flameAction = scene2::Animate::alloc(0, 14, 1.0f);
+    }
+
+    std::shared_ptr<EntitySpriteNode> getFlameNode() { return _flameNode; }
+
+    std::shared_ptr<scene2::Animate> getFlameAction() { return _flameAction; }
+
+    void setAllMovement(float h, float v);
 
     /**
      * Returns true if the dude is actively firing.
@@ -513,12 +606,22 @@ public:
 
     void setDash(bool value) { _dash = value; }
 
+    void setDashForce(float f) { _dashForce = f; }
+    float getDashForce() { return _dashForce + getJumpBuff(); }
+
+    void setDashDamping(float f) { _dashDamping = f; }
+    float getDashDamping() { return _dashDamping; }
+
     int getDashNum() { return _dashNum; }
     void setDashNum(int val) { _dashNum = val; }
     void deltaDashNum(int val) { _dashNum += val; }
 
-    bool contactingWall() { return _contactingWall; }
-    void setContactingWall(bool val) { _contactingWall = val;  }
+    bool contactingLeftWall() { return _contactingLeftWall; }
+    void setContactingLeftWall(bool val) { 
+        _contactingLeftWall = val;  }
+    bool contactingRightWall() { return _contactingRightWall; }
+    void setContactingRightWall(bool val) { 
+        _contactingRightWall = val; }
 
     int getIsOnDangerousGround() { return _isOnDangerousGround; }
     void settIsOnDangerousGround(bool val) { _isOnDangerousGround = val; }
@@ -535,7 +638,11 @@ public:
      *
      * @param value whether the dude is actively jumping.
      */
-    void setJumping(bool value) { _isJumping = value; }
+    void setJumping(bool value) { 
+        if (!_isJumping && value) _jumpPressed = true;
+        else _jumpPressed = false;
+        _isJumping = value; 
+    }
     
     /**
      * Returns true if the dude is on the ground.
@@ -558,14 +665,18 @@ public:
      *
      * @return how much force to apply to get the dude moving
      */
-    float getForce() const { return DUDE_FORCE; }
+    float getForce() { return _walkForce * getSpeedBuff(); }
+
+    float getJumpForce() { return _jumpForce * getJumpBuff(); }
+
+    void setJumpForce(float f) { _jumpForce = f; }
     
     /**
      * Returns ow hard the brakes are applied to get a dude to stop moving
      *
      * @return ow hard the brakes are applied to get a dude to stop moving
      */
-    float getDamping() const { return DUDE_DAMPING; }
+    float getDamping() const { return _body->GetLinearDamping(); }
     
     /**
      * Returns the upper limit on dude left-right movement.
@@ -586,6 +697,10 @@ public:
     std::string* getSensorName() { return &_sensorName; }
 
     std::string* getBodySensorName() { return &_bodySensorName; }
+
+    std::string* getLeftSensorName() { return &_leftSensorName; }
+
+    std::string* getRightSensorName() { return &_rightSensorName; }
     
     /**
      * Returns true if this character is facing right
@@ -623,6 +738,8 @@ public:
      * @param delta Number of seconds since last animation frame
      */
     void update(float dt) override;
+
+    void fixedUpdate(float step);
     
     /**
      * Applies the force to the body of this dude
@@ -631,8 +748,25 @@ public:
      */
     void applyForce(float h, float v);
 
+    void walk(Vec2 dir, float dt);
+
+    void jump(Vec2 dir, bool wall = false);
+
+    void wallJump();
+    
+    void handleJump(float dt);
+
+    void dash(Vec2 dir);
+
     void takeDamage(float damage, const int attackDirection);
+
+    void takePlatformDamage(float damage, const int attackDirection);
+
 	
+    void setFallMultiplier(float f) { _fallMultiplier = f; };
+
+    float getFallMultiplier() { return _fallMultiplier; };
+
     float getHealth() { return _health; }
 
     void sethealthbar(std::shared_ptr<cugl::AssetManager> asset);
@@ -653,7 +787,7 @@ public:
 
     void removeTouching() { _numberOfTouchingEnemies -= 1; };
 
-    void addMeter(float f) {_meter += f; if (_meter > _maxMeter) _meter = _maxMeter; };
+    void addMeter(float f);
 
     float getMeter() { return _meter; };
 
@@ -663,9 +797,46 @@ public:
     bool useMeter(float f = METER_COST);
 
     std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale);
+    std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAirAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale, float angle);;
 
     float getLastDamageTime() { return _lastDamageTime; };
+
     float getHealthCooldown() { return _healthCooldown; };
+
+    void startDeath();
+
+    float getDeathTimer() { return _deathTimer; };
+
+    bool animate(std::string action_name) override;
+
+    void reset();
+
+    void setDidAnimateHurt(bool b) { _didAnimateHurt = b; };
+    bool didAnimateHurt() { return _didAnimateHurt; };
+
+    void setHealthUpgrade(float f) { _healthUpgrade = f; };
+    void setDashUpgrade(float f) { _dashUpgrade = f; };
+    void setMeterGainUpgrade(float f) { _meterGainUpgrade = f; };
+    void setAttackUpgrade(float f) { _attackUpgrade = f; };
+    void setSpeedUpgrade(float f) { _speedUpgrade = f; };
+
+    void initUpgrades() {
+        _healthUpgrade = 0.0f;
+        _dashUpgrade = 0.0f;
+        _meterGainUpgrade = 0.0f;
+        _attackUpgrade = 0.0f;
+        _speedUpgrade = 0.0f;
+    }
+
+    void setUpgrades(float health, float dash, float meter, float attack, float speed) {
+		_healthUpgrade = health;
+		_dashUpgrade = dash;
+		_meterGainUpgrade = meter;
+		_attackUpgrade = attack;
+		_speedUpgrade = speed;
+	}
+
+    void gainHealth(float f);
 
     int getDashCooldown() {return _dashCooldown; };
 
@@ -673,7 +844,13 @@ public:
 
     int getFloatyFrames() { return floatyFrames; };
 
-    float getAttackBuff() {
+    bool isBuffed() { return _duration > 0.0f; }
+    buff getBuffType() { return _buffType; }
+    bool isDead() { return _deathTimer != 0.0f; }
+
+    void setInputWalk(bool b) { _isInputWalk = b; };
+
+    const float getAttackBuff() {
         if (_duration > 0) {
             return _attackBuff;
         }
@@ -684,7 +861,7 @@ public:
         return DEFAULT_BUFF;
     };
 
-    float getDefenseBuff() {
+    const float getDefenseBuff() {
         if (_duration > 0) {
             return _defenseBuff;
         }
@@ -695,7 +872,7 @@ public:
         return DEFAULT_BUFF;
     }
 
-    float getJumpBuff() {
+    const float getJumpBuff() {
         if (_duration > 0) {
             return _jumpBuff;
         }
@@ -718,7 +895,7 @@ public:
     }
 
     //maybe not needed
-    float getHealthBuff() { return 0.0f; };
+    const float getHealthBuff() { return 0.0f; };
 
     static char* getStrForBuff(buff enumVal)
     {
@@ -734,6 +911,8 @@ public:
             return "defense";
         case buff::health:
             return "health";
+        case buff::none:
+            return "none";
         default:
             return "Not recognized..";
         }

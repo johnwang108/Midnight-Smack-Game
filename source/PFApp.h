@@ -16,7 +16,6 @@
 #include <cugl/cugl.h>
 #include "PFGameScene.h"
 #include "PFLoadingScene.h"
-#include "MultiScreenScene.h"
 #include "MenuScene.h"
 
 /**
@@ -28,13 +27,13 @@ protected:
     std::shared_ptr<cugl::SpriteBatch> _batch;
     /** The global asset manager */
     std::shared_ptr<cugl::AssetManager> _assets;
+    std::shared_ptr<PlatformInput> _input;
     
     // Player modes
     /** The primary controller for the game world */
     GameScene _gameplay;
 
     /** Primary controller for cooking */
-    MultiScreenScene _multiScreen;
 
     int _currentlyFocused;
     /** The controller for the loading screen */
@@ -42,7 +41,13 @@ protected:
 
     MenuScene _menu;
 
+    MenuScene _levelSelectMenu;
+
+    MenuScene _settingsMenu;
+
     std::string _currentScene;
+
+    std::unordered_map<std::string, float> _settingsData;
     
     /** Whether or not we have finished loading all assets */
     bool _loaded;
@@ -217,6 +222,8 @@ public:
      * at all. The default implmentation does nothing.
      */
     virtual void draw() override;
+
+    void loadSave();
 
     void transitionScenes();
 };

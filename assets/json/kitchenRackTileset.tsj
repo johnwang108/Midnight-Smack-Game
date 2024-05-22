@@ -1,0 +1,15 @@
+{ "backgroundcolor":"#00000000",
+ "columns":47,
+ "image":"..\/textures\/kitchenRack.png",
+ "imageheight":686,
+ "imagewidth":1526,
+ "margin":0,
+ "name":"kitchenRackTileset",
+ "spacing":0,
+ "tilecount":987,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

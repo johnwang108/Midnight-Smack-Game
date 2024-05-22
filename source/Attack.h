@@ -52,6 +52,8 @@ protected:
     
     bool _norotate;
 
+    bool _die;
+
     std::string _sensorName;
 
     b2Fixture* _sensorFixture;
@@ -63,6 +65,9 @@ protected:
 
     float _speed;
 
+    float _uppp;
+
+    bool _follow;
 public:
 #pragma mark Constructors
     /**
@@ -162,6 +167,8 @@ public:
 	*/
 	void update(float dt) override;
 
+    void fixedUpdate(float dt);
+
     bool killMe() { return _killme; };
 
     void setFaceRight(bool faceRight) { _faceright = faceRight; }
@@ -177,6 +184,13 @@ public:
 
     void setSpeed(float speed) { _speed = speed; }
     float getSpeed() { return _speed; }
+    void setLifetime(float lifetime) { _lifetime = lifetime; }
+
+    float getLifetime() { return _lifetime; }
+    void setDie(bool die) { _die = die; }
+    void setUp(float up) { _uppp = up; }
+    float getUp() { return _uppp; }
+    void setFollow(bool follow) { _follow = follow; }
 };
 
 #endif /* __ATTACK_H__ */

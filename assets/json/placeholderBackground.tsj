@@ -1,0 +1,14 @@
+{ "columns":400,
+ "image":"..\/source\/repos\/Midnight-Smack-Folder\/Midnight-Smack-Game\/assets\/textures\/placeholderBackground.png",
+ "imageheight":960,
+ "imagewidth":12800,
+ "margin":0,
+ "name":"placeholderBackground",
+ "spacing":0,
+ "tilecount":12000,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

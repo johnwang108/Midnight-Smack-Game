@@ -1,0 +1,14 @@
+{ "columns":2,
+ "image":"..\/textures\/carrotLevelDesign.png",
+ "imageheight":91,
+ "imagewidth":66,
+ "margin":0,
+ "name":"carrot",
+ "spacing":0,
+ "tilecount":4,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

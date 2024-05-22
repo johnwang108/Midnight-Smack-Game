@@ -19,7 +19,7 @@
 #pragma mark -
 #pragma mark Physics Constants
 /** The new heavier gravity for this world (so it is not so floaty) */
-#define DEFAULT_GRAVITY -28.9f
+#define DEFAULT_GRAVITY -34.9f
 /** The density for most physics objects */
 #define BASIC_DENSITY   0.0f
 /** The density for a bullet */
@@ -37,7 +37,7 @@
 /**Scalar for width of a box attack, hacky*/
 #define ATTACK_W        2.0f
 /**Scalar for height of a box attack, hacky*/
-#define ATTACK_H        0.5f
+//#define ATTACK_H        0.5f
 /** The number of frame to wait before reinitializing the game */
 #define EXIT_COUNT      240
 
@@ -58,6 +58,12 @@
 #define ATTACK_NAME     "attack"
 /** The name of a wall (for object identification) */
 #define WALL_NAME       "wall"
+/** The name of a breakable platform */
+#define BREAKABLE_PLATFORM_NAME "breakable_platform"
+/** The name of a damaging platform */
+#define DAMAGING_PLATFORM_NAME "destructable_platform"
+/** The name of a moving platform */
+#define MOVING_PLATFORM_NAME "moving_platform"
 /** The name of an enemy for object id */
 #define ENEMY_NAME	    "enemy"
 
@@ -68,7 +74,7 @@
 /** The font for victory/failure messages */
 #define MESSAGE_FONT    "retro"
 
-#define SMALL_MSG "retrosmall"  
+#define SMALL_MSG "midnightSmack"  
 /** The message for winning the game */
 #define WIN_MESSAGE     "VICTORY!"
 /** The color of the win message */

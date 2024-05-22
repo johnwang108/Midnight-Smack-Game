@@ -61,15 +61,22 @@ private:
 protected:
     /** The type of the enemy */
     EnemyType _type;
-    /** The current horizontal movement direction of the enemy (-1 for left, 1 for right) */
+    /** The current facing direction of the enemy (-1 for left, 1 for right) */
     int _direction;
+
+    int _moveDirection;
+
     /** Whether the enemy is currently on the ground */
     //bool _isGrounded;
     /** Whether the enemy is aggroed*/
     bool _isChasing;
 
+    bool _isTangible;
+
     /** Enemy state*/
     std::string _state;
+
+    float _randFactor;
 
     /** The node for debugging the sensor */
  //   std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
@@ -79,6 +86,8 @@ protected:
     std::string _sensorName;
 
     b2Fixture* _sensorFixture;
+
+    std::shared_ptr<cugl::scene2::WireNode> _sensorNode;
 
     int _lastDirection;
 
@@ -114,10 +123,15 @@ protected:
     //cugl::Vec2 _targetPosition;
     //float _closeEnough;
 
-    /**Limits on movement for egg and beef*/
-    cugl::Spline2 _limit;
 
     bool _killMe;
+    
+    bool _nocoll;
+
+    Vec2 _spawnPoint;
+
+    std::shared_ptr<cugl::AssetManager> _assets;
+
 
 
 public:
@@ -156,7 +170,7 @@ public:
     /**Allocs with animations defined from json. Don't use.
     * 
     * */
-    virtual  std::shared_ptr<EnemyModel> allocWithConstants(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::shared_ptr<AssetManager> _assets) { return nullptr; };
+   // virtual  std::shared_ptr<EnemyModel> allocWithConstants(const cugl::Vec2& pos, const cugl::Size& size, float scale, std::shared_ptr<AssetManager> _assets) { return nullptr; };
         //std::shared_ptr<EnemyModel> result = std::make_shared<EnemyModel>();
         //bool res = result->init(pos, size, scale);
 
@@ -199,7 +213,7 @@ public:
     bool getattacktime() { return _attacktime; }
     void setattacktime(bool attacktime) { _attacktime = attacktime; }
     void setshooted(bool shooted) { _shooted = shooted; }
-
+    void setasset(std::shared_ptr<cugl::AssetManager> assets) { _assets = assets; }
 
 #pragma mark -
 #pragma mark Physics Methods
@@ -254,7 +268,9 @@ public:
 
     bool didAttack();
 
-    std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale);
+    virtual std::tuple<std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>> createAttack(std::shared_ptr<cugl::AssetManager> _assets, float scale) { 
+        return std::tuple< std::shared_ptr<Attack>, std::shared_ptr<cugl::scene2::PolygonNode>>(nullptr, nullptr);
+    };
 
 
     void setVulnerable(bool vulnerable) { _vulnerable = vulnerable; }
@@ -269,16 +285,21 @@ public:
 
     EnemyType getType() { return _type; }
 
-    b2Vec2 handleMovement(b2Vec2 velocity);
+    virtual b2Vec2 handleMovement(b2Vec2 velocity);
 
     virtual void setState(std::string state);
 
-    virtual std::string getNextState(std::string state);
-
-    /**Sets the predefined path limits, still wip */
-    void setLimit(cugl::Spline2 limit) { _limit = limit; }
+    virtual std::string getNextState(std::string state) { return ""; };
 
     std::string getState() { return _state; }
+
+    void jump(Vec2 dir);
+
+    //void syncStateTimes();
+
+    bool isTangible() { return _isTangible; }
+
+    void setTangible(bool b);
 
     void setActiveAction(std::string action) {
         Entity::setActiveAction(action);
@@ -286,11 +307,17 @@ public:
 
     virtual void markForDeletion() {
         _killMe = true;
+        _isTangible = false;
     }
-
+    bool getkillMe() { return _killMe; }
     bool shouldDelete() {
 		return _killMe && _killMeCountdown < 0;
 	}
+
+    bool isDying() { return _killMe; }
+    
+    void setnocoll(bool coll){_nocoll=false;}
+    bool getnocoll(){return _nocoll;}
 
     static std::string typeToStr(EnemyType type) {
         switch (type) {
@@ -319,18 +346,38 @@ public:
         case EnemyType::shrimp:
             return { "pigtail", "v", "circle" };
         case EnemyType::rice:
-            return { "circle", "circle", "pigtail" };
+            return { "circle", "v", "pigtail" };
         case EnemyType::rice_soldier:
-            return { "circle", "circle", "pigtail" };
+            return { "circle", "v", "pigtail" };
         case EnemyType::egg:
             return { "v", "v", "v", };
         case EnemyType::carrot:
-            return { "horizswipe", "vertswipe", "horizswipe" };
+            return { "v", "v", "v" };
         case EnemyType::beef:
-            return { "v", "circle", "pigtail" };
+            return { "pigtail", "circle", "circle" };
         default:
             return {};
         }
+    };
+
+    static std::vector<std::string> defaultSeqAlt(EnemyType type) {
+        /*switch (type) {
+        case EnemyType::shrimp:
+            return { "pigtail", "v", "circle" };
+        case EnemyType::rice:
+            return { "pigtail", "v", "pigtail" };
+        case EnemyType::rice_soldier:
+            return { "pigtail", "v", "pigtail" };
+        case EnemyType::egg:
+            return { "v", "v", "v", };
+        case EnemyType::carrot:
+            return { "v", "circle", "pigtail" };
+        case EnemyType::beef:
+            return { "pigtail", "v", "pigtail" };
+        default:
+            return {};
+        }*/
+        return defaultSeq(type);
     };
 
     //Dict for enemy type to buff 
@@ -343,11 +390,11 @@ public:
         case EnemyType::rice_soldier:
             return buff::defense;
         case EnemyType::egg:
-            return buff::jump;
-        case EnemyType::carrot:
-            return buff::speed;
-        case EnemyType::beef:
             return buff::health;
+        case EnemyType::carrot:
+            return buff::jump;
+        case EnemyType::beef:
+            return buff::speed;
         }
         return buff::none;
     };
@@ -356,20 +403,24 @@ public:
     static float typeToAggroRange(EnemyType type) {
 		switch (type) {
 		case EnemyType::shrimp:
-			return 20.0f;
+			return 15.0f;
 		case EnemyType::rice:
-			return 20.0f;
+			return 15.0f;
 		case EnemyType::rice_soldier:
-			return 20.0f;
+			return 15.0f;
 		case EnemyType::egg:
 			return 20.0f;
 		case EnemyType::carrot:
-			return 20.0f;
+			return 15.0f;
 		case EnemyType::beef:
-			return 20.0f;
+			return 15.0f;
 		}
 		return 0.0f;
 	};
 
+    virtual void respawn();
+    void resetDebug();
+
+    //void activatePhysics(std::shared_ptr<physics2::ObstacleWorld> world) override;
 };
 #endif /* __ENEMY_MODEL_H__ */

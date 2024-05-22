@@ -126,7 +126,7 @@ void Level2::populate(GameScene& scene) {
 
 		platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_CENTER);
 		// You cannot add constant "".  Must stringify
-		platobj->setName(std::string(PLATFORM_NAME) + cugl::strtool::to_string(ii));
+		platobj->setName(std::string(PLATFORM_NAME));
 
 		// Set the physics attributes
 		platobj->setBodyType(b2_staticBody);
@@ -165,6 +165,8 @@ void Level2::populate(GameScene& scene) {
 
 	Vec2 shrimp_pos = SHRIMP_POS;
 
+#pragma mark : Bull
+
 	image = _assets->get<Texture>("bullIdle");
 	std::shared_ptr<BullModel> _bull = BullModel::alloc(shrimp_pos, BULL_SIZE_DEFAULT, _scale);
 	spritenode = EntitySpriteNode::allocWithSheet(image,3,4,12);
@@ -181,8 +183,8 @@ void Level2::populate(GameScene& scene) {
 	_bull->addActionAnimation("bullRun", _assets->get<Texture>("bullRun"), 3, 3, 8, 1.0f);
 	_bull->addActionAnimation("bullStunned", _assets->get<Texture>("bullStunned"), 3, 4, 12, 1.0f);
 	_bull->addActionAnimation("bullStomp", _assets->get<Texture>("bullStomp"), 5, 5, 22, 2.0f);
-	_bull->addActionAnimation("bullDazedtoIdle", _assets->get<Texture>("bullDazedtoIdle"), 2, 2, 4, 2.0f);
-	_bull->addActionAnimation("bullCrash", _assets->get<Texture>("bullCrash"), 4, 4, 15, 3.0f);
+	_bull->addActionAnimation("bullDazedtoIdle", _assets->get<Texture>("bullDazedtoIdle"), 2, 2, 4, 1.0f);
+	_bull->addActionAnimation("bullCrash", _assets->get<Texture>("bullCrash"), 4, 4, 15, 2.0f);
 	_bull->addActionAnimation("bullTurn", _assets->get<Texture>("bullTurn"), 4, 4, 16, 0.75f);
 	
 	scene.addObstacle(_bull, spritenode);

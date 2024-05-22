@@ -1,0 +1,36 @@
+{
+    "tutorialPopupMinimap": 
+    {
+        "position": [640,400],
+        "size": [800, 400],
+        "anchor": [0.5, 0.5],
+        "visible": true,
+        "text": "Press M or = (controller) to open a minimap to help find stations and plates",
+        "textMaxWidth%age": 0.5,
+        "font": "popupFont",
+        "background": "popupBackground",
+        "children": {
+            "background": {
+                "texture": "minimapExample",
+                "rows": 3,
+                "cols": 4,
+                "frames": 10,
+                "position": [0.0, 100.0],
+                "scale": 0.7
+            }
+        },
+
+        "states": {
+            "staticState": {
+                "duration": 1.0,
+                "children": {
+                    "background": {
+                        "nothingAction": {
+                            "type": "nothing"
+                        }
+                    }
+                }
+            }
+            }
+        }
+    }

@@ -1,0 +1,14 @@
+{ "columns":11,
+ "image":"..\/textures\/breakable_test.png",
+ "imageheight":48,
+ "imagewidth":352,
+ "margin":0,
+ "name":"breakable_test",
+ "spacing":0,
+ "tilecount":11,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

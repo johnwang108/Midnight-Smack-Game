@@ -26,7 +26,17 @@ public:
         if (res) {
             result->loadAnimationsFromConstant("carrot", _assets);
         }
+
+        //manually add respawn (death reversed)
+        auto info = result->getInfo("carrotDeath");
+        result->addActionAnimation("carrotRespawn", _assets->get<Texture>("carrotDeath"), std::get<0>(info), std::get<1>(info), std::get<2>(info), std::get<3>(info) * 8.0f, true);
         return res ? result : nullptr;
+    }
+
+    void markForDeletion() override {
+        if (_killMeCountdown != 0.0f) return;
+        EnemyModel::markForDeletion();
+        _killMeCountdown = getActionDuration("carrotDeath");
     }
 
     void update(float dt) override;
@@ -34,6 +44,8 @@ public:
     void fixedUpdate(float step) override;
 
     void setState(std::string state) override;
+
+    b2Vec2 handleMovement(b2Vec2 velocity) override;
 
     std::string getNextState(std::string state) override;
 

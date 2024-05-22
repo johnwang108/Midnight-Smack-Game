@@ -1,0 +1,346 @@
+{
+    "variables": {},
+    "contents": {
+        "type": "Node",
+        "format": {
+            "type": "Anchored"
+        },
+        "data": {
+            "anchor": [
+                0,
+                0
+            ],
+            "size": [
+                1280,
+                800
+            ],
+            "angle": 0,
+            "position": [
+                0,
+                0
+            ],
+            "visible": true
+        },
+        "children": {
+            "settingsBackground": {
+                "type": "Image",
+                "data": {
+                    "texture": "settingsBackground",
+                    "anchor": [
+                        0.5,
+                        0.5
+                    ],
+                    "size": [
+                        1280,
+                        800
+                    ],
+                    "angle": 0,
+                    "position": [
+                        0,
+                        0
+                    ],
+                    "visible": true
+                },
+                "layout": {
+                    "x_anchor": "fill",
+                    "y_anchor": "fill",
+                    "absolute": false,
+                    "x_offset": 0,
+                    "y_offset": 0
+                }
+            },
+            "exit": {
+                "type": "Button",
+                "format": {
+                    "type": "Anchored"
+                },
+                "data": {
+                    "anchor": [
+                        0,
+                        1
+                    ],
+                    "size": [
+                        97,
+                        93
+                    ],
+                    "angle": 0,
+                    "position": [
+                        1108,
+                        649
+                    ],
+                    "visible": true,
+                    "upnode": "exitButton"
+                },
+                "children": {
+                    "exitButton": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "exitButton",
+                            "anchor": [
+                                0,
+                                1
+                            ],
+                            "size": [
+                                97,
+                                93
+                            ],
+                            "angle": 0,
+                            "position": [
+                                0,
+                                0
+                            ],
+                            "visible": true
+                        },
+                        "layout": {
+                            "x_anchor": "left",
+                            "y_anchor": "top",
+                            "absolute": false,
+                            "x_offset": 0,
+                            "y_offset": 0
+                        }
+                    }
+                },
+                "layout": {
+                    "x_anchor": "left",
+                    "y_anchor": "top",
+                    "absolute": false,
+                    "x_offset": 0.87,
+                    "y_offset": -0.07
+                }
+            },
+            "toggle": {
+                "type": "Button",
+                "format": {
+                    "type": "Anchored"
+                },
+                "data": {
+                    "anchor": [
+                        0,
+                        1
+                    ],
+                    "size": [
+                        116,
+                        62
+                    ],
+                    "angle": 0,
+                    "position": [
+                        285,
+                        298
+                    ],
+                    "visible": true,
+                    "upnode": "toggleOn",
+                    "downnode": "toggleOff"
+                },
+                "children": {
+                    "toggleOff": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "toggleOff",
+                            "anchor": [
+                                0,
+                                1
+                            ],
+                            "size": [
+                                114,
+                                61
+                            ],
+                            "angle": 0,
+                            "position": [
+                                1,
+                                0
+                            ],
+                            "visible": true
+                        },
+                        "layout": {
+                            "x_anchor": "left",
+                            "y_anchor": "top",
+                            "absolute": false,
+                            "x_offset": 0.01,
+                            "y_offset": -0.02
+                        }
+                    },
+                    "toggleOn": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "toggleOn",
+                            "anchor": [
+                                0,
+                                1
+                            ],
+                            "size": [
+                                116,
+                                62
+                            ],
+                            "angle": 0,
+                            "position": [
+                                0,
+                                0
+                            ],
+                            "visible": true
+                        },
+                        "layout": {
+                            "x_anchor": "left",
+                            "y_anchor": "top",
+                            "absolute": false,
+                            "x_offset": 0,
+                            "y_offset": 0
+                        }
+                    }
+                },
+                "layout": {
+                    "x_anchor": "left",
+                    "y_anchor": "top",
+                    "absolute": false,
+                    "x_offset": 0.22,
+                    "y_offset": -0.55
+                }
+            },
+            "slider1": {
+                "type": "Slider",
+                "format": {
+                    "type": "Anchored"
+                },
+                "data": {
+                    "anchor": [
+                        0.5,
+                        0.5
+                    ],
+                    "size": [
+                        486,
+                        49
+                    ],
+                    "angle": 0,
+                    "position": [
+                        815,
+                        450
+                    ],
+                    "visible": true,
+                    "bounds": [
+                        24.5,
+                        24.5,
+                        425,
+                        0
+                    ],
+                    "knob": "knob",
+                    "path": "slot",
+                    "value": 25
+                },
+                "children": {
+                    "slot": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "slot",
+                            "anchor": [
+                                0,
+                                1
+                            ],
+                            "size": [
+                                486,
+                                49
+                            ],
+                            "angle": 0,
+                            "position": [
+                                0,
+                                0
+                            ],
+                            "visible": true
+                        }
+                    },
+                    "knob": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "knob",
+                            "anchor": [
+                                0,
+                                0
+                            ],
+                            "size": [
+                                85,
+                                92
+                            ],
+                            "angle": 45,
+                            "position": [
+                                20,
+                                0
+                            ],
+                            "visible": true
+                        }
+                    }
+                }
+            },
+            "slider2": {
+                "type": "Slider",
+                "format": {
+                    "type": "Anchored"
+                },
+                "data": {
+                    "anchor": [
+                        0.5,
+                        0.5
+                    ],
+                    "size": [
+                        486,
+                        49
+                    ],
+                    "angle": 0,
+                    "position": [
+                        815,
+                        300
+                    ],
+                    "visible": true,
+                    "bounds": [
+                        24.5,
+                        24.5,
+                        425,
+                        0
+                    ],
+                    "knob": "knob",
+                    "path": "slot",
+                    "value": 25
+                },
+                "children": {
+                    "slot": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "slot",
+                            "anchor": [
+                                0,
+                                1
+                            ],
+                            "size": [
+                                486,
+                                49
+                            ],
+                            "angle": 0,
+                            "position": [
+                                0,
+                                0
+                            ],
+                            "visible": true
+                        }
+                    },
+                    "knob": {
+                        "type": "Image",
+                        "data": {
+                            "texture": "knob",
+                            "anchor": [
+                                0.0,
+                                0.0
+                            ],
+                            "size": [
+                                85,
+                                92
+                            ],
+                            "angle": 0,
+                            "position": [
+                                0,
+                                0
+                            ],
+                            "visible": true
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

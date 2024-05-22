@@ -8,7 +8,7 @@
 using namespace cugl;
 
 #define SHRIMPRICE_SENSOR_NAME     "ShrimpRicesensor" // If the SHRIMPRICE requires a unique sensor
-#define SHRIMPRICE_CHASE_SPEED     2.0f         // Using the CHASE_SPEED for consistency
+#define SHRIMPRICE_CHASE_SPEED     3.0f         // Using the CHASE_SPEED for consistency
 #define SHRIMPRICE_DENSITY         2.0f         // Assuming the SHRIMPRICE is heavier than a regular enemy
 #define SHRIMPRICE_FORCE           1.0f         // Force specific to the SHRIMPRICE's movement, potentially stronger
 #define SHRIMPRICE_MAXSPEED        5.0f         // A reasonable max speed for the SHRIMPRICE, ensuring it's fast but manageable
@@ -27,10 +27,8 @@ protected:
     float _health;
     float _healthCooldown;
     float _lastDamageTime;
-    bool _isChasing;
     int _direction;
     float _SFR_attack_chance;
-    float _attackcombo;
     float _knockbackTime;
     float _nextChangeTime;
     b2Fixture* _sensorFixture;
@@ -38,11 +36,24 @@ protected:
     std::shared_ptr<AssetManager> _assets;
     int _lastDirection;
     std::string _attacktype;
-    float _WheelofDoom;
+    std::string _act;
+    float _acttime;
+    bool _canturn;
+    bool _angry;
+    bool _timetosummon;
+    float _movestate1;
+    float _angrytime;
+    int _attackcount;
+    int _W3att;
+    bool _parry;
+    bool _parry2;
+    float _delay;
+    bool DIE;
+    std::vector<std::shared_ptr<Attack>> _attacks;
 
 
 public:
-    ShrimpRice() : Entity(), _drawScale(1.0f), _health(100.0f), _healthCooldown(0.2f), _lastDamageTime(0), _isChasing(true), _direction(-1) {}
+    ShrimpRice() : Entity(), _drawScale(1.0f), _health(100.0f), _healthCooldown(0.2f), _lastDamageTime(0), _direction(-1) {}
 
     virtual ~ShrimpRice() { dispose(); }
 
@@ -67,14 +78,39 @@ public:
     void setassets(std::shared_ptr<AssetManager> assets) { _assets = assets; }
 
     float getHealth() { return _health; }
-    bool isChasing() const { return _isChasing; }
 
     double getnextchangetime() { return _nextChangeTime; }
     void setDirection(int d) { _direction = d; }
     void setnextchangetime(double nextChangeTime) { _nextChangeTime = nextChangeTime; }
     float getknockbacktime() { return _knockbackTime; }
-    float getattackcombo() { return _attackcombo; }
-    float getWheelofDoom() { return _WheelofDoom; }
+
+    std::string getattacktype() { return _attacktype; }
+    void setattacktype(std::string type){_attacktype=type;}
+
+    void setact(std::string act, float time) {
+        _acttime = time;
+        _act = act;
+    }
+    float getacttime() { return _acttime; }
+    std::string getact() { return _act; }
+    bool getcanturn() { return _canturn; }
+    void Summon(GameScene& scene);
+    bool gettimetosummon() { return _timetosummon; }
+    void settimetosummon(bool time) { _timetosummon = time; }
+    float getmovestate1() { return _movestate1; }
+    void setmovestate1(float state) { _movestate1 = state; }
+    float getangrytime() { return _angrytime; }
+    void setangrytime(float time) { _angrytime = time; }
+    void parry(GameScene& scene);
+    void setparry(bool p){_parry=p;}
+    bool getparry(){return _parry;}
+    void setparry2(bool p){_parry2=p;}
+    bool getparry2(){return _parry2;}
+    float getdelay(){return _delay;}
+    void setdelay(float time){_delay=time;}
+    bool getangry(){return _angry;}
+    bool getDIE() { return DIE; }
+    void setDIE(bool die) { DIE = die; }
 };
 
 #endif /* __SHRIMPRICE_H__ */

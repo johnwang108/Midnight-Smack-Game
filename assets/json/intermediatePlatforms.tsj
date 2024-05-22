@@ -1,0 +1,14 @@
+{ "columns":154,
+ "image":"..\/textures\/Artboard 1.png",
+ "imageheight":2100,
+ "imagewidth":4930,
+ "margin":0,
+ "name":"intermediatePlatforms",
+ "spacing":0,
+ "tilecount":10010,
+ "tiledversion":"1.10.2",
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset",
+ "version":"1.10"
+}

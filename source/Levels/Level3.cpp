@@ -2,7 +2,7 @@
 #include "../PFGameScene.h"
 
 /** The goal door position */
-static float GOAL_POS[] = { 4.0f,14.0f };
+static float GOAL_POS[] = { 4.0f,8.0f };
 // float GOAL_POS[] = { 6.0f, 5.0f };
 
 /** The initial position of the dude */
@@ -59,29 +59,6 @@ void Level3::populate(GameScene& scene) {
 	//scene.addObstacle(_background, sprite);
 
 
-#pragma mark : Goal door
-	image = _assets->get<Texture>(GOAL_TEXTURE);
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	std::shared_ptr<scene2::WireNode> draw;
-
-	// Create obstacle
-	Vec2 goalPos = GOAL_POS;
-	Size goalSize(image->getSize().width / _scale,
-		image->getSize().height / _scale);
-	_goalDoor = physics2::BoxObstacle::alloc(goalPos, goalSize);
-
-	// Set the physics attributes
-	_goalDoor->setBodyType(b2_staticBody);
-	_goalDoor->setDensity(0.0f);
-	_goalDoor->setFriction(0.0f);
-	_goalDoor->setRestitution(0.0f);
-	_goalDoor->setSensor(true);
-	// _goalDoor->setEnabled
-
-	// Add the scene graph nodes to this object
-	sprite = scene2::PolygonNode::allocWithTexture(image);
-	_goalDoor->setDebugColor(DEBUG_COLOR);
-	scene.addObstacle(_goalDoor, sprite);
 
 #pragma mark : Walls
 	// All walls and platforms share the same texture
@@ -117,7 +94,7 @@ void Level3::populate(GameScene& scene) {
 	for (int ii = 0; ii < ALT_PLATFORM_COUNT; ii++) {
 		std::shared_ptr<physics2::PolygonObstacle> platobj;
 		Poly2 platform(reinterpret_cast<Vec2*>(ALT_PLATFORMS[ii]), sizeof(ALT_PLATFORMS[ii]) / sizeof(float) / 2);
-
+        
 		EarclipTriangulator triangulator;
 		triangulator.set(platform.vertices);
 		triangulator.calculate();
@@ -126,8 +103,9 @@ void Level3::populate(GameScene& scene) {
 
 		platobj = physics2::PolygonObstacle::allocWithAnchor(platform, Vec2::ANCHOR_CENTER);
 		// You cannot add constant "".  Must stringify
-		platobj->setName(std::string(PLATFORM_NAME) + cugl::strtool::to_string(ii));
-
+        platobj->setName(std::string(PLATFORM_NAME));// + cugl::strtool::to_string(ii));
+        
+        
 		// Set the physics attributes
 		platobj->setBodyType(b2_staticBody);
 		platobj->setDensity(BASIC_DENSITY);
@@ -159,9 +137,6 @@ void Level3::populate(GameScene& scene) {
 
 	scene.addObstacle(_avatar, spritenode); // Put this at the very front
 
-	// Play the background music on a loop.
-	std::shared_ptr<Sound> source = _assets->get<Sound>(GAME_MUSIC);
-	AudioEngine::get()->getMusicQueue()->play(source, true, MUSIC_VOLUME);
 
 	Vec2 shrimp_pos = SHRIMP_POS;
 	image = _assets->get<Texture>("SFR_Idle");
@@ -177,17 +152,22 @@ void Level3::populate(GameScene& scene) {
 	_shrimprice->addActionAnimation("SFR_Idle", _assets->get<Texture>("SFR_Idle"), 6, 6, 31, 1.291f);
 	_shrimprice->addActionAnimation("SFR_Move", _assets->get<Texture>("SFR_Move"), 4, 4, 14, 0.583f);
 	_shrimprice->addActionAnimation("SFR_Attack", _assets->get<Texture>("SFR_Attack"), 6, 5, 28, 1.125f);
-	_shrimprice->addActionAnimation("SFRJoustState1", _assets->get<Texture>("SFRJoustState1"), 4, 5, 18, 1.125f);
+	_shrimprice->addActionAnimation("SFRJoustState1", _assets->get<Texture>("SFRJoustState1"), 4, 5, 18, 2.25f);
 	_shrimprice->addActionAnimation("SFRJoustState2", _assets->get<Texture>("SFRJoustState2"), 3, 4, 12, 1.125f);
-	_shrimprice->addActionAnimation("SFRJoustState3", _assets->get<Texture>("SFRJoustState3"), 2, 2, 3, 0.3f);
+	_shrimprice->addActionAnimation("SFRJoustState3", _assets->get<Texture>("SFRJoustState3"), 2, 2, 3, 0.6f);
 	_shrimprice->addActionAnimation("SFRWave1", _assets->get<Texture>("SFRWave1"), 3, 3, 8, 1.125f);
 	_shrimprice->addActionAnimation("SFRWave2", _assets->get<Texture>("SFRWave2"), 3, 3, 7, 1.125f);
 	_shrimprice->addActionAnimation("SFRWave3", _assets->get<Texture>("SFRWave3"), 4, 5, 18, 1.125f);
-	_shrimprice->addActionAnimation("SFRWheelofDoom", _assets->get<Texture>("SFRWheelofDoom"), 3, 4, 12, 0.5f);
+	_shrimprice->addActionAnimation("SFRWheelofDoom", _assets->get<Texture>("SFRWheelofDoom"), 3, 4, 12, 0.1f);
+	_shrimprice->addActionAnimation("SFRMoveState1", _assets->get<Texture>("SFRMoveState1"), 4, 4, 14, 1.0f);
+	_shrimprice->addActionAnimation("SFRMoveState2", _assets->get<Texture>("SFRMoveState2"), 3, 4, 11, 0.7f);
+	_shrimprice->addActionAnimation("SFRTurn", _assets->get<Texture>("SFRTurn"), 3, 4, 11, 0.61f);
+    _shrimprice->addActionAnimation("SFRStunState2", _assets->get<Texture>("SFRStunState2"), 3, 3, 7, 0.46f);
+    _shrimprice->addActionAnimation("SFRStunState1", _assets->get<Texture>("SFRStunState1"), 3, 3, 7, 0.6f);
 
 	scene.addObstacle(_shrimprice, spritenode);
 
-
+	scene.spawnTutorialSign(GOAL_POS,"1");
 
 
 	scene.setAssets(_assets);

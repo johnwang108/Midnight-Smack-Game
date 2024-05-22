@@ -10,7 +10,7 @@ using namespace cugl;
 #define BULL_SENSOR_NAME     "bullsensor" // If the Bull requires a unique sensor
 #define BULL_CHASE_SPEED     10.0f         // Using the CHASE_SPEED for consistency
 #define BULL_DENSITY         2.0f         // Assuming the Bull is heavier than a regular enemy
-#define BULL_FORCE           1.0f         // Force specific to the Bull's movement, potentially stronger
+#define BULL_FORCE           1.5f         // Force specific to the Bull's movement, potentially stronger
 #define BULL_MAXSPEED        7.5f         // A reasonable max speed for the Bull, ensuring it's fast but manageable
 #define BULL_KNOCKBACK_FORCE 5.0f        // Increased knockback force due to the Bull's strength
 #define BULL_KNOCKBACK_FORCE_UP 15.0f      // Vertical knockback component
@@ -20,7 +20,7 @@ using namespace cugl;
 
 #define SENSOR_HEIGHT 0.1f
 
-#define BULL_ATTACK_CHANCE 0.002f
+#define BULL_ATTACK_CHANCE 0.003f
 
 class GameScene;
 class BullModel : public Entity {
@@ -47,10 +47,16 @@ protected:
     bool _summoned;
     float _CA;
     int _CAcount;
-    bool _running;
+    float _running;
     float _breaking;
     std::string _attacktype;
     float _turing;
+    std::shared_ptr<cugl::scene2::ActionManager> _actionM;
+    int n;
+    std::string _act;
+    float _acttime;
+    bool DIE;
+    b2Filter filter;
 
 
 public:
@@ -100,6 +106,7 @@ public:
     float getangrytime() { return _angrytime; }
 
     float getknockbacktime() { return _knockbackTime; }
+    void setknockbacktime(float time){_knockbackTime=time;}
 
     bool getshake() { return _shake; }
 
@@ -120,6 +127,17 @@ public:
     void circleattack(GameScene& scene);
     std::string getattacktype() { return _attacktype; }
     float getturing() { return _turing; }
+    void setturing(float time){_turing=time;}
+    void setact(std::string act, float time){_acttime=time;
+        _act=act;}
+    float getacttime(){return _acttime;}
+    std::string getact(){return _act;}
+    void setbreaking(float breaking){_breaking=breaking;}
+    float getbreaking(){return _breaking;}
+    float getrunning(){return _running;}
+    void setattacktype(std::string attacktype) { _attacktype = attacktype; }
+    bool getDIE(){return DIE;}
+    void setDIE(bool die){DIE=die;}
 };
 
 #endif /* __BULL_MODEL_H__ */
